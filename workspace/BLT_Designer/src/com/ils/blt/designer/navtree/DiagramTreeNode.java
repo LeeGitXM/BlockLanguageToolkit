@@ -25,7 +25,6 @@ import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 import javax.swing.tree.TreePath;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
@@ -35,11 +34,10 @@ import com.ils.blt.common.notification.NotificationKey;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
-import com.ils.blt.common.serializable.UUIDResetHandler;
+import com.ils.blt.designer.AuxiliaryDataRestoreManager;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.NotificationHandler;
-import com.ils.blt.designer.ResourceCreateManager;
 import com.ils.blt.designer.ResourceDeleteManager;
 import com.ils.blt.designer.ResourceUpdateManager;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
@@ -52,7 +50,6 @@ import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.execution.ExecutionManager;
 import com.inductiveautomation.ignition.common.execution.impl.BasicExecutionEngine;
-import com.inductiveautomation.ignition.common.model.ApplicationScope;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.ProjectChangeListener;
@@ -147,7 +144,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 			ProcessDiagramView view = (ProcessDiagramView)tab.getModel();
 			cleanView = !view.isDirty();
 		}
-		ExportDiagramAction exportAction = new ExportDiagramAction(menu.getRootPane(),resourceId);
+		ExportDiagramAction exportAction = new ExportDiagramAction(menu.getRootPane(),resourceId, this);
 		exportAction.setEnabled(cleanView);
 		menu.add(exportAction);
 //		DuplicateDiagramAction duplicateAction = new DuplicateDiagramAction(this);
@@ -378,6 +375,10 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
            final Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 
            ProjectResource res = parentNode.getProjectResource();
+           if (parentNode instanceof GeneralPurposeTreeNode) {
+        	   executionEngine.executeOnce(new AuxiliaryDataRestoreManager(workspace,(GeneralPurposeTreeNode)parentNode));
+           }
+           
            String data = ""+res.getResourceId();
            Transferable t =  new StringSelection(GeneralPurposeTreeNode.BLT_COPY_OPERATION + data);
 				   
@@ -500,9 +501,11 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
     	private static final long serialVersionUID = 1L;
     	private final static String POPUP_TITLE = "Export Diagram";
     	private final Component anchor;
-    	public ExportDiagramAction(Component c,long resid)  {
+    	private DiagramTreeNode node;
+    	public ExportDiagramAction(Component c,long resid, DiagramTreeNode nodeIn)  {
     		super(PREFIX+".ExportDiagram",IconUtil.getIcon("export1")); 
     		anchor = c;
+    		node = nodeIn;
     	}
 
     	public void actionPerformed(final ActionEvent e) {
@@ -510,6 +513,8 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
     		try {
     			EventQueue.invokeLater(new Runnable() {
     				public void run() {
+    					
+    					
     					ExportDialog dialog = new ExportDialog(context.getFrame());
     					Object source = e.getSource();
     					if( source instanceof Component) {
@@ -533,6 +538,10 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
     							}
 
     							if( output.canWrite() ) {
+    								// restore auxiliary data so it gets included in the export.  
+    								//  The parent of a diagram has to be a GeneralPurposeTreeNode.
+    								executionEngine.executeOnce(new AuxiliaryDataRestoreManager(workspace, (GeneralPurposeTreeNode)node.getParent()));
+    		    					
     								ProjectResource res = context.getProject().getResource(resourceId);
     								if( res!=null ) {
 

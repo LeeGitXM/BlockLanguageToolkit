@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 
 import javax.swing.Icon;
@@ -68,6 +69,7 @@ import com.ils.blt.designer.config.ScriptExtensionsDialog;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
+import com.ils.common.GeneralPurposeDataContainer;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.client.util.action.BaseAction;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
@@ -101,6 +103,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	public static final String BLT_COPY_OPERATION = "BLTCOPY";
 	private static final int OFFSET = 100;
 	private static final String PREFIX = BLTProperties.BUNDLE_PREFIX;  // Required for some defaults
+	private final static Random random = new Random();
 	private final LoggerEx logger = LogUtil.getLogger(getClass().getPackage().getName());
 	private boolean dirty = false;
 	private DiagramState state = DiagramState.ACTIVE;  // Used for Applications and Families
@@ -1036,6 +1039,10 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			try {
 				EventQueue.invokeLater(new Runnable() {
 					public void run() {
+						
+						// restore auxiliary data so it gets included in the export
+						executionEngine.executeOnce(new AuxiliaryDataRestoreManager(workspace,node));
+						
 						ExportDialog dialog = new ExportDialog(context.getFrame());
 						dialog.setLocationRelativeTo(anchor);
 						Point p = dialog.getLocation();
@@ -1327,6 +1334,11 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		// Recursively clone children of the parent node onto the new tree
 		// It would be nice to simply convert to a resource, but
 		// unfortunately, we have to replace all UUIDs with new ones
+	
+	
+//	OK, I need to do the renaming and the aux copy stuff here?
+	
+	
 		protected boolean copyChildren(AbstractResourceNavTreeNode fromNode, UUID toUUID) throws Exception {
 //			boolean ret = true;
 			ObjectMapper mapper = new ObjectMapper();
@@ -1350,8 +1362,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				if( res.getResourceType().equals(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
 					SerializableApplication sa = mapper.readValue(new String(bytes), SerializableApplication.class);
 					if( sa!=null ) {
-						ApplicationUUIDResetHandler uuidHandler = new ApplicationUUIDResetHandler(sa);
-						uuidHandler.convertUUIDs();
+//						ApplicationUUIDResetHandler uuidHandler = new ApplicationUUIDResetHandler(sa);
+//						uuidHandler.convertUUIDs();
 						newResourceUUID = sa.getId();
 						json = mapper.writeValueAsString(sa);
 					}
@@ -1363,8 +1375,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				else if( res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
 					SerializableDiagram sd = mapper.readValue(new String(bytes), SerializableDiagram.class);
 					if( sd!=null ) {
-						UUIDResetHandler uuidHandler = new UUIDResetHandler(sd);
-						uuidHandler.convertUUIDs();
+//						UUIDResetHandler uuidHandler = new UUIDResetHandler(sd);
+//						uuidHandler.convertUUIDs();
 						sd.setDirty(true);    // Dirty because gateway doesn't know about it yet
 						sd.setState(DiagramState.DISABLED);
 						newResourceUUID = sd.getId();
@@ -1378,8 +1390,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				else if( res.getResourceType().equals(BLTProperties.FAMILY_RESOURCE_TYPE)) {
 					SerializableFamily sf = mapper.readValue(new String(bytes), SerializableFamily.class);
 					if( sf!=null ) {
-						FamilyUUIDResetHandler uuidHandler = new FamilyUUIDResetHandler(sf);
-						uuidHandler.convertUUIDs();
+//						FamilyUUIDResetHandler uuidHandler = new FamilyUUIDResetHandler(sf);
+//						uuidHandler.convertUUIDs();
 						newResourceUUID = sf.getId();
 						json = mapper.writeValueAsString(sf);
 					}
@@ -1444,6 +1456,9 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
            final Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 
            ProjectResource res = parentNode.getProjectResource();
+           
+           RestoreAuxiliaryDataAction restoreAuxDataAction = new RestoreAuxiliaryDataAction((GeneralPurposeTreeNode)parentNode);
+           restoreAuxDataAction.actionPerformed(e);
            String data = ""+res.getResourceId();
            Transferable t =  new StringSelection(BLT_COPY_OPERATION + data);
 				   
@@ -1601,10 +1616,13 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 							UUID newResourceUUID = null;
 							String json = "";
 							
+							SerializableApplication sa = null; 
+							SerializableFamily sf = null;
+							HashMap<ProcessBlockView, String> diagnosisChildren = new HashMap<ProcessBlockView, String>(); 
 							if( res.getResourceType().equals(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
 								 AbstractResourceNavTreeNode closest = nearestNonFolderNode(parentNode);
 								if (closest instanceof GeneralPurposeTreeNode && ((GeneralPurposeTreeNode)closest).isRootFolder()) {
-									SerializableApplication sa = mapper.readValue(new String(res.getData()), SerializableApplication.class);
+									sa = mapper.readValue(new String(res.getData()), SerializableApplication.class);
 									if( sa!=null ) {
 										ApplicationUUIDResetHandler uuidHandler = new ApplicationUUIDResetHandler(sa);
 										uuidHandler.convertUUIDs();
@@ -1620,14 +1638,58 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 									return;
 								}
 							} else if(res.getResourceType().equals(BLTProperties.FAMILY_RESOURCE_TYPE)) {
+								
+								
+
+								// restore auxiliary data so it gets included in the export
+//								executionEngine.executeOnce(new AuxiliaryDataRestoreManager(workspace,parentNode));
 								AbstractResourceNavTreeNode node = nearestNonFolderNode(parentNode);
 								if (node.getProjectResource() != null && node.getProjectResource().getResourceType().equals(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
-									SerializableFamily sf = mapper.readValue(new String(res.getData()), SerializableFamily.class);
+									sf = mapper.readValue(new String(res.getData()), SerializableFamily.class);
 									if( sf!=null ) {
+
+										sf.setAuxiliaryData(getFamilyAuxData(sf));
+
+										// NOW ALSO DO FOR CHILDREN 
+
 										FamilyUUIDResetHandler uuidHandler = new FamilyUUIDResetHandler(sf);
-										uuidHandler.convertUUIDs();
+										uuidHandler.convertUUIDs();  // this goes deep  We need to preserve the originals
 										newResourceUUID = sf.getId();
+										
+										for (SerializableDiagram sd : sf.getDiagrams()) {
+											
+//											boolean diagnosis = false;
+											for( SerializableBlock sb:sd.getBlocks()) {
+												ProcessBlockView pbv = new ProcessBlockView(sb);  // make it a pbv for convenience
+												if (pbv.isDiagnosis()) {
+//													diagnosis = true;
+													
+													// TODO - technically, the blocks don't need to be renamed if the family is being pasted 
+													//  into a different application.  Maybe add that later?
+													
+													renameDiagnosis(sd, pbv);
+
+													
+													// add to list, save list later with correct id???
+													//convert to PBV?
+													diagnosisChildren.put(pbv, sd.getId().toString());
+													continue;
+												}
+											}
+									
+										}									
+									
+									
+									
+									
+									
+									
+									
+									
 										json = mapper.writeValueAsString(sf);
+										logger.errorf("EREIAM JH -  JSON -  " + json.toString());
+										ErrorUtil.showWarning("EREIAM JH -   " + json.toString());
+									
 									}
 									else {
 										ErrorUtil.showWarning(String.format("Failed to deserialize family (%s)",res.getName()),"Paste Family");
@@ -1644,17 +1706,32 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 									if( sd!=null ) {
 										ProcessDiagramView diagram = new ProcessDiagramView(res.getResourceId(),sd, context);
 										boolean diagnosis = false;
+										UUIDResetHandler rhandler = new UUIDResetHandler(sd);
+										rhandler.convertUUIDs();
 										for( Block blk:diagram.getBlocks()) {
 											ProcessBlockView pbv = (ProcessBlockView)blk;
 											if (pbv.isDiagnosis()) {
 												diagnosis = true;
+//												String oldName = new String(pbv.getName());
 												renameDiagnosis(sd, pbv);
-										//  TODO - EREIAM JH figure out a way to call 		Saveauxdata from here
+												
+												//Why is aux data null????
+												if (pbv.getAuxiliaryData() != null) {
+													pbv.getAuxiliaryData().getProperties().put("Name", pbv.getName());   // Use as a key when fetching
+												} else {
+													
+												}
+
+												
+												// add to list, save list later with correct id???
+												diagnosisChildren.put(pbv,  sd.getId().toString());
+//												workspace.saveAuxDataProduction(pbv, sd.getId().toString());
+//												workspace.saveAuxDataProduction(pbv, sd.getId().toString());  WRONG UUID FOR DIAGRAM!@
+//												workspace.copyAuxData(pbv, oldName, diagram, diagram);
 												continue;
 											}
 										}
-										UUIDResetHandler rhandler = new UUIDResetHandler(sd);
-										rhandler.convertUUIDs();
+										
 										sd.setDirty(true);    // Dirty because gateway doesn't know about it yet
 										sd.setState(DiagramState.DISABLED);
 										json = mapper.writeValueAsString(sd);
@@ -1684,9 +1761,12 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 									nextFreeName((GeneralPurposeTreeNode)parentNode,res.getName()), ApplicationScope.GATEWAY, json.getBytes());
 
 							resource.setParentUuid(((GeneralPurposeTreeNode)parentNode).getUUID());
-							
 
+							
+							
 							AbstractResourceNavTreeNode node = statusManager.findNode(res.getResourceId());
+							
+//							 no don't copy children??
 							if (copyChildren(node,newResourceUUID) && deleteOriginal) {
 		    					ResourceDeleteManager deleter;
 		    					deleter = new ResourceDeleteManager(node);
@@ -1714,6 +1794,33 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 							((GeneralPurposeTreeNode)parentNode).selectChild(new long[] {newId} );
 							
 							
+							
+							// We have to do this because the aux data doesn't get populated
+							if( sa!=null ) {
+								workspace.copyApplicationAuxData(sa, resource.getName(), res.getName());
+							}
+							
+							
+//							EREIAM JH - something doesn't work here.  we have a timing issue.  Only saves the data if breakpoints hit 
+							
+							if( sf!=null ) {
+								logger.errorf("EREIAM JH - decription = " + sf.getAuxiliaryData().getProperties().get("Description") );
+								saveFamilyAuxData(sf);
+
+//								workspace.copyFamilyAuxData(sf, resource.getName(), res.getName());
+							}
+							
+							// update diagnosis blocks auxiliary data
+							for (ProcessBlockView pbv : diagnosisChildren.keySet()) {
+								workspace.saveAuxDataProduction(pbv, diagnosisChildren.get(pbv));
+							}
+							
+//							// update diagnosis blocks auxiliary data
+//							for (SerializableBlock sb : diagnosisSbChildren.keySet()) {
+//								workspace.copyAuxData(sb.getclassName(), newName, oldName, newParentId, oldParentId);
+//							}
+							
+							
 						}
 						catch( IOException ioe) {
 							// Should never happen, we just picked this off a chooser
@@ -1734,6 +1841,38 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		}
 		
 	}
+	
+	public GeneralPurposeDataContainer getFamilyAuxData(SerializableFamily sf) {
+		
+		ApplicationRequestHandler requestHandler = new ApplicationRequestHandler();
+		String prodDb = requestHandler.getProductionDatabase();
+		GeneralPurposeDataContainer auxData = new GeneralPurposeDataContainer();
+		
+		ClientScriptExtensionManager extensionManager = ClientScriptExtensionManager.getInstance();
+		auxData.setProperties(new HashMap<String,String>());
+		auxData.setLists(new HashMap<>());
+		auxData.setMapLists(new HashMap<>());
+		auxData.getProperties().put("Name", sf.getName());   // Use as a key when fetching
+	
+		extensionManager.runScript(context.getScriptManager(), ScriptConstants.FAMILY_CLASS_NAME, ScriptConstants.PROPERTY_GET_SCRIPT, 
+				sf.getId().toString(),auxData,prodDb);
+
+		return auxData;
+
+	}
+
+	public void saveFamilyAuxData(SerializableFamily sf) {
+		
+		ApplicationRequestHandler requestHandler = new ApplicationRequestHandler();
+		String prodDb = requestHandler.getProductionDatabase();
+		
+		ClientScriptExtensionManager extensionManager = ClientScriptExtensionManager.getInstance();
+		extensionManager.runScript(context.getScriptManager(), ScriptConstants.FAMILY_CLASS_NAME, ScriptConstants.PROPERTY_SET_SCRIPT, 
+				sf.getId().toString(),sf.getAuxiliaryData(),prodDb);
+
+	}
+
+	
 	
 
 	// From the root node, recursively log the contents of the tree
@@ -2116,7 +2255,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	}
 	// Launch a dialog that recursively saves auxiliary data from the application
 	// into the current database.
-	private class RestoreAuxiliaryDataAction extends BaseAction {
+	protected class RestoreAuxiliaryDataAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
 		private final GeneralPurposeTreeNode node;
 		public RestoreAuxiliaryDataAction(GeneralPurposeTreeNode treeNode)  {
