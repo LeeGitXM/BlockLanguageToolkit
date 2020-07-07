@@ -211,7 +211,7 @@ public class MovingAverageSample extends AbstractProcessBlock implements Process
 	 */
 	private void initializePrototype() {
 		prototype.setPaletteIconPath("Block/icons/palette/moving_average.png");
-		prototype.setPaletteLabel("SampleAve");
+		prototype.setPaletteLabel("Average(n)");
 		prototype.setTooltipText("Compute the moving average of the input and place results on output");
 		prototype.setTabName(BlockConstants.PALETTE_TAB_STATISTICS);
 		

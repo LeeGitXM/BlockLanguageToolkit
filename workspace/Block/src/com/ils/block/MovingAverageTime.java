@@ -253,7 +253,7 @@ public class MovingAverageTime extends AbstractProcessBlock implements ProcessBl
 	 */
 	private void initializePrototype() {
 		prototype.setPaletteIconPath("Block/icons/palette/moving_average.png");
-		prototype.setPaletteLabel("TimeAve");
+		prototype.setPaletteLabel("Average(t)");
 		prototype.setTooltipText("Compute the moving average of the input and place results on output");
 		prototype.setTabName(BlockConstants.PALETTE_TAB_STATISTICS);
 		

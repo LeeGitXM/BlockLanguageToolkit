@@ -32,10 +32,12 @@ public class BlockPropertyDisplay extends AbstractProcessBlock implements Proces
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
 	 */
+	
 	public BlockPropertyDisplay() {
 		initialize();
 		initializePrototype();
 	}
+
 	
 	/**
 	 * Constructor. Custom property is "Text".
@@ -86,11 +88,12 @@ public class BlockPropertyDisplay extends AbstractProcessBlock implements Proces
 	 * Augment the palette prototype for this block class.
 	 */
 	private void initializePrototype() {
+		/* Leaving these two uninitialized will cause it to be left off of the palette, but we must still specify a palette!
 		prototype.setPaletteIconPath("Block/icons/palette/note.png");
 		prototype.setPaletteLabel("PropertyDisplay");
+		*/
 		prototype.setTooltipText("Single property of a block");
 		prototype.setTabName(BlockConstants.PALETTE_TAB_MISC);
-		
 		
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
