@@ -32,7 +32,7 @@ import com.jidesoft.docking.DockableFrame;
 public class PropertyEditorFrame extends DockableFrame implements ResourceWorkspaceFrame{
 	private static final String TAG = "PropertyEditorFrame";
 	public static final String DOCKING_KEY = "ProcessDiagramEditorFrame";
-	public static final String TITLE = "Block Properties Editor";
+	public static final String TITLE = "Symbolic AI Property Editor";
 	public static final String SHORT_TITLE = "Properties";
 	private final DesignerContext context;
 	private final DiagramWorkspace workspace;

@@ -241,7 +241,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		pef.setInitMode(DockContext.STATE_FRAMEDOCKED);
 		pef.setInitSide(DockContext.DOCK_SIDE_WEST);
 		pef.setInitIndex(10);
-		pef.putClientProperty("menu.text", "Diagram Property Editor");
+		pef.putClientProperty("menu.text", "Symbolic AI Property Editor");
 		frames.add(pef);
 		
 		StatusBar bar = context.getStatusBar();
