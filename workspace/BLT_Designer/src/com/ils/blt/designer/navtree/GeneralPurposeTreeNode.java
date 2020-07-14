@@ -1405,7 +1405,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 						uuidHandler.convertUUIDs();
 						HashMap <UUID, UUID> lookup = uuidHandler.getBlockLookup();
 						for (UUID key : lookup.keySet()) {
-							bigLookup.put(lookup.get(key), key);  // reverse it so we can use the current UUID to find the original
+							bigLookup.put(key, lookup.get(key));  // DON'T *** reverse it so we can use the current UUID to find the original
 						}
 						ProcessDiagramView diagram = new ProcessDiagramView(res.getResourceId(),sd, context);
 						for( Block blk:diagram.getBlocks()) {
@@ -1937,12 +1937,12 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 						ProcessBlockView pbv = new ProcessBlockView(oldsb);  // make it a pbv for convenience
 						String pbvId = pbv.getId().toString();
 						if (pbv.isDiagnosis()) {
-							UUID oldUuid = lookup.get(pbv.getId());
+							UUID oldUuid = lookup.get(pbv.getId()); 
 	
 							//Now find the match in the new tree
 							for( SerializableBlock newsb:newSd.getBlocks()) {
 								if (newsb.getId().equals(oldUuid)) {
-									copyAuxData(pbv.getClassName(), sourceSd.getId().toString(), newSd.getId().toString(), sourceSd.getName(), newSd.getName());
+									copyAuxData(pbv.getClassName(), sourceSd.getId().toString(), newSd.getId().toString(), pbv.getName(), newsb.getName());
 									continue;
 								}
 							}
