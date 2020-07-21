@@ -354,11 +354,11 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				}
 				logger.debugf("%s.getSelectionPopupMenu: Selection editor class = %s",TAG,pbv.getEditorClass());
 				// Do not allow editing when the diagram is disabled
-				if(pbv.getEditorClass() !=null && pbv.getEditorClass().length() > 0 &&
-						!getActiveDiagram().getState().equals(DiagramState.DISABLED)) {
-					CustomEditAction cea = new CustomEditAction(this,pbv);
-					menu.add(cea);
-				}
+//				if(pbv.getEditorClass() !=null && pbv.getEditorClass().length() > 0 &&
+//						!getActiveDiagram().getState().equals(DiagramState.DISABLED)) {
+//					CustomEditAction cea = new CustomEditAction(this,pbv);
+//					menu.add(cea);
+//				}
 				if(!getActiveDiagram().getState().equals(DiagramState.DISABLED)) {
 					PropertyDisplayAction cea = new PropertyDisplayAction(getActiveDiagram(),pbv, this);
 					menu.add(cea);
