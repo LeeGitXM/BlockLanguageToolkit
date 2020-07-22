@@ -256,7 +256,6 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 		
 		panel.add(createLabel("FinalDiagnosis.ShowExplanationWithRecommendation"),"gaptop 2,aligny top");
 		String showExplanation = (String)properties.get("ShowExplanationWithRecommendation");
-		log.errorf("showExplanation: "+showExplanation);
 		if( showExplanation==null) showExplanation="0";
 		showExplanationWithRecommendationCheckBox = createCheckBox("FinalDiagnosis.ShowExplanationWithRecommendation.Desc",(showExplanation.equals("0")?false:true));
 		panel.add(showExplanationWithRecommendationCheckBox,"alignx left");

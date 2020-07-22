@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
+import java.util.Vector;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -83,7 +84,6 @@ import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.UndoManager;
-import com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignableContainer;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
 import com.inductiveautomation.ignition.designer.gui.IconUtil;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
@@ -1373,6 +1373,16 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			// Iterate over the children of the original node
 			@SuppressWarnings("rawtypes")
 			Enumeration walker = fromNode.children();
+//			boolean seagullsStopItNow = false;  // flag to stop it from looping on a diagram
+
+//			// special handling for diagram nodes.  No children, but has blocks that need updating
+//			if (!walker.hasMoreElements() && fromNode.getProjectResource().getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
+//				Vector<AbstractResourceNavTreeNode> walkerV = new Vector<AbstractResourceNavTreeNode> ();
+//				walkerV.add(fromNode);
+//				walker = walkerV.elements();
+//				seagullsStopItNow = true;
+//			}
+				
 			while(walker.hasMoreElements()) {
 				AbstractResourceNavTreeNode child = (AbstractResourceNavTreeNode)walker.nextElement();
 				long newId = context.newResourceId();
@@ -1471,8 +1481,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				
 				new ResourceCreateManager(resource).run();
 				
-				
-				
+//				if (seagullsStopItNow || !copyChildren(child,newResourceUUID)) {
 				if (!copyChildren(child,newResourceUUID)) {
 					return false;
 				}
@@ -1683,6 +1692,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 						try {	
 							ObjectMapper mapper = new ObjectMapper();
 							mapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL,true);
+							SerializableDiagram sd = null;
 
 							long newId = context.newResourceId();
 							UUID newResourceUUID = null;
@@ -1690,6 +1700,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 							
 							SerializableApplication sa = null; 
 							SerializableFamily sf = null;
+							bigLookup = new HashMap<UUID,UUID>();  // filled by copyChildren.  Used to store all the converted UUIDs so we can reference them to restore aux data
 //							HashMap<ProcessBlockView, String> diagnosisChildren = new HashMap<ProcessBlockView, String>(); 
 							if( res.getResourceType().equals(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
 								 AbstractResourceNavTreeNode closest = nearestNonFolderNode(parentNode);
@@ -1730,19 +1741,32 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 							} else if( res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
 								AbstractResourceNavTreeNode node = nearestNonFolderNode(parentNode);
 								if (node.getProjectResource() != null && node.getProjectResource().getResourceType().equals(BLTProperties.FAMILY_RESOURCE_TYPE)) {
-									SerializableDiagram sd = mapper.readValue(new String(res.getData()), SerializableDiagram.class);
+									sd = mapper.readValue(new String(res.getData()), SerializableDiagram.class);
 									if( sd!=null ) {
 										ProcessDiagramView diagram = new ProcessDiagramView(res.getResourceId(),sd, context);
-										boolean diagnosis = false;
 										UUIDResetHandler rhandler = new UUIDResetHandler(sd);
 										rhandler.convertUUIDs();  // converted UUIDs are thrown away because later CopyChildren also does it
 										newResourceUUID = sd.getId();
 										
+										HashMap <UUID, UUID> lookup = rhandler.getBlockLookup();
+										for (UUID key : lookup.keySet()) {
+											bigLookup.put(key, lookup.get(key));  // DON'T *** reverse it so we can use the current UUID to find the original
+										}
+										for( Block blk:diagram.getBlocks()) {
+											ProcessBlockView pbv = (ProcessBlockView)blk;
+											if (pbv.isDiagnosis()) {
+												renameDiagnosis(sd, pbv);
+												continue;
+											}
+										}
+											
 										sd.setDirty(true);    // Dirty because gateway doesn't know about it yet
 										sd.setState(DiagramState.DISABLED);
+										newResourceUUID = sd.getId();
 										json = mapper.writeValueAsString(sd);
-										
 										statusManager.setResourceState(newId, sd.getState(),false);
+										
+										
 //										if (diagnosis) {
 //											ErrorUtil.showWarning("Diagram contains diagnosis blocks that must be renamed before saving");
 //										}
@@ -1770,7 +1794,6 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 							AbstractResourceNavTreeNode node = statusManager.findNode(res.getResourceId());  // so basically starting over here
 							
 //							Copies children and assigns new UUIDs
-							bigLookup = new HashMap<UUID,UUID>();  // filled by copyChildren.  Used to store all the converted UUIDs so we can reference them to restore aux data
 							if (copyChildren(node,newResourceUUID) && deleteOriginal) { // copy children will rename diagnosis blocks
 		    					ResourceDeleteManager deleter;
 		    					deleter = new ResourceDeleteManager(node);
@@ -1790,43 +1813,23 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		    					}
 							}
 							
-							
 							// Finally display the parent node
 							new ResourceCreateManager(resource).run();
 
 							AbstractResourceNavTreeNode newNode = statusManager.findNode(resource.getResourceId());  // so basically starting over here
-							restoreAuxData((GeneralPurposeTreeNode)node, (GeneralPurposeTreeNode)newNode, bigLookup); 
+							
+							// Not always a GeneralPurposeTree node  DiagramTreeNode
 
-							UndoManager.getInstance().add(foo,GeneralPurposeTreeNode.class);
+							if( !res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
+								restoreAuxData((AbstractNavTreeNode)node, (AbstractNavTreeNode)newNode, bigLookup);
+							} else {
+								restoreDiagramAuxData((DiagramTreeNode)node, resource, bigLookup);
+							}
+
+							UndoManager.getInstance().add(foo,AbstractNavTreeNode.class);
 							pasted = resource;
 							((GeneralPurposeTreeNode)parentNode).selectChild(new long[] {newId} );
 							
-							
-							
-							// We have to do this because the aux data doesn't get populated
-//							if( sa!=null ) {
-//								workspace.copyApplicationAuxData(sa, resource.getName(), res.getName());
-//							}
-							
-							
-//							EREIAM JH - something doesn't work here.  we have a timing issue.  Only saves the data if breakpoints hit 
-//							
-//							if( sf!=null ) {
-//								logger.errorf("EREIAM JH - decription = " + sf.getAuxiliaryData().getProperties().get("Description") );
-//								saveFamilyAuxData(sf);
-//
-////								workspace.copyFamilyAuxData(sf, resource.getName(), res.getName());
-//							}
-							
-//							// update diagnosis blocks auxiliary data
-//							for (ProcessBlockView pbv : diagnosisChildren.keySet()) {
-//								workspace.saveAuxDataProduction(pbv, diagnosisChildren.get(pbv));
-//							}
-							
-//							// update diagnosis blocks auxiliary data
-//							for (SerializableBlock sb : diagnosisSbChildren.keySet()) {
-//								workspace.copyAuxData(sb.getclassName(), newName, oldName, newParentId, oldParentId);
-//							}
 							
 							
 						}
@@ -1921,7 +1924,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				
 			} else if(sourceInNode instanceof DiagramTreeNode) {
 				DiagramTreeNode sourceNode = (DiagramTreeNode)sourceInNode; 
-				DiagramTreeNode newNode = (DiagramTreeNode)newInNode; 
+				DiagramTreeNode newNode = (DiagramTreeNode)newInNode;  // Why is this null if it's a diagram copy?  Everything else works
 
 				try {
 					SerializableDiagram sourceSd = mapper.readValue(new String(sourceNode.getProjectResource().getData()), SerializableDiagram.class);
@@ -1965,6 +1968,53 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	}
 			
 		
+	// Look up the new resource by UUID.  Use the lookup table to cross reference and find the original.
+	// Read the aux data from the old one and then copy it to the new one.
+	//
+	//  Follow up by then recursively calling this routine with any child nodes
+	
+	public void restoreDiagramAuxData(DiagramTreeNode sourceInNode, ProjectResource res, HashMap<UUID,UUID> lookup) {
+		if (requestHandler == null) {  // only make one if necessary
+			requestHandler = new ApplicationRequestHandler();
+		}
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL,true);
+		
+		SerializableDiagram newSd = null;
+		try {
+			newSd = mapper.readValue(new String(res.getData()), SerializableDiagram.class);
+	
+			ClientScriptExtensionManager extensionManager = ClientScriptExtensionManager.getInstance();
+	
+
+				SerializableDiagram sourceSd = mapper.readValue(new String(sourceInNode.getProjectResource().getData()), SerializableDiagram.class);
+//				SerializableDiagram newSd = mapper.readValue(new String(newNode.getProjectResource().getData()), SerializableDiagram.class);
+
+				// This is wrong.  Spin through kids and get diagnosis blocks, then make the copy calls.  Note that the source ID to use is the diagram, not the block!
+//				copyAuxData(ScriptConstants.DIAGRAM_CLASS_NAME, sourceSd.getId().toString(), newSd.getId().toString(), sourceNode.getName(), newNode.getName());
+				
+					
+				for( SerializableBlock oldsb:sourceSd.getBlocks()) {
+					ProcessBlockView pbv = new ProcessBlockView(oldsb);  // make it a pbv for convenience
+					String pbvId = pbv.getId().toString();
+					if (pbv.isDiagnosis()) {
+						UUID oldUuid = lookup.get(pbv.getId()); 
+
+						//Now find the match in the new tree
+						for( SerializableBlock newsb:newSd.getBlocks()) {
+							if (newsb.getId().equals(oldUuid)) {
+								copyAuxData(pbv.getClassName(), sourceSd.getId().toString(), newSd.getId().toString(), pbv.getName(), newsb.getName());
+								continue;
+							}
+						}
+					}
+				}
+			
+		}	catch (Exception ex) {
+			logger.errorf("%s: actionPerformed: Unhandled Exception (%s)",CLSS,ex.getMessage());
+			ex.printStackTrace();
+		}
+	} 
 
 		
 	
