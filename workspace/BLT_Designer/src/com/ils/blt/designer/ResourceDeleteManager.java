@@ -49,7 +49,7 @@ public class ResourceDeleteManager {
 	
 	public void deleteInProject() {
 		// Delete the current node and all its children. 
-		Project diff = context.getProject().getEmptyCopy();   // ereiam jh  Called upon save after delete
+		Project diff = context.getProject().getEmptyCopy();   //   Called upon save after delete
 		for( ProjectResource pr:resources) {
 			if( pr.getResourceId()==BLTProperties.ROOT_RESOURCE_ID) continue; 
 			log.tracef("%s.deleteInProject: Adding %d to delete list",TAG,pr.getResourceId());

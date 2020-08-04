@@ -1093,7 +1093,16 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 									try{ 
 										// Convert the view into a serializable object. Here we reject any nesting that might
 										// have been saved in the project resource, and substitute what we know from the nav tree.
+
+										//  executionEngine.executeOnce(new AuxiliaryDataRestoreManager(workspace,node));  nope.
+										
 										SerializableApplication sap = recursivelyDeserializeApplication(node);
+										
+										
+										restoreAuxData(sap);
+										
+										
+										
 										String json = mapper.writeValueAsString(sap);
 										FileWriter fw = new FileWriter(output,false);  // Do not append
 										try {
@@ -1131,6 +1140,53 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			}
 		}
 	}
+
+	
+	public void restoreAuxData(SerializableApplication sap) {
+	
+		if (requestHandler == null) {  // only make one if necessary
+			requestHandler = new ApplicationRequestHandler();
+		}
+		String prodDb = requestHandler.getProductionDatabase();
+		GeneralPurposeDataContainer auxData = new GeneralPurposeDataContainer();
+
+		auxData.setProperties(new HashMap<String,String>());
+		auxData.setLists(new HashMap<>());
+		auxData.setMapLists(new HashMap<>());
+		auxData.getProperties().put("Name", sap.getName());   // Use as a key when fetching
+	
+		ClientScriptExtensionManager extensionManager = ClientScriptExtensionManager.getInstance();
+		
+		extensionManager.runScript(context.getScriptManager(), ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.PROPERTY_GET_SCRIPT, 
+				sap.getId().toString(),auxData,prodDb);
+		sap.setAuxiliaryData(auxData);
+
+		for (SerializableFamily sf: sap.getFamilies()) {
+			restoreAuxData(sf);
+		}
+	}
+	
+	public void restoreAuxData(SerializableFamily sf) {
+		
+		String prodDb = requestHandler.getProductionDatabase();
+		GeneralPurposeDataContainer auxData = new GeneralPurposeDataContainer();
+
+		auxData.setProperties(new HashMap<String,String>());
+		auxData.setLists(new HashMap<>());
+		auxData.setMapLists(new HashMap<>());
+		auxData.getProperties().put("Name", sf.getName());   // Use as a key when fetching
+	
+		ClientScriptExtensionManager extensionManager = ClientScriptExtensionManager.getInstance();
+		
+		extensionManager.runScript(context.getScriptManager(), ScriptConstants.FAMILY_CLASS_NAME, ScriptConstants.PROPERTY_GET_SCRIPT, 
+				sf.getId().toString(),auxData,prodDb);
+		sf.setAuxiliaryData(auxData);
+	}
+	
+	
+	
+	
+	
 	private class ApplicationImportAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
 		private final static String POPUP_TITLE = "Import Application";
@@ -1181,9 +1237,13 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 											// Now import families
 											for(SerializableFamily fam:sa.getFamilies()) {
 												importFamily(sa.getId(),fam);
+												saveFamilyAuxData(fam);
 											}
 											// Create after the children -- else sometimes folders are not populated.
 											new ResourceCreateManager(resource).run();   // In-line
+
+											saveApplicationAuxData(sa);
+											
 											root.selectChild(new long[] {newId} );
 										}
 										else {
@@ -1233,6 +1293,19 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				ErrorUtil.showError(CLSS+" Exception importing application",err);
 			}
 		}
+		
+		public void saveApplicationAuxData(SerializableApplication sa) {
+			
+			ApplicationRequestHandler requestHandler = new ApplicationRequestHandler();
+			String prodDb = requestHandler.getProductionDatabase();
+			
+			ClientScriptExtensionManager extensionManager = ClientScriptExtensionManager.getInstance();
+			extensionManager.runScript(context.getScriptManager(), ScriptConstants.FAMILY_CLASS_NAME, ScriptConstants.PROPERTY_SET_SCRIPT, 
+					sa.getId().toString(),sa.getAuxiliaryData(),prodDb);
+
+		}
+
+
 		// Run in foreground to avoid synchronization issues with display.
 		private synchronized void importDiagram(UUID parentId,SerializableDiagram sd) {
 			ObjectMapper mapper = new ObjectMapper();
