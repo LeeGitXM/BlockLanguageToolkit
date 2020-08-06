@@ -1233,6 +1233,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 											ProjectResource resource = new ProjectResource(newId,
 													BLTProperties.MODULE_ID, BLTProperties.APPLICATION_RESOURCE_TYPE,
 													sa.getName(), ApplicationScope.GATEWAY, json.getBytes());
+
+
 											resource.setParentUuid(getFolderId());
 											// Now import families
 											for(SerializableFamily fam:sa.getFamilies()) {
@@ -1300,7 +1302,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			String prodDb = requestHandler.getProductionDatabase();
 			
 			ClientScriptExtensionManager extensionManager = ClientScriptExtensionManager.getInstance();
-			extensionManager.runScript(context.getScriptManager(), ScriptConstants.FAMILY_CLASS_NAME, ScriptConstants.PROPERTY_SET_SCRIPT, 
+			extensionManager.runScript(context.getScriptManager(), ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.PROPERTY_SET_SCRIPT, 
 					sa.getId().toString(),sa.getAuxiliaryData(),prodDb);
 
 		}
@@ -2117,8 +2119,9 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		String prodDb = requestHandler.getProductionDatabase();
 		
 		ClientScriptExtensionManager extensionManager = ClientScriptExtensionManager.getInstance();
+		String idStr = sf.getId().toString();
 		extensionManager.runScript(context.getScriptManager(), ScriptConstants.FAMILY_CLASS_NAME, ScriptConstants.PROPERTY_SET_SCRIPT, 
-				sf.getId().toString(),sf.getAuxiliaryData(),prodDb);
+				idStr,sf.getAuxiliaryData(),prodDb);
 
 	}
 
