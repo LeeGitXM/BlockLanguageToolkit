@@ -4,25 +4,16 @@
 package com.ils.blt.designer;
 
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Frame;
-import java.awt.Image;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -33,23 +24,21 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ils.blt.client.ClientScriptExtensionManager;
-import com.ils.blt.client.component.diagview.DiagramViewer;
-import com.ils.blt.client.component.recmap.RecommendationMap;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.ApplicationScriptFunctions;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.script.AbstractScriptExtensionManager;
+import com.ils.blt.common.script.CommonScriptExtensionManager;
 import com.ils.blt.common.serializable.SerializableDiagram;
-import com.ils.blt.designer.editor.BlockEditConstants;
 import com.ils.blt.designer.navtree.GeneralPurposeTreeNode;
 import com.ils.blt.designer.search.BLTSearchProvider;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.ils.blt.designer.workspace.WorkspaceRepainter;
+import com.ils.common.component.DiagramViewer;
+import com.ils.common.component.recmap.RecommendationMap;
 import com.inductiveautomation.factorypmi.designer.palette.model.DefaultPaletteItemGroup;
-import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.client.util.action.StateChangeAction;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
 import com.inductiveautomation.ignition.common.BundleUtil;
@@ -74,7 +63,6 @@ import com.inductiveautomation.vision.api.designer.palette.Palette;
 import com.inductiveautomation.vision.api.designer.palette.PaletteItemGroup;
 import com.jidesoft.action.CommandBar;
 import com.jidesoft.docking.DockingManager;
-import com.jidesoft.swing.JideButton;
 
 public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	private static final String TAG = "BLTDesignerHook";
@@ -315,7 +303,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 			
 		    // Initialize all the script modules from parameters stored in the ORM.
 			// We use all combinations of classes/flavors.
-		    ClientScriptExtensionManager sem = ClientScriptExtensionManager.getInstance();
+		    CommonScriptExtensionManager sem = CommonScriptExtensionManager.getInstance();
 		    for( String flavor: sem.getFlavors() ) {
 		    	for(String clss: sem.getClassNames() ) {
 		    		String key = AbstractScriptExtensionManager.makeKey(clss, flavor);

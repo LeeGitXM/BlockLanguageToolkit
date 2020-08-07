@@ -1,15 +1,15 @@
 /**
  *   (c) 2014-2016  ILS Automation. All rights reserved.
  */
-package com.ils.blt.client.component.recmap;
+package com.ils.common.component.recmap;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 
 import javax.swing.border.Border;
 
-import com.ils.blt.client.component.PrefuseViewerComponent;
 import com.ils.blt.common.BLTProperties;
+import com.ils.common.component.PrefuseViewerComponent;
 import com.inductiveautomation.ignition.common.BasicDataset;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.Dataset;

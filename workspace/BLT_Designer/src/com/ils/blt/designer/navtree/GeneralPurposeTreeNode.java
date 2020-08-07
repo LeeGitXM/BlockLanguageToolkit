@@ -27,7 +27,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
-import java.util.Vector;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -41,10 +40,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ils.blt.client.ClientScriptExtensionManager;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagramState;
+import com.ils.blt.common.script.CommonScriptExtensionManager;
 import com.ils.blt.common.script.ScriptConstants;
 import com.ils.blt.common.serializable.ApplicationUUIDResetHandler;
 import com.ils.blt.common.serializable.FamilyUUIDResetHandler;
@@ -376,7 +375,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		if (res.getResourceId() == this.resourceId) {
 			if( res.getName()==null || !res.getName().equals(getName()) ) {
 				logger.infof("%s.projectResourceModified(%d), setting name %s to %s",CLSS,this.resourceId,getName(),res.getName());
-				ClientScriptExtensionManager extensionManager = ClientScriptExtensionManager.getInstance();
+				CommonScriptExtensionManager extensionManager = CommonScriptExtensionManager.getInstance();
 				// For application or family name changes, we need to synchronize the database
 				if( res.getResourceType().equals(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
 					try {
@@ -1155,7 +1154,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		auxData.setMapLists(new HashMap<>());
 		auxData.getProperties().put("Name", sap.getName());   // Use as a key when fetching
 	
-		ClientScriptExtensionManager extensionManager = ClientScriptExtensionManager.getInstance();
+		CommonScriptExtensionManager extensionManager = CommonScriptExtensionManager.getInstance();
 		
 		extensionManager.runScript(context.getScriptManager(), ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.PROPERTY_GET_SCRIPT, 
 				sap.getId().toString(),auxData,prodDb);
@@ -1176,7 +1175,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		auxData.setMapLists(new HashMap<>());
 		auxData.getProperties().put("Name", sf.getName());   // Use as a key when fetching
 	
-		ClientScriptExtensionManager extensionManager = ClientScriptExtensionManager.getInstance();
+		CommonScriptExtensionManager extensionManager = CommonScriptExtensionManager.getInstance();
 		
 		extensionManager.runScript(context.getScriptManager(), ScriptConstants.FAMILY_CLASS_NAME, ScriptConstants.PROPERTY_GET_SCRIPT, 
 				sf.getId().toString(),auxData,prodDb);
@@ -1301,7 +1300,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			ApplicationRequestHandler requestHandler = new ApplicationRequestHandler();
 			String prodDb = requestHandler.getProductionDatabase();
 			
-			ClientScriptExtensionManager extensionManager = ClientScriptExtensionManager.getInstance();
+			CommonScriptExtensionManager extensionManager = CommonScriptExtensionManager.getInstance();
 			extensionManager.runScript(context.getScriptManager(), ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.PROPERTY_SET_SCRIPT, 
 					sa.getId().toString(),sa.getAuxiliaryData(),prodDb);
 
@@ -1577,7 +1576,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			auxData.setMapLists(new HashMap<>());
 			auxData.getProperties().put("Name", oldName);   // Use as a key when fetching
 		
-			ClientScriptExtensionManager extensionManager = ClientScriptExtensionManager.getInstance();
+			CommonScriptExtensionManager extensionManager = CommonScriptExtensionManager.getInstance();
 			
 			extensionManager.runScript(context.getScriptManager(), type, ScriptConstants.PROPERTY_GET_SCRIPT, 
 					oldId,auxData,isoDb);
@@ -1951,7 +1950,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 //			auxData.setMapLists(new HashMap<>());
 //			auxData.getProperties().put("Name", sourceNode.getName());   // Use as a key when fetching
 		
-			ClientScriptExtensionManager extensionManager = ClientScriptExtensionManager.getInstance();
+			CommonScriptExtensionManager extensionManager = CommonScriptExtensionManager.getInstance();
 			
 	
 			if(sourceInNode instanceof GeneralPurposeTreeNode) {
@@ -2059,7 +2058,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		try {
 			newSd = mapper.readValue(new String(res.getData()), SerializableDiagram.class);
 	
-			ClientScriptExtensionManager extensionManager = ClientScriptExtensionManager.getInstance();
+			CommonScriptExtensionManager extensionManager = CommonScriptExtensionManager.getInstance();
 	
 
 				SerializableDiagram sourceSd = mapper.readValue(new String(sourceInNode.getProjectResource().getData()), SerializableDiagram.class);
@@ -2100,7 +2099,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		String prodDb = requestHandler.getProductionDatabase();
 		GeneralPurposeDataContainer auxData = new GeneralPurposeDataContainer();
 		
-		ClientScriptExtensionManager extensionManager = ClientScriptExtensionManager.getInstance();
+		CommonScriptExtensionManager extensionManager = CommonScriptExtensionManager.getInstance();
 		auxData.setProperties(new HashMap<String,String>());
 		auxData.setLists(new HashMap<>());
 		auxData.setMapLists(new HashMap<>());
@@ -2118,7 +2117,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		ApplicationRequestHandler requestHandler = new ApplicationRequestHandler();
 		String prodDb = requestHandler.getProductionDatabase();
 		
-		ClientScriptExtensionManager extensionManager = ClientScriptExtensionManager.getInstance();
+		CommonScriptExtensionManager extensionManager = CommonScriptExtensionManager.getInstance();
 		String idStr = sf.getId().toString();
 		extensionManager.runScript(context.getScriptManager(), ScriptConstants.FAMILY_CLASS_NAME, ScriptConstants.PROPERTY_SET_SCRIPT, 
 				idStr,sf.getAuxiliaryData(),prodDb);

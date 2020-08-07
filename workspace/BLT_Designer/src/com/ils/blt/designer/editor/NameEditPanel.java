@@ -6,7 +6,6 @@ package com.ils.blt.designer.editor;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Collection;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -17,17 +16,15 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
-import com.ils.blt.client.ClientScriptExtensionManager;
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.script.CommonScriptExtensionManager;
 import com.ils.blt.common.script.ScriptConstants;
 import com.ils.blt.designer.BLTDesignerHook;
-import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.ils.blt.designer.workspace.WorkspaceRepainter;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
-import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceNavTreeNode;
 
 import net.miginfocom.swing.MigLayout;
 
@@ -103,7 +100,7 @@ public class NameEditPanel extends BasicEditPanel {
 							
 						}
 					}
-					ClientScriptExtensionManager sem = ClientScriptExtensionManager.getInstance();
+					CommonScriptExtensionManager sem = CommonScriptExtensionManager.getInstance();
 					if( sem.getClassNames().contains(block.getClassName()) ) {
 						try {
 							sem.runScript(context.getScriptManager(),block.getClassName(), ScriptConstants.NODE_RENAME_SCRIPT, 

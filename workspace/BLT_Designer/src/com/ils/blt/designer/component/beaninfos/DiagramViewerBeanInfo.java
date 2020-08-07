@@ -12,9 +12,9 @@ import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JTextField;
 
-import com.ils.blt.client.component.PrefuseViewerComponent;
-import com.ils.blt.client.component.diagview.DiagramViewer;
 import com.ils.blt.common.BLTProperties;
+import com.ils.common.component.DiagramViewer;
+import com.ils.common.component.PrefuseViewerComponent;
 import com.inductiveautomation.factorypmi.designer.property.customizers.DynamicPropertyProviderCustomizer;
 import com.inductiveautomation.factorypmi.designer.property.customizers.StyleCustomizer;
 import com.inductiveautomation.ignition.common.BundleUtil;

@@ -14,7 +14,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.WindowConstants;
 
-import com.ils.blt.client.ClientScriptExtensionManager;
+import com.ils.blt.common.script.CommonScriptExtensionManager;
 import com.ils.blt.common.script.ScriptConstants;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
@@ -35,7 +35,7 @@ public class SQCDiagnosisConfiguration  extends ConfigurationDialog  {
 	private final ProcessDiagramView diagram;
 	private final ProcessBlockView block;
 	protected JTextField sQCLabelField;
-	private final ClientScriptExtensionManager extensionManager = ClientScriptExtensionManager.getInstance();
+	private final CommonScriptExtensionManager extensionManager = CommonScriptExtensionManager.getInstance();
 	private static final String TAG = "SQCDiagnosisConfiguration";
 	
 	public SQCDiagnosisConfiguration(DiagramWorkspace wksp,ProcessDiagramView diag,ProcessBlockView view) {

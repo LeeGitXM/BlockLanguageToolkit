@@ -2,7 +2,7 @@
  *   (c) 2015  ILS Automation. All rights reserved.
  *  
  */
-package com.ils.blt.client.component;
+package com.ils.common.component;
 
 import javax.swing.SwingUtilities;
 

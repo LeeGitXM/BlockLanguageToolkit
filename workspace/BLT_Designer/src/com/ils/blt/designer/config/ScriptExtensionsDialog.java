@@ -28,11 +28,11 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-import com.ils.blt.client.ClientScriptExtensionManager;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.script.AbstractScriptExtensionManager;
+import com.ils.blt.common.script.CommonScriptExtensionManager;
 import com.ils.blt.common.script.ScriptConstants;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
@@ -50,7 +50,7 @@ public class ScriptExtensionsDialog extends ConfigurationDialog  {
 	private final int DIALOG_WIDTH = 400;
 	private JPanel scriptPanel = null;
 	private final ApplicationRequestHandler handler;
-	private final ClientScriptExtensionManager sem;
+	private final CommonScriptExtensionManager sem;
 	private final Preferences prefs;
 	private JFileChooser fc = null;
 	private JButton importButton = null;
@@ -59,7 +59,7 @@ public class ScriptExtensionsDialog extends ConfigurationDialog  {
 	public ScriptExtensionsDialog(Frame frame,DesignerContext ctx) {
 		super(ctx);
 		this.handler = new ApplicationRequestHandler();
-		this.sem = ClientScriptExtensionManager.getInstance();
+		this.sem = CommonScriptExtensionManager.getInstance();
 		this.classPanels = new HashMap<>();
 		this.setTitle(rb.getString("Extensions.Title"));
 		this.setPreferredSize(new Dimension(DIALOG_WIDTH,DIALOG_HEIGHT));

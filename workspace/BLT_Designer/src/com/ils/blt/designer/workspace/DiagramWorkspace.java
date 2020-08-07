@@ -62,13 +62,13 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.block.Input;
 import com.ils.block.Output;
-import com.ils.blt.client.ClientScriptExtensionManager;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.connection.ConnectionType;
+import com.ils.blt.common.script.CommonScriptExtensionManager;
 import com.ils.blt.common.script.ScriptConstants;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableApplication;
@@ -2138,7 +2138,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		auxData.setMapLists(new HashMap<>());
 		auxData.getProperties().put("Name", oldName);   // Use as a key when fetching
 		
-		ClientScriptExtensionManager extensionManager = ClientScriptExtensionManager.getInstance();
+		CommonScriptExtensionManager extensionManager = CommonScriptExtensionManager.getInstance();
 		extensionManager.runScript(context.getScriptManager(), pbv.getClassName(), ScriptConstants.PROPERTY_GET_SCRIPT, 
 				oldParentId,auxData,prodDb);
 
@@ -2175,7 +2175,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	public void saveAuxDataProduction(ProcessBlockView pbv, String parentId) {
 		
 		String prodDb = requestHandler.getProductionDatabase();
-		ClientScriptExtensionManager extensionManager = ClientScriptExtensionManager.getInstance();
+		CommonScriptExtensionManager extensionManager = CommonScriptExtensionManager.getInstance();
 		
 		extensionManager.runScript(context.getScriptManager(), pbv.getClassName(), ScriptConstants.PROPERTY_SET_SCRIPT, 
 				parentId,pbv.getAuxiliaryData(),prodDb);
@@ -2184,7 +2184,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	public void saveAuxDataSbProduction(SerializableBlock sb, String parentId) {
 		
 		String prodDb = requestHandler.getProductionDatabase();
-		ClientScriptExtensionManager extensionManager = ClientScriptExtensionManager.getInstance();
+		CommonScriptExtensionManager extensionManager = CommonScriptExtensionManager.getInstance();
 		
 		extensionManager.runScript(context.getScriptManager(), sb.getClassName(), ScriptConstants.PROPERTY_SET_SCRIPT, 
 				parentId,sb.getAuxiliaryData(),prodDb);
@@ -2206,7 +2206,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		auxData.setMapLists(new HashMap<>());
 		auxData.getProperties().put("Name", oldName);   // Use as a key when fetching
 	
-		ClientScriptExtensionManager extensionManager = ClientScriptExtensionManager.getInstance();
+		CommonScriptExtensionManager extensionManager = CommonScriptExtensionManager.getInstance();
 		
 		extensionManager.runScript(context.getScriptManager(), ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.PROPERTY_GET_SCRIPT, 
 				sa.getId().toString(),auxData,isoDb);
@@ -2242,7 +2242,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 
 
 		
-		ClientScriptExtensionManager extensionManager = ClientScriptExtensionManager.getInstance();
+		CommonScriptExtensionManager extensionManager = CommonScriptExtensionManager.getInstance();
 		auxData.setProperties(new HashMap<String,String>());
 		auxData.setLists(new HashMap<>());
 		auxData.setMapLists(new HashMap<>());

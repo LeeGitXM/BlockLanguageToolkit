@@ -1,4 +1,4 @@
-package com.ils.blt.client.component.recmap.delegate;
+package com.ils.common.component.recmap.delegate;
 
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
@@ -11,7 +11,7 @@ import org.python.core.Py;
 import org.python.core.PyCode;
 import org.python.core.PyStringMap;
 
-import com.ils.blt.client.component.recmap.RecommendationMap;
+import com.ils.common.component.recmap.RecommendationMap;
 import com.inductiveautomation.ignition.common.script.JythonExecException;
 import com.inductiveautomation.ignition.common.script.ScriptManager;
 import com.inductiveautomation.ignition.common.util.LogUtil;

@@ -1,10 +1,8 @@
 /**
  * Copyright 2016. ILS Automation. All rights reserved.
  */
-package com.ils.blt.client.component.recmap;
-import java.util.ArrayList;
+package com.ils.common.component.recmap;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 

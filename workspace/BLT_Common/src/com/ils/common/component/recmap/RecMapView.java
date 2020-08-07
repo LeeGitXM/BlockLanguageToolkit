@@ -6,7 +6,7 @@
  * 
  * @author <a href="http://jheer.org">jeffrey heer</a>
  */
-package com.ils.blt.client.component.recmap;
+package com.ils.common.component.recmap;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -21,10 +21,10 @@ import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.plaf.ColorUIResource;
 
-import com.ils.blt.client.component.ILSRepaintAction;
-import com.ils.blt.client.component.recmap.delegate.DiagnosisDelegate;
-import com.ils.blt.client.component.recmap.delegate.OutputDelegate;
-import com.ils.blt.client.component.recmap.delegate.RecommendationDelegate;
+import com.ils.common.component.ILSRepaintAction;
+import com.ils.common.component.recmap.delegate.DiagnosisDelegate;
+import com.ils.common.component.recmap.delegate.OutputDelegate;
+import com.ils.common.component.recmap.delegate.RecommendationDelegate;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 

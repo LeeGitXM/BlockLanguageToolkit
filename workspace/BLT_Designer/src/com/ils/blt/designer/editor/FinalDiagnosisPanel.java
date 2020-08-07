@@ -31,10 +31,10 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
-import com.ils.blt.client.ClientScriptExtensionManager;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.block.ActiveState;
+import com.ils.blt.common.script.CommonScriptExtensionManager;
 import com.ils.blt.common.script.ScriptConstants;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
@@ -59,7 +59,7 @@ public class FinalDiagnosisPanel extends BasicEditPanel implements ActionListene
 	private final int DIALOG_WIDTH = 300;
 	private final ProcessDiagramView diagram;
 	private final ProcessBlockView block;
-	private final ClientScriptExtensionManager extensionManager = ClientScriptExtensionManager.getInstance();
+	private final CommonScriptExtensionManager extensionManager = CommonScriptExtensionManager.getInstance();
 	private JPanel mainPanel = null;
 	private final GeneralPurposeDataContainer model;           // Data container operated on by panels
 	protected DualListBox dual;

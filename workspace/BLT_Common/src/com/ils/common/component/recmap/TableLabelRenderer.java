@@ -1,7 +1,7 @@
 /**
  *   (c) 2016 ILS Automation. All rights reserved. 
  */
-package com.ils.blt.client.component.recmap;
+package com.ils.common.component.recmap;
 
 import java.awt.Color;
 import java.awt.Font;

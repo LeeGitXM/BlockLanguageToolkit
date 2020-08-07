@@ -1,9 +1,8 @@
 /**
- *   (c) 2012-2013  ILS Automation. All rights reserved.
+ *   (c) 2012-2020.  ILS Automation. All rights reserved.
  */
-package com.ils.blt.client.component.diagview;
+package com.ils.common.component;
 
-import com.ils.blt.client.component.PrefuseViewerComponent;
 import com.ils.blt.common.BLTProperties;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.Dataset;

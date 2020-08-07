@@ -1,7 +1,7 @@
 /**
  * Copyright 2016. ILS Automation. All rights reserved.
  */
-package com.ils.blt.client.component.recmap.delegate;
+package com.ils.common.component.recmap.delegate;
 
 import java.awt.Image;
 import java.util.Map;
@@ -9,9 +9,9 @@ import java.util.Properties;
 
 import javax.swing.JPopupMenu;
 
-import com.ils.blt.client.component.recmap.RecMapConstants;
-import com.ils.blt.client.component.recmap.RecommendationMap;
-import com.ils.blt.client.component.recmap.TextDelegate;
+import com.ils.common.component.recmap.RecMapConstants;
+import com.ils.common.component.recmap.RecommendationMap;
+import com.ils.common.component.recmap.TextDelegate;
 
 import prefuse.visual.VisualItem;
 

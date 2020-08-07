@@ -2,7 +2,7 @@
  *   (c) 2014-2016  ILS Automation. All rights reserved.
  *  
  */
-package com.ils.blt.client.component;
+package com.ils.common.component;
 
 import java.awt.Color;
 import java.awt.Dimension;
