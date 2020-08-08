@@ -222,7 +222,7 @@ public class ProxyHandler   {
 				getBlockPropertiesCallback.setLocalVariable(0,block);
 				getBlockPropertiesCallback.setLocalVariable(1,pyList);
 				getBlockPropertiesCallback.execute(mgr);
-				log.debug(TAG+".getBlockProperties returned "+ pyList);   // Should now be updated
+				log.info(TAG+".getBlockProperties returned "+ pyList);   // Should now be updated
 				// Contents of list are Map<String,?>
 				List<?> list = toJavaTranslator.pyListToArrayList(pyList);
 
@@ -233,7 +233,7 @@ public class ProxyHandler   {
 						if( obj instanceof Map ) {
 							@SuppressWarnings("unchecked")
 							Map<String,?> tbl = (Map<String,?>)obj;
-							log.debug(TAG+".getBlockProperties property = "+ tbl);  
+							log.debugf(TAG+".getBlockProperties property = "+ tbl);  
 							BlockProperty prop = new BlockProperty();
 							prop.setName(nullCheck(tbl.get(BLTProperties.BLOCK_ATTRIBUTE_NAME),"unnamed"));
 							prop.setBinding(nullCheck(tbl.get(BLTProperties.BLOCK_ATTRIBUTE_BINDING),""));
@@ -535,12 +535,16 @@ public class ProxyHandler   {
 					Map tbl = (Map<String,?>)t;
 					Object name = tbl.get("name");
 					Object type = tbl.get("type");
+					Object multiple = tbl.get("allowMultiple");
 					if( name!=null && type!=null ) {
 						try {
 							AnchorPrototype ap = new AnchorPrototype();
 							ap.setName(name.toString());
 							ap.setConnectionType(ConnectionType.valueOf(type.toString().toUpperCase()));
 							ap.setAnchorDirection(direction);
+							if( multiple!=null && multiple.toString().equalsIgnoreCase("false")) {
+								ap.setIsMultiple(false);
+							}
 							bd.addAnchor(ap);
 						}
 						catch(IllegalArgumentException iae) {
