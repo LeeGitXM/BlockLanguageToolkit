@@ -7,6 +7,7 @@ import java.awt.Color;
 import java.util.List;
 import java.util.UUID;
 
+import com.ils.block.annotation.ExecutableBlock;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.ProcessBlock;
 import com.ils.blt.common.block.BindingType;
@@ -23,6 +24,7 @@ import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
  * block names should be shared among all sources and sinks that
  * are logically connected.
  */
+@ExecutableBlock
 public class SinkConnection extends Output implements ProcessBlock {
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -70,7 +72,7 @@ public class SinkConnection extends Output implements ProcessBlock {
 	 * Augment the palette prototype for this block class.
 	 */
 	protected void initializePrototype() {
-		prototype.setPaletteIconPath("Block/icons/palette/out_connection.png");
+		prototype.setPaletteIconPath("Block/icons/palette/sink.png");
 		prototype.setPaletteLabel("Sink");
 		prototype.setTooltipText("Send incoming values off-diagram to source objects of same name");
 		prototype.setTabName(BlockConstants.PALETTE_TAB_CONNECTIVITY);
