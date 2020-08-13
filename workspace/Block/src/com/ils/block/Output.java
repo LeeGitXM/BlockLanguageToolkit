@@ -149,7 +149,7 @@ public class Output extends AbstractProcessBlock implements ProcessBlock {
 		desc.setStyle(BlockStyle.ARROW);
 		desc.setPreferredHeight(46);
 		desc.setPreferredWidth(60);
-		desc.setBackground(new Color(125,110,230).getRGB());   // Purple
+		desc.setBackground(Color.cyan.getRGB());
 		desc.setCtypeEditable(true);
 	}
 
