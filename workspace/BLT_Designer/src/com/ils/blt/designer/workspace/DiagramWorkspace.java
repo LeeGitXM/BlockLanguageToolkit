@@ -718,41 +718,46 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				Object node = event.getTransferable().getTransferData(flava);
 				if (node instanceof ArrayList && ((ArrayList) node).size() == 1) {
 					ArrayList<?> tagNodeArr = (ArrayList<?>)node;
+					// NOTE: This will fail (properly) if tag type is a dataset
 					if (tagNodeArr.get(0) instanceof TagTreeNode) {  // That's the thing we want!
 						BlockDesignableContainer container = getSelectedContainer();
 						ProcessDiagramView diagram = (ProcessDiagramView)container.getModel();
 						TagTreeNode tnode = (TagTreeNode) tagNodeArr.get(0);
 						int dropx = event.getLocation().x;
 						int thewidth = getActiveDiagram().getDiagramSize().width;
-							
+
 						if( getSelectedContainer()!=null ) {
 							ProcessBlockView block = null;
 							TagPath tp = tnode.getTagPath();
 							boolean makeSourceSink = false;
 							String root = tp.getPathComponent(0);
 							if( root.equalsIgnoreCase(BlockConstants.SOURCE_SINK_TAG_FOLDER) ) makeSourceSink = true;
-							
+
 							if (dropx > thewidth / 2) {
 								if( makeSourceSink ) {
 									SourceConnection source = new SourceConnection();
 									block = new ProcessBlockView(source.getBlockPrototype().getBlockDescriptor());
+									block.setName(leafNameFromTagPath(tp));
 								}
 								else {
 									Output output = new Output();
 									block = new ProcessBlockView(output.getBlockPrototype().getBlockDescriptor());
+									block.setName(enforceUniqueName(nameFromTagPath(tp),diagram));
 								}
+								
 							} 
 							else {
 								if( makeSourceSink ) {
 									SinkConnection sink = new SinkConnection();
 									block = new ProcessBlockView(sink.getBlockPrototype().getBlockDescriptor());
+									block.setName(leafNameFromTagPath(tp));
 								}
 								else {
 									Input input = new Input();
-									block = new ProcessBlockView(input.getBlockPrototype().getBlockDescriptor());	
+									block = new ProcessBlockView(input.getBlockPrototype().getBlockDescriptor());
+									block.setName(enforceUniqueName(nameFromTagPath(tp),diagram));
 								}
 							}
-							block.setName(enforceUniqueName(nameFromTagPath(tp),diagram));
 							
 							DesignPanel panel = getSelectedDesignPanel();
 							BlockDesignableContainer bdc = (BlockDesignableContainer) panel.getDesignable();
@@ -760,7 +765,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 									event.getDropTargetContext().getComponent(),
 									panel.unzoom(event.getLocation()), bdc);
 							this.setCurrentTool(getSelectionTool());   // So the next select on workspace does not result in another block
-							
+
 							if( isInBounds(dropPoint,bdc) ) {
 								block.setLocation(dropPoint);
 								this.getActiveDiagram().addBlock(block);
@@ -772,31 +777,34 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 								for (BlockProperty property:props) {
 									if( "TagPath".equalsIgnoreCase(property.getName())) {
 										property.setBinding(tnode.getTagPath().toStringFull());}
-										block.notifyOfPropertyChange(property, type);
+									block.notifyOfPropertyChange(property, type);
 								}
-								
+
 								logger.infof("%s.handleDrop: dropped %s",TAG,block.getClass().getName());
 							}
 							else {
 								logger.infof("%s.handleDrop: drop of %s out-of-bounds",TAG,block.getClass().getName());
 							}
 						}
-
 					}
 				}
-			
-				
-		} catch (UnsupportedFlavorException e) {
-			//ignore
-		} catch (IOException e) {
-			// ignore
+			} 
+			catch (UnsupportedFlavorException e) {
+				//ignore
+			} 
+			catch (IOException e) {
+				// ignore
+			}
 		}
-	}
-		
+
 	}
 
 
-	// check to see if this is a tag dropped on a block.  Change the tag binding if applicable
+	// Check to see if this is a tag dropped on a block.  Change the tag binding if applicable.
+	// Dropping the tag changes the block name and connection type if not "locked".
+	// For a source/sink, tag must be in "Connections". For Input/Output it must not.
+	// Craig is correct in that there is an amount of ugliness that involves hard-coded block class names
+	// and properties
 	public void handleBlockDrop(Object droppedOn, DropTargetDropEvent event) {
 		try {
 			DataFlavor flava = NodeListTransferable.FLAVOR_NODELIST;
@@ -809,42 +817,66 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 						ProcessDiagramView diagram = (ProcessDiagramView)container.getModel();
 						TagTreeNode tnode = (TagTreeNode) tagNodeArr.get(0);
 						logger.infof("%s.handleDrop: tag data: %s",TAG,tnode.getName());
+						boolean editSourceSink = false;
+						TagPath tp = tnode.getTagPath();
+						String root = tp.getPathComponent(0);
+						if( root.equalsIgnoreCase(BlockConstants.SOURCE_SINK_TAG_FOLDER) ) editSourceSink = true;
+
 						Block targetBlock = ((BlockComponent)droppedOn).getBlock();
-						if (targetBlock instanceof ProcessBlockView) {
-							ProcessBlockView pblock = (ProcessBlockView)targetBlock;
-		
-							DataType type = null;
+						if(targetBlock instanceof ProcessBlockView) {
+							DataType tagType = null;
 							ClientTagManager tmgr = context.getTagManager();
 							Tag tag = tmgr.getTag(tnode.getTagPath());
-							type = tag.getDataType();
-							Collection<BlockProperty> props = pblock.getProperties();
-							for (BlockProperty property:props) {
-								Integer tagProp = (Integer)tag.getAttribute(TagProp.ExpressionType).getValue();
-								// Oh ick.   Hard coding special cases like input/output tagpath
-								if("TagPath".equalsIgnoreCase(property.getName()) && 
-										(!((ProcessBlockView) targetBlock).getClassName().endsWith(".Output") || tagProp == ExpressionType.None.getIntValue())) {  // only update the tagpath property
-									String result = diagram.isValidBindingChange(pblock, type);
-									if (result == null) {
-										property.setBinding(tnode.getTagPath().toStringFull());
-										diagram.setDirty(true);
-										diagram.fireStateChanged();
-										setSelectedItems((JComponent)null);  // EREIAM JH - this is a bit of a hack to get the property panel to refresh
-										setSelectedItems((JComponent)droppedOn);
-										
-										pblock.notifyOfPropertyChange(property, type);
-									} else {
-								        JOptionPane.showMessageDialog(null, result, "Warning", JOptionPane.INFORMATION_MESSAGE);
+							tagType = tag.getDataType();
+							ProcessBlockView pblock = (ProcessBlockView)targetBlock;
+							Integer tagProp = (Integer)tag.getAttribute(TagProp.ExpressionType).getValue();
+							BlockProperty prop = null;
+							String connectionMessage = null;
+							// Edit a source or sink.
+							if( editSourceSink ) {
+								if( pblock.getClassName().endsWith("SinkConnection") || 
+									pblock.getClassName().endsWith("SourceConnection") ) {
+									if( tagProp == ExpressionType.None.getIntValue() ) {
+										connectionMessage = diagram.isValidBindingChange(pblock, tagType);
+										if( connectionMessage==null ) {
+											prop = pblock.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
+											pblock.setName(leafNameFromTagPath(tp));
+										}
 									}
 								}
 							}
-							
+							// Input/Output are the only blocks of interest
+							else {
+								if( pblock.getClassName().endsWith("Input") || 
+									pblock.getClassName().endsWith("Output") ) {
+									if( !pblock.getClassName().endsWith("Output") || (tagProp == ExpressionType.None.getIntValue()) ) {
+										connectionMessage = diagram.isValidBindingChange(pblock, tagType);
+										if( connectionMessage==null ) {
+											prop = pblock.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
+											pblock.setName(enforceUniqueName(nameFromTagPath(tp),diagram));
+										}
+									}
+								}
+							}
+
+							if( prop!=null ) {
+								prop.setBinding(tnode.getTagPath().toStringFull());
+								diagram.setDirty(true);
+								diagram.fireStateChanged();
+								setSelectedItems((JComponent)null);  // EREIAM JH - this is a bit of a hack to get the property panel to refresh
+								setSelectedItems((JComponent)droppedOn);
+								pblock.notifyOfPropertyChange(prop, tagType);
+							} 
+							else {
+								JOptionPane.showMessageDialog(null, connectionMessage, "Warning", JOptionPane.INFORMATION_MESSAGE);
+							}
 						}
-						
 					}
 				}
 			}
-		} catch (Exception ex) {
-			ex.printStackTrace();// ignore
+		}
+		catch(Exception ex) {
+			logger.error(String.format("%s.handleDrop: Exceptiona: %s",TAG,ex.getLocalizedMessage()),ex);
 		}
 	}
 
@@ -894,6 +926,16 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		return name;
 	}
 
+	// Choose the final segment of the tag path. This is appropriate 
+	// for tags in the Connections folder
+	private String leafNameFromTagPath(TagPath path) {
+			String segment = null;
+			int len = path.getPathLength();
+			if(len>0) {
+				segment = path.getPathComponent(len-1);
+			}
+			return segment;
+		}
 	// Choose either the end of the chain or a name with - or _.
 	private String nameFromTagPath(TagPath path) {
 		String name = null;

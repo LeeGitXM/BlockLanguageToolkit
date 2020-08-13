@@ -142,11 +142,6 @@ public interface ProcessBlock extends BlockPropertyChangeListener {
 	 * @return a particular property by name.
 	 */
 	public BlockProperty getProperty(String name);
-//	/**
-//	 * @param name property name
-//	 * @return a particular property block by name.
-//	 */
-//	public ProcessBlock getPropertyBlock(String name);
 	/**
 	 * @return a list of names of properties known to this class.
 	 */

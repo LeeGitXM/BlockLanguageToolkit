@@ -377,6 +377,17 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 	public Point getLocation() {
 		return location;
 	}
+	// Simply do a linear search
+	public BlockProperty getProperty(String nam) {
+		BlockProperty result = null;
+		for( BlockProperty prop:getProperties()) {
+			if( prop.getName().equalsIgnoreCase(nam)) {
+				result = prop;
+				break;
+			}
+		}
+		return result;
+	}
 	public String getName() {return name;}
 	public int getNameOffsetX() { return nameOffsetX; }
 	public int getNameOffsetY() { return nameOffsetY; }
