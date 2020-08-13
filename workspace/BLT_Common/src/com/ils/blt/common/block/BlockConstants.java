@@ -79,6 +79,8 @@ public interface BlockConstants   {
 	public static final String CONNECTION_PROPERTY_QUALITY             = "quality";
 	public static final String CONNECTION_PROPERTY_UPSTREAM_PORT       = "upstream"; 
 	public static final String CONNECTION_PROPERTY_VALUE               = "value"; 
+	// Special folder to contain binding tags for Source/Sink blocks
+	public static final String SOURCE_SINK_TAG_FOLDER                  = "Connections"; 
 	
 	// These are standard palette tab names
 	public static final String PALETTE_TAB_ARITHMETIC         = "Arithmetic";

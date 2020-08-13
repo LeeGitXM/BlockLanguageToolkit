@@ -62,6 +62,8 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.block.Input;
 import com.ils.block.Output;
+import com.ils.block.SinkConnection;
+import com.ils.block.SourceConnection;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagramState;
@@ -104,6 +106,7 @@ import com.inductiveautomation.ignition.common.model.ApplicationScope;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.project.ProjectScope;
 import com.inductiveautomation.ignition.common.sqltags.model.Tag;
+import com.inductiveautomation.ignition.common.sqltags.model.TagPath;
 import com.inductiveautomation.ignition.common.sqltags.model.TagProp;
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 import com.inductiveautomation.ignition.common.sqltags.model.types.ExpressionType;
@@ -159,7 +162,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	private static final long serialVersionUID = 4627016159409031941L;
 	private static final DataFlavor BlockDataFlavor = LocalObjectTransferable.flavorForClass(ObservablePropertySet.class);
 	public static final String key = "BlockDiagramWorkspace";
-	public static final String PREFIX = BLTProperties.BLOCK_PREFIX;
+	public static final String PREFIX = BLTProperties.BLOCK_PREFIX; 
 	private final ApplicationRequestHandler handler = new ApplicationRequestHandler();
 	private final DesignerContext context;
 	private final EditActionHandler editActionHandler;
@@ -665,10 +668,10 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	@Override
 	public boolean handleDrop(Object droppedOn,DropTargetDropEvent event) {
 		if (droppedOn instanceof BlockComponent) {
-			blockDropHandler(droppedOn, event);
+			handleBlockDrop(droppedOn, event);
 		}
 		if (droppedOn instanceof DiagramWorkspace) {
-			diagramDropHandler(droppedOn, event);
+			handleDiagramDrop(droppedOn, event);
 		}
 		if (event.isDataFlavorSupported(BlockDataFlavor)) {
 			try {
@@ -705,8 +708,10 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	}
 
 
-	// check to see if this is a tag dropped on the workspace.  Make it an Input block if it's on the left, Output on the right half
-	private void diagramDropHandler(Object droppedOn, DropTargetDropEvent event) {
+	// Check to see if this is a tag dropped on the workspace.  Make it an Input block if it's on the left, 
+	// Output on the right half -- unless the tagpath starts with "Connections". Then we make
+	// Sources/Sinks
+	private void handleDiagramDrop(Object droppedOn, DropTargetDropEvent event) {
 		DataFlavor flava = NodeListTransferable.FLAVOR_NODELIST;
 		if (event.isDataFlavorSupported(flava)) {
 			try {
@@ -722,13 +727,32 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 							
 						if( getSelectedContainer()!=null ) {
 							ProcessBlockView block = null;
+							TagPath tp = tnode.getTagPath();
+							boolean makeSourceSink = false;
+							String root = tp.getPathComponent(0);
+							if( root.equalsIgnoreCase(BlockConstants.SOURCE_SINK_TAG_FOLDER) ) makeSourceSink = true;
+							
 							if (dropx > thewidth / 2) {
-								Output output = new Output();
-								block = new ProcessBlockView(output.getBlockPrototype().getBlockDescriptor());
-							} else {
-								Input input = new Input();
-								block = new ProcessBlockView(input.getBlockPrototype().getBlockDescriptor());
+								if( makeSourceSink ) {
+									SourceConnection source = new SourceConnection();
+									block = new ProcessBlockView(source.getBlockPrototype().getBlockDescriptor());
+								}
+								else {
+									Output output = new Output();
+									block = new ProcessBlockView(output.getBlockPrototype().getBlockDescriptor());
+								}
+							} 
+							else {
+								if( makeSourceSink ) {
+									SinkConnection sink = new SinkConnection();
+									block = new ProcessBlockView(sink.getBlockPrototype().getBlockDescriptor());
+								}
+								else {
+									Input input = new Input();
+									block = new ProcessBlockView(input.getBlockPrototype().getBlockDescriptor());	
+								}
 							}
+							block.setName(enforceUniqueName(nameFromTagPath(tp),diagram));
 							
 							DesignPanel panel = getSelectedDesignPanel();
 							BlockDesignableContainer bdc = (BlockDesignableContainer) panel.getDesignable();
@@ -773,7 +797,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 
 
 	// check to see if this is a tag dropped on a block.  Change the tag binding if applicable
-	public void blockDropHandler(Object droppedOn, DropTargetDropEvent event) {
+	public void handleBlockDrop(Object droppedOn, DropTargetDropEvent event) {
 		try {
 			DataFlavor flava = NodeListTransferable.FLAVOR_NODELIST;
 			if (event.isDataFlavorSupported(flava)) {
@@ -837,7 +861,56 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		zoomCombo.setVisible(false);
 		logger.infof("%s: onDeactivation",TAG);
 	}
+	
+	// Guarantee a unique name for a block that has not yet been added to the diagram.
+	private String enforceUniqueName(String name,ProcessDiagramView diagram) {
+		int count = 0;
+		for(Block block:diagram.getBlocks() ) {
+			if(block instanceof ProcessBlockView) {
+				String bname = ((ProcessBlockView)block).getName();
+				if( bname.startsWith(name+"-") ) {
+					String suffix = bname.substring(name.length()+1);
+					if( suffix==null) count = count+1;  // Name ends in -
+					else {
+						try {
+							int val = Integer.parseInt(suffix);
+							if( val>=count) count = val + 1;
+							else count = count+1;
+						}
+						catch(NumberFormatException nfe) {
+							count = count + 1;
+						}
+					}
+				}
+				// The plain name
+				else if( bname.equalsIgnoreCase(name) ) {
+					count = count+1;
+				}
+			}
+		}
+		if( count>0 ) {
+			name = name +"-"+String.valueOf(count);
+		}
+		return name;
+	}
 
+	// Choose either the end of the chain or a name with - or _.
+	private String nameFromTagPath(TagPath path) {
+		String name = null;
+		int len = path.getPathLength();
+		int index = len - 1;
+		while(index>=0) {
+			String segment = path.getPathComponent(index);
+			if( index==len-1) name = segment;
+			else if( len>1 && index==len-2) name = segment;
+			if( segment.contains("-") || segment.contains("_")) {
+				name = segment;
+				break;
+			}
+			index--;
+		}
+		return name;
+	}
 
 	@Override
 	public void resetFrames(DockingManager dockManager, DockableBarManager barManager) {

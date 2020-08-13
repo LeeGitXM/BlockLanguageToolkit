@@ -1,0 +1,28 @@
+# Toolkit Properties - from installer.
+#
+		<property name="com.ils.application(property-get-script)">ils.extensions.appProperties.getAux</property>
+		<property name="com.ils.application(property-set-script)">ils.extensions.appProperties.setAux</property>		
+		<property name="com.ils.application(node-delete-script)">ils.extensions.appProperties.delete</property>
+		<property name="com.ils.application(node-rename-script)">ils.extensions.appProperties.rename</property>
+		<property name="com.ils.application(node-save-script)">ils.extensions.appProperties.save</property>
+		
+		<property name="com.ils.family(property-get-script)">ils.extensions.famProperties.getAux</property>
+		<property name="com.ils.family(property-set-script)">ils.extensions.famProperties.setAux</property>		
+		<property name="com.ils.family(node-delete-script)">ils.extensions.famProperties.delete</property>
+		<property name="com.ils.family(node-rename-script)">ils.extensions.famProperties.rename</property>
+		<property name="com.ils.family(node-save-script)">ils.extensions.famProperties.save</property>
+		
+		<property name="com.ils.diagram(node-save-script)">ils.extensions.diaSave.save</property>		
+		<property name="com.ils.diagram(node-delete-script)">ils.extensions.diaSave.delete</property>
+
+		<property name="xom.block.finaldiagnosis.FinalDiagnosis(property-get-script)">ils.extensions.fdProperties.getAux</property>
+		<property name="xom.block.finaldiagnosis.FinalDiagnosis(property-set-script)">ils.extensions.fdProperties.setAux</property>		
+		<property name="xom.block.finaldiagnosis.FinalDiagnosis(node-delete-script)">ils.extensions.fdProperties.delete</property>
+		<property name="xom.block.finaldiagnosis.FinalDiagnosis(node-rename-script)">ils.extensions.fdProperties.rename</property>
+		<property name="xom.block.finaldiagnosis.FinalDiagnosis(node-save-script)">ils.extensions.fdProperties.save</property>
+				
+		<property name="xom.block.sqcdiagnosis.SQCDiagnosis(property-get-script)">ils.extensions.sqcdProperties.getAux</property>
+		<property name="xom.block.sqcdiagnosis.SQCDiagnosis(property-set-script)">ils.extensions.sqcdProperties.setAux</property>
+		<property name="xom.block.sqcdiagnosis.SQCDiagnosis(node-delete-script)">ils.extensions.sqcdProperties.delete</property>
+		<property name="xom.block.sqcdiagnosis.SQCDiagnosis(node-rename-script)">ils.extensions.sqcdProperties.rename</property>
+		<property name="xom.block.sqcdiagnosis.SQCDiagnosis(node-save-script)">ils.extensions.sqcdProperties.save</property>

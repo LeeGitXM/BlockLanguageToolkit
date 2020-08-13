@@ -192,9 +192,6 @@ public abstract class AbstractScriptExtensionManager {
 		}
 		else {
 			log.warnf("%s.runScript: Unknown python script type (%s)",CLSS,key);
-		    for (Entry<String, Object> entry : map.entrySet()) {
-				log.warnf("%s.runScript: Available scripts: %s",CLSS,entry);
-		    }
 		    System.out.println();
 		}
 	}

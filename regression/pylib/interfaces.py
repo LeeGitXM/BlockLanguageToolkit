@@ -1,7 +1,10 @@
-# Copyright 2015. ILS Automation. All rights reserved.
+# Copyright 2015-2020. ILS Automation. All rights reserved.
 # Test the client/designer "toolkit" scripting interfaces
 
 import system.ils.blt.diagram as script
+
+def getToolkitProperty(name):
+	return script.getToolkitProperty(name)
 
 # Return a list of name of blocks that are downstream of the 
 # specified block - and in the same diagram
@@ -180,6 +183,9 @@ def sendTimestampedSignal(common,dpath,command,year,mon,day,hr,min,sec):
 	testtime = datetime.datetime(int(year),int(mon),int(day),int(hr),int(min),int(sec))
 	ts = time.mktime(testtime.timetuple())*1000
 	script.sendTimestampedSignal(diagid,command,"","",long(ts))
+
+def setToolkitProperty(name,val):
+	script.setToolkitProperty(name,val)
 
 # -------------------------- Helper methods ----------------------
 # Return the ProcessDiagram at the specified path
