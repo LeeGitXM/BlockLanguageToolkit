@@ -414,6 +414,13 @@ public class ApplicationScriptFunctions   {
 		return result;
 	}
 	/**
+	 * Rename a SQLTag given its path and new name. The path must contain the
+	 * provider name in brackets.
+	 */
+	public static void renameTag(String name,String path) {
+		handler.renameTag(name,path);
+	}
+	/**
 	 * Execute reset() on the specified block
 	 * @param diagramId the parent diagram
 	 * @param blockId of the block to be reset

@@ -109,7 +109,10 @@ public class BlockProperty implements NotificationChangeListener {
 	public boolean isEditable() {return editable;}
 	public void setEditable(boolean editable) {this.editable = editable;}
 	public String getBinding() {return binding;}
-	public void setBinding(String lnk) {this.binding = lnk;}
+	public void setBinding(String lnk) {
+		this.binding = lnk;
+		notifyChangeListeners();
+	}
 	public String getName() {return name;}
 	public void setName(String name) {this.name = name;}
 	public boolean isShowProperty() {return showProperty;}

@@ -3,11 +3,8 @@
  */
 package com.ils.blt.designer.editor;
 
-import java.awt.BorderLayout;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.swing.JScrollPane;
 
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.DiagramState;
@@ -70,6 +67,7 @@ public class BlockPropertyEditor extends SlidingPane   {
         init();    
 	}
 
+	public ApplicationRequestHandler getRequestHandler() { return this.requestHandler; }
 	
 	/** 
 	 * Create the various panels. We keep one of each type.

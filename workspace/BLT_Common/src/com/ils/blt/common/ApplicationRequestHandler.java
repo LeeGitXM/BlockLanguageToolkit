@@ -848,7 +848,19 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 			log.infof("%s.propagateBlockState: GatewayException (%s)",TAG,ge.getMessage());
 		}
 	}
-	
+	/**
+	 * Rename a SQLTag given its path and new name. The path must contain the
+	 * provider name in brackets.
+	 */
+	public void renameTag(String name,String path) {
+		try {
+			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "renameTag",name,path);
+		}
+		catch(Exception ge) {
+			log.infof("%s.renameTag: GatewayException (%s)",TAG,ge.getMessage());
+		}
+	}
 	/**
 	 * Execute reset() on a specified block
 	 */

@@ -357,6 +357,11 @@ public interface ToolkitRequestHandler  {
 	 */
 	public void propagateBlockState(String diagramId,String blockId) ;
 	/**
+	 * Rename a SQLTag given its path and new name. The path must contain the
+	 * provider name in brackets.
+	 */
+	public void renameTag(String name,String path);
+	/**
 	 * Execute reset() on a specified block
 	 * @param diagramId of the parent diagram
 	 * @param blockName name of the block within the diagram 

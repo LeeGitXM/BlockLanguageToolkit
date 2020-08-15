@@ -17,6 +17,8 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.block.BlockConstants;
+import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.script.CommonScriptExtensionManager;
 import com.ils.blt.common.script.ScriptConstants;
 import com.ils.blt.designer.BLTDesignerHook;
@@ -111,6 +113,13 @@ public class NameEditPanel extends BasicEditPanel {
 						}
 					}
 					block.setName(nameField.getText());
+					if( block.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK) ) {
+						BlockProperty prop = block.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
+						String path = prop.getBinding();
+						editor.getRequestHandler().renameTag(nameField.getText(), path);
+						path = renamePath(nameField.getText(), path);
+						prop.setBinding(path);
+					}
 				}
 				try {
 					block.setNameDisplayed(annotationCheckBox.isSelected());
@@ -148,7 +157,15 @@ public class NameEditPanel extends BasicEditPanel {
 		field.setEditable(true);
 		return field;
 	}
-
+	// Replace the last element of path with name
+	private String renamePath(String name,String path) {
+		int index = path.lastIndexOf("/");
+		if( index>0 ) {
+			path = path.substring(0, index+1);
+			path = path + name;
+		}
+		return path;
+	}
 	/**
 	 * Change the values displayed given a new block.
 	 * @param blk

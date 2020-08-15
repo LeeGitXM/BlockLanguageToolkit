@@ -392,6 +392,13 @@ public class GatewayRpcDispatcher   {
 		return  requestHandler.listBlocksInDiagram(diagId);
 	}
 	/**
+	 * Rename a SQLTag given its path and new name. The path must contain the
+	 * provider name in brackets.
+	 */
+	public void renameTag(String name,String path) {
+		requestHandler.renameTag(name,path);
+	}
+	/**
 	 * Reset a block in a diagram given string forms of their UUID
 	 * @param diagramIdString id of the block's parent diagram
 	 * @param blockName name of the block

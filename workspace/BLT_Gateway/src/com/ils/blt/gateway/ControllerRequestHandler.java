@@ -1115,6 +1115,10 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		controller.propagateBlockState(diagramUUID, blockUUID);
 	}
 	@Override
+	public void renameTag(String name,String path) {
+		tagHandler.renameTag(name,path);
+	}
+	@Override
 	public void resetBlock(String diagramId, String blockName) {
 		UUID diagramUUID = makeUUID(diagramId);
 		ProcessDiagram diagram = controller.getDiagram(diagramUUID);

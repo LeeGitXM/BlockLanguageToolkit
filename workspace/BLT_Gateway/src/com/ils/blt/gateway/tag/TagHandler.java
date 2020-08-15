@@ -5,42 +5,19 @@
 package com.ils.blt.gateway.tag;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
-import com.ils.blt.common.DiagramState;
-import com.ils.blt.common.ProcessBlock;
-import com.ils.blt.common.block.BindingType;
-import com.ils.blt.common.block.BlockConstants;
-import com.ils.blt.common.block.BlockProperty;
-import com.ils.blt.common.block.PropertyType;
-import com.ils.blt.common.block.TruthValue;
-import com.ils.blt.common.notification.BlockPropertyChangeEvent;
-import com.ils.blt.common.notification.IncomingNotification;
-import com.ils.blt.gateway.engine.BlockExecutionController;
-import com.ils.blt.gateway.engine.IncomingValueChangeTask;
-import com.ils.blt.gateway.engine.ProcessDiagram;
-import com.ils.blt.gateway.engine.PropertyChangeEvaluationTask;
-import com.ils.common.tag.BasicILSTagProvider;
-import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.BasicQuality;
-import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.Quality;
-import com.inductiveautomation.ignition.common.sqltags.model.Tag;
+import com.inductiveautomation.ignition.common.sqltags.TagDefinition;
+import com.inductiveautomation.ignition.common.sqltags.model.TagManagerBase;
+import com.inductiveautomation.ignition.common.sqltags.model.TagNode;
 import com.inductiveautomation.ignition.common.sqltags.model.TagPath;
-import com.inductiveautomation.ignition.common.sqltags.model.TagProp;
-import com.inductiveautomation.ignition.common.sqltags.model.event.TagChangeEvent;
-import com.inductiveautomation.ignition.common.sqltags.model.event.TagChangeListener;
+import com.inductiveautomation.ignition.common.sqltags.model.types.TagType;
 import com.inductiveautomation.ignition.common.sqltags.parser.TagPathParser;
+import com.inductiveautomation.ignition.common.sqltags.tags.TagDiff;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
-import com.inductiveautomation.ignition.gateway.sqltags.SQLTagsManager;
 import com.inductiveautomation.ignition.gateway.sqltags.TagProvider;
 
 /**
@@ -90,6 +67,28 @@ public class TagHandler    {
 		}
 		else {
 			log.warnf("%s.deleteTag: Provider %s does not exist",TAG,providerName);
+		}
+	}
+	public void renameTag(String name,String path) {
+		String providerName = providerFromPath(path);
+		path = stripProviderFromPath(path);
+		log.infof("%s.renameTag %s [%s]%s",TAG,name,providerName,path);
+		TagPath tp = null;
+		try {
+			tp = TagPathParser.parse(providerName,path);
+			TagDiff diff = new TagDiff();
+			diff.setName(name);
+			List<TagPath> tags = new ArrayList<>();
+			tags.add(tp);
+			context.getTagManager().editTags(tags,diff);
+		}
+		catch(IOException ioe) {
+			log.warnf("%s: renameTag: Exception parsing tag [%s]%s (%s)",TAG,providerName,path,ioe.getLocalizedMessage());
+			return;
+		}
+		catch(Exception ex) {
+			log.warnf("%s: renameTag: Exception renaming tag [%s]%s (%s)",TAG,providerName,path,ex.getLocalizedMessage());
+			return;
 		}
 	}
 	
