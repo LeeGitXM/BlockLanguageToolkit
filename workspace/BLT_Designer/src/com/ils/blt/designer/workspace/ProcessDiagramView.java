@@ -23,6 +23,7 @@ import com.ils.blt.common.notification.NotificationChangeListener;
 import com.ils.blt.common.notification.NotificationKey;
 import com.ils.blt.common.serializable.SerializableAnchorPoint;
 import com.ils.blt.common.serializable.SerializableBlock;
+import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableConnection;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.designer.BLTDesignerHook;
@@ -31,7 +32,6 @@ import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.Quality;
-import com.inductiveautomation.ignition.common.sqltags.model.TagPath;
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 import com.inductiveautomation.ignition.common.util.AbstractChangeable;
 import com.inductiveautomation.ignition.common.util.LogUtil;
@@ -376,8 +376,20 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			ProcessBlockView view = (ProcessBlockView)blk;
 			if( view.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK)) {
 				BlockProperty prop = view.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
+				List<SerializableBlockStateDescriptor> sources = appRequestHandler.listSourcesForSink(getId().toString(), view.getName());
 				String tp = prop.getBinding();
 				appRequestHandler.deleteTag(tp);
+				if( sources.size()>0 ) {
+					StringBuffer msg = new StringBuffer("The following SourceConnections are no longer connected:\n");
+					for(SerializableBlockStateDescriptor source:sources) {
+						msg.append("\t");
+						msg.append(appRequestHandler.getDiagramForBlock(source.getIdString()).getName());
+						msg.append(": ");
+						msg.append(source.getName());
+						msg.append("\n");
+					}
+					JOptionPane.showMessageDialog(null, msg.toString(), "Warning", JOptionPane.INFORMATION_MESSAGE);
+				}
 			}
 		}
 		// Delete the block by removing it from the map
