@@ -1143,7 +1143,7 @@ public class ModelManager implements ProjectListener  {
 	 * @param resourceId root of the resource tree to delete.
 	 */
 	public void deleteResource(long projectId,long resourceId) {
-		log.debugf("%s.deleteResource: %d:%d",TAG,projectId,resourceId);
+		log.infof("%s.deleteResource: %d:%d",TAG,projectId,resourceId);
 		ProjectResourceKey key = new ProjectResourceKey(projectId,resourceId);
 		ProcessNode head = nodesByKey.get(key);
 		if( head!=null ) {
@@ -1167,6 +1167,11 @@ public class ModelManager implements ProjectListener  {
 							extensionManager.runScript(context.getProjectManager().getProjectScriptManager(node.getProjectId()), 
 								block.getClassName(), ScriptConstants.NODE_DELETE_SCRIPT, uuidStr); 
 //								block.getClassName(), ScriptConstants.NODE_DELETE_SCRIPT, uuidStr, block.getAuxiliaryData());
+						}
+						// If this is a source connection, delete its associated tag
+						else if(block.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK)) {
+							BlockProperty prop = block.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
+							log.infof("%s.deleteResource:Deleting aa sink",TAG,projectId,resourceId);
 						}
 					}
 				}
@@ -1206,7 +1211,7 @@ public class ModelManager implements ProjectListener  {
 	
 	// Delete all process nodes for a given project.
 	private void deleteProjectResources(long projectId) {
-		log.debugf("%s.deleteProjectResources: proj = %d",TAG,projectId);
+		log.infof("%s.deleteProjectResources: proj = %d",TAG,projectId);
 		List<ProcessNode> nodes = root.allNodesForProject(projectId);
 		for(ProcessNode node:nodes) {
 			deleteResource(projectId,node.getResourceId());

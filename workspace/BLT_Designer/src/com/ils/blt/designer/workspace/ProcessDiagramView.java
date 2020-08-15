@@ -16,6 +16,7 @@ import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.BindingType;
+import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.notification.NotificationChangeListener;
@@ -30,6 +31,7 @@ import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.Quality;
+import com.inductiveautomation.ignition.common.sqltags.model.TagPath;
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 import com.inductiveautomation.ignition.common.util.AbstractChangeable;
 import com.inductiveautomation.ignition.common.util.LogUtil;
@@ -367,6 +369,17 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			connections.remove(cxn);
 		}
 		
+		log.infof("%s.deleteBlock: deleting a sink (%s)",TAG,blk.getClass().getCanonicalName());
+		
+		// For a Sink, remove its bound tag
+		if( blk instanceof ProcessBlockView ) {
+			ProcessBlockView view = (ProcessBlockView)blk;
+			if( view.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK)) {
+				BlockProperty prop = view.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
+				String tp = prop.getBinding();
+				appRequestHandler.deleteTag(tp);
+			}
+		}
 		// Delete the block by removing it from the map
 		blockMap.remove(blk.getId());
 		fireStateChanged();
@@ -446,7 +459,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	/**
 	 * A diagram that is dirty is structurally out-of-sync with what is running
 	 * in the gateway.
-	 * @return tue if the diagram does not represent what is actually running.
+	 * @return true if the diagram does not represent what is actually running.
 	 */
 	public boolean isDirty() {return dirty;}
 	public void setDirty(boolean dirty) {
@@ -497,6 +510,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		// Register any properties "bound" to the engine
 		// It is the responsibility of the block to trigger
 		// this as it evaluates. Update the value from the newly deserialized diagram.
+		// Also register self for any block name changes
 		for(ProcessBlockView block:blockMap.values() ) {
 			for(BlockProperty prop:block.getProperties()) {
 				if( prop.getBindingType().equals(BindingType.ENGINE)) {
@@ -565,13 +579,51 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		}
 	}
 
-	// ------------------------------------------- Notification Change Listener --------------------------------------
+
+
+	public String isValidBindingChange(ProcessBlockView pblock, DataType type) {
+		String ret = null;
+
+		Collection<ProcessAnchorDescriptor> bconns = pblock.getAnchors();
+		//		ProcessAnchorDescriptor origin = null;
+		//		ProcessAnchorDescriptor terminus = null;
+		//		for (ProcessAnchorDescriptor bconn:bconns) {
+		//			if (bconn.getType() == AnchorType.Origin) {
+		//				origin = bconn;
+		//			}
+		//			if (bconn.getType() == AnchorType.Terminus) {
+		//				terminus = bconn;
+		//			}
+		//		}
+
+		ConnectionType conType = pblock.determineDataTypeFromTagType(type);
+
+		Collection<Connection> connections = getConnections();
+		for (Connection connection:connections) {
+			BasicAnchorPoint intended = null;
+			if (connection.getOrigin().getBlock() == pblock) {
+				intended = (BasicAnchorPoint)connection.getTerminus();
+			}
+			if (connection.getTerminus().getBlock() == pblock) {
+				intended = (BasicAnchorPoint)connection.getOrigin();
+			}
+
+			if (intended != null && !intended.allowConnectionType(conType)) {
+				ret = String.format("Tag change error, cannot connect %s to %s", intended.getConnectionType().name(), conType.name());
+			}
+
+		}
+
+		return ret;  // this could return an error message
+	}
+	
+	// ------------------------------------------- NotificationChangeListener --------------------------------------
 	/**
-	 * Do nothing for a binding change - it just doesn't apply
+	 * Do nothing for a binding change - it just doesn't apply here
 	 */
 	@Override
 	public void bindingChange(String binding) {
-		log.debugf("%s.bindingChange: %s binding = %s",TAG,getName(),binding);
+		log.infof("%s.bindingChange: %s binding = %s",TAG,getName(),binding);
 	}
 	@Override
 	public void diagramAlertChange(long resId, String alerting) {
@@ -590,47 +642,10 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			super.fireStateChanged();
 		}
 	}
-	
+
 	@Override
 	public void watermarkChange(String mark) {
 		setWatermark(mark);
 	}
-
-	public String isValidBindingChange(ProcessBlockView pblock, DataType type) {
-		String ret = null;
-
-		Collection<ProcessAnchorDescriptor> bconns = pblock.getAnchors();
-//		ProcessAnchorDescriptor origin = null;
-//		ProcessAnchorDescriptor terminus = null;
-//		for (ProcessAnchorDescriptor bconn:bconns) {
-//			if (bconn.getType() == AnchorType.Origin) {
-//				origin = bconn;
-//			}
-//			if (bconn.getType() == AnchorType.Terminus) {
-//				terminus = bconn;
-//			}
-//		}
-		
-		ConnectionType conType = pblock.determineDataTypeFromTagType(type);
-
-		Collection<Connection> connections = getConnections();
-		for (Connection connection:connections) {
-			BasicAnchorPoint intended = null;
-			if (connection.getOrigin().getBlock() == pblock) {
-				intended = (BasicAnchorPoint)connection.getTerminus();
-			}
-			if (connection.getTerminus().getBlock() == pblock) {
-				intended = (BasicAnchorPoint)connection.getOrigin();
-			}
-			
-			if (intended != null && !intended.allowConnectionType(conType)) {
-				ret = String.format("Tag change error, cannot connect %s to %s", intended.getConnectionType().name(), conType.name());
-			}
-			
-		}
-
-		return ret;  // this could return an error message
-	}
-
 
 }

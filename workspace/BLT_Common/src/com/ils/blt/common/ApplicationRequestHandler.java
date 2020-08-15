@@ -79,6 +79,19 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		}
 	}
 	/**
+	 * Delete a SQLTag given its path. The path must contain the
+	 * provider name in brackets.
+	 */
+	public void deleteTag(String path) {
+		try {
+			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+									BLTProperties.MODULE_ID, "deleteTag",path);
+		}
+		catch(Exception ge) {
+			log.infof("%s.deleteTag: GatewayException (%s)",TAG,ge.getMessage());
+		}
+	}
+	/**
 	 * Determine whether or not the indicated diagram is known to the controller.
 	 * @param uuidString unique identifier of he diagram as a string
 	 */

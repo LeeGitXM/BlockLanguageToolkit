@@ -292,7 +292,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 //				menu.add(saveAction);
 				// NOTE: ctypeEditable gets turned off once a block has been serialized.  Exclude Input and Output blocks
 				if( selection instanceof BlockComponent && pbv.isCtypeEditable() && 
-						!pbv.getClassName().contains("block.Output") && !pbv.getClassName().contains("block.Input") ) {
+						!pbv.getClassName().equals(BlockConstants.BLOCK_CLASS_OUTPUT) && !pbv.getClassName().equals(BlockConstants.BLOCK_CLASS_INPUT) ) {
 					
 					// Types are: ANY, DATA, TEXT, TRUTH-VALUE
 					// Assume the type from the terminus anchor
@@ -326,7 +326,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 						menu.add(changeTypeMenu);
 					}
 				}
-				if( pbv.getClassName().contains("SinkConnection") || pbv.getClassName().contains("block.Output")) {
+				if( pbv.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK) || pbv.getClassName().equals(BlockConstants.BLOCK_CLASS_OUTPUT)) {
 					logger.infof("%s.getSelectionPopupMenu: SINK",TAG);
 					JMenu linkSinkMenu = new JMenu(BundleUtil.get().getString(PREFIX+".FollowConnection.Name"));
 					linkSinkMenu.setToolTipText(BundleUtil.get().getString(PREFIX+".FollowConnection.Desc"));
@@ -340,7 +340,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 					}
 					menu.add(linkSinkMenu);
 				}
-				else if( pbv.getClassName().contains("SourceConnection") || pbv.getClassName().contains("block.Input"))  {
+				else if( pbv.getClassName().equals(BlockConstants.BLOCK_CLASS_SOURCE) || pbv.getClassName().equals(BlockConstants.BLOCK_CLASS_INPUT))  {
 					logger.infof("%s.getSelectionPopupMenu: SOURCE",TAG);
 					JMenu linkSourceMenu = new JMenu(BundleUtil.get().getString(PREFIX+".FollowConnection.Name"));
 					linkSourceMenu.setToolTipText(BundleUtil.get().getString(PREFIX+".FollowConnection.Desc"));
@@ -834,8 +834,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 							String connectionMessage = null;
 							// Edit a source or sink.
 							if( editSourceSink ) {
-								if( pblock.getClassName().endsWith("SinkConnection") || 
-									pblock.getClassName().endsWith("SourceConnection") ) {
+								if( pblock.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK) || 
+									pblock.getClassName().equals(BlockConstants.BLOCK_CLASS_SOURCE) ) {
 									if( tagProp == ExpressionType.None.getIntValue() ) {
 										connectionMessage = diagram.isValidBindingChange(pblock, tagType);
 										if( connectionMessage==null ) {
@@ -847,9 +847,9 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 							}
 							// Input/Output are the only blocks of interest
 							else {
-								if( pblock.getClassName().endsWith("Input") || 
-									pblock.getClassName().endsWith("Output") ) {
-									if( !pblock.getClassName().endsWith("Output") || (tagProp == ExpressionType.None.getIntValue()) ) {
+								if( pblock.getClassName().equals(BlockConstants.BLOCK_CLASS_INPUT) || 
+									pblock.getClassName().equals(BlockConstants.BLOCK_CLASS_OUTPUT) ) {
+									if( !pblock.getClassName().equals(BlockConstants.BLOCK_CLASS_OUTPUT) || (tagProp == ExpressionType.None.getIntValue()) ) {
 										connectionMessage = diagram.isValidBindingChange(pblock, tagType);
 										if( connectionMessage==null ) {
 											prop = pblock.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);

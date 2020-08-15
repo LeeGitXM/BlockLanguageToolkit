@@ -35,6 +35,11 @@ public interface ToolkitRequestHandler  {
 	 */
 	public void clearController();
 	/**
+	 * Delete a SQLTag given its path. The path must contain the
+	 * provider name in brackets.
+	 */
+	public void deleteTag(String path);
+	/**
 	 * Determine whether or not the indicated diagram is known to the controller.
 	 * @param diagramId string representation of the diagram's unique id
 	 * @return true if the referenced diagram exists in the gateway

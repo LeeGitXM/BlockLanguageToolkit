@@ -43,6 +43,7 @@ import com.ils.blt.gateway.engine.ProcessDiagram;
 import com.ils.blt.gateway.engine.ProcessFamily;
 import com.ils.blt.gateway.engine.ProcessNode;
 import com.ils.blt.gateway.proxy.ProxyHandler;
+import com.ils.blt.gateway.tag.TagHandler;
 import com.ils.common.ClassList;
 import com.ils.common.persistence.ToolkitProperties;
 import com.ils.common.persistence.ToolkitRecordHandler;
@@ -76,6 +77,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	private final GatewayScriptExtensionManager sem = GatewayScriptExtensionManager.getInstance();
 	private ToolkitRecordHandler toolkitRecordHandler;
 	private final UtilityFunctions fcns;
+	private TagHandler tagHandler; 
     
 	/**
 	 * Initialize with instances of the classes to be controlled.
@@ -130,6 +132,10 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		controller.sendWatermarkNotification(diagramId,"");
 	}
 
+	public void deleteTag(String path) {
+		tagHandler.deleteTag(path);
+	}
+	
 	/**
 	 * Create an instance of a named class. If the class is not found in the JVM, try Python 
 	 * @param className class to create
@@ -1385,6 +1391,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	public void setContext(GatewayContext cntx) {
 		this.context = cntx;
 		toolkitRecordHandler = new ToolkitRecordHandler(context); 
+		tagHandler = new TagHandler(context);
 	}
 
 

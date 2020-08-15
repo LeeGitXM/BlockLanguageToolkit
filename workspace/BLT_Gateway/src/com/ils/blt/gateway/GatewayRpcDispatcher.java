@@ -66,6 +66,9 @@ public class GatewayRpcDispatcher   {
 		requestHandler.clearController();
 	}
 
+	public void deleteTag(String path) {
+		requestHandler.deleteTag(path);
+	}
 	/**
 	 * This should always succeed because we create a block in the gateway whenever we 
 	 * create one from the palette.

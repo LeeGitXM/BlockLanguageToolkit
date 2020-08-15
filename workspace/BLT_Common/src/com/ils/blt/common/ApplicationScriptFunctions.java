@@ -41,7 +41,13 @@ public class ApplicationScriptFunctions   {
 	public static void clearWatermark(String diagramId) {
 		handler.clearWatermark(diagramId);
 	}
-
+	/**
+	 * Delete a SQLTag given its path. The path must contain the
+	 * provider name in brackets.
+	 */
+	public static void deleteTag(String path) {
+		handler.deleteTag(path);
+	}
 	/**
 	 * @param uuid id of the application
 	 * @return the application name

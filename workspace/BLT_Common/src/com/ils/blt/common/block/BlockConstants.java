@@ -74,13 +74,21 @@ public interface BlockConstants   {
 	public static final String PORT_NAME                = "name";
 	public static final String PORT_TYPE                = "type";   // datatype for a port
 	
+	// These are block classes with special Handling
+	public static final String BLOCK_CLASS_INPUT     	= "com.ils.block.Input"; 
+	public static final String BLOCK_CLASS_OUTPUT     	= "com.ils.block.Output"; 
+	public static final String BLOCK_CLASS_SINK     	= "com.ils.block.SinkConnection"; 
+	public static final String BLOCK_CLASS_SOURCE     	= "com.ils.block.SourceConnection"; 
+	
+	// Special folder to contain binding tags for Source/Sink blocks
+	public static final String SOURCE_SINK_TAG_FOLDER                  = "Connections"; 
+	
 	// These are standard connection property names
 	public static final String CONNECTION_PROPERTY_DOWNSTREAM_PORT     = "downstream"; 
 	public static final String CONNECTION_PROPERTY_QUALITY             = "quality";
 	public static final String CONNECTION_PROPERTY_UPSTREAM_PORT       = "upstream"; 
 	public static final String CONNECTION_PROPERTY_VALUE               = "value"; 
-	// Special folder to contain binding tags for Source/Sink blocks
-	public static final String SOURCE_SINK_TAG_FOLDER                  = "Connections"; 
+
 	
 	// These are standard palette tab names
 	public static final String PALETTE_TAB_ARITHMETIC         = "Arithmetic";

@@ -47,6 +47,14 @@ public class GatewayScriptFunctions   {
 	public static void clearController() {
 		handler.clearController();
 	}
+	
+	/**
+	 * Delete a SQLTag given its path. The path must contain the
+	 * provider name in brackets.
+	 */
+	public static void deleteTag(String path) {
+		handler.deleteTag(path);
+	}
 	/**
 	 * @param uuid string value of application's UUID
 	 * @return name of the application
