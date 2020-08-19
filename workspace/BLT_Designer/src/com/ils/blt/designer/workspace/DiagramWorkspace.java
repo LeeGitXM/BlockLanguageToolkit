@@ -857,6 +857,10 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 										}
 									}
 								}
+								else if( pblock.getClassName().equals(BlockConstants.BLOCK_CLASS_SOURCE) || 
+										pblock.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK) ) {
+									connectionMessage = "Source and SinkConnections may only be configured with tags from the \"Connections\" folder.";
+								}
 							}
 
 							if( prop!=null ) {
