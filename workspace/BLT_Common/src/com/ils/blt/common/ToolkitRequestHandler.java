@@ -356,6 +356,12 @@ public interface ToolkitRequestHandler  {
 	 * @param blockId id of the subject block as a string
 	 */
 	public void propagateBlockState(String diagramId,String blockId) ;
+		/** Update a single property for a block 
+		 * @param duuid diagram unique Id
+		 * @param buuid block unique Id
+		 * @param name the new name
+		 */
+		public void renameBlock(String duuid,String buuid,String name ) ;
 	/**
 	 * Rename a SQLTag given its path and new name. The path must contain the
 	 * provider name in brackets.
@@ -443,6 +449,16 @@ public interface ToolkitRequestHandler  {
 	 * @param property the changed property
 	 */
 	public void setBlockProperty(UUID duuid,UUID buuid,BlockProperty property ) ;
+	
+	/** Change the binding on a block property in such a way that the block and UI
+	 * are notified of the change.
+	 *  
+	 * @param diagramId diagram's unique Id as a String
+	 * @param bname name of the block
+	 * @param prop the changed property
+	 * @param value the new binding of the property. The value must be a legal tag path 
+	 */
+	public void setBlockPropertyBinding(String diagramId,String bname,String prop,String value ) ;
 	
 	/** Change the value of a block property in such a way that the block and UI
 	 * are notified of the change.

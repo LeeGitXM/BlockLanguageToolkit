@@ -532,6 +532,18 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 					prop.addChangeListener(block);
 				}
 			}
+			if( block.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SOURCE) ||
+				block.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SINK)) {
+				String key = NotificationKey.keyForBlockName(block.getId().toString());
+				handler.initializeNotification(key,new BasicQualifiedValue(block.getName()));
+				handler.addNotificationChangeListener(key,TAG, block);
+				BlockProperty prop = block.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
+				handler.initializeNotification(key,new BasicQualifiedValue(prop.getValue()));
+				handler.addNotificationChangeListener(key,TAG, prop);
+				key = NotificationKey.keyForProperty(block.getId().toString(), prop.getName());
+				handler.initializeNotification(key,new BasicQualifiedValue(prop.getValue()));
+				handler.addNotificationChangeListener(key,TAG, prop);
+			}
 		}
 		// Register self for state and watermark changes
 		String key = NotificationKey.keyForDiagram(getResourceId());
@@ -640,6 +652,10 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	@Override
 	public void diagramAlertChange(long resId, String alerting) {
 		log.debugf("%s.alertingChange: %s alerting = %s",TAG,getName(),alerting);
+	}
+	// Let the blocks subscribe to their own name changes
+	@Override
+	public void nameChange(String name) {
 	}
 	/**
 	 * The value that we expect is a state change

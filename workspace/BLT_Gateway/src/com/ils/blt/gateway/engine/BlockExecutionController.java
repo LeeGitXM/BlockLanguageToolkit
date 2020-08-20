@@ -731,6 +731,18 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 			log.debugf("%s.sendPropertyNotification: Error transmitting %s (%s)",TAG,key,ex.getMessage());
 		}
 	}
+	@Override
+	public void sendNameChangeNotification(String blkid,String name) {
+		String key = NotificationKey.keyForBlockName(blkid);
+		log.tracef("%s.sendNameChangeNotification: %s (%s)",TAG,key,name);
+		try {
+			sessionManager.sendNotification(ApplicationScope.DESIGNER, BLTProperties.MODULE_ID, key, name);
+		}
+		catch(Exception ex) {
+			// Probably no receiver registered. This is to be expected if the designer is not running.
+			log.debugf("%s.sendPropertyBindingNotification: Error transmitting %s (%s)",TAG,key,ex.getMessage());
+		}
+	}
 	/**
 	 * Notify any notification listeners of changes to the binding of a block property. The most
 	 * common case where this is used is when a tag provider is changed via a diagram state change.

@@ -24,6 +24,7 @@ import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
+import com.ils.blt.common.notification.NotificationChangeListener;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.designer.workspace.ui.AbstractUIView;
@@ -53,7 +54,7 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.impl.Ab
  * Note: initUI is called from the AbstractBlock constructor which is called
  *       when the diagram is opened.
  */
-public class ProcessBlockView extends AbstractBlock implements ChangeListener {
+public class ProcessBlockView extends AbstractBlock implements ChangeListener, NotificationChangeListener {
 	private static final String TAG = "ProcessBlockView";
 	private final static Random random = new Random();
 	private Map<String,ProcessAnchorDescriptor> anchors;
@@ -626,6 +627,30 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 			ret = true;
 		}
 		return ret;
+	}
+
+	// =================================== NotificationChangeListener =====================
+	@Override
+	public void diagramAlertChange(long resourceId, String state) {	
+	}
+
+	@Override
+	public void bindingChange(String binding) {
+	}
+	
+	@Override
+	public void nameChange(String name) {
+		setName(name);
+	}
+
+	@Override
+	public void valueChange(QualifiedValue value) {	
+	}
+
+	@Override
+	public void watermarkChange(String newWatermark) {
+		// TODO Auto-generated method stub
+		
 	}
 
 

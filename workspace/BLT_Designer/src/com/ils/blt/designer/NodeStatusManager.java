@@ -350,6 +350,9 @@ public void diagramAlertChange(long resId, String state) {
 public void bindingChange(String binding) {}
 
 @Override
+public void nameChange(String name) {}
+
+@Override
 public void valueChange(QualifiedValue value) {}
 
 @Override

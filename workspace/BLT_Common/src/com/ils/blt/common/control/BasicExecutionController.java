@@ -116,6 +116,9 @@ public class BasicExecutionController implements ExecutionController  {
 	public void sendConnectionNotification(String blockid, String port, QualifiedValue val) {
 		log.warnf("%s.sendConnectionNotification: WARNING: Executed from stub class",TAG);
 	}
+	public void sendNameChangeNotification(String blockid, String name) {
+		log.warnf("%s.sendNameChangeNotification: WARNING: Executed from stub class",TAG);
+	}
 	public void sendPropertyBindingNotification(String id, String propertyName, String val){
 		log.warnf("%s.sendPropertyBindingNotification: WARNING: Executed from stub class",TAG);
 	}

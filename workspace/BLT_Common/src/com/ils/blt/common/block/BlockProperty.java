@@ -229,6 +229,8 @@ public class BlockProperty implements NotificationChangeListener {
 			log.infof("%s.bindingChange of %s to %s threw ConcurrentModificationException (ignored)",TAG,getName(),bindTo);
 		}
 	}
+	@Override
+	public void nameChange(String val) {}
 	/**
 	 * Update a value based on a push notification. Note that this
 	 * triggers any change listeners on this property. These

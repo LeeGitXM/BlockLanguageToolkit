@@ -766,10 +766,14 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 		}
 	}
 	
-	// =========================================== Change Listener ===================================
+	// =========================================== Notification Change Listener ===================================
 	@Override
 	public void diagramAlertChange(long resId, String state) {}
 	// We get this when another entity changes a property. We just need to re-display.
+	@Override
+	public void nameChange(String name) {
+		
+	}
 	@Override
 	public void stateChanged(ChangeEvent e) {
 		//log.infof("%s.stateChanged: - %s",TAG,property.getName());

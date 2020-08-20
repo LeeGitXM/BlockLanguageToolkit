@@ -1,5 +1,5 @@
 /**
-   *   (c) 2014-2016  ILS Automation. All rights reserved. 
+  *   (c) 2014-2020  ILS Automation. All rights reserved. 
  */
 package com.ils.blt.common.notification;
 
@@ -26,7 +26,10 @@ public interface NotificationChangeListener extends EventListener  {
 	 * A property binding has changed
 	 */
 	public void bindingChange(String binding);
-	
+	/**
+	 * The name has changed
+	 */
+	public void nameChange(String name);
 	/**
 	 * Just send the new value.
 	 */

@@ -848,6 +848,20 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 			log.infof("%s.propagateBlockState: GatewayException (%s)",TAG,ge.getMessage());
 		}
 	}
+	/** Change the name of a block 
+	 * @param duuid diagram unique Id
+	 * @param buuid block unique Id
+	 * @param name the new name
+	 */
+	public void renameBlock(String duuid,String buuid,String name ) {
+		try {
+			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+				BLTProperties.MODULE_ID, "renameBlock",duuid,buuid,name);
+		}
+		catch(Exception ge) {
+			log.infof("%s.renameBlock: GatewayException (%s)",TAG,ge.getMessage());
+		}
+	}
 	/**
 	 * Rename a SQLTag given its path and new name. The path must contain the
 	 * provider name in brackets.
@@ -855,7 +869,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	public void renameTag(String name,String path) {
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "renameTag",name,path);
+				BLTProperties.MODULE_ID, "renameTag",name,path);
 		}
 		catch(Exception ge) {
 			log.infof("%s.renameTag: GatewayException (%s)",TAG,ge.getMessage());
@@ -1072,7 +1086,23 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 			log.infof("%s.setBlockProperty: GatewayException (%s)",TAG,ge.getMessage());
 		}		
 	}
-	
+	/** Change the binding on a block property in such a way that the block and UI
+	 * are notified of the change.
+	 *  
+	 * @param diagramId diagram's unique Id as a String
+	 * @param bname name of the block
+	 * @param pname the changed property
+	 * @param value the new binding of the property. The value must be a legal tag path 
+	 */
+	public void setBlockPropertyBinding(String diagramId,String bname,String pname,String value ) {
+		try {
+			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+				BLTProperties.MODULE_ID, "setBlockPropertyBinding", diagramId,bname, pname,value);
+		}
+		catch(Exception ge) {
+			log.infof("%s.setBlockPropertyValue: GatewayException (%s)",TAG,ge.getMessage());
+		}	
+	}
 	/** Change the value of a block property in such a way that the block and UI
 	 * are notified of the change.
 	 *  

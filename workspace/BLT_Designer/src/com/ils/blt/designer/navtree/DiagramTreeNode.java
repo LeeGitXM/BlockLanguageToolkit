@@ -846,6 +846,10 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	@Override
 	public void bindingChange(String binding) {
 	}
+	// This is the name of a block, so doesn't appear in the tree
+	@Override
+	public void nameChange(String name) {
+	}
 	// The value is in response to a diagram state change.
 	// Do not re-inform the Gateway, since that's where this notification originated
 	@Override

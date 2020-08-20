@@ -49,6 +49,7 @@ public interface ExecutionController  {
 	public QualifiedValue getTagValue(UUID diagramId,String path);
 	public void sendAlertNotification(long resid, String val);
 	public void sendConnectionNotification(String blockid, String port, QualifiedValue val);
+	public void sendNameChangeNotification(String blockid, String name);
 	public void sendPropertyBindingNotification(String id, String propertyName, String val);
 	public void sendPropertyNotification(String id, String propertyName, QualifiedValue val);
 	public void sendStateNotification(long resid, String val);

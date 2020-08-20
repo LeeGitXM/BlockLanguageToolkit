@@ -391,6 +391,12 @@ public class GatewayRpcDispatcher   {
 	public List<SerializableBlockStateDescriptor> queryDiagram(String diagId) {
 		return  requestHandler.listBlocksInDiagram(diagId);
 	}
+	/** Change the name of a block
+	 * 
+	 */
+	public void renameBlock(String diagramIdString,String blockIdString,String name) {
+		requestHandler.renameBlock(diagramIdString, blockIdString, name);
+	}
 	/**
 	 * Rename a SQLTag given its path and new name. The path must contain the
 	 * provider name in brackets.
@@ -513,6 +519,18 @@ public class GatewayRpcDispatcher   {
 		catch(IOException ioe) {
 			log.warnf("%s.setBlockProperty: IO exception (%s)",TAG,ioe.getLocalizedMessage());
 		}; 
+	}
+	
+	/** Change the value of a block property in such a way that the block and UI
+	 * are notified of the change.
+	 *  
+	 * @param diagramId diagram's unique Id as a String
+	 * @param bname name of the block
+	 * @param pname the changed property
+	 * @param bind the new binding value of the property. The binding is a tag path.
+	 */
+	public void setBlockPropertyBinding(String diagramId,String bname,String pname,String binding )  {
+		requestHandler.setBlockPropertyBinding(diagramId,bname,pname,binding);
 	}
 
 	/** Change the value of a block property in such a way that the block and UI

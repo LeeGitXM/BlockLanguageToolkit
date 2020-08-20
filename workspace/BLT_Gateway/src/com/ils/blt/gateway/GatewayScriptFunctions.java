@@ -452,6 +452,14 @@ public class GatewayScriptFunctions   {
 		List<SerializableResourceDescriptor> result = handler.listResourceNodes();
 		return result;
 	}
+	/** Update a single property for a block 
+	 * @param duuid diagram unique Id
+	 * @param buuid block unique Id
+	 * @param name the new name
+	 */
+	public static void renameBlock(String duuid,String buuid,String name ) {
+		handler.renameBlock(duuid, buuid, name);
+	}
 	/**
 	 * Rename a SQLTag given its path and new name. The path must contain the
 	 * provider name in brackets.
@@ -531,6 +539,17 @@ public class GatewayScriptFunctions   {
 	 */
 	public static void setApplicationState(String app,String state) {
 		handler.setApplicationState(app,state);
+	}
+	/** Change the binding on a block property in such a way that the block and UI
+	 * are notified of the change.
+	 *  
+	 * @param diagramId diagram's unique Id as a String
+	 * @param bname name of the block
+	 * @param pname the changed property
+	 * @param value the new binding of the property. The value must be a legal tag path 
+	 */
+	public static void setBlockPropertyBinding(String diagramId,String bname,String pname,String value ) {
+		handler.setBlockPropertyBinding(diagramId, bname, pname, value);
 	}
 	/** Change the value of a block property in such a way that the block and UI
 	 * are notified of the change.

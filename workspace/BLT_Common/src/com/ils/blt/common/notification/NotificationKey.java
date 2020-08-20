@@ -22,7 +22,7 @@ public class NotificationKey
 	 * @param blkid string version of the block's UUID
 	 * @return  a push-notification key for a block.
 	 */
-	public static String keyForBlock(String blkid) {
+	public static String keyForBlockName(String blkid) {
 		return String.format("B:%s",blkid);
 	}
 	/**

@@ -6,6 +6,7 @@ package com.ils.blt.common;
 
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
@@ -413,6 +414,14 @@ public class ApplicationScriptFunctions   {
 		List<SerializableResourceDescriptor> result = handler.listResourceNodes();
 		return result;
 	}
+	/** Update a single property for a block 
+	 * @param duuid diagram unique Id
+	 * @param buuid block unique Id
+	 * @param name the new name
+	 */
+	public static void renameBlock(String duuid,String buuid,String name ) {
+		handler.renameBlock(duuid, buuid, name);
+	}
 	/**
 	 * Rename a SQLTag given its path and new name. The path must contain the
 	 * provider name in brackets.
@@ -503,6 +512,18 @@ public class ApplicationScriptFunctions   {
 	public static void setBlockState(String diagramId,String bname,String value ) {
 		handler.setBlockState(diagramId, bname, value);
 	}
+	/** Change the binding on a block property in such a way that the block and UI
+	 * are notified of the change.
+	 *  
+	 * @param diagramId diagram's unique Id as a String
+	 * @param bname name of the block
+	 * @param pname the changed property
+	 * @param value the new binding of the property. The value must be a legal tag path 
+	 */
+	public static void setBlockPropertyBinding(String diagramId,String bname,String pname,String value ) {
+		handler.setBlockPropertyBinding(diagramId, bname, pname, value);
+	}
+	
 	/** Change the value of a block property in such a way that the block and UI
 	 * are notified of the change.
 	 *  

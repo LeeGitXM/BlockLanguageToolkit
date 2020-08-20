@@ -1114,6 +1114,24 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		}
 		controller.propagateBlockState(diagramUUID, blockUUID);
 	}
+	/**
+	 * Set the name of a block. Property listeners are notified. 
+	 * @param diagramId diagram Id
+	 * @param blockId Id of the target block
+	 * @param name the new name
+	 */
+	@Override
+	public void renameBlock(String diagramId, String blockId, String name) {
+		UUID diagramUUID = makeUUID(diagramId);
+		ProcessDiagram diagram = controller.getDiagram(diagramUUID);
+		ProcessBlock block = null;
+		UUID blockUUID = makeUUID(blockId);
+		if( diagram!=null ) block = diagram.getBlock(blockUUID);
+		if(block!=null) {
+			block.setName(name);
+		}
+		controller.sendNameChangeNotification(blockId, name);
+	}
 	@Override
 	public void renameTag(String name,String path) {
 		tagHandler.renameTag(name,path);
@@ -1326,6 +1344,32 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		}
 	}
 
+	/** Change the binding value of a block property in such a way that the block and UI
+	 * are notified of the change.
+	 *  
+	 * @param diagramId diagram's unique Id as a String
+	 * @param bname block name
+	 * @param pname the changed property
+	 * @param binding the new binding value of the property. The vaalue will be a tagpath as a String.
+	 */
+	public void setBlockPropertyBinding(String diagramId,String bname,String pname,String binding )  {
+		ProcessDiagram diagram = null;
+		UUID uuid = UUID.fromString(diagramId);
+		if( uuid!=null ) diagram = controller.getDiagram(uuid);
+		if( diagram!=null ) {
+			ProcessBlock block = diagram.getBlockByName(bname);
+			if( block!=null) {
+				controller.sendPropertyBindingNotification(block.getBlockId().toString(), pname, binding);
+			}
+			else{
+				log.warnf("%s.setBlockPropertyBinding: Unable to find block %s in diagram %s",TAG,diagramId,bname,diagram.getName());
+			}
+		}
+		else{
+			log.warnf("%s.setBlockPropertyBinding: Unable to find diagram %s for block %s",TAG,diagramId,bname);
+		}
+	}
+	
 	/** Change the value of a block property in such a way that the block and UI
 	 * are notified of the change.
 	 *  

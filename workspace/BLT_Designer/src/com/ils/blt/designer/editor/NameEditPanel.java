@@ -17,12 +17,14 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
+import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.script.CommonScriptExtensionManager;
 import com.ils.blt.common.script.ScriptConstants;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
+import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
@@ -118,20 +120,18 @@ public class NameEditPanel extends BasicEditPanel {
 					if( block.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK) ) {
 						BlockProperty prop = block.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
 						String path = prop.getBinding();
-						editor.getRequestHandler().renameTag(nameField.getText(), path);
+						ApplicationRequestHandler handler = editor.getRequestHandler();
+						handler.renameTag(nameField.getText(), path);
 						path = renamePath(nameField.getText(), path);
 						prop.setBinding(path);
 						// Perform similar modification on connected sources
-						for(SerializableBlockStateDescriptor desc:editor.getRequestHandler().listSourcesForSink(diagram.getId().toString(), block.getName())) {
-							Block blk = diagram.getBlock(UUID.fromString(desc.getIdString()));
-							if( blk instanceof ProcessBlockView ) {
-								ProcessBlockView source = (ProcessBlockView)blk;
-								source.setName(nameField.getText());
-								prop = source.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
-								prop.setBinding(path);
-							}
+						// Use the scripting interface to handle diagrams besides the current
+						for(SerializableBlockStateDescriptor desc:handler.listSourcesForSink(diagram.getId().toString(), block.getName())) {
+							SerializableResourceDescriptor rd = handler.getDiagramForBlock(desc.getIdString());
+							if( rd==null ) continue;
+							handler.setBlockPropertyBinding(rd.getId(), desc.getIdString(),BlockConstants.BLOCK_PROPERTY_TAG_PATH,path);
+							handler.renameBlock(rd.getId(), desc.getIdString(), nameField.getText());
 						}
-						
 					}
 					block.setName(nameField.getText());
 				}
