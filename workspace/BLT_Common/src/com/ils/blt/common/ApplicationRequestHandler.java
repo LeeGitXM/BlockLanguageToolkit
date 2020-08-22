@@ -1100,7 +1100,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 				BLTProperties.MODULE_ID, "setBlockPropertyBinding", diagramId,bname, pname,value);
 		}
 		catch(Exception ge) {
-			log.infof("%s.setBlockPropertyValue: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.setBlockPropertyBinding: GatewayException (%s)",TAG,ge.getMessage());
 		}	
 	}
 	/** Change the value of a block property in such a way that the block and UI

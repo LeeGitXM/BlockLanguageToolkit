@@ -910,7 +910,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 				diagram = controller.getDiagram(diaguuid);
 				for(ProcessBlock sink:diagram.getProcessBlocks()) {
 					if( sink.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SINK) ||
-							sink.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_OUTPUT) ) {
+						sink.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_OUTPUT) ) {
 						BlockProperty prop = sink.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
 						if( prop!=null && tagPath.equalsIgnoreCase(fcns.providerlessPath(prop.getBinding()))  ) {
 							results.add(sink.toDescriptor());
@@ -1129,8 +1129,8 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		if( diagram!=null ) block = diagram.getBlock(blockUUID);
 		if(block!=null) {
 			block.setName(name);
+			controller.sendNameChangeNotification(blockId, name);
 		}
-		controller.sendNameChangeNotification(blockId, name);
 	}
 	@Override
 	public void renameTag(String name,String path) {
@@ -1350,7 +1350,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * @param diagramId diagram's unique Id as a String
 	 * @param bname block name
 	 * @param pname the changed property
-	 * @param binding the new binding value of the property. The vaalue will be a tagpath as a String.
+	 * @param binding the new binding value of the property. The value will be a tagpath as a String.
 	 */
 	public void setBlockPropertyBinding(String diagramId,String bname,String pname,String binding )  {
 		ProcessDiagram diagram = null;

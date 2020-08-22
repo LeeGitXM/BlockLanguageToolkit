@@ -129,7 +129,7 @@ public class NameEditPanel extends BasicEditPanel {
 						for(SerializableBlockStateDescriptor desc:handler.listSourcesForSink(diagram.getId().toString(), block.getName())) {
 							SerializableResourceDescriptor rd = handler.getDiagramForBlock(desc.getIdString());
 							if( rd==null ) continue;
-							handler.setBlockPropertyBinding(rd.getId(), desc.getIdString(),BlockConstants.BLOCK_PROPERTY_TAG_PATH,path);
+							handler.setBlockPropertyBinding(rd.getId(), desc.getName(),BlockConstants.BLOCK_PROPERTY_TAG_PATH,path);
 							handler.renameBlock(rd.getId(), desc.getIdString(), nameField.getText());
 						}
 					}

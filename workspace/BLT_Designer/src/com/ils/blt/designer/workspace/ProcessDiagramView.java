@@ -514,7 +514,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			if( bap!=null ) {    // Is null when block-and-connector library is hosed.
 				ProcessBlockView blk = (ProcessBlockView)bap.getBlock();
 				String key = NotificationKey.keyForConnection(blk.getId().toString(), bap.getId().toString());
-				handler.initializeNotification(key,blk.getLastValueForPort(bap.getId().toString()));
+				handler.initializePropertyValueNotification(key,blk.getLastValueForPort(bap.getId().toString()));
 				handler.addNotificationChangeListener(key,TAG, bap);
 			}
 		}
@@ -527,7 +527,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			for(BlockProperty prop:block.getProperties()) {
 				if( prop.getBindingType().equals(BindingType.ENGINE)) {
 					String key = NotificationKey.keyForProperty(block.getId().toString(), prop.getName());
-					handler.initializeNotification(key,new BasicQualifiedValue(prop.getValue()));
+					handler.initializePropertyValueNotification(key,new BasicQualifiedValue(prop.getValue()));
 					handler.addNotificationChangeListener(key,TAG, prop);
 					prop.addChangeListener(block);
 				}
@@ -535,13 +535,12 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			if( block.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SOURCE) ||
 				block.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SINK)) {
 				String key = NotificationKey.keyForBlockName(block.getId().toString());
-				handler.initializeNotification(key,new BasicQualifiedValue(block.getName()));
 				handler.addNotificationChangeListener(key,TAG, block);
+				// NOTE: prevents edit of block name
+				//handler.initializeBlockNameNotification(key,block.getName()); 
 				BlockProperty prop = block.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
-				handler.initializeNotification(key,new BasicQualifiedValue(prop.getValue()));
-				handler.addNotificationChangeListener(key,TAG, prop);
-				key = NotificationKey.keyForProperty(block.getId().toString(), prop.getName());
-				handler.initializeNotification(key,new BasicQualifiedValue(prop.getValue()));
+				key = NotificationKey.keyForPropertyBinding(block.getId().toString(), prop.getName());
+				handler.initializePropertyBindingNotification(key,prop.getBinding());
 				handler.addNotificationChangeListener(key,TAG, prop);
 			}
 		}
@@ -568,6 +567,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			BasicAnchorPoint bap = (BasicAnchorPoint)cxn.getOrigin();
 			ProcessBlockView blk = (ProcessBlockView)bap.getBlock();
 			handler.removeNotificationChangeListener(NotificationKey.keyForConnection(blk.getId().toString(),bap.getId().toString()),TAG);
+			
 		}
 		
 		// De-register any properties "bound" to the engine
@@ -577,6 +577,10 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 					handler.removeNotificationChangeListener(NotificationKey.keyForProperty(block.getId().toString(), prop.getName()),TAG);
 					prop.removeChangeListener(block);
 				}
+			}
+			if( block.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SOURCE) ||
+				block.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SINK)) {
+				handler.removeNotificationChangeListener(NotificationKey.keyForBlockName(block.getId().toString()),block.getId().toString());
 			}
 		}
 		// Finally, deregister self

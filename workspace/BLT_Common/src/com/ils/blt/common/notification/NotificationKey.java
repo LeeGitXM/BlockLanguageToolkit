@@ -23,7 +23,7 @@ public class NotificationKey
 	 * @return  a push-notification key for a block.
 	 */
 	public static String keyForBlockName(String blkid) {
-		return String.format("B:%s",blkid);
+		return String.format("N:%s",blkid);
 	}
 	/**
 	 * @param blockid string version of the block's UUID
@@ -62,12 +62,27 @@ public class NotificationKey
 		return String.format("B:%s:%s",blkid,pname);
 	}
 	/**
+	 * @param key the key value 
+	 * @return  true if this is a connection key.
+	 */
+	public static boolean isConnectionKey(String key) {
+		return key.startsWith("C");
+	}
+	/**
 	 * Test a key for type.
 	 * @param key the key value 
 	 * @return  true if this is a binding key.
 	 */
 	public static boolean isDiagramAlertKey(String key) {
 		return key.startsWith("A");
+	}
+	/**
+	 * Test a key for type. 
+	 * @param key the key value 
+	 * @return  true if this is a binding key.
+	 */
+	public static boolean isNameChangeKey(String key) {
+		return key.startsWith("N");
 	}
 	/**
 	 * Test a key for type. 

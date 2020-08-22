@@ -94,7 +94,7 @@ public class NotificationHandler implements PushNotificationListener {
 				Map<String,NotificationChangeListener> listeners = changeListenerMap.get(key);
 				if( listeners != null ) {
 					for(NotificationChangeListener listener:listeners.values()) {
-						log.tracef("%s.receiveNotification: key=%s - notifying %s",TAG,key,listener.getClass().getName());
+						log.tracef("%s.receiveNotification: diagram key=%s - notifying %s",TAG,key,listener.getClass().getName());
 						// Listener is the node status manager - // Refresh the Nav tree
 						long resourceId = Long.parseLong(key.substring(2));
 						listener.diagramAlertChange(resourceId, payload.toString());
@@ -104,16 +104,47 @@ public class NotificationHandler implements PushNotificationListener {
 					log.debugf("%s.receiveNotification: no receiver for key=%s,value=%s",TAG,key,payload.toString());
 				}
 			}
-			else if(hook==null || !hook.attachDiagrams()) {
-				;  // Ignore UI updates if the diagrams are "detached" 
-			}
-			else if( payload instanceof QualifiedValue ) {
+			// Listener is a basic anchor point.
+			else if(NotificationKey.isConnectionKey(key)) {
 				payloadMap.put(key, payload);
 				Map<String,NotificationChangeListener> listeners = changeListenerMap.get(key);
 				if( listeners != null ) {
-
 					for(NotificationChangeListener listener:listeners.values()) {
-						log.tracef("%s.receiveNotification: key=%s - notifying %s",TAG,key,listener.getClass().getName());
+						log.tracef("%s.receiveNotification: value key=%s - notifying %s",TAG,key,listener.getClass().getName());
+						listener.valueChange((QualifiedValue)payload);
+					}
+					// Repaint the workspace
+					SwingUtilities.invokeLater(new WorkspaceRepainter());
+				}
+				else {
+					log.debugf("%s.receiveNotification: no receiver for key=%s,value=%s",TAG,key,payload.toString());
+				}
+			}
+			else if(hook==null || !hook.attachDiagrams()) {
+				;  // Ignore UI updates if the diagrams are "detached" 
+			}
+			else if(NotificationKey.isNameChangeKey(key)) {
+				payloadMap.put(key, payload);
+				Map<String,NotificationChangeListener> listeners = changeListenerMap.get(key);
+				if( listeners != null ) {
+					for(NotificationChangeListener listener:listeners.values()) {
+						log.infof("%s.receiveNotification: rename key=%s - notifying %s",TAG,key,listener.getClass().getName());
+						listener.nameChange(payload.toString());
+					}
+					// Repaint the workspace
+					SwingUtilities.invokeLater(new WorkspaceRepainter());
+				}
+				else {
+					log.debugf("%s.receiveNotification: no receiver for key=%s,value=%s",TAG,key,payload.toString());
+				}
+			}
+			// Payload is a qualified value
+			else if(NotificationKey.isPropertyValueKey(key)) {
+				payloadMap.put(key, payload);
+				Map<String,NotificationChangeListener> listeners = changeListenerMap.get(key);
+				if( listeners != null ) {
+					for(NotificationChangeListener listener:listeners.values()) {
+						log.tracef("%s.receiveNotification: value key=%s - notifying %s",TAG,key,listener.getClass().getName());
 						listener.valueChange((QualifiedValue)payload);
 					}
 					// Repaint the workspace
@@ -124,10 +155,11 @@ public class NotificationHandler implements PushNotificationListener {
 				}
 			}
 			else if(NotificationKey.isPropertyBindingKey(key)) {
+				payloadMap.put(key, payload);
 				Map<String,NotificationChangeListener> listeners = changeListenerMap.get(key);
 				if( listeners != null ) {
 					for(NotificationChangeListener listener:listeners.values()) {
-						log.tracef("%s.receiveNotification: key=%s - notifying %s",TAG,key,listener.getClass().getName());
+						log.infof("%s.receiveNotification: binding key=%s - notifying %s",TAG,key,listener.getClass().getName());
 						listener.bindingChange(payload.toString());
 					}
 					// Repaint the workspace
@@ -138,6 +170,7 @@ public class NotificationHandler implements PushNotificationListener {
 				}
 			}
 			else if(NotificationKey.isWatermarkKey(key)) {
+				payloadMap.put(key, payload);
 				Map<String,NotificationChangeListener> listeners = changeListenerMap.get(key);
 				if( listeners != null ) {
 					for(NotificationChangeListener listener:listeners.values()) {
@@ -160,9 +193,29 @@ public class NotificationHandler implements PushNotificationListener {
 	/**
 	 * Receive notification from a ProcessViewDiagram in the Designer. This is a mechanism
 	 * to restore the diagram display to its state prior to its last serialization.
+	 * Note: This is used only blocks whose names have been programatically changed.
+	 */
+	public void initializeBlockNameNotification(String key,String name) {
+		if( key==null || name==null) return;
+		// Only initialize the payload map if the key doesn't exist
+		Object payload = payloadMap.get(key);
+		if(payload==null) payloadMap.put(key, name);
+		Map<String,NotificationChangeListener> listeners = changeListenerMap.get(key);
+		if( listeners != null ) {
+			for(NotificationChangeListener listener:listeners.values()) {
+				log.tracef("%s.initializeBlockNameNotification: key=%s - notifying %s",TAG,key,listener.getClass().getName());
+				if( NotificationKey.isNameChangeKey(key) ) listener.nameChange(name);
+			}
+			// Repaint the workspace
+			SwingUtilities.invokeLater(new WorkspaceRepainter());
+		}
+	}
+	/**
+	 * Receive notification from a ProcessViewDiagram in the Designer. This is a mechanism
+	 * to restore the diagram display to its state prior to its last serialization.
 	 * Note: This is used only for properties bound to ENGINE.
 	 */
-	public void initializeNotification(String key,QualifiedValue value) {
+	public void initializePropertyBindingNotification(String key,String value) {
 		if( key==null || value==null) return;
 		// Only initialize the payload map if the key doesn't exist
 		Object payload = payloadMap.get(key);
@@ -170,7 +223,27 @@ public class NotificationHandler implements PushNotificationListener {
 		Map<String,NotificationChangeListener> listeners = changeListenerMap.get(key);
 		if( listeners != null ) {
 			for(NotificationChangeListener listener:listeners.values()) {
-				log.tracef("%s.initializeNotification: key=%s - notifying %s",TAG,key,listener.getClass().getName());
+				log.tracef("%s.initializePropertyBindingNotification: key=%s - notifying %s",TAG,key,listener.getClass().getName());
+				if( NotificationKey.isPropertyBindingKey(key) ) listener.bindingChange(value);
+			}
+			// Repaint the workspace
+			SwingUtilities.invokeLater(new WorkspaceRepainter());
+		}
+	}
+	/**
+	 * Receive notification from a ProcessViewDiagram in the Designer. This is a mechanism
+	 * to restore the diagram display to its state prior to its last serialization.
+	 * Note: This is used only for properties bound to ENGINE.
+	 */
+	public void initializePropertyValueNotification(String key,QualifiedValue value) {
+		if( key==null || value==null) return;
+		// Only initialize the payload map if the key doesn't exist
+		Object payload = payloadMap.get(key);
+		if( payload==null) payloadMap.put(key, value);
+		Map<String,NotificationChangeListener> listeners = changeListenerMap.get(key);
+		if( listeners != null ) {
+			for(NotificationChangeListener listener:listeners.values()) {
+				log.tracef("%s.initializePropertyValueNotification: key=%s - notifying %s",TAG,key,listener.getClass().getName());
 				if( NotificationKey.isPropertyValueKey(key) ) listener.valueChange(value);
 			}
 			// Repaint the workspace
@@ -195,8 +268,11 @@ public class NotificationHandler implements PushNotificationListener {
 		
 		// Make an immediate update 
 		Object payload = payloadMap.get(key);
-		if( payload!=null && ((QualifiedValue)payload).getValue()!=null ) {
-			listener.valueChange((QualifiedValue)payload);
+		if( payload!=null ) {
+			if( NotificationKey.isNameChangeKey(key)) listener.nameChange(payload.toString());
+			else if(NotificationKey.isPropertyBindingKey(key)) listener.bindingChange(payload.toString());
+			else if(NotificationKey.isPropertyValueKey(key))    listener.valueChange((QualifiedValue)payload);
+			else if(NotificationKey.isWatermarkKey(key)) listener.watermarkChange(payload.toString());
 			// Repaint the workspace
 			SwingUtilities.invokeLater(new WorkspaceRepainter());
 		}
