@@ -98,7 +98,8 @@ public class SinkConnection extends Output implements ProcessBlock {
 	public String validate() {
 		String summary = super.validate();
 		if( summary==null ) {
-			List<SerializableBlockStateDescriptor> links = controller.listSourcesForSink(getParentId().toString(),getName());
+			List<SerializableBlockStateDescriptor> links = controller.listSourcesForSink(
+									getParentId().toString(),this.getBlockId().toString());
 			if( links.isEmpty() ) {
 				summary = String.format("There are no sources linked to this sink block\t");
 			}

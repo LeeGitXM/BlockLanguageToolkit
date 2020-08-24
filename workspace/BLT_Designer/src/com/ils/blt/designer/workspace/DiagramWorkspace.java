@@ -331,7 +331,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 					JMenu linkSinkMenu = new JMenu(BundleUtil.get().getString(PREFIX+".FollowConnection.Name"));
 					linkSinkMenu.setToolTipText(BundleUtil.get().getString(PREFIX+".FollowConnection.Desc"));
 					String diagramId = getActiveDiagram().getId().toString();
-					List<SerializableBlockStateDescriptor> descriptors = handler.listSourcesForSink(diagramId, pbv.getName());
+					List<SerializableBlockStateDescriptor> descriptors = handler.listSourcesForSink(diagramId, pbv.getId().toString());
 					for(SerializableBlockStateDescriptor desc:descriptors) {
 						SerializableResourceDescriptor rd = handler.getDiagramForBlock(desc.getIdString());
 						if( rd==null ) continue;

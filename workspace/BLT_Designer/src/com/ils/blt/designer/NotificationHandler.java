@@ -85,9 +85,9 @@ public class NotificationHandler implements PushNotificationListener {
 		String moduleId = notice.getModuleId();
 		if( moduleId.equals(BLTProperties.MODULE_ID)) {
 			String key = notice.getMessageType();
-			Object payload = notice.getMessage();
-			log.tracef("%s.receiveNotification: key=%s,value=%s",TAG,key,(payload==null?"null":payload.toString()));
+			Object payload = notice.getMessage();	
 			if( payload==null ) return; // Ignore
+			log.tracef("%s.receiveNotification: key=%s,value=%s",TAG,key,payload.toString());
 			
 			// Process alert change notifications independent of "attached" status
 			if(NotificationKey.isDiagramAlertKey(key)) {

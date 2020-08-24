@@ -351,23 +351,23 @@ public class ApplicationScriptFunctions   {
 	 * Query the gateway for list of its sink blocks associated with the
 	 * specified source. The blocks that are returned are not constrained
 	 * to be part of the same diagram, family or application.
-	 * @param diagramId id of the enclosing diagram, a String
-	 * @param blockName name of the source block, a String 
+	 * @param diagramId of the parent diagram
+	 * @param blockId Id of the source block
 	 * @return a list of blocks logically connected to the source.
 	 */
-	public static List<SerializableBlockStateDescriptor> listSinksForSource(String diagramId,String blockName) {
-		return handler.listSinksForSource(diagramId,blockName);
+	public static List<SerializableBlockStateDescriptor> listSinksForSource(String diagramId,String blockId) {
+		return handler.listSinksForSource(diagramId,blockId);
 	}
 	/**
 	 * Query the gateway for list of its source blocks associated with the
-	 * specified sink. The blocks that are returned all belong to the same
-	 * application as the sink.
-	 * @param diagramId id of the enclosing diagram, a String
-	 * @param blockName name of the sink block, a String 
+	 * specified sink. The blocks that are returned are not constrained
+	 * to be part of the same diagram, family or application.
+	 * @param diagramId of the parent diagram
+	 * @param blockId Id of the sink block 
 	 * @return a list of blocks logically connected to the sink.
 	 */
-	public static List<SerializableBlockStateDescriptor> listSourcesForSink(String diagramId,String blockName) {
-		return handler.listSourcesForSink(diagramId,blockName);
+	public static List<SerializableBlockStateDescriptor> listSourcesForSink(String diagramId,String blockId) {
+		return handler.listSourcesForSink(diagramId,blockId);
 	}
 	/** 
 	 * @param diagramId of the parent diagram

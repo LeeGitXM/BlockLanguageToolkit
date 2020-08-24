@@ -760,11 +760,11 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<SerializableBlockStateDescriptor> listSinksForSource(String diagramId, String blockName) {
+	public List<SerializableBlockStateDescriptor> listSinksForSource(String diagramId, String blockId) {
 		List<SerializableBlockStateDescriptor> blockList = new ArrayList<>();
 		try {
 			blockList = (List<SerializableBlockStateDescriptor>)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "listSinksForSource",diagramId,blockName);
+					BLTProperties.MODULE_ID, "listSinksForSource",diagramId,blockId);
 		}
 		catch(Exception ge) {
 			log.infof("%s.listSinksForSource: GatewayException (%s)",TAG,ge.getMessage());
@@ -775,11 +775,11 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<SerializableBlockStateDescriptor> listSourcesForSink(String diagramId, String blockName) {
+	public List<SerializableBlockStateDescriptor> listSourcesForSink(String diagramId, String blockId) {
 		List<SerializableBlockStateDescriptor> blockList = new ArrayList<>();
 		try {
 			blockList = (List<SerializableBlockStateDescriptor>)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "listSourcesForSink",diagramId,blockName);
+					BLTProperties.MODULE_ID, "listSourcesForSink",diagramId,blockId);
 		}
 		catch(Exception ge) {
 			log.infof("%s.listSourcesForSink: GatewayException (%s)",TAG,ge.getMessage());

@@ -376,7 +376,8 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			ProcessBlockView view = (ProcessBlockView)blk;
 			if( view.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK)) {
 				BlockProperty prop = view.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
-				List<SerializableBlockStateDescriptor> sources = appRequestHandler.listSourcesForSink(getId().toString(), view.getName());
+				List<SerializableBlockStateDescriptor> sources = appRequestHandler.listSourcesForSink(getId().toString(),
+						view.getId().toString());
 				String tp = prop.getBinding();
 				appRequestHandler.deleteTag(tp);
 				if( sources.size()>0 ) {
@@ -536,12 +537,12 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 				block.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SINK)) {
 				String key = NotificationKey.keyForBlockName(block.getId().toString());
 				handler.addNotificationChangeListener(key,TAG, block);
-				// NOTE: prevents edit of block name
+				//// NOTE: prevents edit of block name
 				//handler.initializeBlockNameNotification(key,block.getName()); 
 				BlockProperty prop = block.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
 				key = NotificationKey.keyForPropertyBinding(block.getId().toString(), prop.getName());
-				handler.initializePropertyBindingNotification(key,prop.getBinding());
-				handler.addNotificationChangeListener(key,TAG, prop);
+				//handler.initializePropertyBindingNotification(key,prop.getBinding());
+				//handler.addNotificationChangeListener(key,TAG, prop);
 			}
 		}
 		// Register self for state and watermark changes
@@ -578,6 +579,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 					prop.removeChangeListener(block);
 				}
 			}
+			
 			if( block.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SOURCE) ||
 				block.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SINK)) {
 				handler.removeNotificationChangeListener(NotificationKey.keyForBlockName(block.getId().toString()),block.getId().toString());
@@ -637,7 +639,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			}
 
 			if (intended != null && !intended.allowConnectionType(conType)) {
-				ret = String.format("Tag change error, cannot connect %s to %s", intended.getConnectionType().name(), conType.name());
+				ret = String.format("%s: Tag change error, cannot connect %s to %s", pblock.getName(),intended.getConnectionType().name(), conType.name());
 			}
 
 		}

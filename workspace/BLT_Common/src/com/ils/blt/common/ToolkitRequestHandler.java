@@ -317,25 +317,24 @@ public interface ToolkitRequestHandler  {
 	 * @return a list of resources known to the BlockController.
 	 */
 	public List<SerializableResourceDescriptor> listResourceNodes();
-	
 	/**
 	 * Query the gateway for list of its sink blocks associated with the
 	 * specified source. The blocks that are returned are not constrained
 	 * to be part of the same diagram, family or application.
 	 * @param diagramId of the parent diagram
-	 * @param blockName name of the block within the diagram 
+	 * @param blockId Id of the source block
 	 * @return a list of blocks logically connected to the source.
 	 */
-	public List<SerializableBlockStateDescriptor> listSinksForSource(String diagramId,String blockName) ;
+	public List<SerializableBlockStateDescriptor> listSinksForSource(String diagramId,String blockId) ;
 	/**
 	 * Query the gateway for list of its source blocks associated with the
 	 * specified sink. The blocks that are returned are not constrained
 	 * to be part of the same diagram, family or application.
 	 * @param diagramId of the parent diagram
-	 * @param blockName name of the block within the diagram  
+	 * @param blockId Id of the sink block  
 	 * @return a list of blocks logically connected to the sink.
 	 */
-	public List<SerializableBlockStateDescriptor> listSourcesForSink(String diagramId,String blockName) ;
+	public List<SerializableBlockStateDescriptor> listSourcesForSink(String diagramId,String blockId) ;
 	/** 
 	 * @param diagramId of the parent diagram
 	 * @param blockName name of the block within the diagram

@@ -112,6 +112,13 @@ public class BlockPropertyEditor extends SlidingPane   {
 			if( tab!=null )  workspace.saveDiagramResource(tab);
 		}
 	}
+	/**
+	 * Save a diagram that is not the current.
+	 */
+	public void saveDiagram(long resid) {
+		BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resid);
+		if( tab!=null )  workspace.saveDiagramResource(tab);
+	}
 	
 	/**
 	 * One of the edit panels has modified a block property. Update the

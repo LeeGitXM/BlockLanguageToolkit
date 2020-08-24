@@ -883,22 +883,21 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * as the specified block. We cover all diagrams in the system.
 	 * 
 	 * @param diagramId identifier for the diagram
-	 * @param blockName name of the source
+	 * @param blockId Id of the source
 	 * @return a list of block descriptors for the sinks that were found
 	 */
 	@Override
-	public synchronized List<SerializableBlockStateDescriptor> listSinksForSource(String diagramId,String blockName) {
+	public synchronized List<SerializableBlockStateDescriptor> listSinksForSource(String diagramId,String blockId) {
 		List<SerializableBlockStateDescriptor> results = new ArrayList<>();
 		UUID diagramuuid = makeUUID(diagramId);
 		ProcessDiagram diagram = controller.getDiagram(diagramuuid);
 		ProcessBlock source = null;
 		if(diagram!=null) {
-			source = diagram.getBlockByName(blockName);
+			source = diagram.getBlock(makeUUID(blockId));
 		}
 	
 		String tagPath = null;
-		if( source!=null && (source.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SOURCE) ||
-				source.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_INPUT))) {
+		if( source!=null && (source.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SOURCE))) {
 			BlockProperty prop = source.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
 			if( prop!=null ) tagPath = fcns.providerlessPath(prop.getBinding());
 		}
@@ -909,8 +908,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 				UUID diaguuid = makeUUID(desc.getId());
 				diagram = controller.getDiagram(diaguuid);
 				for(ProcessBlock sink:diagram.getProcessBlocks()) {
-					if( sink.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SINK) ||
-						sink.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_OUTPUT) ) {
+					if( sink.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SINK) ) {
 						BlockProperty prop = sink.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
 						if( prop!=null && tagPath.equalsIgnoreCase(fcns.providerlessPath(prop.getBinding()))  ) {
 							results.add(sink.toDescriptor());
@@ -920,7 +918,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			}
 		}
 		else {
-			log.warnf("%s.listSinksForSource: Block %s not found, not a source/input or not bound",TAG,blockName);
+			log.warnf("%s.listSinksForSource: Block %s not found, not a source/input or not bound",TAG,blockId);
 		}
 		return results;
 	}
@@ -928,17 +926,17 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * Do an exhaustive search for all source blocks that have the same binding
 	 * as the specified block. We cover all diagrams in the system.
 	 * @param diagramId identifier for the diagram
-	 * @param blockName name of the sink
+	 * @param blockId Id of the sink
 	 * @return a list of descriptors for the sources that were found
 	 */
 	@Override
-	public synchronized List<SerializableBlockStateDescriptor> listSourcesForSink(String diagramId,String blockName) {
+	public synchronized List<SerializableBlockStateDescriptor> listSourcesForSink(String diagramId,String blockId) {
 		List<SerializableBlockStateDescriptor> results = new ArrayList<>();
 		UUID diagramuuid = makeUUID(diagramId);
 		ProcessDiagram diagram = controller.getDiagram(diagramuuid);
 		ProcessBlock sink = null;
 		if(diagram!=null) {
-			sink = diagram.getBlockByName(blockName);
+			sink = diagram.getBlock(makeUUID(blockId));
 		}
 
 		String tagPath = null;
@@ -954,8 +952,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 				UUID diaguuid = makeUUID(descriptor.getId());
 				diagram = controller.getDiagram(diaguuid);
 				for(ProcessBlock source:diagram.getProcessBlocks()) {
-					if( source.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SOURCE) ||
-							source.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_INPUT) ) {
+					if( source.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SOURCE) ) {
 						BlockProperty prop = source.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
 						if( prop!=null && tagPath.equalsIgnoreCase(fcns.providerlessPath(prop.getBinding()))  ) {
 							results.add(source.toDescriptor());
@@ -965,7 +962,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			}
 		}
 		else {
-			log.warnf("%s.listSourcesForSink: Block %s not found, not a sink/output or not bound",TAG,blockName);
+			log.warnf("%s.listSourcesForSink: Block %s not found, not a sink/output or not bound",TAG,blockId);
 		}
 		return results;
 	}

@@ -1,12 +1,11 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved.
+ *   (c) 2014-2020  ILS Automation. All rights reserved.
  */
 package com.ils.blt.designer.editor;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.UUID;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -30,7 +29,6 @@ import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.ils.blt.designer.workspace.WorkspaceRepainter;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
-import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
 import net.miginfocom.swing.MigLayout;
@@ -117,6 +115,7 @@ public class NameEditPanel extends BasicEditPanel {
 						}
 					}
 
+					block.setName(nameField.getText());
 					if( block.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK) ) {
 						BlockProperty prop = block.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
 						String path = prop.getBinding();
@@ -124,16 +123,19 @@ public class NameEditPanel extends BasicEditPanel {
 						handler.renameTag(nameField.getText(), path);
 						path = renamePath(nameField.getText(), path);
 						prop.setBinding(path);
+						
 						// Perform similar modification on connected sources
 						// Use the scripting interface to handle diagrams besides the current
-						for(SerializableBlockStateDescriptor desc:handler.listSourcesForSink(diagram.getId().toString(), block.getName())) {
+						// The block name has already changed.
+						for(SerializableBlockStateDescriptor desc:handler.listSourcesForSink(diagram.getId().toString(),block.getId().toString())) {
 							SerializableResourceDescriptor rd = handler.getDiagramForBlock(desc.getIdString());
 							if( rd==null ) continue;
+							log.infof("NameEditPanel.actionPerformed: sink connected to %s",desc.getName());
 							handler.setBlockPropertyBinding(rd.getId(), desc.getName(),BlockConstants.BLOCK_PROPERTY_TAG_PATH,path);
 							handler.renameBlock(rd.getId(), desc.getIdString(), nameField.getText());
+							editor.saveDiagram(rd.getResourceId());
 						}
 					}
-					block.setName(nameField.getText());
 				}
 				try {
 					block.setNameDisplayed(annotationCheckBox.isSelected());

@@ -342,12 +342,12 @@ public class GatewayRpcDispatcher   {
 		return requestHandler.listResourceNodes();
 	}
 
-	public List<SerializableBlockStateDescriptor> listSinksForSource(String diagramId,String blockName) {
-		return requestHandler.listSinksForSource(diagramId,blockName);
+	public List<SerializableBlockStateDescriptor> listSinksForSource(String diagramId,String blockId) {
+		return requestHandler.listSinksForSource(diagramId,blockId);
 	}
 
-	public List<SerializableBlockStateDescriptor> listSourcesForSink(String diagramId,String blockName) {
-		return requestHandler.listSourcesForSink(diagramId,blockName);
+	public List<SerializableBlockStateDescriptor> listSourcesForSink(String diagramId,String blockId) {
+		return requestHandler.listSourcesForSink(diagramId,blockId);
 	}
 	
 	public String pathForBlock(String diagramId,String blockName) {
