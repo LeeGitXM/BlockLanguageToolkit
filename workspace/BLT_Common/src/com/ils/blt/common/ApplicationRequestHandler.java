@@ -1090,14 +1090,14 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * are notified of the change.
 	 *  
 	 * @param diagramId diagram's unique Id as a String
-	 * @param bname name of the block
+	 * @param blockId Id of the block as a string
 	 * @param pname the changed property
 	 * @param value the new binding of the property. The value must be a legal tag path 
 	 */
-	public void setBlockPropertyBinding(String diagramId,String bname,String pname,String value ) {
+	public void setBlockPropertyBinding(String diagramId,String blockId,String pname,String value ) {
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-				BLTProperties.MODULE_ID, "setBlockPropertyBinding", diagramId,bname, pname,value);
+				BLTProperties.MODULE_ID, "setBlockPropertyBinding", diagramId,blockId, pname,value);
 		}
 		catch(Exception ge) {
 			log.infof("%s.setBlockPropertyBinding: GatewayException (%s)",TAG,ge.getMessage());

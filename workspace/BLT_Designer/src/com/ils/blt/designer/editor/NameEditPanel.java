@@ -131,7 +131,7 @@ public class NameEditPanel extends BasicEditPanel {
 							SerializableResourceDescriptor rd = handler.getDiagramForBlock(desc.getIdString());
 							if( rd==null ) continue;
 							log.infof("NameEditPanel.actionPerformed: sink connected to %s",desc.getName());
-							handler.setBlockPropertyBinding(rd.getId(), desc.getName(),BlockConstants.BLOCK_PROPERTY_TAG_PATH,path);
+							handler.setBlockPropertyBinding(rd.getId(), desc.getIdString(),BlockConstants.BLOCK_PROPERTY_TAG_PATH,path);
 							handler.renameBlock(rd.getId(), desc.getIdString(), nameField.getText());
 							editor.saveDiagram(rd.getResourceId());
 						}

@@ -453,11 +453,11 @@ public interface ToolkitRequestHandler  {
 	 * are notified of the change.
 	 *  
 	 * @param diagramId diagram's unique Id as a String
-	 * @param bname name of the block
+	 * @param blockId Id of the block as a String
 	 * @param prop the changed property
 	 * @param value the new binding of the property. The value must be a legal tag path 
 	 */
-	public void setBlockPropertyBinding(String diagramId,String bname,String prop,String value ) ;
+	public void setBlockPropertyBinding(String diagramId,String blockId,String prop,String value ) ;
 	
 	/** Change the value of a block property in such a way that the block and UI
 	 * are notified of the change.

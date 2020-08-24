@@ -525,12 +525,12 @@ public class GatewayRpcDispatcher   {
 	 * are notified of the change.
 	 *  
 	 * @param diagramId diagram's unique Id as a String
-	 * @param bname name of the block
+	 * @param blockId Id of the block as a String
 	 * @param pname the changed property
 	 * @param bind the new binding value of the property. The binding is a tag path.
 	 */
-	public void setBlockPropertyBinding(String diagramId,String bname,String pname,String binding )  {
-		requestHandler.setBlockPropertyBinding(diagramId,bname,pname,binding);
+	public void setBlockPropertyBinding(String diagramId,String blockId,String pname,String binding )  {
+		requestHandler.setBlockPropertyBinding(diagramId,blockId,pname,binding);
 	}
 
 	/** Change the value of a block property in such a way that the block and UI
