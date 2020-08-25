@@ -128,7 +128,7 @@ public class NotificationHandler implements PushNotificationListener {
 				Map<String,NotificationChangeListener> listeners = changeListenerMap.get(key);
 				if( listeners != null ) {
 					for(NotificationChangeListener listener:listeners.values()) {
-						log.infof("%s.receiveNotification: rename key=%s - notifying %s",TAG,key,listener.getClass().getName());
+						log.tracef("%s.receiveNotification: rename key=%s - notifying %s",TAG,key,listener.getClass().getName());
 						listener.nameChange(payload.toString());
 					}
 					// Repaint the workspace
@@ -159,7 +159,7 @@ public class NotificationHandler implements PushNotificationListener {
 				Map<String,NotificationChangeListener> listeners = changeListenerMap.get(key);
 				if( listeners != null ) {
 					for(NotificationChangeListener listener:listeners.values()) {
-						log.infof("%s.receiveNotification: binding key=%s - notifying %s",TAG,key,listener.getClass().getName());
+						log.tracef("%s.receiveNotification: binding key=%s - notifying %s",TAG,key,listener.getClass().getName());
 						listener.bindingChange(payload.toString());
 					}
 					// Repaint the workspace

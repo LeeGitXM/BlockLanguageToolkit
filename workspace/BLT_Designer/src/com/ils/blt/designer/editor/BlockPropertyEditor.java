@@ -8,6 +8,7 @@ import java.util.List;
 
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.DiagramState;
+import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
@@ -40,6 +41,7 @@ public class BlockPropertyEditor extends SlidingPane   {
 	private final NameEditPanel      nameEditPanel;   		// configure a block's name
 	private final TagBrowserPanel    tagPanel;        		// configure tag for a bound value
 	private final FinalDiagnosisPanel finalDiagnosisPanel;	// Special case editor for FinalDiagnosis 
+	private final SourceEditPanel     sourceEditPanel;		    // Special case editor for SourceConnection 
 	
 	
 	
@@ -64,6 +66,7 @@ public class BlockPropertyEditor extends SlidingPane   {
         this.nameEditPanel = new NameEditPanel(this);
         this.tagPanel = new TagBrowserPanel(context,this);
         this.finalDiagnosisPanel = new FinalDiagnosisPanel(context,this,block, wksp);
+        this.sourceEditPanel = new SourceEditPanel(this);
         init();    
 	}
 
@@ -75,13 +78,15 @@ public class BlockPropertyEditor extends SlidingPane   {
 	private void init() {
 		if (block.getClassName().toLowerCase().contains(".finaldiagnosis")) {
 			add(finalDiagnosisPanel);            // HOME_PANEL
-		} else {
+		} 
+		else {
 			add(mainPanel);                       // HOME_PANEL
 		}
 		add(configPanel);                     // CONFIGURATION_PANEL
 		add(listEditPanel);                   // LIST_EDIT_PANEL
 		add(nameEditPanel);                   // NAME_EDIT_PANEL
 		add(tagPanel);                        // TAG_BROWSER_PANEL
+		add(sourceEditPanel);                 // SOURCE_EDIT_PANEL
 		setSelectedPane(BlockEditConstants.HOME_PANEL);
 	}
 	public ProcessBlockView getBlock() { return this.block; }

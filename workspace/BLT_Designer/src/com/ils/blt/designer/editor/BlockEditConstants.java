@@ -18,6 +18,7 @@ public interface BlockEditConstants   {
 	public static int LIST_EDIT_PANEL       = 2;
 	public static int NAME_EDIT_PANEL       = 3;
 	public static int TAG_BROWSER_PANEL     = 4;
+	public static int SOURCE_EDIT_PANEL     = 5;
 	
 	// Standard sizes
 	public static final Dimension BUTTON_SIZE = new Dimension(16,16);
