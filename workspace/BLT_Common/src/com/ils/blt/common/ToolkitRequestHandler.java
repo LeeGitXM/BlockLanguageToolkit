@@ -259,6 +259,11 @@ public interface ToolkitRequestHandler  {
 	 */
 	public List<SerializableBlockStateDescriptor> listBlocksGloballyUpstreamOf(String diagramId,String blockName); 
 	/**
+	 * @param className fully qualified class name of blocks to be listed
+	 * @return a list of state descriptors for blocks that are of the specified class.
+	 */
+	public List<SerializableBlockStateDescriptor> listBlocksOfClass(String className);
+	/**
 	 * Query a diagram in the gateway for list of its blocks that are upstream
 	 * of the specified block. 
 	 * @param diagramId of the parent diagram
@@ -296,7 +301,7 @@ public interface ToolkitRequestHandler  {
 	/**
 	 * @param diagramId identifier of the diagram to be queried, a String
 	 * @param className fully qualified class name of blocks to be listed
-	 * @return a list of ids for blocks owned by a specified diagram that
+	 * @return a list of block descriptors for blocks owned by a specified diagram that
 	 *         are of a specified class.
 	 */
 	public List<SerializableBlockStateDescriptor> listDiagramBlocksOfClass(String diagramId,String className);

@@ -71,12 +71,6 @@ public interface BLTProperties   {
 	public static final String BLOCK_ATTRIBUTE_DATA_TYPE  = "type";
 	public static final String BLOCK_ATTRIBUTE_VALUE      = "value";
 	
-	// Class names for some specific blocks
-	public static final String CLASS_NAME_INPUT      = "com.ils.block.Input";
-	public static final String CLASS_NAME_OUTPUT     = "com.ils.block.Output";
-	public static final String CLASS_NAME_SINK       = "com.ils.SinkConnection";
-	public static final String CLASS_NAME_SOURCE     = "com.ils.SourceConnection";
-	
 	// Arguments for Color constructor are: R G B
 	public static final Color DIAGRAM_ACTIVE_BACKGROUND          = new Color(0.9f,0.9f,0.9f);    // Light gray
 	public static final Color DIAGRAM_ISOLATED_BACKGROUND     = new Color(0.46f,0.67f,0.9f);  // light blue

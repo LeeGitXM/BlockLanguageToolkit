@@ -39,7 +39,7 @@ public class UtilityFunctions  {
 				result = Double.parseDouble(val);
 			}
 			catch(NumberFormatException nfe) {
-				log.debugf(TAG+"parseDouble: Format exception "+nfe.getLocalizedMessage());
+				log.error(TAG+"parseDouble: Format exception "+nfe.getLocalizedMessage(),nfe);
 			}
 		}
 		return result;

@@ -212,7 +212,7 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 	}
 	
 	@Override 
-	public String getClassName() {return BLTProperties.CLASS_NAME_INPUT;}
+	public String getClassName() {return BlockConstants.BLOCK_CLASS_INPUT;}
 
 	/**
 	 * Send status update notification for our last output value.

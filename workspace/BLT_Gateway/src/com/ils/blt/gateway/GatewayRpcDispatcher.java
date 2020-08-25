@@ -317,7 +317,9 @@ public class GatewayRpcDispatcher   {
 	public List<SerializableBlockStateDescriptor> listBlocksInDiagram(String diagramId) {
 		return requestHandler.listBlocksInDiagram(diagramId);
 	}
-	
+	public List<SerializableBlockStateDescriptor> listBlocksOfClass(String className) {
+		return requestHandler.listBlocksOfClass(className);
+	}
 	public List<SerializableBlockStateDescriptor> listBlocksUpstreamOf(String diagramId, String blockName) {
 		return requestHandler.listBlocksUpstreamOf(diagramId, blockName);
 	}

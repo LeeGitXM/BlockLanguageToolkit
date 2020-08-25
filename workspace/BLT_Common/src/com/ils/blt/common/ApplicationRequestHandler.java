@@ -609,6 +609,22 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		return result;
 	}
 	/**
+	 * @param className fully qualified class name of blocks to be listed
+	 * @return a list of state descriptors for blocks that are of the specified class.
+	 */
+	@Override
+	public List<SerializableBlockStateDescriptor> listBlocksOfClass(String className) {
+		List<SerializableBlockStateDescriptor> result = null;
+		try {
+			result = (List<SerializableBlockStateDescriptor> )GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "listBlocksOfClass",className);
+		}
+		catch(Exception ge) {
+			log.infof("%s.listBlocksOfClass: GatewayException (%s)",TAG,ge.getMessage());
+		}
+		return result;
+	}
+	/**
 	 * Query a diagram in the gateway for list of its blocks that are downstream
 	 * of the specified block. If any of those blocks are sinks, then continue
 	 * the search on the diagrams they are connected to.
@@ -648,7 +664,6 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		}
 		return result;
 	}
-	
 	@SuppressWarnings("unchecked")
 	@Override
 	public List<SerializableBlockStateDescriptor> listBlocksUpstreamOf(String diagramId, String blockId) {

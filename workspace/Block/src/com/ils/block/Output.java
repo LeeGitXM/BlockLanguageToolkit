@@ -98,7 +98,7 @@ public class Output extends AbstractProcessBlock implements ProcessBlock {
 	}
 	
 	@Override 
-	public String getClassName() {return BLTProperties.CLASS_NAME_OUTPUT;}
+	public String getClassName() {return BlockConstants.BLOCK_CLASS_OUTPUT;}
 	
 	/**
 	 * Add properties that are new for this class.

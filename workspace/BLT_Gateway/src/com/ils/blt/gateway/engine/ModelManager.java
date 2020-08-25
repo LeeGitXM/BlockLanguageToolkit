@@ -344,7 +344,7 @@ public class ModelManager implements ProjectListener  {
 			ProcessBlock start = getBlock(diagram,blockId);
 			if( start!=null ) {
 				traverseDownstream(diagram,start,blocks,spanDiagrams);
-				if(spanDiagrams && start.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SINK)) {
+				if(spanDiagrams && start.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SINK)) {
 					followDownstreamConnections(start,blocks);
 				}
 
@@ -372,7 +372,7 @@ public class ModelManager implements ProjectListener  {
 				traverseDownstream(diagram,blk,blocks,spanDiagrams);
 				// Do an exhaustive search for all sink blocks that have the same binding
 				// as the specified block. We cover all diagrams in the system.
-				if( spanDiagrams && blk.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SINK) ) {
+				if( spanDiagrams && blk.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SINK) ) {
 					followDownstreamConnections(blk,blocks);
 				}
 			}
@@ -381,14 +381,14 @@ public class ModelManager implements ProjectListener  {
 
 	
 	private void followDownstreamConnections(ProcessBlock sink,List<ProcessBlock> blocks) {
-		if( sink.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SINK) ) {
+		if( sink.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SINK) ) {
 			BlockProperty prop = sink.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
 			if( prop!=null ) {
 				String tagPath = prop.getBinding();
 				if( tagPath!=null && !tagPath.isEmpty()) {
 					for( ProcessDiagram diag:getDiagrams()) {
 						for(ProcessBlock source:diag.getProcessBlocks()) {
-							if( source.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SOURCE) ) {
+							if( source.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SOURCE) ) {
 								BlockProperty bp = source.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
 								if( bp!=null && tagPath.equals(bp.getBinding())  ) {
 									traverseDownstream(diag,source,blocks,true);
@@ -408,7 +408,7 @@ public class ModelManager implements ProjectListener  {
 			ProcessBlock start = getBlock(diagram,blockId);
 			if( start!=null ) {
 				traverseUpstream(diagram,start,blocks,spanDiagrams);
-				if(spanDiagrams && start.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SOURCE)) {
+				if(spanDiagrams && start.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SOURCE)) {
 					followUpstreamConnections(start,blocks);
 				}
 				int index = 0;
@@ -434,21 +434,21 @@ public class ModelManager implements ProjectListener  {
 				traverseUpstream(diagram,blk,blocks,spanDiagrams);
 				// Do an exhaustive search for all sink blocks that have the same binding
 				// as the specified block. We cover all diagrams in the system.
-				if( spanDiagrams && blk.getClassName()!=null && blk.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SOURCE) ) {
+				if( spanDiagrams && blk.getClassName()!=null && blk.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SOURCE) ) {
 					followUpstreamConnections(blk,blocks);
 				}
 			}
 		}
 	}
 	private void followUpstreamConnections(ProcessBlock source,List<ProcessBlock> blocks) {
-		if( source.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SOURCE) ) {
+		if( source.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SOURCE) ) {
 			BlockProperty prop = source.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
 			if( prop!=null ) {
 				String tagPath = prop.getBinding();
 				if( tagPath!=null && !tagPath.isEmpty()) {
 					for( ProcessDiagram diag:getDiagrams()) {
 						for(ProcessBlock sink:diag.getProcessBlocks()) {
-							if( sink.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SINK) ) {
+							if( sink.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SINK) ) {
 								BlockProperty bp = sink.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
 								if( bp!=null && tagPath.equals(bp.getBinding())  ) {
 									traverseUpstream(diag,sink,blocks,true);

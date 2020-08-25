@@ -34,8 +34,7 @@ public class SourceConnection extends Input implements ProcessBlock {
 		initialize();
 		initializePrototype();
 		log = LogUtil.getLogger(getClass().getPackage().getName()+".source");
-		log.infof("Creating a SourceConnect for the palette");
-
+		log.debugf("Creating a SourceConnection for the palette");
 	}
 
 	/**
@@ -49,7 +48,7 @@ public class SourceConnection extends Input implements ProcessBlock {
 		super(ec,parent,block);
 	}
 	@Override
-	public String getClassName() {return BLTProperties.CLASS_NAME_SOURCE;}
+	public String getClassName() {return BlockConstants.BLOCK_CLASS_SOURCE;}
 	/**
 	 * A source block has has a special form of the explanation method in that
 	 * the explanation is derived from the most recent block to write to its

@@ -45,7 +45,7 @@ public class SinkConnection extends Output implements ProcessBlock {
 	}
 	
 	@Override  // why override this???
-	public String getClassName() {return BLTProperties.CLASS_NAME_SINK;}
+	public String getClassName() {return BlockConstants.BLOCK_CLASS_SINK;}
 	
 	/**
 	 * On reset, set the value of the backing tag to "UNSET". This prevents

@@ -426,7 +426,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 						UUID blockId = cxn.getSource();
 						if( blockId.equals(root.getBlockId())) break;  // A loop
 						ProcessBlock blk = blocks.get(blockId);
-						if( blk.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SOURCE)) {
+						if( blk.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SOURCE)) {
 							BlockProperty tagProperty = blk.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
 							if( tagProperty!=null ) {
 								String tagPath = fcns.providerlessPath(tagProperty.getBinding());
@@ -437,7 +437,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 										ProcessDiagram diagram = controller.getDiagram(diaguuid);
 										for(ProcessBlock sink:diagram.getProcessBlocks()) {
 											if( sink.getBlockId().equals(root.getBlockId())) continue;  // Skip the root
-											if( sink.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SINK) ) {
+											if( sink.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SINK) ) {
 												BlockProperty prop = sink.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
 												if( prop!=null && tagPath.equalsIgnoreCase(fcns.providerlessPath(prop.getBinding()))  ) {
 													List<ProcessBlock> sinkPredecessors = diagram.getUpstreamBlocks(sink);

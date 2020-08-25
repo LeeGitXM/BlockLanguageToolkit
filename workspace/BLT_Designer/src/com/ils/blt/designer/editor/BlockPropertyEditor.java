@@ -41,9 +41,8 @@ public class BlockPropertyEditor extends SlidingPane   {
 	private final NameEditPanel      nameEditPanel;   		// configure a block's name
 	private final TagBrowserPanel    tagPanel;        		// configure tag for a bound value
 	private final FinalDiagnosisPanel finalDiagnosisPanel;	// Special case editor for FinalDiagnosis 
-	private final SourceEditPanel     sourceEditPanel;		    // Special case editor for SourceConnection 
-	
-	
+	private final SourceMainPanel     sourceMainPanel;		// Special case editor for SourceConnection 
+	private final SourceEditPanel     sourceEditPanel;		// configure an editor for lists of source blocks
 	
 	static {
 		// These are the attributes handled in the CorePropertyPanel
@@ -66,6 +65,7 @@ public class BlockPropertyEditor extends SlidingPane   {
         this.nameEditPanel = new NameEditPanel(this);
         this.tagPanel = new TagBrowserPanel(context,this);
         this.finalDiagnosisPanel = new FinalDiagnosisPanel(context,this,block, wksp);
+        this.sourceMainPanel = new SourceMainPanel(context,this,block, wksp);
         this.sourceEditPanel = new SourceEditPanel(this);
         init();    
 	}
@@ -79,7 +79,12 @@ public class BlockPropertyEditor extends SlidingPane   {
 		if (block.getClassName().toLowerCase().contains(".finaldiagnosis")) {
 			add(finalDiagnosisPanel);            // HOME_PANEL
 		} 
+		else if (block.getClassName().equals(BlockConstants.BLOCK_CLASS_SOURCE)) {
+			sourceMainPanel.initialize();
+			add(sourceMainPanel);            // HOME_PANEL
+		} 
 		else {
+			mainPanel.initialize();
 			add(mainPanel);                       // HOME_PANEL
 		}
 		add(configPanel);                     // CONFIGURATION_PANEL

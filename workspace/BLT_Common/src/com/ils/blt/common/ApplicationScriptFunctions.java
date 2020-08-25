@@ -274,7 +274,13 @@ public class ApplicationScriptFunctions   {
 	public static List<SerializableBlockStateDescriptor> listBlocksInDiagram(String diagramId) {
 		return handler.listBlocksInDiagram(diagramId);
 	}
-	
+	/**
+	 * @param className fully qualified class name of blocks to be listed
+	 * @return a list of state descriptors for blocks that are of the specified class.
+	 */
+	public static List<SerializableBlockStateDescriptor> listBlocksOfClass(String className) {
+		return handler.listBlocksOfClass(className);
+	}
 	/**
 	 * Query a diagram in the gateway for list of its blocks that are upstream
 	 * of the specified block. 

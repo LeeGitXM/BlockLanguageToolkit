@@ -36,27 +36,32 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
 @SuppressWarnings("serial")
 public class MainPanel extends BasicEditPanel {
 	private final static String TAG = "MainPanel";
-	private final ProcessBlockView block;
-	private final Map<String,PropertyPanel> panelMap;
-	private final CorePropertyPanel corePanel;
+	protected final ProcessBlockView block;
+	protected final Map<String,PropertyPanel> panelMap;
+	protected final CorePropertyPanel corePanel;
+	protected final DesignerContext context;
+	protected final DiagramWorkspace workspace;
 
 	public MainPanel(DesignerContext context,BlockPropertyEditor editor,ProcessBlockView blk, DiagramWorkspace wrkspc) {
 		super(editor);
 		this.block = blk;
 		this.panelMap = new HashMap<String,PropertyPanel>();
 		this.corePanel = new CorePropertyPanel(block);
-
+		this.context = context;
+		this.workspace = wrkspc;
+		// Always display the core panel
 		setLayout(new MigLayout("top,flowy,ins 2,gapy 0:10:15","","[top]0[]"));
 		add(corePanel,"grow,push");
-
+	}
+	// This must be called after the constructor in order to lay out the components
+	public void initialize() {
 		log.debugf("%s.mainPanel: - editing %s (%s)",TAG,block.getId().toString(),block.getClassName());
 		PropertyPanel propertyPanel = null;
 		// Now fill the editor. We use the same panel class for each property.
 		for(BlockProperty property:block.getProperties()) {
 			// We have gotten null from serialization problems ...
 			if( property==null || property.getName()==null) continue;
-			log.debugf("%s.init: - creating panel for property %s",TAG,property.getName());
-			propertyPanel = new PropertyPanel(context,this,blk,property,wrkspc);
+			propertyPanel = new PropertyPanel(context,this,block,property,workspace);
 			add(propertyPanel,"skip,growx,push,gaptop 0,gapbottom 0");
 			panelMap.put(property.getName(), propertyPanel);
 		}
