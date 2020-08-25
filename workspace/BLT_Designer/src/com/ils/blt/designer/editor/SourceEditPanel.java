@@ -5,30 +5,26 @@
 package com.ils.blt.designer.editor;
 
 import java.awt.BorderLayout;
-import java.awt.Image;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 
-import net.miginfocom.swing.MigLayout;
-
+import com.ils.blt.common.ApplicationRequestHandler;
+import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
-import com.inductiveautomation.ignition.client.images.ImageLoader;
+import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
+import com.ils.blt.common.serializable.SerializableResourceDescriptor;
+import com.ils.blt.designer.workspace.ProcessBlockView;
+
+import net.miginfocom.swing.MigLayout;
 
 /**
  * We call it a "Source" panel because its purpose is to
@@ -41,21 +37,19 @@ public class SourceEditPanel extends BasicEditPanel {
 	// A panel is designed to edit properties that are lists of strings.
 	private final static String TAG = "SourceEditPanel";
 	private static final long serialVersionUID = 1L;
-	private BlockProperty property = null;
 	private final JLabel headingLabel;
-	private JButton addButton;      // Click to add a row
-	private JButton deleteButton;   // Click to delete a row
-
+	private final List<SerializableBlockStateDescriptor> sinks;
 	private JTable table;
 
 	public SourceEditPanel(final BlockPropertyEditor editor) {
 		super(editor);
+		sinks = editor.getRequestHandler().listBlocksOfClass(BlockConstants.BLOCK_CLASS_SINK);
 		setLayout(new BorderLayout());
 		//Create the edit panel - it has two panes
 		JPanel editPanel = new JPanel();
 		editPanel.setLayout(new MigLayout("ins 2","",""));
 		headingLabel = addHeading(editPanel);
-		addSeparator(editPanel,"List");
+		addSeparator(editPanel,"Sink Names");
 		editPanel.add(createTablePanel(),"wrap");
 		add(editPanel,BorderLayout.CENTER);
 
@@ -66,26 +60,21 @@ public class SourceEditPanel extends BasicEditPanel {
 		buttonPanel.add(okButton,"");
 		okButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if(property!=null) {
-					// Coerce to the correct data type
-					DefaultTableModel dtm = (DefaultTableModel)table.getModel();
-					List<String> model = new ArrayList<>();
-					int rowCount = dtm.getRowCount();
-					log.debugf("%s.OK action: row count = %d",TAG,rowCount);
-					int row = 0;
-					while( row<rowCount ) {
-						String rowValue = (String) dtm.getValueAt(row, 0);
-						log.debugf("%s.OK action: added %s",TAG,rowValue);
-						if( rowValue.length()>0) {
-							model.add(rowValue);
-						}
-						row++;
-					}
-					String list = BlockProperty.assembleList(model);
-					log.infof("%s.OK action: assembled list, %s = %s",TAG,property.getName(),list);
-					property.setValue(list);
-					editor.handlePropertyChange(property);   // Immediately update the running diagram
-					updatePanelForProperty(BlockEditConstants.HOME_PANEL,property);
+				// Coerce to the correct data type
+				ApplicationRequestHandler handler = editor.getRequestHandler();
+				int selectedRow = table.getSelectedRow();
+				if( selectedRow>=0 ) {
+					SerializableBlockStateDescriptor sinkDescriptor = sinks.get(selectedRow);
+					ProcessBlockView block = editor.getBlock();
+					BlockProperty sourceProperty = block.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
+					SerializableResourceDescriptor diag = handler.getDiagramForBlock(sinkDescriptor.getIdString());
+					Object val = handler.getPropertyValue(diag.getId(), sinkDescriptor.getIdString(), BlockConstants.BLOCK_PROPERTY_TAG_PATH);
+					Object binding = handler.getPropertyBinding(diag.getId(), sinkDescriptor.getIdString(), BlockConstants.BLOCK_PROPERTY_TAG_PATH);
+					sourceProperty.setValue(val);
+					sourceProperty.setBinding(binding.toString());
+					editor.handlePropertyChange(sourceProperty);   // Immediately update the running diagram
+					block.setName(sinkDescriptor.getName());
+					updatePanelForBlock(BlockEditConstants.HOME_PANEL,block);
 				}
 				else {
 					log.warnf("%s.OK action: property is NULL, no action taken",TAG);
@@ -103,171 +92,30 @@ public class SourceEditPanel extends BasicEditPanel {
 		add(buttonPanel,BorderLayout.SOUTH);
 	}
 
-	public void updateForProperty(BlockProperty prop) {
-		this.property = prop;
-		headingLabel.setText(prop.getName());
-		String val = prop.getValue().toString();
-		log.debugf("%s.updateForProperty: %s (%s)",TAG,prop.getName(),val);
-		if( val.length()>1) {
-			List<String> model = BlockProperty.disassembleList(val);
-			DefaultTableModel dtm = (DefaultTableModel)table.getModel();
-			dtm.setRowCount(0);
-			for( String entry:model) {
-				String[] row = new String[1];
-				row[0] = entry;
-				dtm.addRow(row) ;
-			}
-		}
-	}
-
-	/**
-	 * Create a text field for data entry
-	 */
-	protected JTextField createTextField(String text) {	
-		final JTextField field = new JTextField(text);
-		field.setPreferredSize(BlockEditConstants.ENTRY_BOX_SIZE);
-		field.setEditable(true);
-		return field;
-	}
-	
 	/**
 	 * A list add panel is a panel appending a string element in the list. It contains:-
 	 *        Scroll pane with the table, two buttons at the bottom.
 	 */
 	private JPanel createTablePanel()  {
 		JPanel outerPanel = new JPanel();
-		table = new JTable();		
-		outerPanel.setLayout(new MigLayout("ins 2,fillx,filly","para[:240:]","[:80:]5[:30:]"));
-		String[] columnNames = { "Values" };
+		table = new JTable();	
+		outerPanel.setLayout(new MigLayout("ins 2,fillx,filly","para[:240:]","[:160:]5[:30:]"));
+		String[] columnNames = { "Sinks" };
 		DefaultTableModel dataModel = new DefaultTableModel(columnNames,0);  // No null rows
-        table = new JTable(dataModel);
-        table.setPreferredSize(BlockEditConstants.TABLE_SIZE);
+		for( SerializableBlockStateDescriptor block:sinks ) {
+			String [] row = new String[1];
+			row[0] = block.getName();
+			dataModel.addRow(row);
+		}
+		table = new JTable(dataModel);
+        table.setPreferredSize(BlockEditConstants.LIST_SIZE);
         table.setRowSelectionAllowed(true);
-        table.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         JScrollPane tablePane = new JScrollPane(table);
         table.setFillsViewportHeight(true);
         outerPanel.add(tablePane, "push,wrap");
-        JPanel buttonPanel = new JPanel(new MigLayout("ins 2,fillx","[:25:]2[:25:]","[:30:]"));
-        addButton = createAddButton(table);
-        buttonPanel.add(addButton,"");
-        deleteButton = createDeleteButton(table);
-        buttonPanel.add(deleteButton,"");
-        outerPanel.add(buttonPanel,"");
-        ListSelectionModel lsm = table.getSelectionModel();
-        lsm.addListSelectionListener(new SelectionHandler(table,deleteButton));
 		return outerPanel;
 	}
-	
-	/**
-	 * Create a button that adds a new entry
-	 */
-	private JButton createAddButton(final JTable tbl) {
-		JButton btn = new JButton();
-		final String ICON_PATH  = "Block/icons/editor/add.png";
-		try {
-			Image img = ImageLoader.getInstance().loadImage(ICON_PATH ,BlockEditConstants.BUTTON_SIZE);
-			if( img !=null) {
-				Icon icon = new ImageIcon(img);
-				btn.setIcon(icon);
-				btn.setMargin(new Insets(0,0,0,0));
-				btn.setOpaque(false);
-				btn.setBorderPainted(false);
-				btn.setBackground(getBackground());
-				btn.setBorder(null);
-				btn.setPreferredSize(BlockEditConstants.BUTTON_SIZE);
-				btn.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e){
-						DefaultTableModel dtm = (DefaultTableModel)tbl.getModel();
-						String[] row = new String[1];
-						row[0] = "";   // Add an empty row
-						dtm.addRow(row);
-					}
-				});
-			}
-			else {
-				log.warnf("%s.createAddButton icon not found(%s)",TAG,ICON_PATH);
-			}
-		}
-		catch(Exception ex) {
-			log.warnf("%s.createDeleteButton icon not found(%s) (%s)",TAG,ICON_PATH, ex.getMessage());
-		}
-		return btn;
-	}
-	
-	/**
-	 * Create a button that deletes the nth entry
-	 */
-	private JButton createDeleteButton(final JTable tbl) {
-		JButton btn = new JButton();
-		final String ICON_PATH  = "Block/icons/editor/delete.png";
-		try {
-			Image img = ImageLoader.getInstance().loadImage(ICON_PATH ,BlockEditConstants.BUTTON_SIZE);
-			if( img !=null) {
-				Icon icon = new ImageIcon(img);
-				btn.setIcon(icon);
-				btn.setMargin(new Insets(0,0,0,0));
-				btn.setOpaque(false);
-				btn.setBorderPainted(false);
-				btn.setBackground(getBackground());
-				btn.setBorder(null);
-				btn.setPreferredSize(BlockEditConstants.BUTTON_SIZE);
-				btn.addActionListener(new ActionListener() {
-					// We are guaranteed that the selection interval is contiguous
-					public void actionPerformed(ActionEvent e){
-						int[] selected = tbl.getSelectedRows();
-						if( selected.length < 1 ) return;
-						int minIndex = tbl.getRowCount()+1;
-						int maxIndex = -1;
-						int index = 0;
-						for( int i:selected ) {
-							selected[index] = tbl.convertRowIndexToModel(i);
-							log.debugf("%s.createDeleteButton: Selected row %d converted to %d",TAG,i,selected[index]);
-							if( selected[index] > maxIndex ) maxIndex = selected[index];
-							if( selected[index] < minIndex ) minIndex = selected[index];
-							index++;
-						}
-						int row = maxIndex;
-						DefaultTableModel dtm = (DefaultTableModel)tbl.getModel();
-						while(row>=minIndex ) {
-							dtm.removeRow(row);
-							row--;
-						}
-					}
-				});
-			}
-			else {
-				log.warnf("%s.createDeleteButton icon not found(%s)",TAG,ICON_PATH);
-			}
-		}
-		catch(Exception ex) {
-			log.warnf("%s.createDeleteButton icon not found(%s) (%s)",TAG,ICON_PATH, ex.getMessage());
-		}
-		return btn;
-	}
-	
-	/**
-	 * Create a selection listener for both the list and the table.
-	 * We allow only one row to be selected at a time. Enable/disable
-	 * the add/delete buttons.
-	 */
-	private class SelectionHandler implements ListSelectionListener {
-		private final JTable tbl;
-		private final JButton delBtn;
 
-		SelectionHandler(JTable jtbl,JButton rowDeleter ) {
-			this.tbl = jtbl;
-			this.delBtn = rowDeleter;
-		}
-		
-		public void valueChanged(ListSelectionEvent e) {
-			if (!e.getValueIsAdjusting()) {
-				if (e.getSource() == tbl.getSelectionModel()) {
-					ListSelectionModel lsm = tbl.getSelectionModel();
-					log.debugf("%s.SelectionHandler.valueChanged: Delete %s", TAG,(lsm.isSelectionEmpty()?"DISABLE":"ENABLE"));
-					delBtn.setEnabled(!lsm.isSelectionEmpty());
-				} 
-			}
-		}
-	}
 }
 	

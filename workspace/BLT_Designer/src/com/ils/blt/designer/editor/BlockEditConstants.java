@@ -24,6 +24,7 @@ public interface BlockEditConstants   {
 	public static final Dimension BUTTON_SIZE = new Dimension(16,16);
 	public static final Dimension COMBO_BOX_SIZE  = new Dimension(120,24);
 	public static final Dimension ENTRY_BOX_SIZE  = new Dimension(160,24);
+	public static final Dimension LIST_SIZE       = new Dimension(300,240);
 	public static final Dimension OFFSET_BOX_SIZE  = new Dimension(40,24);
 	public static final Dimension TREE_SIZE        = new Dimension(300,120);
 	public static final Dimension TABLE_SIZE       = new Dimension(300,120);
