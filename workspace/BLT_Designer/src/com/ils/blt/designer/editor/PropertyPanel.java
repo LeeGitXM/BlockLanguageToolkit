@@ -24,6 +24,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.TimeUtility;
 import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.block.BindingType;
@@ -302,10 +303,11 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 					e.printStackTrace();
 				}
 				// block binding to expressions for output
-				if (block.getClassName().endsWith(".Output") && tagProp != ExpressionType.None.getIntValue()) {  // only update the tagpath property
+				if (block.getClassName().equals(BlockConstants.BLOCK_CLASS_OUTPUT) && tagProp != ExpressionType.None.getIntValue()) {  // only update the tagpath property
 					msg = "Unable to bind expression tag to output";
-				} else {
-					msg = dview.isValidBindingChange(block, typ);
+				} 
+				else {
+					msg = dview.isValidBindingChange(block,tagPath,typ);
 				}
 			}
 			if (msg == null) {

@@ -837,7 +837,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 								if( pblock.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK) || 
 									pblock.getClassName().equals(BlockConstants.BLOCK_CLASS_SOURCE) ) {
 									if( tagProp == ExpressionType.None.getIntValue() ) {
-										connectionMessage = diagram.isValidBindingChange(pblock, tagType);
+										connectionMessage = diagram.isValidBindingChange(pblock, tp.toStringFull(), tagType);
 										if( connectionMessage==null ) {
 											prop = pblock.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
 											pblock.setName(leafNameFromTagPath(tp));
@@ -850,7 +850,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 								if( pblock.getClassName().equals(BlockConstants.BLOCK_CLASS_INPUT) || 
 									pblock.getClassName().equals(BlockConstants.BLOCK_CLASS_OUTPUT) ) {
 									if( !pblock.getClassName().equals(BlockConstants.BLOCK_CLASS_OUTPUT) || (tagProp == ExpressionType.None.getIntValue()) ) {
-										connectionMessage = diagram.isValidBindingChange(pblock, tagType);
+										connectionMessage = diagram.isValidBindingChange(pblock,tp.toStringFull(), tagType);
 										if( connectionMessage==null ) {
 											prop = pblock.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
 											pblock.setName(enforceUniqueName(nameFromTagPath(tp),diagram));

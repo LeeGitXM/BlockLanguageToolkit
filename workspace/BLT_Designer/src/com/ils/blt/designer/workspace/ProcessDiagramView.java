@@ -609,12 +609,11 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		}
 	}
 
-
-
-	public String isValidBindingChange(ProcessBlockView pblock, DataType type) {
+	// This is called from the PropertyPanel editor and when a tag is dropped on a block
+	public String isValidBindingChange(ProcessBlockView pblock, String tagPath, DataType type) {
 		String ret = null;
 
-		Collection<ProcessAnchorDescriptor> bconns = pblock.getAnchors();
+		// Collection<ProcessAnchorDescriptor> bconns = pblock.getAnchors();
 		//		ProcessAnchorDescriptor origin = null;
 		//		ProcessAnchorDescriptor terminus = null;
 		//		for (ProcessAnchorDescriptor bconn:bconns) {
@@ -641,9 +640,19 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			if (intended != null && !intended.allowConnectionType(conType)) {
 				ret = String.format("%s: Tag change error, cannot connect %s to %s", pblock.getName(),intended.getConnectionType().name(), conType.name());
 			}
-
 		}
-
+		
+		// If block is a Sink, there cannot be another Sink that references the same tag.
+		if(pblock.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK) ) {
+			List<SerializableBlockStateDescriptor> blocks = appRequestHandler.listBlocksForTag(tagPath);
+			for(SerializableBlockStateDescriptor desc:blocks) {
+				if( desc.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK) &&
+					!desc.getIdString().equals(pblock.getId().toString())) {
+					ret = String.format("%s: cannot bind to same tag as sink %s", pblock.getName(),desc.getName());
+					break;
+				}
+			}
+		}
 		return ret;  // this could return an error message
 	}
 	
