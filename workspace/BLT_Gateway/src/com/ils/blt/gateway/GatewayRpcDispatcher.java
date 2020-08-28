@@ -21,6 +21,7 @@ import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
+import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
@@ -62,10 +63,13 @@ public class GatewayRpcDispatcher   {
 		requestHandler.clearWatermark(diagramId);
 	}
 	
+	
 	public void clearController() {
 		requestHandler.clearController();
 	}
-
+	public void createTag(DataType type,String path) {
+		requestHandler.createTag(type, path);
+	}
 	public void deleteTag(String path) {
 		requestHandler.deleteTag(path);
 	}
@@ -78,9 +82,6 @@ public class GatewayRpcDispatcher   {
 	public Boolean diagramExists(String uuidString) {
 		return new Boolean(requestHandler.diagramExists(uuidString));
 	}
-
-
-	
 
 	public String getApplicationName(String uuid) {
 		return requestHandler.getApplicationName(uuid);

@@ -11,6 +11,8 @@ import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.JTextField;
 
+import com.ils.blt.common.DiagramState;
+import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.inductiveautomation.ignition.common.util.LogUtil;
@@ -95,5 +97,31 @@ public class BasicEditPanel extends JPanel {
 		field.setEditable(false);
 		return field;
 	}
+
+	/**
+	 * @return the provider for the current state of the diagram.
+	 */
+	protected String getProvider() {
+		DiagramState state = editor.getDiagram().getState();
+		String provider = "";
+		if( state.equals(DiagramState.ISOLATED)) provider = editor.getRequestHandler().getIsolationTagProvider();
+		else provider =  editor.getRequestHandler().getProductionTagProvider();
+		return provider;		
+	}
+	/**
+	 * The connections folder is the location for Sources/Sinks
+	 * @param path tag path
+	 * @return true if path is contained within the standard.
+	 */
+	protected boolean isStandardConnectionFolder(String path) {
+		// Remove provider, if any
+		int pos = path.indexOf("]");
+		if(pos>0) {
+			path = path.substring(pos+1);
+			return path.startsWith(BlockConstants.SOURCE_SINK_TAG_FOLDER);
+		}
+		return false;
+	}
+	
 
 }

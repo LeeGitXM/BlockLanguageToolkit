@@ -81,7 +81,7 @@ public interface BlockConstants   {
 	public static final String BLOCK_CLASS_SOURCE     	= "com.ils.block.SourceConnection"; 
 	
 	// Special folder to contain binding tags for Source/Sink blocks
-	public static final String SOURCE_SINK_TAG_FOLDER                  = "Connections"; 
+	public static final String SOURCE_SINK_TAG_FOLDER                  = "DiagnosticToolkit/Connections"; 
 	
 	// These are standard connection property names
 	public static final String CONNECTION_PROPERTY_DOWNSTREAM_PORT     = "downstream"; 

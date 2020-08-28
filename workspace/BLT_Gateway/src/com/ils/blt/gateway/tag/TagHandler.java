@@ -12,7 +12,10 @@ import com.inductiveautomation.ignition.common.sqltags.TagDefinition;
 import com.inductiveautomation.ignition.common.sqltags.model.TagManagerBase;
 import com.inductiveautomation.ignition.common.sqltags.model.TagNode;
 import com.inductiveautomation.ignition.common.sqltags.model.TagPath;
+import com.inductiveautomation.ignition.common.sqltags.model.types.AccessRightsType;
+import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 import com.inductiveautomation.ignition.common.sqltags.model.types.TagType;
+import com.inductiveautomation.ignition.common.sqltags.parser.BasicTagPath;
 import com.inductiveautomation.ignition.common.sqltags.parser.TagPathParser;
 import com.inductiveautomation.ignition.common.sqltags.tags.TagDiff;
 import com.inductiveautomation.ignition.common.util.LogUtil;
@@ -69,9 +72,43 @@ public class TagHandler    {
 			log.warnf("%s.deleteTag: Provider %s does not exist",TAG,providerName);
 		}
 	}
-	public void renameTag(String name,String path) {
-		String providerName = providerFromPath(path);
-		path = stripProviderFromPath(path);
+	// Create directories as needed, then a memory tag with correct data type.
+	public void createTag(DataType type,String fullpath) {
+		String providerName = providerFromPath(fullpath);
+		String path = stripProviderFromPath(fullpath);
+		log.infof("%s.createTag [%s]%s",TAG,providerName,path);
+		TagPath tp = null;
+		try {
+			tp = TagPathParser.parse(providerName,path);
+			// Guarantee that parent paths exist
+			createParents(tp);
+			
+			TagDefinition node = new TagDefinition(tp.getItemName(),TagType.DB);
+			node.setDataType(type);
+			node.setEnabled(true);
+			node.setAccessRights(AccessRightsType.Read_Write);    // Or Custom?
+			List<TagNode> toAdd = new ArrayList<>();
+			toAdd.add(node);
+			context.getTagManager().addTags(tp.getParentPath(), toAdd, TagManagerBase.CollisionPolicy.Ignore);
+		}
+		catch(IOException ioe) {
+			log.warnf("%s: createTag: Exception parsing tag [%s]%s (%s)",TAG,providerName,path,ioe.getLocalizedMessage());
+			return;
+		}
+		catch(Exception ex) {
+			log.warnf("%s: createTag: Exception creating tag [%s]%s (%s)",TAG,providerName,path,ex.getLocalizedMessage());
+			return;
+		}
+	}
+	/**
+	 * Rename a tag keeping the folder structure intact. If the rename fails,
+	 * then create the tag as a String.
+	 * @param name new name
+	 * @param path existing complete path
+	 */
+	public void renameTag(String name,String fullpath) {
+		String providerName = providerFromPath(fullpath);
+		String path = stripProviderFromPath(fullpath);
 		log.infof("%s.renameTag %s [%s]%s",TAG,name,providerName,path);
 		TagPath tp = null;
 		try {
@@ -88,21 +125,40 @@ public class TagHandler    {
 		}
 		catch(Exception ex) {
 			log.warnf("%s: renameTag: Exception renaming tag [%s]%s (%s)",TAG,providerName,path,ex.getLocalizedMessage());
+			createTag(DataType.String,fullpath);
 			return;
 		}
 	}
-	
+	private void createParents(TagPath path) {
+		int segcount = path.getPathLength();
+		int seg = 1;
+		while(seg<segcount) {
+			TagPath tp = BasicTagPath.subPath(path,0, seg);
+			log.infof("%s.createParents: Subpath = %s",TAG,tp.toStringFull());
+			TagDefinition tag = new TagDefinition(tp.getItemName(),TagType.Folder);
+			try {
+				List<TagNode> toAdd = new ArrayList<>();
+				toAdd.add(tag);
+				context.getTagManager().addTags(tp.getParentPath(), toAdd, TagManagerBase.CollisionPolicy.Ignore);
+			}
+			catch(Exception ex) {
+				log.warnf("%s.createParents: Exception creating tag folder %s (%s)",TAG,tp,ex.getLocalizedMessage());
+			}
+			seg++;
+		}
+	}
 	// We expect the provider name to be bounded by brackets.
 	private String providerFromPath(String path) {
 		int pos = path.indexOf("]");
 		if(pos>0) path = path.substring(1,pos);
+		else path="";
 		return path;
 	}
 	
 	// If the tag path has a source (provider), strip it off.
 	// This is for use with commands that explicitly specify
 	// the provider.
-	private String stripProviderFromPath(String path) {
+	public String stripProviderFromPath(String path) {
 		int pos = path.indexOf("]");
 		if(pos>0) path = path.substring(pos+1);
 		return path;

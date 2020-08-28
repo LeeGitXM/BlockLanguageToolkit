@@ -1,5 +1,5 @@
 /**
- *   (c) 2014-2015  ILS Automation. All rights reserved.
+ *   (c) 2014-2020  ILS Automation. All rights reserved.
  *  
  */
 package com.ils.blt.common;
@@ -22,6 +22,7 @@ import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.common.persistence.ToolkitProperties;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
+import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 
@@ -76,6 +77,15 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		}
 		catch(Exception ge) {
 			log.infof("%s.clearWatermark: GatewayException (%s)",TAG,ge.getMessage());
+		}
+	}
+	public void createTag(DataType type,String path) {
+		try {
+			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+									BLTProperties.MODULE_ID, "createTag",type,path);
+		}
+		catch(Exception ge) {
+			log.infof("%s.createTag: GatewayException (%s)",TAG,ge.getMessage());
 		}
 	}
 	/**

@@ -11,6 +11,7 @@ import java.util.UUID;
 import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
+import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 
 
 /**
@@ -41,6 +42,13 @@ public class ApplicationScriptFunctions   {
 	 */
 	public static void clearWatermark(String diagramId) {
 		handler.clearWatermark(diagramId);
+	}
+	/**
+	 * Create a SQLTag memory tag given its path and data type. The path must contain the
+	 * provider name in brackets.
+	 */
+	public static void createTag(DataType type,String path) {
+		handler.createTag(type, path);
 	}
 	/**
 	 * Delete a SQLTag given its path. The path must contain the

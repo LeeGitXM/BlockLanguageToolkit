@@ -14,6 +14,7 @@ import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
+import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 
 /**
  *  This interface is a common point for managing requests to the gateway dealing with
@@ -34,6 +35,11 @@ public interface ToolkitRequestHandler  {
 	 * Remove all current diagrams from the controller.
 	 */
 	public void clearController();
+	/**
+	 * Create a SQLTag memory tag given its path and data type. The path must contain the
+	 * provider name in brackets.
+	 */
+	public void createTag(DataType type,String path);
 	/**
 	 * Delete a SQLTag given its path. The path must contain the
 	 * provider name in brackets.

@@ -139,6 +139,26 @@ public class BlockPropertyEditor extends SlidingPane   {
 		diagram.setDirty(true);
 		saveDiagram();
 	}
+	/**
+	 * Modify a tag path to account for global production/isolation providers
+	 * as well as the current state of the diagram.
+	 * @param path
+	 * @return the modified path.
+	 */
+	public String modifyPathForProvider(String path) {
+		String tagPath = path;
+		if( path!=null && !path.isEmpty() ) {
+			if( diagram.getState().equals(DiagramState.ISOLATED)) {
+				String provider = requestHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER);
+				tagPath = TagUtility.replaceProviderInPath(provider,path);
+			}
+			else {
+				String provider = requestHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER);
+				tagPath = TagUtility.replaceProviderInPath(provider,path);
+			}
+		}
+		return tagPath;
+	}
 	
 	/**
 	 * Un-subscribe to notifications to allow cleanup. These are all 
@@ -166,28 +186,6 @@ public class BlockPropertyEditor extends SlidingPane   {
 		default:
 			break;
 		}
-	}
-	
-	
-	/**
-	 * Modify a tag path to account for global production/isolation providers
-	 * as well as the current state of the diagram.
-	 * @param path
-	 * @return the modified path.
-	 */
-	public String modifyPathForProvider(String path) {
-		String tagPath = path;
-		if( path!=null && !path.isEmpty() ) {
-			if( diagram.getState().equals(DiagramState.ISOLATED)) {
-				String provider = requestHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER);
-				tagPath = TagUtility.replaceProviderInPath(provider,path);
-			}
-			else {
-				String provider = requestHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER);
-				tagPath = TagUtility.replaceProviderInPath(provider,path);
-			}
-		}
-		return tagPath;
 	}
 }
 

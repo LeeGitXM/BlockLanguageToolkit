@@ -326,7 +326,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 						menu.add(changeTypeMenu);
 					}
 				}
-				if( pbv.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK) || pbv.getClassName().equals(BlockConstants.BLOCK_CLASS_OUTPUT)) {
+				if( pbv.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK) ) {
 					logger.infof("%s.getSelectionPopupMenu: SINK",TAG);
 					JMenu linkSinkMenu = new JMenu(BundleUtil.get().getString(PREFIX+".FollowConnection.Name"));
 					linkSinkMenu.setToolTipText(BundleUtil.get().getString(PREFIX+".FollowConnection.Desc"));
@@ -340,7 +340,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 					}
 					menu.add(linkSinkMenu);
 				}
-				else if( pbv.getClassName().equals(BlockConstants.BLOCK_CLASS_SOURCE) || pbv.getClassName().equals(BlockConstants.BLOCK_CLASS_INPUT))  {
+				else if( pbv.getClassName().equals(BlockConstants.BLOCK_CLASS_SOURCE) )  {
 					logger.infof("%s.getSelectionPopupMenu: SOURCE",TAG);
 					JMenu linkSourceMenu = new JMenu(BundleUtil.get().getString(PREFIX+".FollowConnection.Name"));
 					linkSourceMenu.setToolTipText(BundleUtil.get().getString(PREFIX+".FollowConnection.Desc"));
@@ -386,8 +386,10 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				menu.addSeparator();
 				PropagateAction ea = new PropagateAction(pbv);
 				menu.add(ea);
-				TriggerUpstreamPropagationAction eaup = new TriggerUpstreamPropagationAction(pbv);
-				menu.add(eaup);
+				if( !pbv.getClassName().equals(BlockConstants.BLOCK_CLASS_INPUT)) {
+					TriggerUpstreamPropagationAction eaup = new TriggerUpstreamPropagationAction(pbv);
+					menu.add(eaup);
+				}
 				ForceAction fa = new ForceAction(getActiveDiagram(),pbv);
 				menu.add(fa);
 				ResetAction ra = new ResetAction(pbv);

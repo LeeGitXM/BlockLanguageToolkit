@@ -127,6 +127,7 @@ CREATE TABLE QueueMessageStatus(
 	MessageStatus nvarchar(15) NOT NULL,
 	Color nvarchar(15) NOT NULL
 ) ;
+select 'QueueMaster';
 CREATE TABLE QueueMaster(
 	QueueId int PRIMARY KEY NOT NULL,
 	QueueKey nvarchar(50) NOT NULL,
@@ -148,7 +149,7 @@ CREATE TABLE SfcChart(
 CREATE TABLE RtWatchdog(
 	Observation int NOT NULL,
 	Timestamp datetime NOT NULL
-;
+);
 CREATE TABLE RtValueType(
 	ValueTypeId int PRIMARY KEY NOT NULL,
 	ValueType varchar(25) NOT NULL
@@ -231,6 +232,7 @@ CREATE TABLE TkMessageRequest(
 	RequestType varchar(50) NOT NULL,
 	RequestTime datetime NOT NULL
 ) ;
+select 'UIRGline';
 CREATE TABLE UIRGline(
 	UIRId int PRIMARY KEY NOT NULL,
 	PostId int NULL,
@@ -313,6 +315,7 @@ CREATE TABLE UIRHB(
 	Post varchar(100) NULL,
 	UIRNumber varchar(100) NULL
 ) ;
+select 'Units';
 CREATE TABLE Units(
 	id int PRIMARY KEY NOT NULL,
 	name varchar(64) NOT NULL,
@@ -396,6 +399,7 @@ CREATE TABLE QueueDetail(
 	StatusId int NOT NULL,
 	Message nvarchar(2000) NOT NULL
 ) ;
+select 'Lookup';
 CREATE TABLE Lookup(
 	LookupId int PRIMARY KEY NOT NULL,
 	LookupTypeCode varchar(15) NOT NULL,
@@ -603,6 +607,7 @@ AS
 SELECT   * from Units
 UNION
 SELECT * from UnitAliasesView
+;
 CREATE VIEW TkUnitView
 AS
 SELECT     TkUnit.UnitId, TkUnit.UnitName, TkUnit.UnitPrefix, TkUnit.UnitAlias, TkPost.PostId, TkPost.Post
@@ -1399,6 +1404,7 @@ AS
 SELECT     LtValue.ValueId, LtHistory.HistoryId, LtValue.ValueName, LtHistory.RawValue, LtHistory.SampleTime, LtHistory.ReportTime
 FROM         LtHistory RIGHT OUTER JOIN
                       LtValue ON LtHistory.HistoryId = LtValue.LastHistoryId
+;
 CREATE VIEW LtDerivedValueView
 AS
 SELECT     LtValue.ValueName, LtValue.ValueId, LtDerivedValue.DerivedValueId, TkUnit.UnitName, LtValue_1.ValueName AS TriggerValueName, LtValue_1.ValueId AS TriggerValueId, 

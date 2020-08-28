@@ -48,11 +48,13 @@ import com.ils.common.ClassList;
 import com.ils.common.persistence.ToolkitProperties;
 import com.ils.common.persistence.ToolkitRecordHandler;
 import com.ils.common.watchdog.AcceleratedWatchdogTimer;
+import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
 import com.inductiveautomation.ignition.common.datasource.DatasourceStatus;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.Quality;
+import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.gateway.datasource.Datasource;
@@ -176,6 +178,10 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			log.warnf("%s.createInstance: Security exception creating %s (%s)",TAG,className,iae.getLocalizedMessage()); 
 		}
 		return block;
+	}
+	@Override
+	public void createTag(DataType type,String path) {
+		tagHandler.createTag(type,path);
 	}
 	@Override
 	public boolean diagramExists(String uuidString) {
@@ -740,7 +746,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 */
 	@Override
 	public synchronized List<SerializableBlockStateDescriptor> listBlocksInDiagram(String diagramId) {
-		log.infof("%s.listBlocksInDiagram: diagramId %s",TAG,diagramId);
+		log.tracef("%s.listBlocksInDiagram: diagramId %s",TAG,diagramId);
 		List<SerializableBlockStateDescriptor> descriptors = new ArrayList<>();
 		UUID diauuid = makeUUID(diagramId);
 		ProcessDiagram diagram = controller.getDiagram(diauuid);
@@ -765,7 +771,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * @return a list of state descriptors for blocks that are of the specified class.
 	 */
 	public List<SerializableBlockStateDescriptor> listBlocksOfClass(String className) {
-		log.infof("%s.listBlocksOfClass: %s",TAG,className);
+		log.tracef("%s.listBlocksOfClass: %s",TAG,className);
 		List<SerializableBlockStateDescriptor> descriptors = new ArrayList<>();
 		List<SerializableResourceDescriptor> diagrams = controller.getDiagramDescriptors();
 		for(SerializableResourceDescriptor diag:diagrams) {

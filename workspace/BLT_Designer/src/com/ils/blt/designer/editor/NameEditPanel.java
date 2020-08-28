@@ -30,6 +30,7 @@ import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.ils.blt.designer.workspace.WorkspaceRepainter;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
+import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 
 import net.miginfocom.swing.MigLayout;
 
@@ -120,8 +121,18 @@ public class NameEditPanel extends BasicEditPanel {
 						BlockProperty prop = block.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
 						String path = prop.getBinding();
 						ApplicationRequestHandler handler = editor.getRequestHandler();
-						handler.renameTag(nameField.getText(), path);
-						path = renamePath(nameField.getText(), path);
+						// If the tag is is in the standard location, rename it
+						// otherwise, create a new one. Name must be a legal tag path element.
+						if( !isStandardConnectionFolder(path) ) {
+							String provider = getProvider();
+							path = String.format("[%s]%s/%s)",provider,BlockConstants.SOURCE_SINK_TAG_FOLDER,nameField.getText());
+							handler.createTag(DataType.String,path);
+						}
+						else {
+							handler.renameTag(nameField.getText(), path);
+							path = renamePath(nameField.getText(), path);
+						}
+						
 						prop.setBinding(path);
 						
 						// Perform similar modification on connected sources
