@@ -346,7 +346,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 					linkSourceMenu.setToolTipText(BundleUtil.get().getString(PREFIX+".FollowConnection.Desc"));
 					
 					String diagramId = getActiveDiagram().getId().toString();
-					List<SerializableBlockStateDescriptor> descriptors = handler.listSinksForSource(diagramId, pbv.getName());
+					List<SerializableBlockStateDescriptor> descriptors = handler.listSinksForSource(diagramId, pbv.getId().toString());
 					for(SerializableBlockStateDescriptor desc:descriptors) {
 						SerializableResourceDescriptor rd = handler.getDiagramForBlock(desc.getIdString());
 						if( rd==null ) continue;
@@ -731,12 +731,10 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 						if( getSelectedContainer()!=null ) {
 							ProcessBlockView block = null;
 							TagPath tp = tnode.getTagPath();
-							boolean makeSourceSink = false;
-							String root = tp.getPathComponent(0);
-							if( root.equalsIgnoreCase(BlockConstants.SOURCE_SINK_TAG_FOLDER) ) makeSourceSink = true;
-
-							if (dropx > thewidth / 2) {
-								if( makeSourceSink ) {
+							boolean isStandardFolder = isStandardConnectionFolder(tp);
+							// Sinks to right,sources to the left
+							if (dropx < thewidth / 2) {
+								if( isStandardFolder ) {
 									SourceConnection source = new SourceConnection();
 									block = new ProcessBlockView(source.getBlockPrototype().getBlockDescriptor());
 									block.setName(leafNameFromTagPath(tp));
@@ -749,7 +747,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 								
 							} 
 							else {
-								if( makeSourceSink ) {
+								if( isStandardFolder ) {
 									SinkConnection sink = new SinkConnection();
 									block = new ProcessBlockView(sink.getBlockPrototype().getBlockDescriptor());
 									block.setName(leafNameFromTagPath(tp));
@@ -819,10 +817,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 						ProcessDiagramView diagram = (ProcessDiagramView)container.getModel();
 						TagTreeNode tnode = (TagTreeNode) tagNodeArr.get(0);
 						logger.infof("%s.handleDrop: tag data: %s",TAG,tnode.getName());
-						boolean editSourceSink = false;
 						TagPath tp = tnode.getTagPath();
-						String root = tp.getPathComponent(0);
-						if( root.equalsIgnoreCase(BlockConstants.SOURCE_SINK_TAG_FOLDER) ) editSourceSink = true;
+						boolean isStandardFolder = isStandardConnectionFolder(tp) ;
 
 						Block targetBlock = ((BlockComponent)droppedOn).getBlock();
 						if(targetBlock instanceof ProcessBlockView) {
@@ -835,7 +831,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 							BlockProperty prop = null;
 							String connectionMessage = null;
 							// Edit a source or sink.
-							if( editSourceSink ) {
+							if( isStandardFolder ) {
 								if( pblock.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK) || 
 									pblock.getClassName().equals(BlockConstants.BLOCK_CLASS_SOURCE) ) {
 									if( tagProp == ExpressionType.None.getIntValue() ) {
@@ -845,6 +841,9 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 											pblock.setName(leafNameFromTagPath(tp));
 										}
 									}
+								}
+								else {
+									connectionMessage = "Only Source and SinkConnections may be configured with tags from \"DiagnosticsToolkit/Connections\".";
 								}
 							}
 							// Input/Output are the only blocks of interest
@@ -861,7 +860,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 								}
 								else if( pblock.getClassName().equals(BlockConstants.BLOCK_CLASS_SOURCE) || 
 										pblock.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK) ) {
-									connectionMessage = "Source and SinkConnections may only be configured with tags from the \"Connections\" folder.";
+									connectionMessage = "Source and SinkConnections may only be configured with tags from \"DiagnosticsToolkit/Connections\" .";
 								}
 							}
 
@@ -1426,7 +1425,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		}
 	}
 
-
 	private boolean isInBounds(Point dropPoint,BlockDesignableContainer bdc) {
 		Rectangle bounds = bdc.getBounds();
 		boolean inBounds = true;
@@ -1437,7 +1435,21 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		logger.infof("%s.handlerDrop: drop x,y = (%d,%d), bounds %d,%d,%d,%d",TAG,dropPoint.x,dropPoint.y,bounds.x,bounds.y,bounds.width,bounds.height );
 		return inBounds;
 	}
-	
+	/**
+	 * The connections folder is the location for Sources/Sinks
+	 * @param path tag path
+	 * @return true if path is contained within the standard.
+	 */
+	protected boolean isStandardConnectionFolder(TagPath tp) {
+		String path = tp.toStringFull();
+		// Remove provider, if any
+		int pos = path.indexOf("]");
+		if(pos>0) {
+			path = path.substring(pos+1);
+			return path.startsWith(BlockConstants.SOURCE_SINK_TAG_FOLDER);
+		}
+		return false;
+	}
 	// ============================== Change Listener ================================
 	/**
 	 * If the current diagram changes state, then paint the background accordingly.

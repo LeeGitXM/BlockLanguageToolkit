@@ -904,7 +904,8 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	
 	/**
 	 * Do an exhaustive search for all sink blocks that have the same binding
-	 * as the specified block. We cover all diagrams in the system.
+	 * as the specified block. We cover all diagrams in the system. There 
+	 * shoud only be one.
 	 * 
 	 * @param diagramId identifier for the diagram
 	 * @param blockId Id of the source
@@ -964,8 +965,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		}
 
 		String tagPath = null;
-		if( sink!=null && (sink.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SINK) ||
-				sink.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_OUTPUT))) {
+		if( sink!=null && (sink.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SINK))) {
 			BlockProperty prop = sink.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
 			if( prop!=null ) tagPath = fcns.providerlessPath(prop.getBinding());
 		}

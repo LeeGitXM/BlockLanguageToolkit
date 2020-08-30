@@ -87,7 +87,7 @@ public class ListEditPanel extends BasicEditPanel {
 					log.infof("%s.OK action: assembled list, %s = %s",TAG,property.getName(),list);
 					property.setValue(list);
 					editor.handlePropertyChange(property);   // Immediately update the running diagram
-					updatePanelForProperty(BlockEditConstants.HOME_PANEL,property);
+					editor.updatePanelForProperty(BlockEditConstants.HOME_PANEL,property);
 				}
 				else {
 					log.warnf("%s.OK action: property is NULL, no action taken",TAG);

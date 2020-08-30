@@ -1,5 +1,5 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved.
+ *   (c) 2014-2020  ILS Automation. All rights reserved.
  */
 package com.ils.blt.designer.editor;
 
@@ -13,8 +13,6 @@ import javax.swing.JTextField;
 
 import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.block.BlockConstants;
-import com.ils.blt.common.block.BlockProperty;
-import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 
@@ -33,12 +31,6 @@ public class BasicEditPanel extends JPanel {
 	public BasicEditPanel(BlockPropertyEditor bpe) {
 		this.editor = bpe;
 		this.log = LogUtil.getLogger(getClass().getPackage().getName());
-	}
-	protected void updatePanelForBlock(int index,ProcessBlockView block) {
-		editor.updatePanelForBlock(index,block);
-	}
-	protected void updatePanelForProperty(int index,BlockProperty prop) {
-		editor.updatePanelForProperty(index,prop);
 	}
 	protected void setSelectedPane(int selection) {
 		editor.setSelectedPane(selection);

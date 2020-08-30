@@ -117,6 +117,7 @@ public class NameEditPanel extends BasicEditPanel {
 					}
 
 					block.setName(nameField.getText());
+					editor.updateCorePanel(BlockEditConstants.HOME_PANEL,block);
 					if( block.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK) ) {
 						BlockProperty prop = block.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
 						String path = prop.getBinding();
@@ -125,14 +126,13 @@ public class NameEditPanel extends BasicEditPanel {
 						// otherwise, create a new one. Name must be a legal tag path element.
 						if( !isStandardConnectionFolder(path) ) {
 							String provider = getProvider();
-							path = String.format("[%s]%s/%s)",provider,BlockConstants.SOURCE_SINK_TAG_FOLDER,nameField.getText());
+							path = String.format("[%s]%s/%s",provider,BlockConstants.SOURCE_SINK_TAG_FOLDER,nameField.getText());
 							handler.createTag(DataType.String,path);
 						}
 						else {
 							handler.renameTag(nameField.getText(), path);
 							path = renamePath(nameField.getText(), path);
 						}
-						
 						prop.setBinding(path);
 						
 						// Perform similar modification on connected sources
@@ -153,7 +153,7 @@ public class NameEditPanel extends BasicEditPanel {
 					block.setNameOffsetX(Integer.parseInt(xfield.getText()));
 					block.setNameOffsetY(Integer.parseInt(yfield.getText()));
 					setSelectedPane(BlockEditConstants.HOME_PANEL);
-					editor.updatePanelForBlock(BlockEditConstants.HOME_PANEL, block);
+					editor.updateCorePanel(BlockEditConstants.HOME_PANEL, block);
 					editor.saveDiagram();
 				}
 				catch(NumberFormatException nfe) {

@@ -97,19 +97,7 @@ public class BlockPropertyEditor extends SlidingPane   {
 	public ProcessBlockView getBlock() { return this.block; }
 	public ProcessDiagramView getDiagram() { return this.diagram; }
 	
-	public void updatePanelForBlock(int panelIndex,ProcessBlockView blk) {
-		switch(panelIndex) {
-		case BlockEditConstants.NAME_EDIT_PANEL:
-			nameEditPanel.updateForBlock(blk);
-			break;
-		case BlockEditConstants.HOME_PANEL: 
-			mainPanel.updatePanelForBlock(blk);
-			break;
-		case BlockEditConstants.CONFIGURATION_PANEL:
-		default:
-			break;
-		}
-	}
+
 	public DesignerContext getContext() { return this.context; }
 	/**
 	 * Changing the name is non-structural. If the diagram is not
@@ -167,6 +155,31 @@ public class BlockPropertyEditor extends SlidingPane   {
 	public void shutdown() {
 		mainPanel.shutdown();
 	}
+	// Update the displayed value in the main panel
+	public void updatePanelValue(String propertyName,Object val) {
+		if (block.getClassName().equals(BlockConstants.BLOCK_CLASS_SOURCE)) {
+			sourceMainPanel.updatePanelValue(propertyName,val);
+		} 
+		else {
+			mainPanel.updatePanelValue(propertyName,val);
+		}
+	}
+	
+	public void updateCorePanel(int panelIndex,ProcessBlockView blk) {
+		switch(panelIndex) {
+		case BlockEditConstants.NAME_EDIT_PANEL:
+			nameEditPanel.updateForBlock(blk);
+			break;
+		case BlockEditConstants.HOME_PANEL: 
+			MainPanel mp = this.mainPanel;
+			if( block.getClassName().equals(BlockConstants.BLOCK_CLASS_SOURCE)) mp = sourceMainPanel;
+			mp.updateCorePanel(blk);
+			break;
+		case BlockEditConstants.CONFIGURATION_PANEL:
+		default:
+			break;
+		}
+	}
 	
 	public void updatePanelForProperty(int panelIndex,BlockProperty prop) {
 		switch(panelIndex) {
@@ -177,7 +190,9 @@ public class BlockPropertyEditor extends SlidingPane   {
 			listEditPanel.updateForProperty(prop);
 			break;
 		case BlockEditConstants.HOME_PANEL: 
-			mainPanel.updatePanelForProperty(prop);
+			MainPanel mp = this.mainPanel;
+			if( block.getClassName().equals(BlockConstants.BLOCK_CLASS_SOURCE)) mp = sourceMainPanel;
+			mp.updatePanelForProperty(prop);
 			break;
 		case BlockEditConstants.TAG_BROWSER_PANEL:
 			tagPanel.updateForProperty(prop);

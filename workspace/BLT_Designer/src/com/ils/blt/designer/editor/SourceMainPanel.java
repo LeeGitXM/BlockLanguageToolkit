@@ -29,8 +29,9 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
 @SuppressWarnings("serial")
 public class SourceMainPanel extends MainPanel {
 	private final static String TAG = "SourceMainPanel";
-	private final static String PROP_NAME = "Associated Sink";
+	public final static String PROP_NAME = "Associated Sink";
 	private SerializableBlockStateDescriptor sink;
+	private BlockProperty property = null;  // THe "pseudo" property
 	
 	public SourceMainPanel(DesignerContext context,BlockPropertyEditor editor,ProcessBlockView blk, DiagramWorkspace wrkspc) {
 		super(context,editor,blk,wrkspc);
@@ -55,7 +56,7 @@ public class SourceMainPanel extends MainPanel {
 				}
 			}
 		}
-		BlockProperty property = new BlockProperty(PROP_NAME,sinkName,PropertyType.STRING,true);
+		property = new BlockProperty(PROP_NAME,sinkName,PropertyType.STRING,true);
 		PropertyPanel propertyPanel = new PropertyPanel(context,this,block,property,workspace);
 		add(propertyPanel,"skip,growx,push,gaptop 0,gapbottom 0");
 		panelMap.put(property.getName(), propertyPanel);
@@ -85,7 +86,7 @@ public class SourceMainPanel extends MainPanel {
 			btn.setPreferredSize(BlockEditConstants.BUTTON_SIZE);
 			btn.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e){
-					updatePanelForProperty(BlockEditConstants.SOURCE_EDIT_PANEL,prop);
+					editor.updatePanelForProperty(BlockEditConstants.SOURCE_EDIT_PANEL,prop);
 					setSelectedPane(BlockEditConstants.SOURCE_EDIT_PANEL);
 				}
 			});
@@ -93,4 +94,12 @@ public class SourceMainPanel extends MainPanel {
 		return btn;
 	}
 	
+	public void updatePanelValue(String propertyName,Object val) {
+		if( propertyName.equalsIgnoreCase(PROP_NAME)) {
+			property.setValue(val);
+		}
+		else {
+			super.updatePanelValue(propertyName, val);
+		}
+	}
 }

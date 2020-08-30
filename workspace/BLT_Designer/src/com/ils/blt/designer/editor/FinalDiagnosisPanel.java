@@ -103,9 +103,6 @@ public class FinalDiagnosisPanel extends BasicEditPanel implements ActionListene
 
 	
 //	Now figure out how to get this to refresh when the diagram state (active/disabled) changes
-	
-	
-	
 	public FinalDiagnosisPanel(DesignerContext context,BlockPropertyEditor editor,ProcessBlockView blk, DiagramWorkspace wrkspc) {
 		super(editor);
 		this.block = blk;
@@ -363,6 +360,7 @@ public class FinalDiagnosisPanel extends BasicEditPanel implements ActionListene
 	 * class, label, state, statusText
 	 */
 	private class CorePropertyPanel extends JPanel {
+		private static final long serialVersionUID = -7849105885687872683L;
 		private static final String columnConstraints = "[para]0[]0[]";
 		private static final String layoutConstraints = "ins 2";
 		private static final String rowConstraints = "[para]0[]0[]";
@@ -526,7 +524,7 @@ public class FinalDiagnosisPanel extends BasicEditPanel implements ActionListene
 			btn.addActionListener(new ActionListener() {
 				// Determine the correct panel, depending on the property type
 				public void actionPerformed(ActionEvent e){
-					updatePanelForBlock(BlockEditConstants.NAME_EDIT_PANEL,blk);
+					editor.updateCorePanel(BlockEditConstants.NAME_EDIT_PANEL,blk);
 					setSelectedPane(BlockEditConstants.NAME_EDIT_PANEL);
 				}
 			});

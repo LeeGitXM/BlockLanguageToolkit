@@ -260,21 +260,24 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
      */
     public void changeConnectorType(ConnectionType newType) {
     	if(ctypeEditable) {
-    		boolean foundSignal = false;
+    		boolean changed = false;
     		for( ProcessAnchorDescriptor anchor:getAnchors()) {
-    			if( !foundSignal && anchor.getConnectionType().equals(ConnectionType.SIGNAL)) {
-    				foundSignal = true;
+    			if( anchor.getConnectionType().equals(ConnectionType.SIGNAL)) {
+    				continue;  // Signal port is not changeable
     			}
     			else if(anchor.getDisplay().equals(BlockConstants.RECEIVER_PORT_NAME) ||
     					anchor.getDisplay().equals(BlockConstants.BROADCAST_PORT_NAME) ) {
     				continue;
     			}
-    			else {
+    			else if( !anchor.getConnectionType().equals(newType)){
+    				changed = true;
     				anchor.setConnectionType(newType);
     			}
     		}
-    		getUi().reconfigure();
-    		fireStateChanged();
+    		if( changed ) {
+    			getUi().reconfigure();
+    			fireStateChanged();
+    		}
     	}
     }
 

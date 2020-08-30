@@ -113,7 +113,7 @@ public class ConfigurationPanel extends BasicEditPanel {
 					}
 				}
 				editor.handlePropertyChange(property);   // Mark the nav tree node as dirty
-				updatePanelForProperty(BlockEditConstants.HOME_PANEL,property);
+				editor.updatePanelForProperty(BlockEditConstants.HOME_PANEL,property);
 				setSelectedPane(BlockEditConstants.HOME_PANEL);
 			}
 		});

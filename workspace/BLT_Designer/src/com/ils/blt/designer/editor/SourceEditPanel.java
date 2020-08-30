@@ -66,15 +66,16 @@ public class SourceEditPanel extends BasicEditPanel {
 				if( selectedRow>=0 ) {
 					SerializableBlockStateDescriptor sinkDescriptor = sinks.get(selectedRow);
 					ProcessBlockView block = editor.getBlock();
-					BlockProperty sourceProperty = block.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
+					BlockProperty tagProperty = block.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
 					SerializableResourceDescriptor diag = handler.getDiagramForBlock(sinkDescriptor.getIdString());
 					Object val = handler.getPropertyValue(diag.getId(), sinkDescriptor.getIdString(), BlockConstants.BLOCK_PROPERTY_TAG_PATH);
 					Object binding = handler.getPropertyBinding(diag.getId(), sinkDescriptor.getIdString(), BlockConstants.BLOCK_PROPERTY_TAG_PATH);
-					sourceProperty.setValue(val);
-					sourceProperty.setBinding(binding.toString());
-					editor.handlePropertyChange(sourceProperty);   // Immediately update the running diagram
+					tagProperty.setValue(val);
+					tagProperty.setBinding(binding.toString());
+					editor.handlePropertyChange(tagProperty) ;   // Immediately update the running diagram
 					block.setName(sinkDescriptor.getName());
-					updatePanelForBlock(BlockEditConstants.HOME_PANEL,block);
+					editor.updateCorePanel(BlockEditConstants.HOME_PANEL,block); // Core attributes
+					editor.updatePanelValue(SourceMainPanel.PROP_NAME, sinkDescriptor.getName());
 				}
 				else {
 					log.warnf("%s.OK action: property is NULL, no action taken",TAG);

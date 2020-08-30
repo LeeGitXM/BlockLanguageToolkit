@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.ils.common.tag.TagValidator;
 import com.inductiveautomation.ignition.common.sqltags.TagDefinition;
 import com.inductiveautomation.ignition.common.sqltags.model.TagManagerBase;
 import com.inductiveautomation.ignition.common.sqltags.model.TagNode;
@@ -81,8 +82,7 @@ public class TagHandler    {
 		try {
 			tp = TagPathParser.parse(providerName,path);
 			// Guarantee that parent paths exist
-			createParents(tp);
-			
+			createParents(tp);	
 			TagDefinition node = new TagDefinition(tp.getItemName(),TagType.DB);
 			node.setDataType(type);
 			node.setEnabled(true);
@@ -101,8 +101,8 @@ public class TagHandler    {
 		}
 	}
 	/**
-	 * Rename a tag keeping the folder structure intact. If the rename fails,
-	 * then create the tag as a String.
+	 * Rename a tag keeping the folder structure intact. If the tag does not
+	 * exist or the rename fails, then create the tag as a String.
 	 * @param name new name
 	 * @param path existing complete path
 	 */
@@ -110,22 +110,32 @@ public class TagHandler    {
 		String providerName = providerFromPath(fullpath);
 		String path = stripProviderFromPath(fullpath);
 		log.infof("%s.renameTag %s [%s]%s",TAG,name,providerName,path);
-		TagPath tp = null;
-		try {
-			tp = TagPathParser.parse(providerName,path);
-			TagDiff diff = new TagDiff();
-			diff.setName(name);
-			List<TagPath> tags = new ArrayList<>();
-			tags.add(tp);
-			context.getTagManager().editTags(tags,diff);
+		TagValidator validator = new TagValidator(context);
+		if( validator.exists(path) ) {
+			TagPath tp = null;
+			try {
+				tp = TagPathParser.parse(providerName,path);
+				TagDiff diff = new TagDiff();
+				diff.setName(name);
+				List<TagPath> tags = new ArrayList<>();
+				tags.add(tp);
+				context.getTagManager().editTags(tags,diff);
+			}
+			catch(IOException ioe) {
+				log.warnf("%s: renameTag: Exception parsing tag [%s]%s (%s)",TAG,providerName,path,ioe.getLocalizedMessage());
+				return;
+			}
+			catch(Exception ex) {
+				log.warnf("%s: renameTag: Exception renaming tag [%s]%s (%s)",TAG,providerName,path,ex.getLocalizedMessage());
+				path = replaceTagNameInPath(name,fullpath);
+				createTag(DataType.String,path);
+				return;
+			}
 		}
-		catch(IOException ioe) {
-			log.warnf("%s: renameTag: Exception parsing tag [%s]%s (%s)",TAG,providerName,path,ioe.getLocalizedMessage());
-			return;
-		}
-		catch(Exception ex) {
-			log.warnf("%s: renameTag: Exception renaming tag [%s]%s (%s)",TAG,providerName,path,ex.getLocalizedMessage());
-			createTag(DataType.String,fullpath);
+		else {
+			path = replaceTagNameInPath(name,fullpath);
+			log.warnf("%s: renameTag: referenced tag [%s] did not exist. %s created",TAG,fullpath,path);
+			createTag(DataType.String,path);
 			return;
 		}
 	}
@@ -154,7 +164,18 @@ public class TagHandler    {
 		else path="";
 		return path;
 	}
-	
+	// We expect the provider name to be bounded by brackets.
+	private String replaceTagNameInPath(String name,String path) {
+		int pos = path.lastIndexOf("/");
+		if( pos<0 ) pos = path.lastIndexOf("]");
+		if( pos<0 ) {
+			path = name;
+		}
+		else {
+			path = path.substring(0,pos+1)+name;
+		}
+		return path;
+	}
 	// If the tag path has a source (provider), strip it off.
 	// This is for use with commands that explicitly specify
 	// the provider.

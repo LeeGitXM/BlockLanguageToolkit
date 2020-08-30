@@ -42,12 +42,10 @@ public class PythonEditorPanel extends BasicEditPanel {
 			public void actionPerformed(ActionEvent e) {
 
 				if(property!=null) {
+					editor.updatePanelForProperty(BlockEditConstants.HOME_PANEL,property);
+					editor.handlePropertyChange(property);      // Immediate update in gateway
+					setSelectedPane(BlockEditConstants.HOME_PANEL);
 				}
-				updatePanelForProperty(BlockEditConstants.HOME_PANEL,property);
-				editor.handlePropertyChange(property);      // Immediate update in gateway
-				setSelectedPane(BlockEditConstants.HOME_PANEL);
-
-
 			}
 		});
 

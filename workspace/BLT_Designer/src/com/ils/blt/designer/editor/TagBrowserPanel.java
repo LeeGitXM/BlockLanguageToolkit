@@ -76,7 +76,7 @@ public class TagBrowserPanel extends BasicEditPanel {
 							log.debugf("TagBrowserPanel set property %s, binding now %s",property.getName(),selectedPath);
 							property.setBinding(selectedPath);
 						}
-						updatePanelForProperty(BlockEditConstants.HOME_PANEL,property);
+						editor.updatePanelForProperty(BlockEditConstants.HOME_PANEL,property);
 						editor.handlePropertyChange(property);      // Immediate update in gateway
 						setSelectedPane(BlockEditConstants.HOME_PANEL);
 					}

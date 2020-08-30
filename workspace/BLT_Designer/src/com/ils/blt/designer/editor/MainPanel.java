@@ -17,15 +17,16 @@ import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.JTextField;
 
-import net.miginfocom.swing.MigLayout;
-
 import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
+import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
+
+import net.miginfocom.swing.MigLayout;
 
 /**
  * This is the "home" panel that first appears when editing a block. It contains
@@ -84,7 +85,7 @@ public class MainPanel extends BasicEditPanel {
 	 * This is the property summary on the main panel.
 	 * @param pbv block view
 	 */
-	public void updatePanelForBlock(ProcessBlockView pbv) {
+	public void updateCorePanel(ProcessBlockView pbv) {
 		 corePanel.updatePanelForBlock(pbv);
 	}
 	/**
@@ -95,6 +96,11 @@ public class MainPanel extends BasicEditPanel {
 		log.tracef("%s.updatePanelForProperty: %s", TAG,prop.getName());
 		PropertyPanel pp = panelMap.get(prop.getName());
 		if( pp!=null ) pp.update();
+	}
+	
+	public void updatePanelValue(String propertyName,Object val) {
+		PropertyPanel pp = panelMap.get(propertyName);
+		if( pp!=null ) pp.valueChange(new BasicQualifiedValue(val));
 	}
 	/**
 	 * These properties are present in every block.
@@ -146,7 +152,7 @@ public class MainPanel extends BasicEditPanel {
 			btn.setPreferredSize(BlockEditConstants.BUTTON_SIZE);
 			btn.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e){
-					updatePanelForProperty(BlockEditConstants.CONFIGURATION_PANEL,prop);
+					editor.updatePanelForProperty(BlockEditConstants.CONFIGURATION_PANEL,prop);
 					setSelectedPane(BlockEditConstants.CONFIGURATION_PANEL);
 				}
 			});
@@ -179,13 +185,13 @@ public class MainPanel extends BasicEditPanel {
 						prop.getBindingType().equals(BindingType.TAG_READ)   ||
 						prop.getBindingType().equals(BindingType.TAG_READWRITE) ||
 						prop.getBindingType().equals(BindingType.TAG_WRITE)	 )  {
-						updatePanelForProperty(BlockEditConstants.TAG_BROWSER_PANEL,prop);
+						editor.updatePanelForProperty(BlockEditConstants.TAG_BROWSER_PANEL,prop);
 						setSelectedPane(BlockEditConstants.TAG_BROWSER_PANEL);
 					}
 					// Use special editor for list types
 					else if( prop.getType().equals(PropertyType.LIST) ) {
 						log.debugf("%s.editButton actionPerformed for property %s (%s)",TAG,prop.getName(),prop.getType());
-						updatePanelForProperty(BlockEditConstants.LIST_EDIT_PANEL,prop);
+						editor.updatePanelForProperty(BlockEditConstants.LIST_EDIT_PANEL,prop);
 						setSelectedPane(BlockEditConstants.LIST_EDIT_PANEL);
 					}
 					else {
@@ -220,7 +226,7 @@ public class MainPanel extends BasicEditPanel {
 			btn.addActionListener(new ActionListener() {
 				// Determine the correct panel, depending on the property type
 				public void actionPerformed(ActionEvent e){
-					updatePanelForBlock(BlockEditConstants.NAME_EDIT_PANEL,blk);
+					editor.updateCorePanel(BlockEditConstants.NAME_EDIT_PANEL,blk);
 					setSelectedPane(BlockEditConstants.NAME_EDIT_PANEL);
 				}
 			});
