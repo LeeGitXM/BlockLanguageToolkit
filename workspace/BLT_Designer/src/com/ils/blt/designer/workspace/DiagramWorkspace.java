@@ -290,9 +290,9 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 //				// NOTE: There is always a corresponding block in the gateway. One is created when we drop block from the palette.
 //				saveAction.setEnabled(pbv.isDirty());
 //				menu.add(saveAction);
-				// NOTE: ctypeEditable gets turned off once a block has been serialized.  Exclude Input and Output blocks
+				// NOTE: ctypeEditable gets turned off once a block has been serialized.
 				if( selection instanceof BlockComponent && pbv.isCtypeEditable() && 
-						!pbv.getClassName().equals(BlockConstants.BLOCK_CLASS_OUTPUT) && !pbv.getClassName().equals(BlockConstants.BLOCK_CLASS_INPUT) ) {
+						!pbv.getClassName().equals(BlockConstants.BLOCK_CLASS_OUTPUT) ) {
 					
 					// Types are: ANY, DATA, TEXT, TRUTH-VALUE
 					// Assume the type from the terminus anchor
@@ -301,6 +301,11 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 					while( iterator.hasNext()  ) {
 						anch = iterator.next();
 						if( anch.getType().equals(AnchorType.Origin) && !anch.getConnectionType().equals(ConnectionType.SIGNAL) ) {
+							break;
+						}
+						// You can change text to anything
+						else if( anch.getType().equals(AnchorType.Terminus) && 
+								(anch.getConnectionType().equals(ConnectionType.ANY)|| anch.getConnectionType().equals(ConnectionType.TEXT)) ) {
 							break;
 						}
 					}
@@ -775,9 +780,9 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 								type = tag.getDataType();
 								Collection<BlockProperty> props = block.getProperties();
 								for (BlockProperty property:props) {
-									if( "TagPath".equalsIgnoreCase(property.getName())) {
+									if( BlockConstants.BLOCK_PROPERTY_TAG_PATH.equalsIgnoreCase(property.getName())) {
 										property.setBinding(tnode.getTagPath().toStringFull());}
-									block.notifyOfPropertyChange(property, type);
+										block.modifyConnectionForTagChange(property, type);
 								}
 
 								logger.infof("%s.handleDrop: dropped %s",TAG,block.getClass().getName());
@@ -839,6 +844,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 										if( connectionMessage==null ) {
 											prop = pblock.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
 											pblock.setName(leafNameFromTagPath(tp));
+											pblock.setCtypeEditable(true);
 										}
 									}
 								}
@@ -855,6 +861,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 										if( connectionMessage==null ) {
 											prop = pblock.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
 											pblock.setName(enforceUniqueName(nameFromTagPath(tp),diagram));
+											pblock.setCtypeEditable(true);
 										}
 									}
 								}
@@ -868,9 +875,9 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 								prop.setBinding(tnode.getTagPath().toStringFull());
 								diagram.setDirty(true);
 								diagram.fireStateChanged();
-								setSelectedItems((JComponent)null);  // EREIAM JH - this is a bit of a hack to get the property panel to refresh
+								setSelectedItems((JComponent)null);  // hack to get the property panel to refresh
 								setSelectedItems((JComponent)droppedOn);
-								pblock.notifyOfPropertyChange(prop, tagType);
+								pblock.modifyConnectionForTagChange(prop, tagType);
 							} 
 							else {
 								JOptionPane.showMessageDialog(null, connectionMessage, "Warning", JOptionPane.INFORMATION_MESSAGE);

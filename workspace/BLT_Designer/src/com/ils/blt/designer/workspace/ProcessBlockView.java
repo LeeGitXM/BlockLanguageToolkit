@@ -437,7 +437,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 		}
 	}
 	public void setAuxiliaryData(GeneralPurposeDataContainer auxiliaryData) {this.auxiliaryData = auxiliaryData;}
-	public void setCtypeEditable(boolean ctypeEditable) {this.ctypeEditable = ctypeEditable;}
+	public void setCtypeEditable(boolean flag) {this.ctypeEditable = flag;}
 	public void setDirty(boolean dirty) {this.dirty = dirty;} 
 	public void setEditorClass(String editorClass) {this.editorClass = editorClass;}
 	public void setEncapsulation(boolean encapsulation) {this.encapsulation = encapsulation;}
@@ -578,25 +578,13 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 	}
 
 	/**
-	 *  Notify this block of a tag property change.
-	 *  Change the anchor data type to match the tag
+	 *  Change the block anchor types to match the tag
 	 */
-	public void notifyOfPropertyChange(BlockProperty property, DataType type) {
-		
+	public void modifyConnectionForTagChange(BlockProperty property, DataType type) {	
 		BindingType bob = property.getBindingType();
-		// EREIAM JH - should  this only be done if the field changed is 'TagPath'?
 		if (type != null && (bob == BindingType.TAG_READ || bob == BindingType.TAG_READWRITE || bob == BindingType.TAG_MONITOR)) {
 			ConnectionType conType= determineDataTypeFromTagType(type);
-//			ProcessAnchorDescriptor anchor = anchors.values().iterator().next();
-//			if (isConnectionValid(startingAnchor, endAnchor)) {
-				ctypeEditable = true;
-				changeConnectorType(conType);
-				ctypeEditable = false;  // don't allow changes to anchor data type once bound to tag
-//			}  else {
-//				messageDialog();
-//			}
-			
-			//and now we should check if there was a connection and it's now bad.
+			changeConnectorType(conType);
 		}
 		
 	}

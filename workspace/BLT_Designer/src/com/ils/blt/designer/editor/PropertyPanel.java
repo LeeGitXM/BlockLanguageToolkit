@@ -321,9 +321,9 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 				bindingDisplayField.setVisible(true);
 				valueDisplayField.setEnabled(false);
 				valueDisplayField.setEditable(false);
-				// we should only do  this check if it affects the connection type.  Maybe check if the change is to TagPath?
-				if ("tagPath".equalsIgnoreCase(property.getName())) {
-					block.notifyOfPropertyChange(property, type);
+				// we should only do  this check if it affects the connection type.
+				if (property.getBinding()!=null ) {
+					block.modifyConnectionForTagChange(property, type);
 				}
 			} else {
 		        JOptionPane.showMessageDialog(null, msg, "Warning", JOptionPane.INFORMATION_MESSAGE);
