@@ -115,12 +115,15 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 //			currentTimeUnit = TimeUtility.unitForValue(propValue);
 //			main.addSeparator(this,property.getName()+" ~ "+currentTimeUnit.name().toLowerCase());
 			main.addSeparator(this,property.getName()+" ~ "+TimeUnit.MINUTES.name().toLowerCase());
-		} else if( property.getType().equals(PropertyType.TIME_SECONDS) ) {
+		} 
+		else if( property.getType().equals(PropertyType.TIME_SECONDS) ) {
 			this.currentTimeUnit = TimeUnit.SECONDS;
 			main.addSeparator(this,property.getName()+" ~ "+TimeUnit.SECONDS.name().toLowerCase());
-		} else if( property.getType().equals(PropertyType.TIME_MINUTES) ) {
+		} 
+		else if( property.getType().equals(PropertyType.TIME_MINUTES) ) {
 			main.addSeparator(this,property.getName()+" ~ "+TimeUnit.MINUTES.name().toLowerCase());
-		} else {
+		} 
+		else {
 			main.addSeparator(this,property.getName());
 		}
 

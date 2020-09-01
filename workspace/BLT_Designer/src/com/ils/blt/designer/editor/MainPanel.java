@@ -93,12 +93,13 @@ public class MainPanel extends BasicEditPanel {
 	 * @param prop
 	 */
 	public void updatePanelForProperty(BlockProperty prop ) {
-		log.tracef("%s.updatePanelForProperty: %s", TAG,prop.getName());
+		log.infof("%s.updatePanelForProperty: %s = %s", TAG,prop.getName(),prop.getValue().toString());
 		PropertyPanel pp = panelMap.get(prop.getName());
 		if( pp!=null ) pp.update();
 	}
 	
 	public void updatePanelValue(String propertyName,Object val) {
+		log.infof("%s.updatePanelValue: %s = %s", TAG,propertyName,val.toString());
 		PropertyPanel pp = panelMap.get(propertyName);
 		if( pp!=null ) pp.valueChange(new BasicQualifiedValue(val));
 	}

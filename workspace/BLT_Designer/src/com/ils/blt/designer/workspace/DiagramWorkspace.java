@@ -745,11 +745,10 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 									block.setName(leafNameFromTagPath(tp));
 								}
 								else {
-									Output output = new Output();
-									block = new ProcessBlockView(output.getBlockPrototype().getBlockDescriptor());
+									Input input = new Input();
+									block = new ProcessBlockView(input.getBlockPrototype().getBlockDescriptor());
 									block.setName(enforceUniqueName(nameFromTagPath(tp),diagram));
 								}
-								
 							} 
 							else {
 								if( isStandardFolder ) {
@@ -758,8 +757,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 									block.setName(leafNameFromTagPath(tp));
 								}
 								else {
-									Input input = new Input();
-									block = new ProcessBlockView(input.getBlockPrototype().getBlockDescriptor());
+									Output output = new Output();
+									block = new ProcessBlockView(output.getBlockPrototype().getBlockDescriptor());
 									block.setName(enforceUniqueName(nameFromTagPath(tp),diagram));
 								}
 							}

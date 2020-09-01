@@ -685,21 +685,23 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	@Override
 	public synchronized List<SerializableBlockStateDescriptor> listBlocksForTag(String tagpath) {
 		List<SerializableBlockStateDescriptor> results = new ArrayList<>();
-		List<SerializableResourceDescriptor> descriptors = controller.getDiagramDescriptors();
-		for(SerializableResourceDescriptor descriptor:descriptors) {
-			UUID diagId = makeUUID(descriptor.getId());
+		if( tagpath!=null && !tagpath.isEmpty() ) {
+			List<SerializableResourceDescriptor> descriptors = controller.getDiagramDescriptors();
+			for(SerializableResourceDescriptor descriptor:descriptors) {
+				UUID diagId = makeUUID(descriptor.getId());
 
-			ProcessDiagram diagram = controller.getDiagram(diagId);
-			if( diagram!=null) {
-				Collection<ProcessBlock> blocks = diagram.getProcessBlocks();
-				for(ProcessBlock block:blocks) {
-					if( block.usesTag(tagpath)) {
-						results.add(block.toDescriptor());
+				ProcessDiagram diagram = controller.getDiagram(diagId);
+				if( diagram!=null) {
+					Collection<ProcessBlock> blocks = diagram.getProcessBlocks();
+					for(ProcessBlock block:blocks) {
+						if( block.usesTag(tagpath)) {
+							results.add(block.toDescriptor());
+						}
 					}
 				}
-			}
-			else {
-				log.warnf("%s.listBlocksForTag: no diagram found for id %s",TAG,diagId.toString());
+				else {
+					log.warnf("%s.listBlocksForTag: no diagram found for id %s",TAG,diagId.toString());
+				}
 			}
 		}
 		log.warnf("%s.listBlocksForTag: %s returns %d blocks",TAG,tagpath,results.size());
@@ -719,7 +721,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		return descriptors;
 	}
 	public synchronized List<SerializableBlockStateDescriptor> listBlocksGloballyUpstreamOf(String diagramId, String blockName) {
-		log.infof("%s.listBlocksGloballyUpstreamOf: diagramId %s:%s",TAG,diagramId,blockName);
+		log.tracef("%s.listBlocksGloballyUpstreamOf: diagramId %s:%s",TAG,diagramId,blockName);
 		List<SerializableBlockStateDescriptor> descriptors = new ArrayList<>();
 		UUID diauuid = makeUUID(diagramId);
 		ProcessDiagram diagram = controller.getDiagram(diauuid);
@@ -735,7 +737,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		else {
 			log.warnf("%s.listBlocksGloballyUpstreamOf: no diagram found for %s",TAG,diagramId);
 		}
-		log.infof("%s.listBlocksGloballyUpstreamOf: diagramId %s returning %d descriptors",TAG,diagramId,descriptors.size());
+		log.tracef("%s.listBlocksGloballyUpstreamOf: diagramId %s returning %d descriptors",TAG,diagramId,descriptors.size());
 		return descriptors;
 	}
 	
@@ -763,7 +765,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		else {
 			log.warnf("%s.listBlocksInDiagram: no diagram found for %s",TAG,diagramId);
 		}
-		log.infof("%s.listBlocksInDiagram: diagramId %s returning %d descriptors",TAG,diagramId,descriptors.size());
+		log.tracef("%s.listBlocksInDiagram: diagramId %s returning %d descriptors",TAG,diagramId,descriptors.size());
 		return descriptors;
 	}
 	/**
@@ -780,7 +782,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 				if( desc.getClassName().equals(className)) descriptors.add(desc);
 			}
 		}
-		log.infof("%s.listBlocksOfClass: %s returning %d descriptors",TAG,className,descriptors.size());
+		log.tracef("%s.listBlocksOfClass: %s returning %d descriptors",TAG,className,descriptors.size());
 		return descriptors;
 	}
 	
@@ -801,7 +803,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 
 	@Override
 	public synchronized List<SerializableBlockStateDescriptor> listConfigurationErrors() {
-		log.infof("%s.listConfigurationErrors:",TAG);
+		log.tracef("%s.listConfigurationErrors:",TAG);
 		List<SerializableBlockStateDescriptor> result = new ArrayList<>();
 		List<SerializableResourceDescriptor> descriptors = controller.getDiagramDescriptors();
 		try {
@@ -992,7 +994,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	}
 	@Override
 	public synchronized List<SerializableBlockStateDescriptor> listSubscriptionErrors() {
-		log.infof("%s.listSubscriptionErrors:",TAG);
+		log.tracef("%s.listSubscriptionErrors:",TAG);
 		List<SerializableBlockStateDescriptor> result = new ArrayList<>();
 		List<SerializableResourceDescriptor> descriptors = controller.getDiagramDescriptors();
 		try {
@@ -1020,7 +1022,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	
 	@Override
 	public synchronized List<SerializableBlockStateDescriptor> listUnresponsiveBlocks(double hours,String className) {
-		log.infof("%s.listUnresponsiveBlocks: Hrs %f, class %s,",TAG,hours,className);
+		log.tracef("%s.listUnresponsiveBlocks: Hrs %f, class %s,",TAG,hours,className);
 		List<SerializableBlockStateDescriptor> result = new ArrayList<>();
 		List<SerializableResourceDescriptor> descriptors = controller.getDiagramDescriptors();
 		long interval = (long)(hours*3600*1000);  // mses

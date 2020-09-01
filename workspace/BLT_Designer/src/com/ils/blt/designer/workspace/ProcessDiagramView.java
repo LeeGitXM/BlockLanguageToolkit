@@ -650,12 +650,14 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 				ret = String.format("Sink %s icannot be bound to a Boolean tag, Use a Text tag instead.",pblock.getName());
 			}
 			else {
-				List<SerializableBlockStateDescriptor> blocks = appRequestHandler.listBlocksForTag(tagPath);
-				for(SerializableBlockStateDescriptor desc:blocks) {
-					if( desc.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK) &&
-							!desc.getIdString().equals(pblock.getId().toString())) {
-						ret = String.format("%s: cannot bind to same tag as sink %s", pblock.getName(),desc.getName());
-						break;
+				if(tagPath!=null && !tagPath.isEmpty() ) {
+					List<SerializableBlockStateDescriptor> blocks = appRequestHandler.listBlocksForTag(tagPath);
+					for(SerializableBlockStateDescriptor desc:blocks) {
+						if( desc.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK) &&
+								!desc.getIdString().equals(pblock.getId().toString())) {
+							ret = String.format("%s: cannot bind to same tag as sink %s", pblock.getName(),desc.getName());
+							break;
+						}
 					}
 				}
 			}

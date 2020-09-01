@@ -14,11 +14,6 @@ import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.control.ExecutionController;
-import com.ils.blt.common.notification.BlockPropertyChangeEvent;
-import com.ils.common.watchdog.TestAwareQualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.Quality;
 
 /**
  * Display a single property of another block.

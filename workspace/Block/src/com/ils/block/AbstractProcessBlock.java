@@ -807,13 +807,23 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 */
 	@Override
 	public boolean usesTag(String tagpath) {
-		int pos = tagpath.indexOf("]");
-		if(pos>0) tagpath = tagpath.substring(pos+1);
-		for(BlockProperty property:propertyMap.values()) {
-			String binding = property.getBinding();
-			if( binding.endsWith(tagpath)) return true;
+		boolean result = false;
+		if( tagpath!=null && !tagpath.isEmpty() ) {
+			int pos = tagpath.indexOf("]");
+			if(pos>0) tagpath = tagpath.substring(pos+1);
+			for(BlockProperty property:propertyMap.values()) {
+				String binding = property.getBinding();
+				if( binding!=null && !binding.isEmpty() ) {
+					pos = binding.indexOf("]");
+					if(pos>0) binding = binding.substring(pos+1);
+					if( binding.equalsIgnoreCase(tagpath)) {
+						result = true;
+						break;
+					}
+				}
+			}
 		}
-		return false;
+		return result;
 	}
 	/**
 	 * Check the block configuration for missing or conflicting

@@ -581,8 +581,8 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 	 *  Change the block anchor types to match the tag
 	 */
 	public void modifyConnectionForTagChange(BlockProperty property, DataType type) {	
-		BindingType bob = property.getBindingType();
-		if (type != null && (bob == BindingType.TAG_READ || bob == BindingType.TAG_READWRITE || bob == BindingType.TAG_MONITOR)) {
+		String binding = property.getBinding();
+		if (binding != null) {
 			ConnectionType conType= determineDataTypeFromTagType(type);
 			changeConnectorType(conType);
 		}
