@@ -550,24 +550,6 @@ public class ModelManager implements ProjectListener  {
 			}
 		}
 	}
-
-	/**
-	 * Start all blocks in diagrams known to this manager. Note that, even if a diagram is
-	 * DISABLED, its blocks are started. It's just that their results are not propagated.
-	 */
-	public void startTriggerInputBlocks() {
-		for( ProcessNode node:nodesByKey.values() ) {
-			if( node instanceof ProcessDiagram && ((ProcessDiagram) node).getState() == DiagramState.ACTIVE) {
-				ProcessDiagram diagram = (ProcessDiagram)node;
-				for( ProcessBlock pb:diagram.getProcessBlocks()) {
-					if (pb instanceof com.ils.block.Input) {
-						pb.evaluate();  // Start or trigger evaluate??  What reads the tag
-					}
-				}
-
-			}
-		}
-	}
 	/**
 	 * Stop all blocks in diagrams known to this manager. Presumably the controller has 
 	 * been stopped.
