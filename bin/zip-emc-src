@@ -1,0 +1,92 @@
+#!/bin/bash
+#
+# Save the source tree for the "Symbolic AI" module.
+# Do not intentionally include our build products, but do include
+# system jars. Do not include migration code.
+#
+#set -x
+VERS=emc-`cat ${SVN_REPO}/EMChemicals/Release/VERS`
+if [ -z "$VERS" ]
+then
+    VERS="emc-src"
+fi
+echo "Building ${VERS}"
+TMP=$GIT_REPO/$VERS
+# Cleanup
+rm -rf $TMP
+cd $GIT_REPO
+mkdir $TMP
+mkdir -p $TMP/blt/workspace
+mkdir -p $TMP/blt/projects
+mkdir -p $TMP/blt/regression
+cp -a blt/bin $TMP/blt
+cp -a blt/images $TMP/blt/images
+cp -a blt/projects/blt_block_test.proj $TMP/blt/projects
+cp -a blt/projects/dbmanager.proj $TMP/blt/projects
+cp -a blt/regression/basic $TMP/blt/regression
+cp -a blt/regression/pylib $TMP/blt/regression
+cp -a blt/regression/tags $TMP/blt/regression
+mkdir -p $TMP/blt/workspace/BLT_Build
+cp -a blt/workspace/BLT_Build/.project $TMP/blt/workspace/BLT_Build
+cp -a blt/workspace/BLT_Build/.classpath $TMP/blt/workspace/BLT_Build
+cp -a blt/workspace/BLT_Build/AntLib $TMP/blt/workspace/BLT_Build
+cp -a blt/workspace/BLT_Build/build-blt.xml $TMP/blt/workspace/BLT_Build
+cp -a blt/workspace/BLT_Build/build-blt-javadoc.xml $TMP/blt/workspace/BLT_Build
+cp -a blt/workspace/BLT_Build/build.xml $TMP/blt/workspace/BLT_Build
+cp -a blt/workspace/BLT_Build/license.html $TMP/blt/workspace/BLT_Build
+cp -a blt/workspace/BLT_Build/module-blt.xml $TMP/blt/workspace/BLT_Build
+cp -a blt/workspace/BLT_Build/pack200.properties $TMP/blt/workspace/BLT_Build
+mkdir -p $TMP/blt/workspace/BLT_Client
+cp -a blt/workspace/BLT_Client/.project $TMP/blt/workspace/BLT_Client
+cp -a blt/workspace/BLT_Client/.classpath $TMP/blt/workspace/BLT_Client
+cp -a blt/workspace/BLT_Client/src $TMP/blt/workspace/BLT_Client
+mkdir -p $TMP/blt/workspace/BLT_Common
+cp -a blt/workspace/BLT_Common/.project $TMP/blt/workspace/BLT_Common
+cp -a blt/workspace/BLT_Common/.classpath $TMP/blt/workspace/BLT_Common
+cp -a blt/workspace/BLT_Common/src $TMP/blt/workspace/BLT_Common
+mkdir -p $TMP/blt/workspace/BLT_Designer
+cp -a blt/workspace/BLT_Designer/.project $TMP/blt/workspace/BLT_Designer
+cp -a blt/workspace/BLT_Designer/.classpath $TMP/blt/workspace/BLT_Designer
+cp -a blt/workspace/BLT_Designer/src $TMP/blt/workspace/BLT_Designer
+mkdir -p $TMP/blt/workspace/BLT_Gateway
+cp -a blt/workspace/BLT_Gateway/.project $TMP/blt/workspace/BLT_Gateway
+cp -a blt/workspace/BLT_Gateway/.classpath $TMP/blt/workspace/BLT_Gateway
+cp -a blt/workspace/BLT_Gateway/src $TMP/blt/workspace/BLT_Gateway
+mkdir -p $TMP/blt/workspace/BLT_Scripts
+#cp -a blt/workspace/BLT_Scripts/.project $TMP/blt/workspace/BLT_Scripts
+#cp -a blt/workspace/BLT_Scripts/.classpath $TMP/blt/workspace/BLT_Scripts
+cp -a blt/workspace/BLT_Scripts/src $TMP/blt/workspace/BLT_Scripts
+mkdir -p $TMP/blt/workspace/Block
+cp -a blt/workspace/Block/.project $TMP/blt/workspace/Block
+cp -a blt/workspace/Block/.classpath $TMP/blt/workspace/Block
+cp -a blt/workspace/Block/src $TMP/blt/workspace/Block
+# Copy jar files
+mkdir -p $TMP/ignition-79/lib
+cp -a ignition-79/.project $TMP/ignition-79
+cp -a ignition-79/.classpath $TMP/ignition-79
+cp -a ignition-79/.gitignore $TMP/ignition-79
+cp -a ignition-79/*.sh $TMP/ignition-79
+cp -a ignition-79/lib/*.jar $TMP/ignition-79/lib
+
+mkdir -p $TMP/external/lib
+cp -a external/.project $TMP/external
+cp -a external/.classpath $TMP/external
+cp -a external/lib/*.jar $TMP/external/lib/
+rm -f $TMP/external/lib/antlr*
+rm -f $TMP/external/lib/ils*
+rm -f $TMP/external/lib/jgraphx*
+rm -f $TMP/external/lib/logback*
+rm -f $TMP/external/lib/sfc*
+
+mkdir -p $TMP/ils-common/ILS_Common
+cp -a ils-common/ILS_Common/.project $TMP/ils-common/ILS_Common
+cp -a ils-common/ILS_Common/.classpath $TMP/ils-common/ILS_Common
+cp -a ils-common/ILS_Common/pack200.properties $TMP/ils-common/ILS_Common
+cp -a ils-common/ILS_Common/*.xml $TMP/ils-common/ILS_Common
+cp -a ils-common/ILS_Common/src $TMP/ils-common/ILS_Common
+
+
+# Now zip and copy to subversion
+cd $GIT_REPO
+zip -rq $VERS.zip $VERS
+rm -rf $TMP
