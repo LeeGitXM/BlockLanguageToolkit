@@ -21,7 +21,6 @@ mkdir -p $TMP/blt/projects
 mkdir -p $TMP/blt/regression
 cp -a blt/bin $TMP/blt
 cp -a blt/images $TMP/blt/images
-cp -a blt/projects/blt_block_test.proj $TMP/blt/projects
 cp -a blt/projects/dbmanager.proj $TMP/blt/projects
 cp -a blt/regression/basic $TMP/blt/regression
 cp -a blt/regression/pylib $TMP/blt/regression
