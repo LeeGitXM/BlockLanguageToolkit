@@ -224,9 +224,9 @@ public class TagListener implements TagChangeListener   {
 	 * Re-start. Create subscriptions for everything in the tag map.
 	 * @param ctxt
 	 */
-	public synchronized void start(GatewayContext ctxt) {
+	public synchronized void restartSubscriptions(GatewayContext ctxt) {
 		this.context = ctxt;
-		log.infof("%s: start tagListener ...",TAG);
+		log.infof("%s.restartSubscriptions  ...",TAG);
 		for( String tagPath:blockMap.keySet()) {
 			startSubscriptionForTag(tagPath);
 		}
