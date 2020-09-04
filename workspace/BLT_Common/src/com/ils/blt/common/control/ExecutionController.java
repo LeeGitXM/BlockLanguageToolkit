@@ -29,7 +29,6 @@ public interface ExecutionController  {
 	public void acceptBroadcastNotification(BroadcastNotification note);
 	public void acceptCompletionNotification(OutgoingNotification note);
 	public void acceptConnectionPostNotification(ConnectionPostNotification note);
-	public void alterSubscription(UUID diagramId,UUID id,String propertyName);
 	public void clearCache();
 	public void clearSubscriptions();
 	public DiagnosticDiagram getDiagram(String diagramId);

@@ -191,24 +191,6 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	}
 
 	/**
-	 * Change a tag subscription for a block's property. We assume that the property
-	 * has been updated and contains the new path.
-	 */
-	@Override
-	public void alterSubscription(UUID diagramId,UUID blockId,String propertyName) {
-		ProcessDiagram diagram = modelManager.getDiagram(diagramId);
-		if( diagram!=null) {
-			ProcessBlock block = diagram.getBlock(blockId);
-			if( block!=null ) {
-				BlockProperty bp = block.getProperty(propertyName);
-				if( bp!=null ) {
-					tagListener.removeSubscription(block,bp);
-					startSubscription(diagram.getState(),block,bp);
-				}
-			}
-		}
-	}
-	/**
 	 * Clear cached values to guarantee that next access forces a read from persistent storage.
 	 */
 	@Override
@@ -556,7 +538,6 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 				!(property.getBindingType().equals(BindingType.TAG_READ) || 
 				  property.getBindingType().equals(BindingType.TAG_READWRITE) ||
 				  property.getBindingType().equals(BindingType.TAG_MONITOR) )   ) return;
-		
 		guaranteeBindingHasProvider(ds,property);
 		String tagPath = property.getBinding();
 		tagListener.defineSubscription(block,property,tagPath);
