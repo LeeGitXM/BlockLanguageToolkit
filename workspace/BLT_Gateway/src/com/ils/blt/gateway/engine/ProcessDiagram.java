@@ -48,7 +48,7 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 	private static final long serialVersionUID = 3557397875746466629L;
 	private static String TAG = "ProcessDiagram";
-	private static final boolean DEBUG = true;
+	private static final boolean DEBUG = false;
 	private boolean valid = false;
 	protected final Map<UUID,ProcessBlock> blocks;
 	private final Map<ConnectionKey,ProcessConnection> connectionMap;            // Key by connection number

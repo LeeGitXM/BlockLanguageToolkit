@@ -20,7 +20,7 @@ import prefuse.visual.tuple.TableNodeItem;
  */
 public class RecMapTooltipControl extends ControlAdapter {
 	private final static String CLSS = "RecMapTooltipControl";
-	private final static boolean DEBUG = true;
+	private final static boolean DEBUG = false;
 	private final Map<Integer,TextDelegate> delegates;
 	private final RecMapDataModel model;
 	private final LoggerEx log;
