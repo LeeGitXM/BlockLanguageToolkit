@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
-import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagnosticDiagram;
 import com.ils.blt.common.ProcessBlock;
 import com.ils.blt.common.block.Activity;
@@ -75,8 +74,6 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 		tagPathProperty.setBinding("");
 		tagPathProperty.setBindingType(BindingType.TAG_READ);
 		setProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH, tagPathProperty);
-		
-		// TODO EREIAM JH - check type and set output connection type
 		
 		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,"",PropertyType.OBJECT,false);
 		valueProperty.setBindingType(BindingType.ENGINE);

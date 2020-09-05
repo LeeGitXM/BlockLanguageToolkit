@@ -210,26 +210,7 @@ public class NotificationHandler implements PushNotificationListener {
 			SwingUtilities.invokeLater(new WorkspaceRepainter());
 		}
 	}
-	/**
-	 * Receive notification from a ProcessViewDiagram in the Designer. This is a mechanism
-	 * to restore the diagram display to its state prior to its last serialization.
-	 * Note: This is used only for properties bound to ENGINE.
-	 */
-	public void initializePropertyBindingNotification(String key,String value) {
-		if( key==null || value==null) return;
-		// Only initialize the payload map if the key doesn't exist
-		Object payload = payloadMap.get(key);
-		if( payload==null) payloadMap.put(key, value);
-		Map<String,NotificationChangeListener> listeners = changeListenerMap.get(key);
-		if( listeners != null ) {
-			for(NotificationChangeListener listener:listeners.values()) {
-				log.tracef("%s.initializePropertyBindingNotification: key=%s - notifying %s",TAG,key,listener.getClass().getName());
-				if( NotificationKey.isPropertyBindingKey(key) ) listener.bindingChange(value);
-			}
-			// Repaint the workspace
-			SwingUtilities.invokeLater(new WorkspaceRepainter());
-		}
-	}
+
 	/**
 	 * Receive notification from a ProcessViewDiagram in the Designer. This is a mechanism
 	 * to restore the diagram display to its state prior to its last serialization.

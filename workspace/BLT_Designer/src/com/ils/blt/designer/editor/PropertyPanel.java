@@ -705,6 +705,20 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 		});
 	}
 	@Override
+	public void diagramAlertChange(long resId, String state) {}
+	// We get this when another entity changes a property. We just need to re-display.
+	@Override
+	public void nameChange(String name) {
+		
+	}
+	@Override
+	public void stateChanged(ChangeEvent e) {
+		//log.infof("%s.stateChanged: - %s",TAG,property.getName());
+		update();	
+	}
+	
+
+	@Override
 	public void valueChange(final QualifiedValue value) {
 		log.debugf("%s.valueChange: - %s new value (%s)",TAG,property.getName(),value.getValue().toString());
 		//property.setValue(value.getValue());  // Block should have its own subscription to value changes.
@@ -741,7 +755,8 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 			}
 		});
 	}
-	
+	@Override
+	public void watermarkChange(String mark) {}
 	// =========================================== Tag Change Listener ===================================
 	// Set this to null as we're interested in all tag properties
 	@Override
@@ -769,21 +784,4 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 			log.warnf("%s.tagChanged: Unknown tag (%s)",TAG,(tag==null?"null":tag.getName()));
 		}
 	}
-	
-	// =========================================== Notification Change Listener ===================================
-	@Override
-	public void diagramAlertChange(long resId, String state) {}
-	// We get this when another entity changes a property. We just need to re-display.
-	@Override
-	public void nameChange(String name) {
-		
-	}
-	@Override
-	public void stateChanged(ChangeEvent e) {
-		//log.infof("%s.stateChanged: - %s",TAG,property.getName());
-		update();	
-	}
-	@Override
-	public void watermarkChange(String mark) {}
-	
 }

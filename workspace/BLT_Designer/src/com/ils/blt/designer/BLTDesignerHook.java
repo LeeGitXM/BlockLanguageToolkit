@@ -20,6 +20,8 @@ import javax.swing.JMenuItem;
 import javax.swing.JRootPane;
 import javax.swing.SwingUtilities;
 
+import org.apache.commons.lang3.builder.ToStringStyle;
+
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -89,6 +91,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	
 	public BLTDesignerHook() {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
+		log.setToStringStyle(ToStringStyle.SIMPLE_STYLE);
 	}
 	
 	

@@ -744,7 +744,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	 */
 	private void updateState(ProjectResource res,DiagramState state) {
 		if( res!=null ) {
-			new ResourceUpdateManager(workspace,res).run();
+			//new ResourceUpdateManager(workspace,res).run();
 			statusManager.setResourceState(resourceId,state,true);
 			setDirty(false);
 		}

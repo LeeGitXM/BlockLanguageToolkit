@@ -17,7 +17,7 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  *  functions. This class carries no state.
  */
 public class UtilityFunctions  {
-	private final static String TAG = "UtilityFunctions: ";
+	private final static String TAG = "UtilityFunctions";
 	private final LoggerEx log;
 	/**
 	 * No-argument constructor. 
@@ -34,12 +34,13 @@ public class UtilityFunctions  {
 	 */
 	public double parseDouble(String val) {
 		double result = Double.NaN;
-		if( !val.isEmpty()) {
+		if( !val.isEmpty() ) {
 			try{
 				result = Double.parseDouble(val);
 			}
 			catch(NumberFormatException nfe) {
-				log.error(TAG+"parseDouble: Format exception "+nfe.getLocalizedMessage(),nfe);
+				//log.error(TAG+".parseDouble: Format exception "+nfe.getLocalizedMessage(),nfe);
+				log.errorf("%s.parseDouble: Format exception for value %s",TAG,val);
 			}
 		}
 		return result;
@@ -99,12 +100,12 @@ public class UtilityFunctions  {
 	 * Force a Double, Integer or String to a double. Reports NumberFormatException
 	 * for bad input - and sets result to 0.0.
 	 */
-	public double coerceToDouble(Object val)  throws NumberFormatException {
+	public double coerceToDouble(Object val)  {
 		double result = 0.0;
 		if( val!=null ) {
 			if( val instanceof Double)       result = ((Double)val).doubleValue();
 			else if( val instanceof Integer) result = ((Integer)val).intValue();
-			else                             result  = parseDouble(val.toString());	
+			else                             result  = parseDouble(val.toString());
 		}
 		return result;
 	}

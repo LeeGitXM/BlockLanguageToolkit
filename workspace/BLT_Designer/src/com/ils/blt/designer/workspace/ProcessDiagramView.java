@@ -537,12 +537,6 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 				block.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SINK)) {
 				String key = NotificationKey.keyForBlockName(block.getId().toString());
 				handler.addNotificationChangeListener(key,TAG, block);
-				//// NOTE: prevents edit of block name
-				//handler.initializeBlockNameNotification(key,block.getName()); 
-				BlockProperty prop = block.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
-				key = NotificationKey.keyForPropertyBinding(block.getId().toString(), prop.getName());
-				//handler.initializePropertyBindingNotification(key,prop.getBinding());
-				//handler.addNotificationChangeListener(key,TAG, prop);
 			}
 		}
 		// Register self for state and watermark changes

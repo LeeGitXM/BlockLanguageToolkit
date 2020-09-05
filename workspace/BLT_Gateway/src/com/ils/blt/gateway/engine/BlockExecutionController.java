@@ -532,9 +532,10 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	}
 	/**
 	 * Start a subscription for a block attribute associated with a tag.
+	 * Do nothing if block is disabled.
 	 */
 	public void startSubscription(DiagramState ds,ProcessBlock block,BlockProperty property) {
-		if( block==null || property==null || 
+		if( ds.equals(DiagramState.DISABLED)|| block==null || property==null || 
 				!(property.getBindingType().equals(BindingType.TAG_READ) || 
 				  property.getBindingType().equals(BindingType.TAG_READWRITE) ||
 				  property.getBindingType().equals(BindingType.TAG_MONITOR) )   ) return;

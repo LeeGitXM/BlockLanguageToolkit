@@ -245,12 +245,7 @@ public class BasicAnchorPoint extends AnchorPoint implements NotificationChangeL
 						dateFormatter.parse(value.getValue().toString());
 					}
 					catch(ParseException pe) {
-						try {
-							isNan = Double.isNaN(fncs.coerceToDouble(value.getValue()));
-						}
-						catch(NumberFormatException nfe) {
-							isNan = true;
-						}
+						isNan = Double.isNaN(fncs.coerceToDouble(value.getValue()));
 					}
 					catch(NumberFormatException nfe) {
 						log.warnf("BasicAnchorPoint.valueChange: received %s - could not format as double or date",value.getValue().toString());

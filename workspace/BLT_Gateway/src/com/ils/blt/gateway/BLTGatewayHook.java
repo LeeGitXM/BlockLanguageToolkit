@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 
 import com.ils.blt.common.BLTProperties;
@@ -60,6 +61,7 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	public BLTGatewayHook() {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 		log.info(TAG+"Initializing BLT Gateway hook");
+		log.setToStringStyle(ToStringStyle.SIMPLE_STYLE);
 		BundleUtil.get().addBundle(prefix, getClass(), BUNDLE_NAME);
 		requestHandler = ControllerRequestHandler.getInstance();
 	}
@@ -119,7 +121,7 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	    		// Model manager ignores resources that are not of interest to it.
 	    		log.tracef("%s.startup - found %s resource, %d = %s", TAG,res.getResourceType(),
 	    				res.getResourceId(),res.getName());
-	    		mmgr.analyzeResource(project.getId(),res);
+	    		mmgr.analyzeResource(project.getId(),res); 
 	    	}
 	    }
 	    

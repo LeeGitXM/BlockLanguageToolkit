@@ -494,30 +494,32 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 */
 	@Override
 	public void acceptValue(IncomingNotification incoming) {
-		checkIncomingValue(incoming );
-		QualifiedValue qv = incoming.getValue();
-		String port = incoming.getPropertyName();
-		// Check to see if the notification applies to a bound property.
-		if(port!=null) {
-			if( qv!=null && qv.getValue()!=null ) {
-				// Trigger a property change in the block
-				BlockPropertyChangeEvent e = new BlockPropertyChangeEvent(getName(),port,getProperty(port).getValue(),qv.getValue());
-				propertyChange(e);
+		if( running ) {
+			checkIncomingValue(incoming );
+			QualifiedValue qv = incoming.getValue();
+			String port = incoming.getPropertyName();
+			// Check to see if the notification applies to a bound property.
+			if(port!=null) {
+				if( qv!=null && qv.getValue()!=null ) {
+					// Trigger a property change in the block
+					BlockPropertyChangeEvent e = new BlockPropertyChangeEvent(getName(),port,getProperty(port).getValue(),qv.getValue());
+					propertyChange(e);
+				}
+				else {
+					recordActivity(Activity.ACTIVITY_RECEIVE_NULL,port);
+				}
 			}
 			else {
-				recordActivity(Activity.ACTIVITY_RECEIVE_NULL,port);
-			}
-		}
-		else {
-			port = incoming.getConnection().getDownstreamPortName();
-			String value ="NULL";
-			if( qv!=null && qv.getValue()!=null ) {
-				value = qv.getValue().toString();
-				String key = incoming.getConnection().getSource().toString();
-				recordActivity(Activity.ACTIVITY_RECEIVE,port,value,key);
-			}
-			else {
-				recordActivity(Activity.ACTIVITY_RECEIVE_NULL,port);
+				port = incoming.getConnection().getDownstreamPortName();
+				String value ="NULL";
+				if( qv!=null && qv.getValue()!=null ) {
+					value = qv.getValue().toString();
+					String key = incoming.getConnection().getSource().toString();
+					recordActivity(Activity.ACTIVITY_RECEIVE,port,value,key);
+				}
+				else {
+					recordActivity(Activity.ACTIVITY_RECEIVE_NULL,port);
+				}
 			}
 		}
 	}
@@ -533,30 +535,32 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 */
 	@Override
 	public void acceptValue(SignalNotification sn) {
-		Signal sig = sn.getSignal();
-		recordActivity(Activity.ACTIVITY_RECEIVE,sig.getCommand());
-		if( sig.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_CONFIGURE) ) {
-			String propertyName = sig.getArgument();
-			BlockProperty bp = getProperty(propertyName);
-			if( bp!=null ) {
-				// Simulate the signal payload coming in as a value change. We don't really know the source
-				BlockPropertyChangeEvent event = new BlockPropertyChangeEvent(getBlockId().toString(), propertyName, bp.getValue(), sig.getPayload());
-				propertyChange(event);
-				QualifiedValue qv = new TestAwareQualifiedValue(timer,bp.getValue());  // Value now event payload.
-				controller.sendPropertyNotification(getBlockId().toString(),bp.getName(), qv);
+		if( running ) {
+			Signal sig = sn.getSignal();
+			recordActivity(Activity.ACTIVITY_RECEIVE,sig.getCommand());
+			if( sig.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_CONFIGURE) ) {
+				String propertyName = sig.getArgument();
+				BlockProperty bp = getProperty(propertyName);
+				if( bp!=null ) {
+					// Simulate the signal payload coming in as a value change. We don't really know the source
+					BlockPropertyChangeEvent event = new BlockPropertyChangeEvent(getBlockId().toString(), propertyName, bp.getValue(), sig.getPayload());
+					propertyChange(event);
+					QualifiedValue qv = new TestAwareQualifiedValue(timer,bp.getValue());  // Value now event payload.
+					controller.sendPropertyNotification(getBlockId().toString(),bp.getName(), qv);
+				}
 			}
-		}
-		else if( sig.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_EVALUATE) ) {
-			evaluate();
-		}
-		else if( sig.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_LOCK) ) {
-			setLocked(true);
-		}
-		else if( sig.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_RESET) ) {
-			reset();
-		}
-		else if( sig.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_UNLOCK) ) {
-			setLocked(false);
+			else if( sig.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_EVALUATE) ) {
+				evaluate();
+			}
+			else if( sig.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_LOCK) ) {
+				setLocked(true);
+			}
+			else if( sig.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_RESET) ) {
+				reset();
+			}
+			else if( sig.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_UNLOCK) ) {
+				setLocked(false);
+			}
 		}
 	}
 	/**
@@ -669,12 +673,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 								val = dateFormatter.parse(val.toString());
 							}
 							catch(ParseException pe) {
-								try {
-									val = new Double(fcns.coerceToDouble(val));
-								}
-								catch(NumberFormatException nfe) {
-									val = Double.NaN;
-								}
+								val = new Double(fcns.coerceToDouble(val));
 							}
 						}
 					}

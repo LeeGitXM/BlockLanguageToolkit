@@ -48,6 +48,7 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 	private static final long serialVersionUID = 3557397875746466629L;
 	private static String TAG = "ProcessDiagram";
+	private static final boolean DEBUG = true;
 	private boolean valid = false;
 	protected final Map<UUID,ProcessBlock> blocks;
 	private final Map<ConnectionKey,ProcessConnection> connectionMap;            // Key by connection number
@@ -90,7 +91,16 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 	}
 	public Collection<ProcessBlock> getProcessBlocks() { return blocks.values(); }
 
-	
+	public String getProviderForState(DiagramState state) {
+		String provider = "";
+		if( state.equals(DiagramState.ISOLATED)) {
+			provider = ControllerRequestHandler.getInstance().getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER);
+		}
+		else {
+			provider = ControllerRequestHandler.getInstance().getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER);	
+		}
+		return provider;
+	}
 	/**
 	 * Prepare for an update from a newly deserialized node.
 	 */
@@ -135,11 +145,9 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 	 * 
 	 * @param sblks an array of newly created blocks to be added to the diagram
 	 */
-	public boolean createBlocks(SerializableBlock[] sblks ) {
+	public void createBlocks(SerializableBlock[] sblks ) {
 		BlockFactory blockFactory = BlockFactory.getInstance();
-		boolean saveRequired = false;
-//		HashMap<SerializableBlock,ProcessBlock> removeChildList = new HashMap<>();
-
+		String provider = getProviderForState(state);
 		// Update the blocks - we've already deleted any not present in the new
 		for( SerializableBlock sb:sblks ) {
 			UUID id = sb.getId();
@@ -147,24 +155,19 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 			if( pb==null ) {
 				pb = blockFactory.blockFromSerializable(getSelf(),sb,getProjectId());
 				if( pb!=null ) {
-//					if (pb.versionUpdateRequired()) {
-//						saveRequired = true;
-//						pb.update();
-//						removeChildList.put(sb, pb);
-//					}
 					// Set the proper timer
 					if(DiagramState.ACTIVE.equals(state)) pb.setTimer(controller.getTimer());
 					else if(DiagramState.ISOLATED.equals(state)) pb.setTimer(controller.getSecondaryTimer());
 					pb.setProjectId(projectId);
 					blocks.put(pb.getBlockId(), pb);
 					log.debugf("%s.analyze: New block %s(%d)",TAG,pb.getName(),pb.hashCode());
-					if( BlockExecutionController.CONTROLLER_RUNNING_STATE.equalsIgnoreCase(BlockExecutionController.getExecutionState()) && 
-							!DiagramState.DISABLED.equals(state) ) {
-						// If we create a block, then start any appropriate subscriptions
+					if( BlockExecutionController.CONTROLLER_RUNNING_STATE.equalsIgnoreCase(BlockExecutionController.getExecutionState()) ) {
+						updatePropertyProviderInBlock(provider,pb);
+						pb.start();
+						// After we start the new block, then start any appropriate subscriptions
 						for(BlockProperty bp:pb.getProperties()) {
 							controller.startSubscription(getState(),pb,bp);
 						}
-						pb.start();
 					}
 				}
 				else {
@@ -172,11 +175,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 				}
 			}
 		}
-//		for (SerializableBlock sb: removeChildList.keySet()) {
-//			sd.removeBlock(sb);
-//			sd.setBlocks(list);this.addChild(pb);
-//		}
-		return saveRequired;
+		return;
 	}
 	/**
 	 * Clone connections from the subject serializable diagram and add them to the current.
@@ -567,7 +566,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 	 * @param s the new state
 	 */
 	public void setState(DiagramState s) {
-		
+		if( DEBUG ) log.infof("%s.setState: %s->%s", TAG,getState().name(),s.name());
 		// Only restart subscriptions on a change.
 		if( !s.equals(getState())) {
 			// Check if we need to stop current subscriptions
@@ -586,15 +585,9 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 			updateBlockTimers(s);
 
 			// If the new state is active or isolated, start subscriptions
-			if(!DiagramState.DISABLED.equals(s) ) {
-				String provider = null;
-				if( DiagramState.ISOLATED.equals(s)) {
-					provider = ControllerRequestHandler.getInstance().getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER);
-				}
-				else {
-					provider = ControllerRequestHandler.getInstance().getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER);
-				}		
-				updatePropertyProviders(provider);
+			if(!DiagramState.DISABLED.equals(state) ) {
+				String provider = getProviderForState(state);	
+				updatePropertyProviders(provider);                    // Does not start subscriptions
 				
 				// The two-phase start is probably not necessary here
 				// since we start the subscriptions after starting the blocks,
@@ -602,22 +595,17 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 				for(ProcessBlock blk:blocks.values()) {
 					if( !blk.delayBlockStart() ) blk.start();
 				}
+
+				
 				// Make sure that the Inputs don't propagate an old value.
-				// If the prior version was DISABLED, the starts should not propagate anything.
 				for(ProcessBlock blk:blocks.values()) {
 					if( blk.delayBlockStart() ) {
-						//boolean lock = blk.isLocked();
-						//blk.setLocked(true);
 						blk.start();
-						//blk.setLocked(lock);
 					}
 				}
+				
 				// Restart subscriptions for the new state
-				startSubscriptions(s);
-				// This happens too soon to do anything ...
-				for(ProcessBlock block:getProcessBlocks() ) {
-					if( block.delayBlockStart() ) block.propagate();
-				}
+				startSubscriptions(state);	
 			}
 
 			// Fire diagram notification change
@@ -686,6 +674,9 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 		//log.infof("%s.startSubscriptions: ...%d:%s",TAG,projectId,getName());
 		for( ProcessBlock pb:getProcessBlocks()) {
 			for(BlockProperty bp:pb.getProperties()) {
+				if(DEBUG && bp.getBinding()!=null && !bp.getBinding().isEmpty()) {
+					log.infof("%s.startSubscriptions: %s.%s %s",TAG,pb.getName(),bp.getName(),bp.getBinding());
+				}
 				controller.startSubscription(s,pb,bp);
 			}
 		}
@@ -698,6 +689,9 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 		log.debugf("%s.stopSubscriptions: project %d:%s",TAG,projectId,getName());
 		for( ProcessBlock pb:getProcessBlocks()) {
 			for(BlockProperty bp:pb.getProperties()) {
+				if(DEBUG && bp.getBinding()!=null && !bp.getBinding().isEmpty()) {
+					log.infof("%s.stopSubscriptions: %s.%s %s",TAG,pb.getName(),bp.getName(),bp.getBinding());
+				}
 				controller.removeSubscription(pb,bp);
 			}
 		}
@@ -710,21 +704,24 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 	 */
 	public void updatePropertyProviders(String provider) {
 		for( ProcessBlock pb:getProcessBlocks()) {
-			for(BlockProperty bp:pb.getProperties()) {
-				BindingType bindingType = bp.getBindingType();
-				if( bindingType.equals(BindingType.TAG_MONITOR) ||
+			updatePropertyProviderInBlock(provider,pb);
+		}
+	}
+	public void updatePropertyProviderInBlock(String provider,ProcessBlock pb) {
+		for(BlockProperty bp:pb.getProperties()) {
+			BindingType bindingType = bp.getBindingType();
+			if( bindingType.equals(BindingType.TAG_MONITOR) ||
 					bindingType.equals(BindingType.TAG_READ)    ||
 					bindingType.equals(BindingType.TAG_WRITE)   ||
 					bindingType.equals(BindingType.TAG_READWRITE) ) {
-					
-					String tagPath = bp.getBinding();
-					String newPath = replaceProviderInPath(tagPath,provider);
-					if( !tagPath.equals(newPath)) {
-						bp.setBinding(newPath);
-						controller.sendPropertyBindingNotification(pb.getBlockId().toString(), bp.getName(), newPath);
-					}
-				}	
-			}
+
+				String tagPath = bp.getBinding();
+				String newPath = replaceProviderInPath(tagPath,provider);
+				if( !tagPath.equals(newPath)) {
+					bp.setBinding(newPath);
+					controller.sendPropertyBindingNotification(pb.getBlockId().toString(), bp.getName(), newPath);
+				}
+			}	
 		}
 	}
 	
@@ -740,7 +737,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 	/**
 	 * For every property that is bound to a tag, make sure that it is subscribed to the proper provider. 
 	 */
-	public void validateSubscriptions() {
+	public void synchronizeSubscriptions() {
 		if(DiagramState.DISABLED.equals(getState())) return;
 		String provider = null;
 		if( DiagramState.ISOLATED.equals(getState())) {

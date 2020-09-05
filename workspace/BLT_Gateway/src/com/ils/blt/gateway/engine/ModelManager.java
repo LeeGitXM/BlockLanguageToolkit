@@ -8,7 +8,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
 
@@ -28,7 +27,6 @@ import com.ils.blt.common.serializable.SerializableFamily;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.gateway.GatewayScriptExtensionManager;
 import com.ils.common.GeneralPurposeDataContainer;
-import com.ils.common.persistence.InternalDatabaseHandler;
 import com.inductiveautomation.ignition.common.model.ApplicationScope;
 import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
@@ -54,7 +52,7 @@ import com.inductiveautomation.ignition.gateway.project.ProjectListener;
  */
 public class ModelManager implements ProjectListener  {
 	private static final String TAG = "ModelManager";
-	private static final boolean DEBUG = false;
+	private static final boolean DEBUG = true;
 	private final GatewayContext context;
 	private final LoggerEx log;
 	/** Access nodes by either UUID or tree path */
@@ -112,16 +110,6 @@ public class ModelManager implements ProjectListener  {
 	 * @param res the model resource
 	 */
 	public void analyzeResource(long projectId,ProjectResource res) {
-		 analyzeResource(projectId,res,false);
-	 }
-	/**
-	 * Analyze a project resource for its embedded object. If, appropriate, add
-	 * to the engine. Handle both additions and updates.
-	 * @param projectId the identity of a project
-	 * @param res the model resource
-	 * @param disable if true then create the resource in a disabled state
-	 */
-	public void analyzeResource(long projectId,ProjectResource res,boolean disable) {
 		if( res.getModuleId()!=null && res.getModuleId().equalsIgnoreCase(BLTProperties.MODULE_ID)) {
 			String type = res.getResourceType();
 			
@@ -132,7 +120,7 @@ public class ModelManager implements ProjectListener  {
 				addModifyFamilyResource(projectId,res);
 			}
 			else if( type.equalsIgnoreCase(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
-				addModifyDiagramResource(projectId,res,disable);
+				addModifyDiagramResource(projectId,res);
 			}
 			else if( type.equalsIgnoreCase(BLTProperties.FOLDER_RESOURCE_TYPE) ) {
 				addModifyFolderResource(projectId,res);
@@ -658,7 +646,7 @@ public class ModelManager implements ProjectListener  {
 				}
 				
 				for( ProjectResource res: project.getResources() ) {
-					analyzeResource(pid,res,true);
+					analyzeResource(pid,res);
 				}
 			}
 		}
@@ -736,14 +724,13 @@ public class ModelManager implements ProjectListener  {
 		}
 	}
 	/**
-	 * Add or update a diagram in the model from a ProjectResource.
-	 * There is a one-one correspondence 
+	 * Add or update a diagram in the model from a ProjectResource. The state of the 
+	 * disgram is as it was serialized. There is a one-one correspondence 
 	 * between a model-project and diagram.
 	 * @param projectId the identity of a project
 	 * @param res the project resource containing the diagram
-	 * @param disable if true, change the diagram state to disabled
 	 */
-	private void addModifyDiagramResource(long projectId,ProjectResource res,boolean disable) {
+	private void addModifyDiagramResource(long projectId,ProjectResource res) {
 		log.debugf("%s.addModifyDiagramResource: %s(%d)",TAG,res.getName(),res.getResourceId());
 		SerializableDiagram sd = deserializeDiagramResource(projectId,res);
 
@@ -751,8 +738,8 @@ public class ModelManager implements ProjectListener  {
 			ProcessDiagram diagram = (ProcessDiagram)nodesByUUID.get(sd.getId());
 			if( diagram==null) {   // this is usually run during gateway start up.
 				// Create a new diagram
-				if(DEBUG) log.infof("%s.addModifyDiagramResource: Creating diagram %s(%s)", TAG,res.getName(),sd.getId().toString());
-				if( disable ) sd.setState(DiagramState.DISABLED);
+				if(DEBUG) log.infof("%s.addModifyDiagramResource: Creating diagram %s(%s) %s", TAG,res.getName(),
+						sd.getId().toString(),sd.getState().name());
 				diagram = new ProcessDiagram(sd,res.getParentUuid(),projectId);
 				diagram.setResourceId(res.getResourceId());
 				diagram.setProjectId(projectId);
@@ -761,67 +748,15 @@ public class ModelManager implements ProjectListener  {
 				ProjectResourceKey key = new ProjectResourceKey(projectId,res.getResourceId());
 				nodesByKey.put(key,diagram);
 				addToHierarchy(projectId,diagram);
-				boolean saveRequired = diagram.createBlocks(sd.getBlocks());
-//				diagram.
-//				
-//				diagram.serialize();
-//				
-//				
-//				//EREIAM JH - FIXIT TODO
-//				// OK, so I finally have it saving the project
-//				// it now seems like maybe 'res' isn't getting the updates to the blocks.?  Still has the old data in the ProjectResource??
-//				String dataa = new String(res.getData());
-//				log.errorf("%s.addModifyDiagramResource: %s(%d data is %s)",TAG,res.getName(),res.getResourceId(), dataa);
-//				
-//				
-//				
-//				The RES Object has the original serialized Object. Need to serialize the new version and update
-//				
-//				So sd (serializablediagram) needs to be updated.
-//				
-//				
-//				if (saveRequired) {  // one or more blocks on this diagram had a version update that requires gateway persistence
-//					try {
-//
-//						InternalDatabaseHandler hdlr = new InternalDatabaseHandler();
-//						Properties admin = hdlr.getAdministrativeUser();
-//						if(newRes.isLocked()) newRes.setLocked(false);
-//						
-//						Project project = context.getProjectManager().getProject(projectId, ApplicationScope.GATEWAY, ProjectVersion.Staging);
-//						Project diff = project.getEmptyCopy();
-//						
-//						ProjectResource newRes = 
-//
-//						diff.putResource(newRes, true);    // Mark as dirty for our controller as resource listener
-//						
-//
-//						ProjectManager pmgr = context.getProjectManager();
-//						GlobalProps props = pmgr.getProps(project.getId(), ProjectVersion.Published);
-//
-//
-//						AuthenticatedUser user = new BasicAuthenticatedUser(props.getAuthProfileName(),admin.getProperty("ProfileId"),
-//								admin.getProperty("Name", "admin"),props.getRequiredRoles());
-//
-//						
-//						pmgr.saveProject(diff, user, "na", "ILS block update", true);  
-//						// Make every thing clean again.  necessary?
-//						project.clearAllFlags();
-//					}
-//					catch(Exception iae) {
-//						log.warnf("%s.addMOdify: Exception updating resource %d, (%s)",TAG,res.getResourceId(),iae.getMessage());
-//					}
-//				}
+				diagram.createBlocks(sd.getBlocks());
 				
 				diagram.updateConnections(sd.getConnections());
 				if(!diagram.getState().equals(sd.getState()) ) {
 					diagram.setState(sd.getState()); 
 				}
 				else {
-					diagram.validateSubscriptions();
+					diagram.synchronizeSubscriptions();
 				}
-				
-				
-				
 			}
 			else if(diagram.getProjectId() != projectId) {
 				// The same UUID, but a different project, is a different resource
@@ -881,7 +816,7 @@ public class ModelManager implements ProjectListener  {
 				}
 				diagram.createBlocks(sd.getBlocks());       // Adds blocks that are new in update
 				diagram.updateConnections(sd.getConnections());  // Adds connections that are new in update
-				diagram.updateProperties(sd);
+				diagram.updateProperties(sd);                    // Fixes subscriptions, as necessary
 				diagram.setState(sd.getState());// Handle state change, if any
 			}
 			//	Invoke extension script on diagram save
@@ -905,60 +840,7 @@ public class ModelManager implements ProjectListener  {
 		else {
 			log.warnf("%s.addModifyDiagramResource - Failed to create diagram from resource (%s)",TAG,res.getName());
 		}
-	}
-	
-//	/**
-//	 * Create a POJO object from this model suitable for JSON serialization.
-//	 * @return an equivalent serializable diagram.
-//	 */
-//	public SerializableDiagram createSerializableRepresentation() {
-//		SerializableDiagram diagram = new SerializableDiagram();
-//		diagram.setName(name);
-//		diagram.setResourceId(resourceId);
-//		diagram.setId(getId());
-//		diagram.setState(state);
-//		diagram.setDirty(dirty);
-//		diagram.setWatermark(watermark);
-//		List<SerializableBlock> sblocks = new ArrayList<SerializableBlock>();
-//		for( ProcessBlockView blk:blockMap.values()) {
-//			SerializableBlock sb = blk.convertToSerializable();
-//			sblocks.add(sb);
-//		}
-//		diagram.setBlocks(sblocks.toArray(new SerializableBlock[sblocks.size()]));
-//			
-//		// As we iterate the connections, update SerializableAnchors with connection types
-//		List<SerializableConnection> scxns = new ArrayList<SerializableConnection>();
-//		for( Connection cxn:connections) {
-//			SerializableConnection scxn = convertConnectionToSerializable(cxn);
-//			// Set the connection type to the begin block type
-//			ProcessBlockView beginBlock = blockMap.get(scxn.getBeginBlock());
-//			if( beginBlock!=null ) {
-//				String port = scxn.getBeginAnchor().getId().toString();
-//				SerializableAnchorPoint sap = scxn.getBeginAnchor();
-//				boolean found = false;
-//				for(ProcessAnchorDescriptor desc:beginBlock.getAnchors()) {
-//					if( desc.getDisplay().equalsIgnoreCase(port) ) {
-//						found = true;
-//						scxn.setType(desc.getConnectionType());
-//						QualifiedValue qv = desc.getLastValue();
-//						if( qv!=null ) {
-//							sap.setLastQuality(qv.getQuality().getName());
-//							sap.setLastValue(qv.getValue());
-//						}
-//					}
-//				}
-//				if( !found ) log.warnf("%s.createSerializableRepresentation: unable to find %s port in begin block",TAG,port);
-//			}
-//			else {
-//				log.warnf("%s.createSerializableRepresentation: begin block lookup failed",TAG);
-//			}
-//			scxns.add(scxn);
-//		}
-//		diagram.setConnections(scxns.toArray(new SerializableConnection[scxns.size()]));
-//		return diagram;
-//	}
-//	
-//	
+	}	
 	
 	/**
 	 * Add or update an application in the model from a ProjectResource.

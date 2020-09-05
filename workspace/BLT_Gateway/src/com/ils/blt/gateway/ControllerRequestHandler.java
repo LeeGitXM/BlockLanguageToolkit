@@ -1398,7 +1398,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 				if( prop!=null ) {
 					BlockPropertyChangeEvent bpe = new BlockPropertyChangeEvent(bname,pname,prop.getValue(),value);
 					if( prop.getType().equals(PropertyType.BOOLEAN) ) prop.setValue(fcns.coerceToBoolean(value));
-					if( prop.getType().equals(PropertyType.DOUBLE) ) prop.setValue(fcns.coerceToDouble(value));
+					if( prop.getType().equals(PropertyType.DOUBLE) )  prop.setValue(fcns.coerceToDouble(value));
 					if( prop.getType().equals(PropertyType.INTEGER) ) prop.setValue(fcns.coerceToInteger(value));
 					else  prop.setValue(fcns.coerceToString(value));
 					block.propertyChange(bpe);
