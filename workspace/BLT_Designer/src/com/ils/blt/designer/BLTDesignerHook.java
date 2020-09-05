@@ -17,6 +17,8 @@ import javax.swing.JMenuItem;
 import javax.swing.JRootPane;
 import javax.swing.SwingUtilities;
 
+import org.apache.commons.lang3.builder.ToStringStyle;
+
 import com.ils.blt.client.ClientScriptExtensionManager;
 import com.ils.blt.client.component.diagview.DiagramViewer;
 import com.ils.blt.client.component.recmap.RecommendationMap;
@@ -75,6 +77,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	
 	public BLTDesignerHook() {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
+		log.setToStringStyle(ToStringStyle.SIMPLE_STYLE);
 	}
 	
 	

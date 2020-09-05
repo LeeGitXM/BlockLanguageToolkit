@@ -674,13 +674,13 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	}
 	
 	/**
-	 * If there is a change, then we need to update the resource
-	 * and inform the Gateway
+	 * If there is a change, then we need to update the status manager
+	 * There is a race condition in the gateway if we attempt to save.
 	 * @param res
 	 */
 	private void updateState(ProjectResource res,DiagramState state) {
 		if( res!=null ) {
-			new ResourceUpdateManager(workspace,res).run();
+			//new ResourceUpdateManager(workspace,res).run();
 			statusManager.setResourceState(resourceId,state,true);
 			setDirty(false);
 		}

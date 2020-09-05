@@ -17,7 +17,7 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  *  functions. This class carries no state.
  */
 public class UtilityFunctions  {
-	private final static String TAG = "UtilityFunctions: ";
+	private final static String TAG = "UtilityFunctions";
 	private final LoggerEx log;
 	/**
 	 * No-argument constructor. 
@@ -39,7 +39,8 @@ public class UtilityFunctions  {
 				result = Double.parseDouble(val);
 			}
 			catch(NumberFormatException nfe) {
-				log.error(TAG+"parseDouble: Format exception "+nfe.getLocalizedMessage(),nfe);    // Prints stack trace
+				//log.error(TAG+".parseDouble: Format exception "+nfe.getLocalizedMessage(),nfe); // prints stack trace
+				log.errorf("%s.parseDouble: Format exception for value %s",TAG,val);
 			}
 		}
 		return result;

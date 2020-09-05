@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 
 import com.ils.blt.common.BLTProperties;
@@ -59,6 +60,7 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	
 	public BLTGatewayHook() {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
+		log.setToStringStyle(ToStringStyle.SIMPLE_STYLE);
 		log.info(TAG+"Initializing BLT Gateway hook");
 		BundleUtil.get().addBundle(prefix, getClass(), BUNDLE_NAME);
 		requestHandler = ControllerRequestHandler.getInstance();

@@ -48,6 +48,7 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 	private static final long serialVersionUID = 3557397875746466629L;
 	private static String TAG = "ProcessDiagram";
+	private static final boolean DEBUG = false;
 	private boolean valid = false;
 	protected final Map<UUID,ProcessBlock> blocks;
 	private final Map<ConnectionKey,ProcessConnection> connectionMap;            // Key by connection number
@@ -89,7 +90,16 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 		return result;
 	}
 	public Collection<ProcessBlock> getProcessBlocks() { return blocks.values(); }
-
+	public String getProviderForState(DiagramState state) {
+		String provider = "";
+		if( state.equals(DiagramState.ISOLATED)) {
+			provider = ControllerRequestHandler.getInstance().getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER);
+		}
+		else {
+			provider = ControllerRequestHandler.getInstance().getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER);	
+		}
+		return provider;
+	}
 	
 	/**
 	 * Prepare for an update from a newly deserialized node.
@@ -136,6 +146,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 		BlockFactory blockFactory = BlockFactory.getInstance();
 
 		// Update the blocks - we've already deleted any not present in the new
+		String provider = getProviderForState(state);
 		for( SerializableBlock sb:sblks ) {
 			UUID id = sb.getId();
 			ProcessBlock pb = blocks.get(id);
@@ -148,14 +159,12 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 					pb.setProjectId(projectId);
 					blocks.put(pb.getBlockId(), pb);
 					log.debugf("%s.analyze: New block %s(%d)",TAG,pb.getName(),pb.hashCode());
-					if( BlockExecutionController.CONTROLLER_RUNNING_STATE.equalsIgnoreCase(BlockExecutionController.getExecutionState()) && 
-							!DiagramState.DISABLED.equals(state) ) {
-						// If we create a block, then start any appropriate subscriptions
-						for(BlockProperty bp:pb.getProperties()) {
-							controller.startSubscription(getState(),pb,bp);
-						}
-						pb.start();
+
+					// If we create a block, then start any appropriate subscriptions
+					for(BlockProperty bp:pb.getProperties()) {
+						controller.startSubscription(getState(),pb,bp);
 					}
+
 				}
 				else {
 					log.errorf("%s.analyze: ERROR, diagram %s failed to instantiate block of type %s",TAG,getName(),sb.getClassName());
@@ -725,7 +734,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 	/**
 	 * For every property that is bound to a tag, make sure that it is subscribed to the proper provider. 
 	 */
-	public void validateSubscriptions() {
+	public void synchronizeSubscriptions() {
 		if(DiagramState.DISABLED.equals(getState())) return;
 		String provider = null;
 		if( DiagramState.ISOLATED.equals(getState())) {

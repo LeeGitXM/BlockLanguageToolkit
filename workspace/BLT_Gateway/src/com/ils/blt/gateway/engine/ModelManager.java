@@ -110,16 +110,7 @@ public class ModelManager implements ProjectListener  {
 	 * @param res the model resource
 	 */
 	public void analyzeResource(long projectId,ProjectResource res) {
-		 analyzeResource(projectId,res,false);
-	 }
-	/**
-	 * Analyze a project resource for its embedded object. If, appropriate, add
-	 * to the engine. Handle both additions and updates.
-	 * @param projectId the identity of a project
-	 * @param res the model resource
-	 * @param disable if true then create the resource in a disabled state
-	 */
-	public void analyzeResource(long projectId,ProjectResource res,boolean disable) {
+		
 		if( res.getModuleId()!=null && res.getModuleId().equalsIgnoreCase(BLTProperties.MODULE_ID)) {
 			String type = res.getResourceType();
 			
@@ -130,7 +121,7 @@ public class ModelManager implements ProjectListener  {
 				addModifyFamilyResource(projectId,res);
 			}
 			else if( type.equalsIgnoreCase(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
-				addModifyDiagramResource(projectId,res,disable);
+				addModifyDiagramResource(projectId,res);
 			}
 			else if( type.equalsIgnoreCase(BLTProperties.FOLDER_RESOURCE_TYPE) ) {
 				addModifyFolderResource(projectId,res);
@@ -655,7 +646,7 @@ public class ModelManager implements ProjectListener  {
 				}
 				
 				for( ProjectResource res: project.getResources() ) {
-					analyzeResource(pid,res,true);
+					analyzeResource(pid,res);
 				}
 			}
 		}
@@ -740,7 +731,7 @@ public class ModelManager implements ProjectListener  {
 	 * @param res the project resource containing the diagram
 	 * @param disable if true, change the diagram state to disabled
 	 */
-	private void addModifyDiagramResource(long projectId,ProjectResource res,boolean disable) {
+	private void addModifyDiagramResource(long projectId,ProjectResource res) {
 		log.debugf("%s.addModifyDiagramResource: %s(%d)",TAG,res.getName(),res.getResourceId());
 		SerializableDiagram sd = deserializeDiagramResource(projectId,res);
 
@@ -748,8 +739,8 @@ public class ModelManager implements ProjectListener  {
 			ProcessDiagram diagram = (ProcessDiagram)nodesByUUID.get(sd.getId());
 			if( diagram==null) {
 				// Create a new diagram
-				if(DEBUG) log.infof("%s.addModifyDiagramResource: Creating diagram %s(%s)", TAG,res.getName(),sd.getId().toString());
-				if( disable ) sd.setState(DiagramState.DISABLED);
+				if(DEBUG) log.infof("%s.addModifyDiagramResource: Creating diagram %s(%s) %s", TAG,res.getName(),
+										sd.getId().toString(),sd.getState().name());
 				diagram = new ProcessDiagram(sd,res.getParentUuid(),projectId);
 				diagram.setResourceId(res.getResourceId());
 				diagram.setProjectId(projectId);
@@ -764,7 +755,7 @@ public class ModelManager implements ProjectListener  {
 					diagram.setState(sd.getState()); 
 				}
 				else {
-					diagram.validateSubscriptions();
+					diagram.synchronizeSubscriptions();
 				}
 			}
 			else if(diagram.getProjectId() != projectId) {
@@ -795,7 +786,8 @@ public class ModelManager implements ProjectListener  {
 				// New Diagrams are always disabled
 				diagram.createBlocks(sd.getBlocks());
 				diagram.updateConnections(sd.getConnections());
-				diagram.setState(DiagramState.DISABLED);
+				diagram.updateProperties(sd);                    // Fixes subscriptions, as necessary
+				diagram.setState(sd.getState());                 // Handle state change, if any
 				
 			}
 			// Carefully update the diagram with new features/properties.
