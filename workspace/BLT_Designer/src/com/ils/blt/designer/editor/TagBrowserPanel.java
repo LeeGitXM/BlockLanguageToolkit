@@ -16,6 +16,7 @@ import javax.swing.JTree;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
+import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
 import com.inductiveautomation.ignition.client.sqltags.tree.SQLTagTreeModel;
 import com.inductiveautomation.ignition.client.sqltags.tree.TagRenderer;
@@ -74,11 +75,30 @@ public class TagBrowserPanel extends BasicEditPanel {
 						selectedPath = editor.modifyPathForProvider(selectedPath);
 						if(property!=null) {
 							log.debugf("TagBrowserPanel set property %s, binding now %s",property.getName(),selectedPath);
-							property.setBinding(selectedPath);
+							// Before changing the value check some business rules.
+							if( property.getName().equals(BlockConstants.BLOCK_PROPERTY_TAG_PATH) &&
+								!isStandardConnectionFolder(selectedPath) &&
+								(editor.getBlock().getClassName().equals(BlockConstants.BLOCK_CLASS_SINK)||
+								 editor.getBlock().getClassName().equals(BlockConstants.BLOCK_CLASS_SOURCE)) ) {
+								JOptionPane.showMessageDialog(TagBrowserPanel.this, 
+										String.format("The tag path for a source or sink block must be in the %s tag folder.",
+												BlockConstants.SOURCE_SINK_TAG_FOLDER));	
+							}
+							else if( property.getName().equals(BlockConstants.BLOCK_PROPERTY_TAG_PATH) &&
+									isStandardConnectionFolder(selectedPath) &&
+									(editor.getBlock().getClassName().equals(BlockConstants.BLOCK_CLASS_INPUT)||
+									 editor.getBlock().getClassName().equals(BlockConstants.BLOCK_CLASS_OUTPUT)) ) {
+									JOptionPane.showMessageDialog(TagBrowserPanel.this, 
+										String.format("The tag path for an input or output block cannot be in the %s tag folder.",
+													BlockConstants.SOURCE_SINK_TAG_FOLDER));	
+							}
+							else {
+								property.setBinding(selectedPath);
+								editor.updatePanelForProperty(BlockEditConstants.HOME_PANEL,property);
+								editor.handlePropertyChange(property);      // Immediate update in gateway
+								setSelectedPane(BlockEditConstants.HOME_PANEL);
+							}
 						}
-						editor.updatePanelForProperty(BlockEditConstants.HOME_PANEL,property);
-						editor.handlePropertyChange(property);      // Immediate update in gateway
-						setSelectedPane(BlockEditConstants.HOME_PANEL);
 					}
 				}
 				else {
