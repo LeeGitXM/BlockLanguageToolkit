@@ -331,7 +331,7 @@ public class FinalDiagnosisPanel extends BasicEditPanel implements ActionListene
 		panel.add(createLabel("FinalDiagnosis.PostTextRecommendation"),"gaptop 2, aligny top,wrap");
 		
 		String showExplanation = (String)properties.get("ShowExplanationWithRecommendation");
-		log.errorf("showExplanation: "+showExplanation);
+		//log.errorf("showExplanation: "+showExplanation);
 		if( showExplanation==null) showExplanation="0";
 		showExplanationWithRecommendationCheckBox = createCheckBox("FinalDiagnosis.ShowExplanationWithRecommendation.Desc",(showExplanation.equals("0")?false:true));
 		showExplanationWithRecommendationCheckBox.addActionListener(this);
