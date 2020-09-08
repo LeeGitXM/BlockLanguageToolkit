@@ -75,7 +75,7 @@ import net.miginfocom.swing.MigLayout;
  */
 public class PropertyPanel extends JPanel implements ChangeListener, FocusListener, KeyListener, NotificationChangeListener,TagChangeListener {
 	private static final long serialVersionUID = 2264535784255009984L;
-	private static final boolean DEBUG = true;
+	private static final boolean DEBUG = false;
 	private static SimpleDateFormat dateFormatter = new SimpleDateFormat(BlockConstants.TIMESTAMP_FORMAT);
 	private final NotificationHandler notificationHandler = NotificationHandler.getInstance();
 	private static UtilityFunctions fncs = new UtilityFunctions();
@@ -299,7 +299,8 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 					tag = tmgr.getTag(tp);
 					tagProp = (Integer)tag.getAttribute(TagProp.ExpressionType).getValue();
 					typ = tag.getDataType();
-				} catch (IOException e) {
+				} 
+				catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
@@ -655,7 +656,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 	// carriage return in the field, but not with a loss of focus.
 	private void updatePropertyForField(EditableField field,boolean force) {
 		BlockProperty prop = field.getProperty();
-		log.debugf("%s.updatePropertyForField: %s (%s:%s)", TAG,prop.getName(),prop.getType().name(),prop.getBindingType().name());
+		if( DEBUG ) log.infof("%s.updatePropertyForField: %s (%s:%s)", TAG,prop.getName(),prop.getType().name(),prop.getBindingType().name());
 		// If there is a value change, then update the property (or binding)
 		if( prop.getBindingType().equals(BindingType.NONE)) {
 			Object fieldValue = field.getText();
@@ -683,6 +684,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 			if( !field.getText().equals(prop.getBinding()) ) {
 				unsubscribeToTagPath(prop.getBinding());
 				String tagPath = parent.getEditor().modifyPathForProvider(field.getText());
+				if( DEBUG ) log.infof("%s.updatePropertyForField: Adjusting %s to %s", TAG,prop.getBinding(),tagPath);
 				prop.setBinding(tagPath);
 				subscribeToTagPath(tagPath);
 				parent.handlePropertyChange(prop);		
@@ -692,7 +694,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 	// ======================================= Notification Change Listener ===================================
 	@Override
 	public void bindingChange(String binding) {
-		log.debugf("%s.bindingChange: - %s new binding (%s)",TAG,property.getName(),binding);
+		if(DEBUG )log.infof("%s.bindingChange: - %s new binding (%s)",TAG,property.getName(),binding);
 		//property.setValue(value.getValue());  // Block should have its own subscription to value changes.
 		SwingUtilities.invokeLater( new Runnable() {
 			public void run() {
@@ -710,10 +712,17 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 	public void nameChange(String name) {
 		
 	}
+	/**
+	 * The source of the event is a property. 
+	 * Ignore if the binding has not changed.
+	 */
 	@Override
 	public void stateChanged(ChangeEvent e) {
-		//log.infof("%s.stateChanged: - %s",TAG,property.getName());
-		updatePanelUI();	
+		BlockProperty source = (BlockProperty)e.getSource();
+		if( source.getBinding()!=null && !source.getBinding().equals(property.getBinding())) {
+			if(DEBUG) log.infof("%s.stateChanged: - %s -> %s",TAG,property.getBinding(),source.getBinding());
+			updatePanelUI();	
+		}
 	}
 	
 
