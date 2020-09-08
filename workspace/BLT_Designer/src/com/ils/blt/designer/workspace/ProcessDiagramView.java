@@ -13,6 +13,7 @@ import javax.swing.JOptionPane;
 
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.BusinessRules;
 import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.BindingType;
@@ -33,6 +34,7 @@ import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.Quality;
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
+import com.inductiveautomation.ignition.common.sqltags.model.types.ExpressionType;
 import com.inductiveautomation.ignition.common.util.AbstractChangeable;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -603,21 +605,10 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		}
 	}
 
-	// This is called from the PropertyPanel editor and when a tag is dropped on a block
-	public String isValidBindingChange(ProcessBlockView pblock, String tagPath, DataType type) {
-		String ret = null;
-
-		// Collection<ProcessAnchorDescriptor> bconns = pblock.getAnchors();
-		//		ProcessAnchorDescriptor origin = null;
-		//		ProcessAnchorDescriptor terminus = null;
-		//		for (ProcessAnchorDescriptor bconn:bconns) {
-		//			if (bconn.getType() == AnchorType.Origin) {
-		//				origin = bconn;
-		//			}
-		//			if (bconn.getType() == AnchorType.Terminus) {
-		//				terminus = bconn;
-		//			}
-		//		}
+	// This is called from the PropertyPanel editor and should be when a tag is dropped on a block
+	// Validate business rules
+	public String isValidBindingChange(ProcessBlockView pblock,BlockProperty prop,String tagPath, DataType type,Integer tagProp) {
+		String msg = null;
 
 		// ConType is the type of the proposed new connection.
 		ConnectionType conType = pblock.determineDataTypeFromTagType(type);
@@ -633,7 +624,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			}
 
 			if (intended != null && !intended.allowConnectionType(conType)) {
-				ret = String.format("%s: Tag change error, cannot connect %s to %s", pblock.getName(),intended.getConnectionType().name(), conType.name());
+				msg = String.format("%s: Tag change error, cannot connect %s to %s", pblock.getName(),intended.getConnectionType().name(), conType.name());
 			}
 		}
 		
@@ -641,7 +632,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		// The tag cannot be a Boolean
 		if(pblock.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK) ) {
 			if(type.equals(DataType.Boolean)) {
-				ret = String.format("Sink %s icannot be bound to a Boolean tag, Use a Text tag instead.",pblock.getName());
+				msg = String.format("Sink %s icannot be bound to a Boolean tag, Use a Text tag instead.",pblock.getName());
 			}
 			else {
 				if(tagPath!=null && !tagPath.isEmpty() ) {
@@ -649,14 +640,35 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 					for(SerializableBlockStateDescriptor desc:blocks) {
 						if( desc.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK) &&
 								!desc.getIdString().equals(pblock.getId().toString())) {
-							ret = String.format("%s: cannot bind to same tag as sink %s", pblock.getName(),desc.getName());
+							msg = String.format("%s: cannot bind to same tag as sink %s", pblock.getName(),desc.getName());
 							break;
 						}
 					}
 				}
 			}
 		}
-		return ret;  // this could return an error message
+		// block binding to expressions for output
+		else if( pblock.getClassName().equals(BlockConstants.BLOCK_CLASS_OUTPUT)    &&
+				prop.getName().equals(BlockConstants.BLOCK_PROPERTY_TAG_PATH) &&
+				tagProp != ExpressionType.None.getIntValue() ) {  // only update the tagpath property
+			msg = "Unable to bind expression tag to output";
+		}
+		// block binding of Input/Output to tags in correction folder
+		else if( (pblock.getClassName().equals(BlockConstants.BLOCK_CLASS_INPUT)    ||
+				pblock.getClassName().equals(BlockConstants.BLOCK_CLASS_OUTPUT))  &&
+				prop.getName().equals(BlockConstants.BLOCK_PROPERTY_TAG_PATH) &&
+				BusinessRules.isStandardConnectionsFolder(tagPath) ) {  
+			msg = "Input and outputs cannot be bound to tags in the connections folder";
+		}
+		// require sources and sinks be bound to tags in connections
+		else if( (pblock.getClassName().equals(BlockConstants.BLOCK_CLASS_SOURCE)    ||
+				pblock.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK))  &&
+				prop.getName().equals(BlockConstants.BLOCK_PROPERTY_TAG_PATH) &&
+				!BusinessRules.isStandardConnectionsFolder(tagPath) ) {  
+			msg = String.format("Sources and sinks must be bound to tags in %s",BlockConstants.SOURCE_SINK_TAG_FOLDER);
+		}
+
+		return msg;  // this could return an error message
 	}
 	
 	// ------------------------------------------- NotificationChangeListener --------------------------------------

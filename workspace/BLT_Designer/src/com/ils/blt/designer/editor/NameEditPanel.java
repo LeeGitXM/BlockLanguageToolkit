@@ -18,6 +18,7 @@ import javax.swing.SwingUtilities;
 
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.BusinessRules;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.script.CommonScriptExtensionManager;
@@ -29,8 +30,8 @@ import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.ils.blt.designer.workspace.WorkspaceRepainter;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
-import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
+import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
 import net.miginfocom.swing.MigLayout;
 
@@ -124,7 +125,7 @@ public class NameEditPanel extends BasicEditPanel {
 						ApplicationRequestHandler handler = editor.getRequestHandler();
 						// If the tag is is in the standard location, rename it
 						// otherwise, create a new one. Name must be a legal tag path element.
-						if( !isStandardConnectionFolder(path) ) {
+						if( !BusinessRules.isStandardConnectionsFolder(path) ) {
 							String provider = getProvider();
 							path = String.format("[%s]%s/%s",provider,BlockConstants.SOURCE_SINK_TAG_FOLDER,nameField.getText());
 							handler.createTag(DataType.String,path);

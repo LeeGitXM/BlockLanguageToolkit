@@ -66,6 +66,7 @@ import com.ils.block.SinkConnection;
 import com.ils.block.SourceConnection;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.BusinessRules;
 import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
@@ -736,7 +737,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 						if( getSelectedContainer()!=null ) {
 							ProcessBlockView block = null;
 							TagPath tp = tnode.getTagPath();
-							boolean isStandardFolder = isStandardConnectionFolder(tp);
+							boolean isStandardFolder = BusinessRules.isStandardConnectionsFolder(tp);
 							// Sinks to right,sources to the left
 							if (dropx < thewidth / 2) {
 								if( isStandardFolder ) {
@@ -822,55 +823,22 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 						TagTreeNode tnode = (TagTreeNode) tagNodeArr.get(0);
 						logger.infof("%s.handleDrop: tag data: %s",TAG,tnode.getName());
 						TagPath tp = tnode.getTagPath();
-						boolean isStandardFolder = isStandardConnectionFolder(tp) ;
 
 						Block targetBlock = ((BlockComponent)droppedOn).getBlock();
 						if(targetBlock instanceof ProcessBlockView) {
+							ProcessBlockView pblock = (ProcessBlockView)targetBlock;
+							BlockProperty prop = pblock.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
+							if( prop==null) return;  // Unless there's a tag path, do nothing
+							
 							DataType tagType = null;
 							ClientTagManager tmgr = context.getTagManager();
 							Tag tag = tmgr.getTag(tnode.getTagPath());
 							tagType = tag.getDataType();
-							ProcessBlockView pblock = (ProcessBlockView)targetBlock;
+							
 							Integer tagProp = (Integer)tag.getAttribute(TagProp.ExpressionType).getValue();
-							BlockProperty prop = null;
-							String connectionMessage = null;
-							// Edit a source or sink.
-							if( isStandardFolder ) {
-								if( pblock.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK) || 
-									pblock.getClassName().equals(BlockConstants.BLOCK_CLASS_SOURCE) ) {
-									if( tagProp == ExpressionType.None.getIntValue() ) {
-										connectionMessage = diagram.isValidBindingChange(pblock, tp.toStringFull(), tagType);
-										if( connectionMessage==null ) {
-											prop = pblock.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
-											pblock.setName(leafNameFromTagPath(tp));
-											pblock.setCtypeEditable(true);
-										}
-									}
-								}
-								else {
-									connectionMessage = "Only Source and SinkConnections may be configured with tags from \"DiagnosticsToolkit/Connections\".";
-								}
-							}
-							// Input/Output are the only blocks of interest
-							else {
-								if( pblock.getClassName().equals(BlockConstants.BLOCK_CLASS_INPUT) || 
-									pblock.getClassName().equals(BlockConstants.BLOCK_CLASS_OUTPUT) ) {
-									if( !pblock.getClassName().equals(BlockConstants.BLOCK_CLASS_OUTPUT) || (tagProp == ExpressionType.None.getIntValue()) ) {
-										connectionMessage = diagram.isValidBindingChange(pblock,tp.toStringFull(), tagType);
-										if( connectionMessage==null ) {
-											prop = pblock.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
-											pblock.setName(enforceUniqueName(nameFromTagPath(tp),diagram));
-											pblock.setCtypeEditable(true);
-										}
-									}
-								}
-								else if( pblock.getClassName().equals(BlockConstants.BLOCK_CLASS_SOURCE) || 
-										pblock.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK) ) {
-									connectionMessage = "Source and SinkConnections may only be configured with tags from \"DiagnosticsToolkit/Connections\" .";
-								}
-							}
-
-							if( prop!=null ) {
+							String connectionMessage = diagram.isValidBindingChange(pblock, prop, tp.toStringFull(), tagType,tagProp);
+							
+							if( connectionMessage==null ) {
 								prop.setBinding(tnode.getTagPath().toStringFull());
 								diagram.setDirty(true);
 								diagram.fireStateChanged();
@@ -1441,21 +1409,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		logger.infof("%s.handlerDrop: drop x,y = (%d,%d), bounds %d,%d,%d,%d",TAG,dropPoint.x,dropPoint.y,bounds.x,bounds.y,bounds.width,bounds.height );
 		return inBounds;
 	}
-	/**
-	 * The connections folder is the location for Sources/Sinks
-	 * @param path tag path
-	 * @return true if path is contained within the standard.
-	 */
-	protected boolean isStandardConnectionFolder(TagPath tp) {
-		String path = tp.toStringFull();
-		// Remove provider, if any
-		int pos = path.indexOf("]");
-		if(pos>0) {
-			path = path.substring(pos+1);
-			return path.startsWith(BlockConstants.SOURCE_SINK_TAG_FOLDER);
-		}
-		return false;
-	}
+
 	// ============================== Change Listener ================================
 	/**
 	 * If the current diagram changes state, then paint the background accordingly.

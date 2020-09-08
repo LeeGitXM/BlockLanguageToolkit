@@ -16,6 +16,7 @@ import javax.swing.JTree;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
+import com.ils.blt.common.BusinessRules;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
 import com.inductiveautomation.ignition.client.sqltags.tree.SQLTagTreeModel;
@@ -77,7 +78,7 @@ public class TagBrowserPanel extends BasicEditPanel {
 							log.debugf("TagBrowserPanel set property %s, binding now %s",property.getName(),selectedPath);
 							// Before changing the value check some business rules.
 							if( property.getName().equals(BlockConstants.BLOCK_PROPERTY_TAG_PATH) &&
-								!isStandardConnectionFolder(selectedPath) &&
+								!BusinessRules.isStandardConnectionsFolder(selectedPath) &&
 								(editor.getBlock().getClassName().equals(BlockConstants.BLOCK_CLASS_SINK)||
 								 editor.getBlock().getClassName().equals(BlockConstants.BLOCK_CLASS_SOURCE)) ) {
 								JOptionPane.showMessageDialog(TagBrowserPanel.this, 
@@ -85,7 +86,7 @@ public class TagBrowserPanel extends BasicEditPanel {
 												BlockConstants.SOURCE_SINK_TAG_FOLDER));	
 							}
 							else if( property.getName().equals(BlockConstants.BLOCK_PROPERTY_TAG_PATH) &&
-									isStandardConnectionFolder(selectedPath) &&
+									BusinessRules.isStandardConnectionsFolder(selectedPath) &&
 									(editor.getBlock().getClassName().equals(BlockConstants.BLOCK_CLASS_INPUT)||
 									 editor.getBlock().getClassName().equals(BlockConstants.BLOCK_CLASS_OUTPUT)) ) {
 									JOptionPane.showMessageDialog(TagBrowserPanel.this, 

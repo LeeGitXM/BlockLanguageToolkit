@@ -283,9 +283,6 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 				property.getBindingType().equals(BindingType.TAG_READWRITE) ||
 				property.getBindingType().equals(BindingType.TAG_WRITE)	) {
 			
-			DesignerContext cxt = context;
-			// TODO - EREIAM JH Needs ProcessDiagramView (which implements BlockDiagramModel) for connections
-
 			String msg = null;
 			String tagPath = fncs.coerceToString(property.getBinding());
 			// we should only do  this check if it affects the connection type
@@ -309,7 +306,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 					msg = "Unable to bind expression tag to output";
 				} 
 				else {
-					msg = dview.isValidBindingChange(block,tagPath,typ);
+					msg = dview.isValidBindingChange(block,property,tagPath,typ,tagProp);
 				}
 			}
 			if (msg == null) {

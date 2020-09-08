@@ -100,20 +100,4 @@ public class BasicEditPanel extends JPanel {
 		else provider =  editor.getRequestHandler().getProductionTagProvider();
 		return provider;		
 	}
-	/**
-	 * The connections folder is the location for Sources/Sinks
-	 * @param path tag path
-	 * @return true if path is contained within the standard.
-	 */
-	protected boolean isStandardConnectionFolder(String path) {
-		// Remove provider, if any
-		int pos = path.indexOf("]");
-		if(pos>0) {
-			path = path.substring(pos+1);
-			return path.startsWith(BlockConstants.SOURCE_SINK_TAG_FOLDER);
-		}
-		return false;
-	}
-	
-
 }
