@@ -40,6 +40,7 @@ import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.notification.NotificationChangeListener;
 import com.ils.blt.common.notification.NotificationKey;
 import com.ils.blt.designer.NotificationHandler;
+import com.ils.blt.designer.config.BlockPropertiesSelector;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessAnchorDescriptor;
 import com.ils.blt.designer.workspace.ProcessBlockView;
@@ -74,6 +75,7 @@ import net.miginfocom.swing.MigLayout;
  */
 public class PropertyPanel extends JPanel implements ChangeListener, FocusListener, KeyListener, NotificationChangeListener,TagChangeListener {
 	private static final long serialVersionUID = 2264535784255009984L;
+	private static final boolean DEBUG = true;
 	private static SimpleDateFormat dateFormatter = new SimpleDateFormat(BlockConstants.TIMESTAMP_FORMAT);
 	private final NotificationHandler notificationHandler = NotificationHandler.getInstance();
 	private static UtilityFunctions fncs = new UtilityFunctions();
@@ -232,8 +234,8 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 	private DataType subscribeToTagPath(String path) {
 		DataType type = null;
 		if( path==null || path.length()==0 ) return null;  // Fail silently for path not set
-		log.tracef("%s.subscribeToTagPath: - %s (%s)",TAG,property.getName(),path);
-		ClientTagManager tmgr = context.getTagManager();
+		if(DEBUG)log.infof("%s.subscribeToTagPath: - %s (%s)",TAG,property.getName(),path);
+		 ClientTagManager tmgr = context.getTagManager();
 		try {
 			TagPath tp = TagPathParser.parse(path);
 			Tag tag = tmgr.getTag(tp);
@@ -250,7 +252,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 	private void unsubscribeToTagPath(String path) {
 		if( path==null || path.length()==0 ) return;  // Fail silently for path not set
 		
-		log.debugf("%s.unsubscribeToTagPath: - %s (%s)",TAG,property.getName(),path);
+		if(DEBUG)log.infof("%s.unsubscribeToTagPath: - %s (%s)",TAG,property.getName(),path);
 		ClientTagManager tmgr = context.getTagManager();
 		try {
 			TagPath tp = TagPathParser.parse(path);
@@ -262,19 +264,19 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 	}
 	
 	// Update the panel UI for new property data. Called from Config panel via main panel.
-	public void update() {
+	public void updatePanelUI() {
 		String text = "";
 		// For TIME we scale the value
 		if( property.getType().equals(PropertyType.TIME) || property.getType().equals(PropertyType.TIME_SECONDS) || property.getType().equals(PropertyType.TIME_MINUTES) ) {
 			double propValue = fncs.coerceToDouble(property.getValue());
 			text = fncs.coerceToString(TimeUtility.valueForCanonicalValue(propValue,currentTimeUnit));
-			log.debugf("%s.update: property %s,value= %s, display= %s (%s)",TAG,property.getName(),property.getValue().toString(),
+			log.debugf("%s.updatePanelUI: property %s,value= %s, display= %s (%s)",TAG,property.getName(),property.getValue().toString(),
 													text,currentTimeUnit.name());
 		}
 		else {
 			text = fncs.coerceToString(property.getValue());
 			// For list we lop off the delimiter.
-			log.debugf("%s.updateForProperty: property %s, raw value= %s",TAG,property.getName(),text);
+			if( DEBUG ) log.infof("%s.updatePanelUI: property %s, raw value= %s",TAG,property.getName(),text);
 		}
 		
 		valueDisplayField.setText(text);
@@ -288,7 +290,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 			// we should only do  this check if it affects the connection type
 			Tag tag = null;
 			Integer tagProp = null;
-			if ("tagPath".equalsIgnoreCase(property.getName())) {
+			if( BlockConstants.BLOCK_PROPERTY_TAG_PATH.equalsIgnoreCase(property.getName())) {
 				ProcessDiagramView dview = workspace.getActiveDiagram();
 				ClientTagManager tmgr = context.getTagManager();
 				DataType typ = null;
@@ -711,7 +713,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 	@Override
 	public void stateChanged(ChangeEvent e) {
 		//log.infof("%s.stateChanged: - %s",TAG,property.getName());
-		update();	
+		updatePanelUI();	
 	}
 	
 

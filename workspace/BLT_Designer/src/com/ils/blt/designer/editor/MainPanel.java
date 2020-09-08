@@ -95,7 +95,7 @@ public class MainPanel extends BasicEditPanel {
 	public void updatePanelForProperty(BlockProperty prop ) {
 		log.infof("%s.updatePanelForProperty: %s = %s", TAG,prop.getName(),prop.getValue().toString());
 		PropertyPanel pp = panelMap.get(prop.getName());
-		if( pp!=null ) pp.update();
+		if( pp!=null ) pp.updatePanelUI();
 	}
 	
 	public void updatePanelValue(String propertyName,Object val) {
