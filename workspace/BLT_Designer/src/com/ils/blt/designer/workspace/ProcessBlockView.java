@@ -326,19 +326,6 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 		return ret; 
 	}
 
-	// TODO - remove eventually.  this is a temporary hack to switch old blocks from xom.block to ils.block - CJL 
-	// The change is local, to be permanent the user must save the diagram.
-	//
-	//   ** DANGER - This causes a thread deadlock situation when opening a folder from the nav tree
-	//
-	private synchronized void removeXomFromBlockName() {
-		if(className.toLowerCase().startsWith("xom.block.")) {
-			className = "ils." + className.substring(4);
-			setDirty(true);
-		}
-		
-	}
-
 	/** 
 	 * Define a default drop target based on the connector's anchor point 
 	 * hovering above us. For simplicity we just return the first anchor point
@@ -446,7 +433,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 	public void setEmbeddedLabel(String embeddedLabel) {this.embeddedLabel = embeddedLabel;}
 	public void setIconPath(String iconPath) {this.iconPath = iconPath;}
 	public void setLocked(boolean flag) {this.locked = flag;}
-	public void setName(String label) {this.name = label;}
+	public void setName(String label) {this.name = label; fireStateChanged(); }
 	public void setNameDisplayed(boolean showName) {this.nameDisplayed = showName;}
 	public void setNameOffsetX(int nameOffsetX) {this.nameOffsetX = nameOffsetX;}
 	public void setNameOffsetY(int nameOffsetY) {this.nameOffsetY = nameOffsetY;}

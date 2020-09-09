@@ -71,6 +71,7 @@ import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.connection.ConnectionType;
+import com.ils.blt.common.notification.NotificationKey;
 import com.ils.blt.common.script.CommonScriptExtensionManager;
 import com.ils.blt.common.script.ScriptConstants;
 import com.ils.blt.common.serializable.SerializableAnchor;
@@ -82,6 +83,7 @@ import com.ils.blt.common.serializable.SerializableFamily;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.NodeStatusManager;
+import com.ils.blt.designer.NotificationHandler;
 import com.ils.blt.designer.ResourceUpdateManager;
 import com.ils.blt.designer.config.BlockExplanationViewer;
 import com.ils.blt.designer.config.BlockInternalsViewer;
@@ -784,7 +786,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 										property.setBinding(tnode.getTagPath().toStringFull());}
 										block.modifyConnectionForTagChange(property, type);
 								}
-
 								logger.infof("%s.handleDrop: dropped %s",TAG,block.getClass().getName());
 							}
 							else {
@@ -840,11 +841,13 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 							
 							if( connectionMessage==null ) {
 								prop.setBinding(tnode.getTagPath().toStringFull());
-								diagram.setDirty(true);
-								diagram.fireStateChanged();
 								setSelectedItems((JComponent)null);  // hack to get the property panel to refresh
 								setSelectedItems((JComponent)droppedOn);
+								pblock.setName(leafNameFromTagPath(tp));
+								pblock.setNameDisplayed(true);
+								pblock.setCtypeEditable(true);
 								pblock.modifyConnectionForTagChange(prop, tagType);
+								diagram.fireStateChanged();
 							} 
 							else {
 								JOptionPane.showMessageDialog(null, connectionMessage, "Warning", JOptionPane.INFORMATION_MESSAGE);

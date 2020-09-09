@@ -209,7 +209,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
     @Override
     public MenuBarMerge getModuleMenu() {
 
-    	log.infof("DesignerHook in Menu merge %s",(diagramsAttached?"TRUE":"FALSE"));
+    	//log.infof("DesignerHook in Menu merge %s",(diagramsAttached?"TRUE":"FALSE"));
     	MenuBarMerge merge = new MenuBarMerge(BLTProperties.MODULE_ID);  // as suggested in javadocs
     	merge.addSeparator();
     	merge.addSeparator();

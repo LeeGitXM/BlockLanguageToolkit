@@ -16,10 +16,14 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.JTextField;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.PropertyType;
+import com.ils.blt.common.notification.NotificationKey;
+import com.ils.blt.designer.NotificationHandler;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
@@ -105,9 +109,9 @@ public class MainPanel extends BasicEditPanel {
 	}
 	/**
 	 * These properties are present in every block.
-	 * class, label, state, statusText
+	 * class, label, state, statusText.
 	 */
-	private class CorePropertyPanel extends JPanel {
+	private class CorePropertyPanel extends JPanel implements ChangeListener {
 		private static final String columnConstraints = "[para]0[]0[]";
 		private static final String layoutConstraints = "ins 2";
 		private static final String rowConstraints = "[para]0[]0[]";
@@ -124,10 +128,29 @@ public class MainPanel extends BasicEditPanel {
 			add(createTextField(blk.getClassName()),"span,growx");
 			add(createLabel("UUID"),"skip");
 			add(createTextField(blk.getId().toString()),"span,growx");
+			
+			// Listen on block name changes
+			block.addChangeListener(this);
 		}
 		
 		public void updatePanelForBlock(ProcessBlockView pbv) {
 			nameField.setText(pbv.getName());
+		}
+		
+		@Override
+		public void finalize()  {
+			block.removeChangeListener(this);
+			try {
+				super.finalize();
+			}
+			catch(Throwable t) {}
+		}
+		// --------------------------------- Change Listener ----------------------------
+		// When we get an event, read the name from the block
+
+		@Override
+		public void stateChanged(ChangeEvent e) {
+			nameField.setText(block.getName());
 		}
 	}
 	
