@@ -22,7 +22,7 @@ import com.ils.blt.common.block.BlockProperty;
  * Note that the diagramId is guaranteed to be in the attributes
  *      keyed by: BLTProperties.BLOCK_ATTRIBUTE_PARENT
  */
-public class SerializableBlockStateDescriptor implements Serializable {
+public class SerializableBlockStateDescriptor implements Comparable,Serializable {
 	private static final long serialVersionUID = 5499297358912286066L;
 	private String className;
 	private String name;
@@ -52,4 +52,13 @@ public class SerializableBlockStateDescriptor implements Serializable {
 	public List<Map<String, String>> getBuffer() {return buffer;}
 	public List<Activity> getActivities() {return activities;}
 	public List<String> getDisplayedProperties() {return displayedProperties;}
+	
+	/**
+	 * Compare based on name.
+	 */
+	@Override
+	public int compareTo(Object obj) {
+		SerializableBlockStateDescriptor other = (SerializableBlockStateDescriptor)obj;
+		return getName().compareTo(other.getName());
+	}
 }

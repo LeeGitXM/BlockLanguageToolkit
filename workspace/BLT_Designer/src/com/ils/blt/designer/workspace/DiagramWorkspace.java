@@ -71,7 +71,6 @@ import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.connection.ConnectionType;
-import com.ils.blt.common.notification.NotificationKey;
 import com.ils.blt.common.script.CommonScriptExtensionManager;
 import com.ils.blt.common.script.ScriptConstants;
 import com.ils.blt.common.serializable.SerializableAnchor;
@@ -83,7 +82,6 @@ import com.ils.blt.common.serializable.SerializableFamily;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.NodeStatusManager;
-import com.ils.blt.designer.NotificationHandler;
 import com.ils.blt.designer.ResourceUpdateManager;
 import com.ils.blt.designer.config.BlockExplanationViewer;
 import com.ils.blt.designer.config.BlockInternalsViewer;
@@ -97,6 +95,7 @@ import com.ils.common.GeneralPurposeDataContainer;
 import com.inductiveautomation.ignition.client.designable.DesignableContainer;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.client.sqltags.ClientTagManager;
+import com.inductiveautomation.ignition.client.sqltags.tree.TagPathTreeNode;
 import com.inductiveautomation.ignition.client.sqltags.tree.TagTreeNode;
 import com.inductiveautomation.ignition.client.util.LocalObjectTransferable;
 import com.inductiveautomation.ignition.client.util.action.BaseAction;
@@ -112,7 +111,6 @@ import com.inductiveautomation.ignition.common.sqltags.model.Tag;
 import com.inductiveautomation.ignition.common.sqltags.model.TagPath;
 import com.inductiveautomation.ignition.common.sqltags.model.TagProp;
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
-import com.inductiveautomation.ignition.common.sqltags.model.types.ExpressionType;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.common.xmlserialization.SerializationException;
@@ -735,6 +733,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 						TagTreeNode tnode = (TagTreeNode) tagNodeArr.get(0);
 						int dropx = event.getLocation().x;
 						int thewidth = getActiveDiagram().getDiagramSize().width;
+						nameFromTagTree(tnode);
 
 						if( getSelectedContainer()!=null ) {
 							ProcessBlockView block = null;
@@ -745,24 +744,24 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 								if( isStandardFolder ) {
 									SourceConnection source = new SourceConnection();
 									block = new ProcessBlockView(source.getBlockPrototype().getBlockDescriptor());
-									block.setName(leafNameFromTagPath(tp));
+									block.setName(nameFromTagTree(tnode));
 								}
 								else {
 									Input input = new Input();
 									block = new ProcessBlockView(input.getBlockPrototype().getBlockDescriptor());
-									block.setName(enforceUniqueName(nameFromTagPath(tp),diagram));
+									block.setName(enforceUniqueName(nameFromTagTree(tnode),diagram));
 								}
 							} 
 							else {
 								if( isStandardFolder ) {
 									SinkConnection sink = new SinkConnection();
 									block = new ProcessBlockView(sink.getBlockPrototype().getBlockDescriptor());
-									block.setName(leafNameFromTagPath(tp));
+									block.setName(nameFromTagTree(tnode));
 								}
 								else {
 									Output output = new Output();
 									block = new ProcessBlockView(output.getBlockPrototype().getBlockDescriptor());
-									block.setName(enforceUniqueName(nameFromTagPath(tp),diagram));
+									block.setName(enforceUniqueName(nameFromTagTree(tnode),diagram));
 								}
 							}
 							
@@ -835,7 +834,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 							ClientTagManager tmgr = context.getTagManager();
 							Tag tag = tmgr.getTag(tnode.getTagPath());
 							tagType = tag.getDataType();
-							
 							Integer tagProp = (Integer)tag.getAttribute(TagProp.ExpressionType).getValue();
 							String connectionMessage = diagram.isValidBindingChange(pblock, prop, tp.toStringFull(), tagType,tagProp);
 							
@@ -843,8 +841,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 								prop.setBinding(tnode.getTagPath().toStringFull());
 								setSelectedItems((JComponent)null);  // hack to get the property panel to refresh
 								setSelectedItems((JComponent)droppedOn);
-								pblock.setName(leafNameFromTagPath(tp));
-								pblock.setNameDisplayed(true);
+								pblock.setName(nameFromTagTree(tnode));
 								pblock.setCtypeEditable(true);
 								pblock.modifyConnectionForTagChange(prop, tagType);
 								diagram.fireStateChanged();
@@ -907,31 +904,19 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		}
 		return name;
 	}
-
-	// Choose the final segment of the tag path. This is appropriate 
-	// for tags in the Connections folder
-	private String leafNameFromTagPath(TagPath path) {
-			String segment = null;
-			int len = path.getPathLength();
-			if(len>0) {
-				segment = path.getPathComponent(len-1);
+	
+	private String nameFromTagTree(TagTreeNode tnode) {
+		String name = tnode.getName();
+		while(tnode.inUDTInstance()) {
+			TagPathTreeNode tptn = tnode.getParent();
+			if( tptn instanceof TagTreeNode) {
+				tnode = (TagTreeNode)tptn;
+				name = tnode.getName();
 			}
-			return segment;
-		}
-	// Choose either the end of the chain or a name with - or _.
-	private String nameFromTagPath(TagPath path) {
-		String name = null;
-		int len = path.getPathLength();
-		int index = len - 1;
-		while(index>=0) {
-			String segment = path.getPathComponent(index);
-			if( index==len-1) name = segment;
-			else if( len>1 && index==len-2) name = segment;
-			if( segment.contains("-") || segment.contains("_")) {
-				name = segment;
+			else {
+				name = tptn.getName();
 				break;
 			}
-			index--;
 		}
 		return name;
 	}

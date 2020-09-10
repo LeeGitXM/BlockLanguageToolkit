@@ -132,12 +132,9 @@ public class SourceConnection extends Input implements ProcessBlock {
 		desc.setPreferredWidth(50);
 		desc.setBackground(new Color(127,127,127).getRGB()); // Dark gray
 		desc.setCtypeEditable(true);
-		/*
 		desc.setNameDisplayed(true);
 		desc.setNameOffsetX(25);
-		desc.setNameOffsetY(45);
-		*/
-		
+		desc.setNameOffsetY(45);	
 	}
 	
 	/**
