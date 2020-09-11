@@ -87,10 +87,6 @@ public class Sum extends AbstractProcessBlock implements ProcessBlock {
 	}
 	
 	
-	@Override
-	public void reset() {
-		super.reset();
-	}
 	/**
 	 * Initialize the qualified value map.
 	 */
@@ -136,6 +132,9 @@ public class Sum extends AbstractProcessBlock implements ProcessBlock {
 			valueMap.put(key, qv);
 			recordActivity(Activity.ACTIVITY_RECEIVE,key,qv.getValue().toString());
 		}
+		else {
+			log.warnf("%s.acceptValue: received null value",getName());
+		}
 	}
 	
 	/**
@@ -145,21 +144,21 @@ public class Sum extends AbstractProcessBlock implements ProcessBlock {
 	public void evaluate() {
 		//log.infof("%s.evaluate ...", getName());
 		if( !isLocked() && !valueMap.isEmpty()) {
-			//synchronized(this) {
-				double value = getAggregateResult();
-				log.debugf("%s.evaluate ... value = %3.2f", getName(),value);
-				lastValue = new TestAwareQualifiedValue(timer,new Double(value),getAggregateQuality());
-				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
-				controller.acceptCompletionNotification(nvn);
-				notifyOfStatus(lastValue);
-			//}	
+			double value = getAggregateResult();
+			log.debugf("%s.evaluate ... value = %3.2f", getName(),value);
+			lastValue = new TestAwareQualifiedValue(timer,new Double(value),getAggregateQuality());
+			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
+			controller.acceptCompletionNotification(nvn);
+			notifyOfStatus(lastValue);
 		}
 	}
 	/**
 	 * Send status update notification for our last latest state.
 	 */
 	@Override
-	public void notifyOfStatus() {}
+	public void notifyOfStatus() {
+		notifyOfStatus(lastValue);
+	}
 	private void notifyOfStatus(QualifiedValue qv) {
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
@@ -211,8 +210,7 @@ public class Sum extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	private double getAggregateResult() {
 		Collection<QualifiedValue> values = valueMap.values();
-		double result = Double.NaN;
-		result = 0.;
+		double result = 0.;
 		for(QualifiedValue qv:values) {
 			if( qv.getQuality().isGood() && qv.getValue()!=null && !qv.getValue().equals(BLTProperties.UNDEFINED) ) {
 				log.tracef("%s.aggregating ... value = %sf",getName(),qv.getValue().toString());

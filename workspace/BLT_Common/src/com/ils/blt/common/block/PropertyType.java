@@ -22,6 +22,7 @@ public enum PropertyType
             LIMIT,               // Limit type (UPPER,LOWER,BOTH)
             SCOPE,               // Transmission scope
             SLOPEOPTION,         // Slope calculation option
+            STATISTICS,          // Statistical function namd
             TIME_SECONDS,        // Time in seconds.
             TIME_MINUTES,        // Time in minutes.
             TIME,                // seconds, editor auto-scales display unit.

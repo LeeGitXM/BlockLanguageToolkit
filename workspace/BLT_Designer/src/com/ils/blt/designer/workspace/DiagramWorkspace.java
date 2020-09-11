@@ -1202,9 +1202,9 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				ProcessBlockView pbv = (ProcessBlockView)blk;
 				diagram.initBlockProperties(pbv);
 			}
+			
 			super.open(diagram);
 			diagram.setDirty(false);  // Newly opened from a serialized resource, should be in-sync.
-
 			// In the probable case that the designer is opened after the diagram has started
 			// running in the gateway, obtain any updates
 			diagram.registerChangeListeners();

@@ -101,22 +101,7 @@ public class Product extends AbstractProcessBlock implements ProcessBlock {
 		super.stop();
 		timer.removeWatchdog(dog);
 	}
-	/**
-	 * Handle a change to the coalescing interval.
-	 */
-	@Override
-	public void propertyChange(BlockPropertyChangeEvent event) {
-		super.propertyChange(event);
-		String propertyName = event.getPropertyName();
-		if(propertyName.equals(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL)) {
-			try {
-				synchInterval = Double.parseDouble(event.getNewValue().toString());
-			}
-			catch(NumberFormatException nfe) {
-				log.warnf("%s: propertyChange Unable to convert synch interval to a double (%s)",getName(),nfe.getLocalizedMessage());
-			}
-		}
-	}
+
 
 	/**
 	 * Notify the block that a new value has appeared on one of its input anchors.
@@ -128,6 +113,7 @@ public class Product extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void acceptValue(IncomingNotification incoming) {
 		super.acceptValue(incoming);
+		
 		QualifiedValue qv = incoming.getValue();
 		if( qv!=null && qv.getValue()!=null ) {
 			String key = incoming.getConnection().getSource().toString();
@@ -174,9 +160,25 @@ public class Product extends AbstractProcessBlock implements ProcessBlock {
 	public void notifyOfStatus() {
 		notifyOfStatus(lastValue);
 	}
-
 	private void notifyOfStatus(QualifiedValue qv) {
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
+	}
+	
+	/**
+	 * Handle a change to the coalescing interval.
+	 */
+	@Override
+	public void propertyChange(BlockPropertyChangeEvent event) {
+		super.propertyChange(event);
+		String propertyName = event.getPropertyName();
+		if(propertyName.equals(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL)) {
+			try {
+				synchInterval = Double.parseDouble(event.getNewValue().toString());
+			}
+			catch(NumberFormatException nfe) {
+				log.warnf("%s: propertyChange Unable to convert synch interval to a double (%s)",getName(),nfe.getLocalizedMessage());
+			}
+		}
 	}
 	/**
 	 * On a save, make sure that our map of connections is proper. 
