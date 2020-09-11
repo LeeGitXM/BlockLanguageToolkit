@@ -7,7 +7,6 @@ import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Collections;
 import java.util.List;
 
 import javax.swing.Icon;
@@ -49,7 +48,6 @@ public class SourceMainPanel extends MainPanel {
 		String tagPath = prop.getBinding();
 		if( tagPath!=null ) {
 			List<SerializableBlockStateDescriptor> blocks = editor.getRequestHandler().listBlocksForTag(tagPath);
-			Collections.sort(blocks);
 			for(SerializableBlockStateDescriptor block:blocks) {
 				if(block.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK)) {
 					sinkName = block.getName();

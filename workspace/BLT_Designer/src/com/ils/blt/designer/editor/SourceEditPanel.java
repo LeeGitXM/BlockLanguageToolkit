@@ -7,6 +7,7 @@ package com.ils.blt.designer.editor;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Collections;
 import java.util.List;
 
 import javax.swing.JButton;
@@ -37,18 +38,19 @@ public class SourceEditPanel extends BasicEditPanel {
 	// A panel is designed to edit properties that are lists of strings.
 	private final static String TAG = "SourceEditPanel";
 	private static final long serialVersionUID = 1L;
-	private final JLabel headingLabel;
+	//private final JLabel headingLabel;
 	private final List<SerializableBlockStateDescriptor> sinks;
 	private JTable table;
 
 	public SourceEditPanel(final BlockPropertyEditor editor) {
 		super(editor);
 		sinks = editor.getRequestHandler().listBlocksOfClass(BlockConstants.BLOCK_CLASS_SINK);
+		Collections.sort(sinks);
 		setLayout(new BorderLayout());
 		//Create the edit panel - it has two panes
 		JPanel editPanel = new JPanel();
 		editPanel.setLayout(new MigLayout("ins 2","",""));
-		headingLabel = addHeading(editPanel);
+		//headingLabel = addHeading(editPanel);
 		addSeparator(editPanel,"Sink Names");
 		editPanel.add(createTablePanel(),"wrap");
 		add(editPanel,BorderLayout.CENTER);

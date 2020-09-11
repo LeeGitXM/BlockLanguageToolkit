@@ -54,11 +54,11 @@ public class SerializableBlockStateDescriptor implements Comparable,Serializable
 	public List<String> getDisplayedProperties() {return displayedProperties;}
 	
 	/**
-	 * Compare based on name.
+	 * Compare based on name, case insensitive
 	 */
 	@Override
 	public int compareTo(Object obj) {
 		SerializableBlockStateDescriptor other = (SerializableBlockStateDescriptor)obj;
-		return getName().compareTo(other.getName());
+		return getName().toUpperCase().compareTo(other.getName().toUpperCase());
 	}
 }
