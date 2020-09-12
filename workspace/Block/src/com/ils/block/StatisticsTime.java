@@ -150,7 +150,7 @@ public class StatisticsTime extends AbstractProcessBlock implements ProcessBlock
 	
 	/**
 	 * A new value has arrived. Simply set the current value.
-	 * (We poll the current value on an interval).
+	 * (We poll for the current value on an interval).
 	 */
 	@Override
 	public void acceptValue(IncomingNotification incoming) {
@@ -310,22 +310,34 @@ public class StatisticsTime extends AbstractProcessBlock implements ProcessBlock
 		desc.setBackground(BlockConstants.BLOCK_BACKGROUND_LIGHT_GRAY);
 	}
 	/**
-	 * Compute the average, presumably because of a scan interval timeout.
+	 * Compute the statistic, presumably because of a new input.
 	 */
 	private double computeStatistic() {
-		double result = 0.0;
-		double sum = 0.0;
-		int count = 0;
-		
+		double result = Double.NaN;
+		int size = buffer.size();
+		double[] values = new double[size];
+		int index = 0;
 		for( QualifiedValue qv:buffer) {
-			if( qv==null ) continue;  // Shouldn't happen
-			double val = fcns.coerceToDouble(qv.getValue());
-			sum = sum + val;
-			count++;
+			values[index] = fcns.coerceToDouble(qv.getValue());
+			index++;
 		}
-		
-		if( count>0 ) result = sum/count;
-		log.tracef("%s.computeAverage: sum = %f, count = %d, result = %f",getName(),sum,count,result);
+		switch(function) {
+			case GEOMETRIC_MEAN:result = gmeanfn.evaluate(values); break;
+			case KURTOSIS:result = kurtfn.evaluate(values); break;
+			case MAXIMUM: result = maxfn.evaluate(values); break;
+			case MEAN: 	  result = meanfn.evaluate(values); break;
+			case MEDIAN:  result = medianfn.evaluate(values); break;
+			case MINIMUM: result = minfn.evaluate(values); break;
+			case PRODUCT: result = prodfn.evaluate(values); break;
+			case RANGE:   result = maxfn.evaluate(values)-minfn.evaluate(values); break;      
+			case SECOND_MOMENT:     result = smfn.evaluate(values); break; 
+			case SKEW:    result = skewfn.evaluate(values); break; 
+			case STANDARD_DEVIATION: result = sdfn.evaluate(values); break;
+			case SUM:     result = sumfn.evaluate(values); break; 
+			case SUM_OF_LOGS:    result = solfn.evaluate(values); break;
+			case SUM_OF_SQUARES: result = sosfn.evaluate(values); break; 
+			case VARIANCE: result = varfn.evaluate(values); break;
+		}
 		return result;	
 	}
 }

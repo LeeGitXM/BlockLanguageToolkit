@@ -44,6 +44,7 @@ import com.ils.common.FixedSizeQueue;
 import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
+import com.inductiveautomation.ignition.common.sqltags.model.types.DataQuality;
 
 /**
  * This class computes a specified statistic on the last "n" readings.
@@ -57,7 +58,7 @@ public class StatisticsSample extends AbstractProcessBlock implements ProcessBlo
 	private int sampleSize = DEFAULT_BUFFER_SIZE;
 	private boolean clearOnReset = false;
 	private StatFunction function = StatFunction.RANGE;
-	private BlockProperty valueProperty = null;
+	private BlockProperty valueProperty = null;  // The most recent statistical result
 	
     private final GeometricMean gmeanfn = new GeometricMean();
     private final Kurtosis kurtfn = new Kurtosis();
@@ -146,35 +147,36 @@ public class StatisticsSample extends AbstractProcessBlock implements ProcessBlo
 			log.debugf("%s.acceptValue: Received %s",getName(),qv.getValue().toString());
 			if( qv.getQuality().isGood() ) {
 				queue.add(qv);
-				if( queue.size() >= sampleSize) {
-					double result = computeStatistic();
-					// Give it a new timestamp
-					lastValue = new BasicQualifiedValue(result,qv.getQuality(),qv.getTimestamp());
-					if( !isLocked() ) {
-						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
-						controller.acceptCompletionNotification(nvn);
-						notifyOfStatus(lastValue);
-					}
-					else {
-						// Even if locked, we update the current state
-						valueProperty.setValue(result);
-						controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,qv);
-					}	
-				}
+				
 			}
 			else {
-				// Post bad value on output, clear queue
+				// Bad value received. Set value property to Nan. Clear the buffer.
 				if( !isLocked() ) {
-					lastValue = new BasicQualifiedValue(new Double(Double.NaN),qv.getQuality(),qv.getTimestamp());
-					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
-					controller.acceptCompletionNotification(nvn);
-					notifyOfStatus(lastValue);
+					valueProperty.setValue(Double.NaN);
+					controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,qv);
 				}
 				queue.clear();
 			}
 		}
 	}
-	
+	/**
+	 * Evaluate the buffer and place the result on the output.
+	 * The buffer should have only good values.
+	 */
+	@Override
+	public void evaluate() {
+		if( !isLocked() && queue.size() >= sampleSize) {
+			double result = computeStatistic();
+			// Result gets good quality and a new timestamp
+			lastValue = new TestAwareQualifiedValue(timer,new Double(result),DataQuality.GOOD_DATA);
+			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
+			controller.acceptCompletionNotification(nvn);
+			notifyOfStatus(lastValue);
+
+			valueProperty.setValue(result);
+			controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,lastValue);
+		}
+	}
 	/**
 	 * Send status update notification for our last latest state.
 	 */
@@ -206,10 +208,7 @@ public class StatisticsSample extends AbstractProcessBlock implements ProcessBlo
 				if( val>0 ) {
 					sampleSize = val;
 					queue.setBufferSize(sampleSize);
-					// Even if locked, we update the current state
-					valueProperty.setValue(0.0);
-					controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,
-							new TestAwareQualifiedValue(timer,0.0));
+					evaluate();
 				}
 			}
 			catch(NumberFormatException nfe) {
@@ -223,7 +222,7 @@ public class StatisticsSample extends AbstractProcessBlock implements ProcessBlo
 		else if( propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_STATISTICS_FUNCTION)) {
 			try {
 				function = StatFunction.valueOf(event.getNewValue().toString());
-				reset();
+				evaluate();
 			}
 			catch(IllegalArgumentException nfe) {
 				log.warnf("%s: propertyChange Unable to convert %s to a function (%s)",CLSS,event.getNewValue().toString(),nfe.getLocalizedMessage());
@@ -267,28 +266,34 @@ public class StatisticsSample extends AbstractProcessBlock implements ProcessBlo
 		desc.setBackground(BlockConstants.BLOCK_BACKGROUND_LIGHT_GRAY);
 	}
 	/**
-	 * Compute the average, presumably because of a new input.
+	 * Compute the statistic, presumably because of a new input.
 	 */
 	private double computeStatistic() {
-		double result = 0.0;
-		double sum = 0.0;
-		int count = 0;
-		
+		double result = Double.NaN;
+		int size = queue.size();
+		double[] values = new double[size];
+		int index = 0;
 		for( QualifiedValue qv:queue) {
-			if( qv.getValue()==null ) continue;  // Shouldn't happen
-			double val = 0.0;
-			try {
-				val = Double.parseDouble(qv.getValue().toString());
-			}
-			catch(NumberFormatException nfe) {
-				log.warnf("%s:computeAverage detected not-a-number in queue (%s), ignored",getName(),nfe.getLocalizedMessage());
-				continue;
-			}
-			sum = sum + val;
-			count++;
+			values[index] = fcns.coerceToDouble(qv.getValue());
+			index++;
 		}
-		
-		if( count>0 ) result = sum/count;
+		switch(function) {
+			case GEOMETRIC_MEAN:result = gmeanfn.evaluate(values); break;
+			case KURTOSIS:result = kurtfn.evaluate(values); break;
+			case MAXIMUM: result = maxfn.evaluate(values); break;
+			case MEAN: 	  result = meanfn.evaluate(values); break;
+			case MEDIAN:  result = medianfn.evaluate(values); break;
+			case MINIMUM: result = minfn.evaluate(values); break;
+			case PRODUCT: result = prodfn.evaluate(values); break;
+			case RANGE:   result = maxfn.evaluate(values)-minfn.evaluate(values); break;      
+			case SECOND_MOMENT:     result = smfn.evaluate(values); break; 
+			case SKEW:    result = skewfn.evaluate(values); break; 
+			case STANDARD_DEVIATION: result = sdfn.evaluate(values); break;
+			case SUM:     result = sumfn.evaluate(values); break; 
+			case SUM_OF_LOGS:    result = solfn.evaluate(values); break;
+			case SUM_OF_SQUARES: result = sosfn.evaluate(values); break; 
+			case VARIANCE: result = varfn.evaluate(values); break;
+		}
 		return result;	
 	}
 	

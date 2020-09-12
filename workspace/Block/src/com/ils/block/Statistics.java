@@ -179,7 +179,7 @@ public class Statistics extends AbstractProcessBlock implements ProcessBlock {
 	public void evaluate() {
 		if(DEBUG) log.infof("%s.evaluate ...", getName());
 		if( !isLocked() && !qualifiedValueMap.isEmpty()) {
-			double value = getStatistic();
+			double value = computeStatistic();
 			if(DEBUG) log.infof("%s.evaluate ... value = %3.2f", getName(),value);
 			lastValue = new TestAwareQualifiedValue(timer,new Double(value),getAggregateQuality());
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
@@ -192,7 +192,7 @@ public class Statistics extends AbstractProcessBlock implements ProcessBlock {
 	 * Compute the overall statistic, presumably because of a new input.
 	 * The datatype of the QualifiedValue is guaranteed to be a Double.
 	 */
-	private double getStatistic() {
+	private double computeStatistic() {
 		double result = Double.NaN;
 		int size = qualifiedValueMap.size();
 		double[] values = new double[size];
@@ -202,21 +202,21 @@ public class Statistics extends AbstractProcessBlock implements ProcessBlock {
 			index++;
 		}
 		switch(function) {
-		case GEOMETRIC_MEAN:result = gmeanfn.evaluate(values); break;
-		case KURTOSIS:result = kurtfn.evaluate(values); break;
-		case MAXIMUM: result = maxfn.evaluate(values); break;
-		case MEAN: 	  result = meanfn.evaluate(values); break;
-		case MEDIAN:  result = medianfn.evaluate(values); break;
-		case MINIMUM: result = minfn.evaluate(values); break;
-		case PRODUCT: result = prodfn.evaluate(values); break;
-		case RANGE:   result = maxfn.evaluate(values)-minfn.evaluate(values); break;      
-		case SECOND_MOMENT:     result = smfn.evaluate(values); break; 
-		case SKEW:    result = skewfn.evaluate(values); break; 
-		case STANDARD_DEVIATION: result = sdfn.evaluate(values); break;
-		case SUM:     result = sumfn.evaluate(values); break; 
-		case SUM_OF_LOGS:    result = solfn.evaluate(values); break;
-		case SUM_OF_SQUARES: result = sosfn.evaluate(values); break; 
-		case VARIANCE: result = varfn.evaluate(values); break;
+			case GEOMETRIC_MEAN:result = gmeanfn.evaluate(values); break;
+			case KURTOSIS:result = kurtfn.evaluate(values); break;
+			case MAXIMUM: result = maxfn.evaluate(values); break;
+			case MEAN: 	  result = meanfn.evaluate(values); break;
+			case MEDIAN:  result = medianfn.evaluate(values); break;
+			case MINIMUM: result = minfn.evaluate(values); break;
+			case PRODUCT: result = prodfn.evaluate(values); break;
+			case RANGE:   result = maxfn.evaluate(values)-minfn.evaluate(values); break;      
+			case SECOND_MOMENT:     result = smfn.evaluate(values); break; 
+			case SKEW:    result = skewfn.evaluate(values); break; 
+			case STANDARD_DEVIATION: result = sdfn.evaluate(values); break;
+			case SUM:     result = sumfn.evaluate(values); break; 
+			case SUM_OF_LOGS:    result = solfn.evaluate(values); break;
+			case SUM_OF_SQUARES: result = sosfn.evaluate(values); break; 
+			case VARIANCE: result = varfn.evaluate(values); break;
 		}
 		return result;	
 	}
