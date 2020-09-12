@@ -626,7 +626,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		recordActivity(Activity.ACTIVITY_STOP,"");
 	}
 	/**
-	 * This method is called by the WatchdogTimer subsystem on
+	 * This method is called by the WatchdogTimer on
 	 * a WatchdogObserver to indicate a timeout.
 	 */
 	public void evaluate() {}

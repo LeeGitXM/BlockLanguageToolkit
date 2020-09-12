@@ -105,7 +105,7 @@ public class HighLimit extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void start() {
 		super.start();
-		reconcileQualifiedValueMap(BlockConstants.IN_PORT_NAME,qualifiedValueMap,BLTProperties.UNDEFINED);
+		reconcileQualifiedValueMap(BlockConstants.IN_PORT_NAME,qualifiedValueMap,Double.NaN);
 		log.debugf("%s.start: initialized %d inputs",getName(),qualifiedValueMap.size());
 	}
 	/**
@@ -172,8 +172,18 @@ public class HighLimit extends AbstractProcessBlock implements ProcessBlock {
 		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
 		Map<String,String> attributes = descriptor.getAttributes();
 		attributes.put("CurrentMaximum", valueProperty.getValue().toString());
+		for(String key:qualifiedValueMap.keySet()) {
+			QualifiedValue qv = (QualifiedValue)qualifiedValueMap.get(key);
+			if( qv!=null && qv.getValue()!=null) {
+				attributes.put(key, String.valueOf(qv.getValue()));
+			}
+			else {
+				attributes.put(key,"NULL"); 
+			}
+		}
 		return descriptor;
 	}
+
 	/**
 	 * Handle a change to the limit or coalescing interval.
 	 */
@@ -217,7 +227,7 @@ public class HighLimit extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	@Override
 	public void validateConnections() {
-		reconcileQualifiedValueMap(BlockConstants.IN_PORT_NAME,qualifiedValueMap,BLTProperties.UNDEFINED);
+		reconcileQualifiedValueMap(BlockConstants.IN_PORT_NAME,qualifiedValueMap,Double.NaN);
 	}
 	
 	/**
@@ -247,7 +257,7 @@ public class HighLimit extends AbstractProcessBlock implements ProcessBlock {
 		QualifiedValue result = new BasicQualifiedValue(new Double(max));
 		
 		for(QualifiedValue qv:values) {
-			if(qv.getQuality().isGood() && qv.getValue()!=null && !qv.getValue().toString().isEmpty() && !qv.getValue().equals(BLTProperties.UNDEFINED)) {
+			if(qv.getQuality().isGood() && qv.getValue()!=null && !qv.getValue().toString().isEmpty() && !qv.getValue().equals(Double.NaN)) {
 				double val = fcns.coerceToDouble(qv.getValue().toString());
 				if(val>max ) {
 					max = val;

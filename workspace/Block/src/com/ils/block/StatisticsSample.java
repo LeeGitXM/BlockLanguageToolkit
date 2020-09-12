@@ -8,6 +8,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.apache.commons.math3.stat.descriptive.moment.GeometricMean;
+import org.apache.commons.math3.stat.descriptive.moment.Kurtosis;
+import org.apache.commons.math3.stat.descriptive.moment.Mean;
+import org.apache.commons.math3.stat.descriptive.moment.SecondMoment;
+import org.apache.commons.math3.stat.descriptive.moment.Skewness;
+import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
+import org.apache.commons.math3.stat.descriptive.moment.Variance;
+import org.apache.commons.math3.stat.descriptive.rank.Max;
+import org.apache.commons.math3.stat.descriptive.rank.Median;
+import org.apache.commons.math3.stat.descriptive.rank.Min;
+import org.apache.commons.math3.stat.descriptive.summary.Product;
+import org.apache.commons.math3.stat.descriptive.summary.Sum;
+import org.apache.commons.math3.stat.descriptive.summary.SumOfLogs;
+import org.apache.commons.math3.stat.descriptive.summary.SumOfSquares;
+
 import com.ils.block.annotation.ExecutableBlock;
 import com.ils.blt.common.ProcessBlock;
 import com.ils.blt.common.block.AnchorDirection;
@@ -43,6 +58,21 @@ public class StatisticsSample extends AbstractProcessBlock implements ProcessBlo
 	private boolean clearOnReset = false;
 	private StatFunction function = StatFunction.RANGE;
 	private BlockProperty valueProperty = null;
+	
+    private final GeometricMean gmeanfn = new GeometricMean();
+    private final Kurtosis kurtfn = new Kurtosis();
+	private final Max maxfn = new Max();
+	private final Mean meanfn = new Mean();
+    private final Median medianfn = new Median();
+    private final Min minfn = new Min();
+    private final Product prodfn = new Product();
+    private final SecondMoment smfn = new SecondMoment();
+    private final Skewness skewfn = new Skewness();
+    private final StandardDeviation sdfn = new StandardDeviation();
+    private final Sum sumfn= new Sum();
+    private final SumOfLogs solfn = new SumOfLogs();
+    private final SumOfSquares sosfn = new SumOfSquares();
+    private final Variance varfn = new Variance();
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -117,7 +147,7 @@ public class StatisticsSample extends AbstractProcessBlock implements ProcessBlo
 			if( qv.getQuality().isGood() ) {
 				queue.add(qv);
 				if( queue.size() >= sampleSize) {
-					double result = computeAverage();
+					double result = computeStatistic();
 					// Give it a new timestamp
 					lastValue = new BasicQualifiedValue(result,qv.getQuality(),qv.getTimestamp());
 					if( !isLocked() ) {
@@ -239,7 +269,7 @@ public class StatisticsSample extends AbstractProcessBlock implements ProcessBlo
 	/**
 	 * Compute the average, presumably because of a new input.
 	 */
-	private double computeAverage() {
+	private double computeStatistic() {
 		double result = 0.0;
 		double sum = 0.0;
 		int count = 0;

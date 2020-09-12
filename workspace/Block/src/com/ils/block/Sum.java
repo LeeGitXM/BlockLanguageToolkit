@@ -24,6 +24,7 @@ import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
+import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
@@ -93,7 +94,7 @@ public class Sum extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void start() {
 		super.start();
-		reconcileQualifiedValueMap(BlockConstants.IN_PORT_NAME,valueMap,BLTProperties.UNDEFINED);
+		reconcileQualifiedValueMap(BlockConstants.IN_PORT_NAME,valueMap,Double.NaN);
 	}
 	/**
 	 * Disconnect from the timer thread.
@@ -184,7 +185,7 @@ public class Sum extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	@Override
 	public void validateConnections() {
-		reconcileQualifiedValueMap(BlockConstants.IN_PORT_NAME,valueMap,BLTProperties.UNDEFINED);
+		reconcileQualifiedValueMap(BlockConstants.IN_PORT_NAME,valueMap,Double.NaN);
 	}
 	/**
 	 * Define the palette prototype for this block class.
@@ -212,7 +213,7 @@ public class Sum extends AbstractProcessBlock implements ProcessBlock {
 		Collection<QualifiedValue> values = valueMap.values();
 		double result = 0.;
 		for(QualifiedValue qv:values) {
-			if( qv.getQuality().isGood() && qv.getValue()!=null && !qv.getValue().equals(BLTProperties.UNDEFINED) ) {
+			if( qv.getQuality().isGood() && qv.getValue()!=null && !qv.getValue().equals(Double.NaN) ) {
 				log.tracef("%s.aggregating ... value = %sf",getName(),qv.getValue().toString());
 				result = result+fcns.coerceToDouble(qv.getValue());
 			}
@@ -221,6 +222,24 @@ public class Sum extends AbstractProcessBlock implements ProcessBlock {
 			}
 		}
 		return result;	
+	}
+	/**
+	 * @return a block-specific description of internal statue
+	 */
+	@Override
+	public SerializableBlockStateDescriptor getInternalStatus() {
+		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
+		Map<String,String> attributes = descriptor.getAttributes();
+		for(String key:valueMap.keySet()) {
+			QualifiedValue qv = (QualifiedValue)valueMap.get(key);
+			if( qv!=null && qv.getValue()!=null) {
+				attributes.put(key, String.valueOf(qv.getValue()));
+			}
+			else {
+				attributes.put(key,"NULL"); 
+			}
+		}
+		return descriptor;
 	}
 	/**
 	 * Compute the overall product, presumably because of a new input.

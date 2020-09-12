@@ -104,7 +104,7 @@ public class LowLimit extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void start() {
 		super.start();
-		reconcileQualifiedValueMap(BlockConstants.IN_PORT_NAME,qualifiedValueMap,BLTProperties.UNDEFINED);
+		reconcileQualifiedValueMap(BlockConstants.IN_PORT_NAME,qualifiedValueMap,Double.NaN);
 		log.debugf("%s.start: initialized %d inputs",getName(),qualifiedValueMap.size());
 	}
 	/**
@@ -200,7 +200,6 @@ public class LowLimit extends AbstractProcessBlock implements ProcessBlock {
 		updateStateForNewValue(qv);
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
-	
 	/**
 	 * @return a block-specific description of internal statue
 	 */
@@ -209,15 +208,25 @@ public class LowLimit extends AbstractProcessBlock implements ProcessBlock {
 		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
 		Map<String,String> attributes = descriptor.getAttributes();
 		attributes.put("CurrentMinimum", valueProperty.getValue().toString());
+		for(String key:qualifiedValueMap.keySet()) {
+			QualifiedValue qv = (QualifiedValue)qualifiedValueMap.get(key);
+			if( qv!=null && qv.getValue()!=null) {
+				attributes.put(key, String.valueOf(qv.getValue()));
+			}
+			else {
+				attributes.put(key,"NULL"); 
+			}
+		}
 		return descriptor;
 	}
+
 	/**
 	 * On a save, make sure that our map of connections is proper. 
 	 * We are only concerned with the in port as it allows multiple connections.
 	 */
 	@Override
 	public void validateConnections() {
-		reconcileQualifiedValueMap(BlockConstants.IN_PORT_NAME,qualifiedValueMap,BLTProperties.UNDEFINED);
+		reconcileQualifiedValueMap(BlockConstants.IN_PORT_NAME,qualifiedValueMap,Double.NaN);
 	}
 	/**
 	 * Augment the palette prototype for this block class.
@@ -246,7 +255,7 @@ public class LowLimit extends AbstractProcessBlock implements ProcessBlock {
 		QualifiedValue result = new BasicQualifiedValue(new Double(min));
 		
 		for(QualifiedValue qv:values) {
-			if(qv.getQuality().isGood() && qv.getValue()!=null && !qv.getValue().toString().isEmpty() && !qv.getValue().equals(BLTProperties.UNDEFINED)) {
+			if(qv.getQuality().isGood() && qv.getValue()!=null && !qv.getValue().toString().isEmpty() && !qv.getValue().equals(Double.NaN)) {
 				double val = fcns.coerceToDouble(qv.getValue().toString());
 				if(val<min ) {
 					min = val;

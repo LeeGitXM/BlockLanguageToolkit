@@ -24,6 +24,7 @@ import org.apache.commons.math3.stat.descriptive.summary.SumOfLogs;
 import org.apache.commons.math3.stat.descriptive.summary.SumOfSquares;
 
 import com.ils.block.annotation.ExecutableBlock;
+import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.ProcessBlock;
 import com.ils.blt.common.block.Activity;
 import com.ils.blt.common.block.AnchorDirection;
@@ -127,7 +128,7 @@ public class Statistics extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void start() {
 		super.start();
-		reconcileQualifiedValueMap(BlockConstants.IN_PORT_NAME,qualifiedValueMap,Double.NaN);
+		reconcileQualifiedValueMap(BlockConstants.IN_PORT_NAME,qualifiedValueMap,BLTProperties.UNDEFINED);
 	}
 	/**
 	 * Disconnect from the timer thread.
@@ -178,7 +179,7 @@ public class Statistics extends AbstractProcessBlock implements ProcessBlock {
 	public void evaluate() {
 		if(DEBUG) log.infof("%s.evaluate ...", getName());
 		if( !isLocked() && !qualifiedValueMap.isEmpty()) {
-			double value = getAggregateResult();
+			double value = getStatistic();
 			if(DEBUG) log.infof("%s.evaluate ... value = %3.2f", getName(),value);
 			lastValue = new TestAwareQualifiedValue(timer,new Double(value),getAggregateQuality());
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
@@ -191,7 +192,7 @@ public class Statistics extends AbstractProcessBlock implements ProcessBlock {
 	 * Compute the overall statistic, presumably because of a new input.
 	 * The datatype of the QualifiedValue is guaranteed to be a Double.
 	 */
-	private double getAggregateResult() {
+	private double getStatistic() {
 		double result = Double.NaN;
 		int size = qualifiedValueMap.size();
 		double[] values = new double[size];
@@ -221,35 +222,6 @@ public class Statistics extends AbstractProcessBlock implements ProcessBlock {
 	}
 	
 	/**
-	 * Handle a changes to the various attributes.
-	 */
-	@Override
-	public void propertyChange(BlockPropertyChangeEvent event) {
-		super.propertyChange(event);
-		String propertyName = event.getPropertyName();
-		if( propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_STATISTICS_FUNCTION)) {
-			try {
-				function = StatFunction.valueOf(event.getNewValue().toString());
-				reset();
-			}
-			catch(IllegalArgumentException nfe) {
-				log.warnf("%s: propertyChange Unable to convert %s to a function (%s)",CLSS,event.getNewValue().toString(),nfe.getLocalizedMessage());
-			}
-		}	
-	}
-	/**
-	 * Send status update notification for our last latest state.
-	 */
-	@Override
-	public void notifyOfStatus() {
-		QualifiedValue qv = new TestAwareQualifiedValue(timer,state);
-		notifyOfStatus(qv);
-	}
-	private void notifyOfStatus(QualifiedValue qv) {
-		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,qv);
-		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
-	}
-	/**
 	 * @return a block-specific description of internal statue
 	 */
 	@Override
@@ -266,6 +238,44 @@ public class Statistics extends AbstractProcessBlock implements ProcessBlock {
 			}
 		}
 		return descriptor;
+	}
+	
+	/**
+	 * Handle a changes to the various attributes.
+	 */
+	@Override
+	public void propertyChange(BlockPropertyChangeEvent event) {
+		super.propertyChange(event);
+		String propertyName = event.getPropertyName();
+		if( propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_STATISTICS_FUNCTION)) {
+			try {
+				function = StatFunction.valueOf(event.getNewValue().toString());
+				evaluate();
+			}
+			catch(IllegalArgumentException nfe) {
+				log.warnf("%s: propertyChange Unable to convert %s to a function (%s)",CLSS,event.getNewValue().toString(),nfe.getLocalizedMessage());
+			}
+		}	
+	}
+	/**
+	 * Send status update notification for our last latest state.
+	 */
+	@Override
+	public void notifyOfStatus() {
+		notifyOfStatus(lastValue);
+	}
+	private void notifyOfStatus(QualifiedValue qv) {
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
+	}
+	
+	/**
+	 * On a save, make sure that our map of connections is proper. 
+	 * We only care about the in port which allows multiple connections.
+	 */
+	@Override
+	public void validateConnections() {
+		reconcileQualifiedValueMap(BlockConstants.IN_PORT_NAME,qualifiedValueMap,BLTProperties.UNDEFINED);
+		evaluate();
 	}
 	
 	/**
