@@ -1,384 +1,14 @@
 <Tags locale="en_US">
-   <Tag name="Basic IO" path="_types_" type="Folder"/>
-   <Tag name="Data Transfer" path="_types_/Basic IO" type="UDT_DEF">
-      <Property name="Value"/>
+   <Tag name="DB Output" path="_types_" type="UDT_DEF">
+      <Property name="Value"></Property>
       <Property name="DataType">2</Property>
-      <Tag name="destination" path="" type="OPC">
-         <Property name="Value"/>
-         <Property name="DataType">4</Property>
-         <Property name="ScanClass">OPC-Fast</Property>
-      </Tag>
-      <Tag name="messageQueue" path="" type="DB">
-         <Property name="Value"></Property>
-         <Property name="DataType">7</Property>
-      </Tag>
-      <Tag name="permissive" path="" type="DB">
-         <Property name="Value"/>
-         <Property name="DataType">6</Property>
-         <Property name="ScanClass">Expression-Fast</Property>
-         <Property name="ExpressionType">1</Property>
-         <Property name="Expression">{[~]Configuration/LabData/DataTransferPermitted}</Property>
-      </Tag>
-      <Tag name="source" path="" type="DB">
-         <Property name="Value"/>
-         <Property name="DataType">4</Property>
-         <Property name="ScanClass">Expression-Fast</Property>
-         <Property name="ExpressionType">1</Property>
-         <EventScripts>
-            <Event id="valueChanged" enabled="true">	from ils.io.dataTransfer import dataTransfer
-	dataTransfer(tagPath, previousValue, currentValue, initialChange, missedEvents)</Event>
-         </EventScripts>
-      </Tag>
-      <Tag name="sourceSampleTime" path="" type="DB">
-         <Property name="Value"/>
-         <Property name="DataType">8</Property>
-         <Property name="ScanClass">Expression-Fast</Property>
-         <Property name="FormatString">yyyy-MM-dd h:mm:ss aa</Property>
-         <Property name="ExpressionType">1</Property>
-         <EventScripts>
-            <Event id="valueChanged" enabled="true">	from ils.io.dataTransfer import dataTransferSampleTime
-	dataTransferSampleTime(tagPath, previousValue, currentValue, initialChange, missedEvents)</Event>
-         </EventScripts>
-      </Tag>
-      <Tag name="status" path="" type="DB">
-         <Property name="Value"></Property>
-         <Property name="DataType">7</Property>
-      </Tag>
-   </Tag>
-   <Tag name="Data Transfer Tag to HDA" path="_types_/Basic IO" type="UDT_DEF">
-      <Property name="Value"/>
-      <Property name="DataType">2</Property>
-      <Parameters>
-         <Property name="scanClassName" type="String"></Property>
-         <Property name="destinationHDAItemID" type="String"></Property>
-         <Property name="hdaInterface" type="String"></Property>
-      </Parameters>
-      <Tag name="destinationHDAItemID" path="" type="DB">
-         <Property name="Value">{destinationHDAItemID}</Property>
-         <Property name="DataType">7</Property>
-      </Tag>
-      <Tag name="error" path="" type="DB">
-         <Property name="Value">0</Property>
-         <Property name="DataType">7</Property>
-      </Tag>
-      <Tag name="expressionPermissive" path="" type="DB">
-         <Property name="Value"/>
-         <Property name="DataType">6</Property>
-         <Property name="ScanClass">{scanClassName}</Property>
-         <Property name="ExpressionType">1</Property>
-         <Property name="Expression">{[.]manualPermissive}</Property>
-      </Tag>
-      <Tag name="hdaInterface" path="" type="DB">
-         <Property name="Value">{hdaInterface}</Property>
-         <Property name="DataType">7</Property>
-      </Tag>
-      <Tag name="lastUpdate" path="" type="DB">
-         <Property name="Value">1969-12-31 18:00:01.000</Property>
-         <Property name="DataType">8</Property>
-         <Property name="FormatString">yyyy-MM-dd h:mm:ss aa</Property>
-      </Tag>
-      <Tag name="manualPermissive" path="" type="DB">
-         <Property name="Value">0</Property>
-         <Property name="DataType">6</Property>
-      </Tag>
-      <Tag name="triggerTag" path="" type="DB">
-         <Property name="Value"/>
-         <Property name="DataType">8</Property>
-         <Property name="ScanClass">{scanClassName}</Property>
-         <Property name="FormatString">yyyy-MM-dd h:mm:ss aa</Property>
-         <Property name="ExpressionType">1</Property>
-         <Property name="Expression">now(0)</Property>
-         <EventScripts>
-            <Event id="valueChanged" enabled="true">	from ils.io.dataTransfer import dataTransferToHDA
-	dataTransferToHDA(tagPath, previousValue, currentValue, initialChange, missedEvents)</Event>
-         </EventScripts>
-      </Tag>
-      <Tag name="valueToWrite" path="" type="DB">
-         <Property name="Value"/>
-         <Property name="DataType">4</Property>
-         <Property name="ScanClass">{scanClassName}</Property>
-         <Property name="ExpressionType">1</Property>
-      </Tag>
-   </Tag>
-   <Tag name="Data Transfer With Count" path="_types_/Basic IO" type="UDT_DEF">
-      <Property name="Value"/>
-      <Property name="DataType">2</Property>
-      <Property name="UDTParentType">Basic IO/Data Transfer</Property>
-      <Tag name="sourceSampleTime" path="" type="EXTENSION">
-         <EventScripts>
-            <Event id="valueChanged" enabled="true">	from ils.io.dataTransfer import dataTransferWithCountSampleTime
-	dataTransferWithCountSampleTime(tagPath, previousValue, currentValue, initialChange, missedEvents)</Event>
-         </EventScripts>
-      </Tag>
-      <Tag name="source" path="" type="EXTENSION">
-         <EventScripts>
-            <Event id="valueChanged" enabled="true">	from ils.io.dataTransfer import dataTransferWithCount
-	dataTransferWithCount(tagPath, previousValue, currentValue, initialChange, missedEvents)</Event>
-         </EventScripts>
-      </Tag>
-      <Tag name="countDestination" path="" type="OPC">
-         <Property name="Value"/>
-         <Property name="DataType">3</Property>
-         <Property name="ScanClass">OPC-Fast</Property>
-      </Tag>
-   </Tag>
-   <Tag name="Data Transfer With Time" path="_types_/Basic IO" type="UDT_DEF">
-      <Property name="Value"/>
-      <Property name="DataType">2</Property>
-      <Property name="UDTParentType">Basic IO/Data Transfer</Property>
-      <Tag name="sourceSampleTime" path="" type="EXTENSION">
-         <EventScripts>
-            <Event id="valueChanged" enabled="true">	from ils.io.dataTransfer import dataTransferWithTimeSampleTime
-	dataTransferWithTimeSampleTime(tagPath, previousValue, currentValue, initialChange, missedEvents)</Event>
-         </EventScripts>
-      </Tag>
-      <Tag name="source" path="" type="EXTENSION">
-         <EventScripts>
-            <Event id="valueChanged" enabled="true">	from ils.io.dataTransfer import dataTransferWithTime
-	dataTransferWithTime(tagPath, previousValue, currentValue, initialChange, missedEvents)</Event>
-         </EventScripts>
-      </Tag>
-      <Tag name="timeDestination" path="" type="OPC">
-         <Property name="Value"/>
-         <Property name="DataType">3</Property>
-         <Property name="ScanClass">OPC-Fast</Property>
-         <Property name="FormatString">#,##0</Property>
-      </Tag>
-   </Tag>
-   <Tag name="HDA" path="_types_/Basic IO" type="UDT_DEF">
-      <Property name="Value"/>
-      <Property name="DataType">2</Property>
-      <Parameters>
-         <Property name="itemID" type="String"></Property>
-         <Property name="maxAgeHours" type="Integer">40</Property>
-         <Property name="staleAgeMinutes" type="Float">6</Property>
-         <Property name="triggerTagUpdateSeconds" type="String">60</Property>
-         <Property name="maxPoints" type="Integer">1,000</Property>
-         <Property name="scanClassName" type="String">Expression-Ultraslow</Property>
-         <Property name="hdaInterface" type="String"></Property>
-      </Parameters>
-      <Tag name="error" path="" type="DB">
-         <Property name="Value">0</Property>
-         <Property name="DataType">7</Property>
-      </Tag>
-      <Tag name="hdaInterface" path="" type="DB">
-         <Property name="Value">{hdaInterface}</Property>
-         <Property name="DataType">7</Property>
-      </Tag>
-      <Tag name="history" path="" type="DB">
-         <Property name="Value">{&quot;columns&quot;:[],&quot;rows&quot;:[]}</Property>
-         <Property name="DataType">9</Property>
-      </Tag>
-      <Tag name="itemID" path="" type="DB">
-         <Property name="Value">{itemID}</Property>
-         <Property name="DataType">7</Property>
-      </Tag>
-      <Tag name="lastUpdate" path="" type="DB">
-         <Property name="Value">1969-12-31 18:00:01.000</Property>
-         <Property name="DataType">8</Property>
-         <Property name="FormatString">yyyy-MM-dd h:mm:ss aa</Property>
-      </Tag>
-      <Tag name="maxAgeHours" path="" type="DB">
-         <Property name="Value"/>
-         <Property name="DataType">2</Property>
-         <Property name="ScanClass">Expression-Slow</Property>
-         <Property name="ExpressionType">1</Property>
-         <Property name="Expression">{maxAgeHours}</Property>
-      </Tag>
-      <Tag name="maxPoints" path="" type="DB">
-         <Property name="Value"/>
-         <Property name="DataType">2</Property>
-         <Property name="ScanClass">Expression-Slow</Property>
-         <Property name="ExpressionType">1</Property>
-         <Property name="Expression">{maxPoints}</Property>
-      </Tag>
-      <Tag name="quality" path="" type="DB">
-         <Property name="Value">0</Property>
-         <Property name="DataType">7</Property>
-      </Tag>
-      <Tag name="stale" path="" type="DB">
-         <Property name="Value"/>
-         <Property name="DataType">7</Property>
-         <Property name="ScanClass">Expression-Fast</Property>
-         <Property name="ExpressionType">1</Property>
-         <Property name="Expression">if(dateDiff(now(),{[.]timestamp},&quot;minute&quot;) &gt; {[.]staleAgeMinutes}, True, False)</Property>
-      </Tag>
-      <Tag name="staleAgeMinutes" path="" type="DB">
-         <Property name="Value"/>
-         <Property name="DataType">4</Property>
-         <Property name="ScanClass">Expression-Slow</Property>
-         <Property name="ExpressionType">1</Property>
-         <Property name="Expression">{staleAgeMinutes}</Property>
-      </Tag>
-      <Tag name="timestamp" path="" type="DB">
-         <Property name="Value">1969-12-31 18:00:01.000</Property>
-         <Property name="DataType">8</Property>
-         <Property name="FormatString">yyyy-MM-dd h:mm:ss aa</Property>
-      </Tag>
-      <Tag name="triggerTag" path="" type="DB">
-         <Property name="Value"/>
-         <Property name="DataType">8</Property>
-         <Property name="ScanClass">{scanClassName}</Property>
-         <Property name="FormatString">yyyy-MM-dd h:mm:ss aa</Property>
-         <Property name="ExpressionType">1</Property>
-         <Property name="Expression">now({triggerTagUpdateSeconds}*1000)</Property>
-         <EventScripts>
-            <Event id="valueChanged" enabled="true">	from ils.io.dataTransfer import hda
-	hda(tagPath, previousValue, currentValue, initialChange, missedEvents)</Event>
-         </EventScripts>
-      </Tag>
-      <Tag name="value" path="" type="DB">
-         <Property name="Value">0</Property>
-         <Property name="DataType">4</Property>
-      </Tag>
-   </Tag>
-   <Tag name="HDA Transfer" path="_types_/Basic IO" type="UDT_DEF">
-      <Property name="Value"/>
-      <Property name="DataType">2</Property>
-   </Tag>
-   <Tag name="HDA Transfer Driven" path="_types_/Basic IO" type="UDT_DEF">
-      <Property name="Value"/>
-      <Property name="DataType">2</Property>
-      <Property name="UDTParentType">Basic IO/HDA Transfer</Property>
-      <Parameters>
-         <Property name="scanClassName" type="String"></Property>
-         <Property name="destinationHDAItemID" type="String"></Property>
-         <Property name="hdaInterface" type="String"></Property>
-      </Parameters>
-      <Tag name="destinationHDAItemID" path="" type="DB">
-         <Property name="Value">{destinationHDAItemID}</Property>
-         <Property name="DataType">7</Property>
-      </Tag>
-      <Tag name="error" path="" type="DB">
-         <Property name="Value">0</Property>
-         <Property name="DataType">7</Property>
-      </Tag>
-      <Tag name="expressionPermissive" path="" type="DB">
-         <Property name="Value"/>
-         <Property name="DataType">6</Property>
-         <Property name="ScanClass">{scanClassName}</Property>
-         <Property name="ExpressionType">1</Property>
-         <Property name="Expression">{[.]manualPermissive}</Property>
-      </Tag>
-      <Tag name="hdaInterface" path="" type="DB">
-         <Property name="Value">{hdaInterface}</Property>
-         <Property name="DataType">7</Property>
-      </Tag>
-      <Tag name="lastUpdate" path="" type="DB">
-         <Property name="Value">1969-12-31 18:00:01.000</Property>
-         <Property name="DataType">8</Property>
-         <Property name="FormatString">yyyy-MM-dd h:mm:ss aa</Property>
-      </Tag>
-      <Tag name="manualPermissive" path="" type="DB">
-         <Property name="Value">0</Property>
-         <Property name="DataType">6</Property>
-      </Tag>
-      <Tag name="triggerTag" path="" type="DB">
-         <Property name="Value"/>
-         <Property name="DataType">8</Property>
-         <Property name="ScanClass">{scanClassName}</Property>
-         <Property name="FormatString">yyyy-MM-dd h:mm:ss aa</Property>
-         <Property name="ExpressionType">1</Property>
-         <Property name="Expression">now(0)</Property>
-         <EventScripts>
-            <Event id="valueChanged" enabled="true">	from ils.io.dataTransfer import dataTransferToHDA
-	dataTransferToHDA(tagPath, previousValue, currentValue, initialChange, missedEvents)</Event>
-         </EventScripts>
-      </Tag>
-      <Tag name="valueToWrite" path="" type="DB">
-         <Property name="Value"/>
-         <Property name="DataType">4</Property>
-         <Property name="ScanClass">{scanClassName}</Property>
-         <Property name="ExpressionType">1</Property>
-      </Tag>
-   </Tag>
-   <Tag name="HDA Transfer Simple" path="_types_/Basic IO" type="UDT_DEF">
-      <Property name="Value"/>
-      <Property name="DataType">2</Property>
-      <Property name="UDTParentType">Basic IO/HDA Transfer</Property>
-      <Tag name="expressionSource" path="" type="DB">
-         <Property name="Value"/>
-         <Property name="DataType">4</Property>
-         <Property name="ExpressionType">1</Property>
-         <EventScripts>
-            <Event id="valueChanged" enabled="true">	from ils.io.dataTransfer import writeToHDA
-	writeToHDA(tagPath, previousValue, currentValue, initialChange, missedEvents)</Event>
-         </EventScripts>
-      </Tag>
-      <Tag name="hdaItemId" path="" type="DB">
-         <Property name="Value"></Property>
-         <Property name="DataType">7</Property>
-      </Tag>
-      <Tag name="hdaServer" path="" type="DB">
-         <Property name="Value"></Property>
-         <Property name="DataType">7</Property>
-      </Tag>
-      <Tag name="memorySource" path="" type="DB">
-         <Property name="Value">0</Property>
-         <Property name="DataType">4</Property>
-         <EventScripts>
-            <Event id="valueChanged" enabled="true">	from ils.io.dataTransfer import writeToHDA
-	writeToHDA(tagPath, previousValue, currentValue, initialChange, missedEvents)</Event>
-         </EventScripts>
-      </Tag>
-      <Tag name="messageQueue" path="" type="DB">
-         <Property name="Value"></Property>
-         <Property name="DataType">7</Property>
-      </Tag>
-      <Tag name="opcSource" path="" type="OPC">
-         <Property name="Value"/>
-         <Property name="DataType">4</Property>
-         <EventScripts>
-            <Event id="valueChanged" enabled="true">	from ils.io.dataTransfer import writeToHDA
-	writeToHDA(tagPath, previousValue, currentValue, initialChange, missedEvents)</Event>
-         </EventScripts>
-      </Tag>
-      <Tag name="status" path="" type="DB">
-         <Property name="Value"></Property>
-         <Property name="DataType">7</Property>
-      </Tag>
-   </Tag>
-   <Tag name="OPC Conditional Output" path="_types_/Basic IO" type="UDT_DEF">
-      <Property name="Value"/>
-      <Property name="DataType">2</Property>
-      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Property name="UDTParentType">Basic IO/DB Tag Bad Flag</Property>
       <Parameters>
          <Property name="alternateNames" type="String"></Property>
-         <Property name="itemId" type="String"></Property>
-         <Property name="pythonClass" type="String">OPCConditionalOutput</Property>
-         <Property name="serverName" type="String"></Property>
-         <Property name="permissiveItemId" type="String"></Property>
-         <Property name="scanClassName" type="String"></Property>
-      </Parameters>
-      <Tag name="permissive" path="" type="OPC">
-         <Property name="Value"/>
-         <Property name="DataType">7</Property>
-         <Property name="OPCServer">{serverName}</Property>
-         <Property name="OPCItemPath">{permissiveItemId}</Property>
-         <Property name="ScanClass">{scanClassName}</Property>
-      </Tag>
-      <Tag name="permissiveConfirmation" path="" type="DB">
-         <Property name="Value">0</Property>
-         <Property name="DataType">6</Property>
-      </Tag>
-      <Tag name="permissiveValue" path="" type="DB">
-         <Property name="Value">program</Property>
-         <Property name="DataType">7</Property>
-      </Tag>
-   </Tag>
-   <Tag name="OPC Output" path="_types_/Basic IO" type="UDT_DEF">
-      <Property name="Value"/>
-      <Property name="DataType">2</Property>
-      <Property name="UDTParentType">Basic IO/OPC Tag Bad Flag</Property>
-      <Parameters>
-         <Property name="alternateNames" type="String"></Property>
-         <Property name="itemId" type="String"></Property>
-         <Property name="pythonClass" type="String">OPCOutput</Property>
-         <Property name="serverName" type="String"></Property>
-         <Property name="scanClassName" type="String"></Property>
+         <Property name="pythonClass" type="String">DBOutput</Property>
       </Parameters>
       <Tag name="writeConfirmed" path="" type="DB">
-         <Property name="Value">0</Property>
+         <Property name="Value">false</Property>
          <Property name="DataType">6</Property>
       </Tag>
       <Tag name="writeErrorMessage" path="" type="DB">
@@ -390,13 +20,13 @@
          <Property name="DataType">7</Property>
       </Tag>
    </Tag>
-   <Tag name="OPC Tag" path="_types_/Basic IO" type="UDT_DEF">
-      <Property name="Value"/>
+   <Tag name="DB Tag" path="_types_" type="UDT_DEF">
+      <Property name="Value"></Property>
       <Property name="DataType">2</Property>
       <Parameters>
          <Property name="alternateNames" type="String"></Property>
          <Property name="itemId" type="String"></Property>
-         <Property name="pythonClass" type="String">OPCTag</Property>
+         <Property name="pythonClass" type="String">DBTag</Property>
          <Property name="serverName" type="String"></Property>
          <Property name="scanClassName" type="String"></Property>
       </Parameters>
@@ -404,32 +34,14 @@
          <Property name="Value">{pythonClass}</Property>
          <Property name="DataType">7</Property>
       </Tag>
-      <Tag name="value" path="" type="OPC">
-         <Property name="Value"/>
+      <Tag name="value" path="" type="DB">
+         <Property name="Value"></Property>
          <Property name="DataType">5</Property>
-         <Property name="OPCServer">{serverName}</Property>
-         <Property name="OPCItemPath">{itemId}</Property>
          <Property name="ScanClass">{scanClassName}</Property>
          <Property name="FormatString">#,##0.0000</Property>
          <Property name="PrimaryHistoryProvider">XOMhistory</Property>
-         <Property name="HistoricalScanclass">OPC-Fast</Property>
+         <Property name="HistoricalScanclass">DB-Fast</Property>
          <Property name="HistoricalDeadband">0</Property>
-      </Tag>
-   </Tag>
-   <Tag name="OPC Tag Bad Flag" path="_types_/Basic IO" type="UDT_DEF">
-      <Property name="Value"/>
-      <Property name="DataType">2</Property>
-      <Property name="UDTParentType">Basic IO/OPC Tag</Property>
-      <Parameters>
-         <Property name="alternateNames" type="String"></Property>
-         <Property name="itemId" type="String"></Property>
-         <Property name="pythonClass" type="String">OPCTag</Property>
-         <Property name="serverName" type="String"></Property>
-         <Property name="scanClassName" type="String"></Property>
-      </Parameters>
-      <Tag name="badValue" path="" type="DB">
-         <Property name="Value">0</Property>
-         <Property name="DataType">6</Property>
       </Tag>
    </Tag>
    <Tag name="DiagnosticToolkit" path="" type="Folder"/>
@@ -443,7 +55,7 @@
       <Property name="DataType">7</Property>
    </Tag>
    <Tag name="mindy" path="DiagnosticToolkit/Connections" type="DB">
-      <Property name="Value"></Property>
+      <Property name="Value">0</Property>
       <Property name="DataType">7</Property>
    </Tag>
    <Tag name="mork" path="DiagnosticToolkit/Connections" type="DB">
@@ -457,16 +69,6 @@
    <Tag name="Flag1" path="DiagnosticToolkit" type="DB">
       <Property name="Value">false</Property>
       <Property name="DataType">6</Property>
-   </Tag>
-   <Tag name="OPC 23" path="DiagnosticToolkit" type="UDT_INST">
-      <Property name="Value"/>
-      <Property name="DataType">2</Property>
-      <Property name="UDTParentType">Basic IO/OPC Tag</Property>
-   </Tag>
-   <Tag name="Output 23" path="DiagnosticToolkit" type="UDT_INST">
-      <Property name="Value"/>
-      <Property name="DataType">2</Property>
-      <Property name="UDTParentType">Basic IO/OPC Output</Property>
    </Tag>
    <Tag name="T1" path="DiagnosticToolkit" type="DB">
       <Property name="Value">0</Property>
@@ -486,23 +88,23 @@
       <Property name="DataType">7</Property>
    </Tag>
    <Tag name="ArithmeticOut1" path="MemoryTags" type="DB">
-      <Property name="Value">238</Property>
+      <Property name="Value">222</Property>
       <Property name="DataType">5</Property>
    </Tag>
    <Tag name="ArithmeticOut2" path="MemoryTags" type="DB">
-      <Property name="Value">-0.848048093641</Property>
+      <Property name="Value">-0.669130603069</Property>
       <Property name="DataType">5</Property>
    </Tag>
    <Tag name="ArithmeticOut3" path="MemoryTags" type="DB">
-      <Property name="Value">-0.529919268258</Property>
+      <Property name="Value">-0.74314482844</Property>
       <Property name="DataType">5</Property>
    </Tag>
    <Tag name="ArithmeticOut4" path="MemoryTags" type="DB">
-      <Property name="Value">1.60033451214</Property>
+      <Property name="Value">0.900404036281</Property>
       <Property name="DataType">5</Property>
    </Tag>
    <Tag name="ArithmeticOut5" path="MemoryTags" type="DB">
-      <Property name="Value">238</Property>
+      <Property name="Value">222</Property>
       <Property name="DataType">5</Property>
    </Tag>
    <Tag name="AverageFeed" path="MemoryTags" type="DB">
@@ -542,7 +144,7 @@
       <Property name="DataType">6</Property>
    </Tag>
    <Tag name="BooleanOutputB" path="MemoryTags" type="DB">
-      <Property name="Value">true</Property>
+      <Property name="Value">false</Property>
       <Property name="DataType">6</Property>
    </Tag>
    <Tag name="BooleanParameter" path="MemoryTags" type="DB">
@@ -582,11 +184,11 @@
       <Property name="DataType">6</Property>
    </Tag>
    <Tag name="Connection-A" path="MemoryTags" type="DB">
-      <Property name="Value">22</Property>
+      <Property name="Value"></Property>
       <Property name="DataType">7</Property>
    </Tag>
    <Tag name="Connection-B" path="MemoryTags" type="DB">
-      <Property name="Value">42</Property>
+      <Property name="Value"></Property>
       <Property name="DataType">7</Property>
    </Tag>
    <Tag name="Connection-C" path="MemoryTags" type="DB">
@@ -625,7 +227,7 @@
       <Property name="DataType">2</Property>
    </Tag>
    <Tag name="DiagramOutput" path="MemoryTags" type="DB">
-      <Property name="Value">1</Property>
+      <Property name="Value">0</Property>
       <Property name="DataType">2</Property>
    </Tag>
    <Tag name="DoubleInput1" path="MemoryTags" type="DB">
@@ -685,7 +287,7 @@
       <Property name="EngLow">-100</Property>
    </Tag>
    <Tag name="GainOutput" path="MemoryTags" type="DB">
-      <Property name="Value">248</Property>
+      <Property name="Value">232</Property>
       <Property name="DataType">5</Property>
       <Property name="EngLow">-1,000</Property>
       <Property name="EngHigh">1,000</Property>
@@ -699,7 +301,7 @@
       <Property name="DataType">7</Property>
    </Tag>
    <Tag name="InferenceResult" path="MemoryTags" type="DB">
-      <Property name="Value">FALSE</Property>
+      <Property name="Value">UNKNOWN</Property>
       <Property name="DataType">7</Property>
    </Tag>
    <Tag name="InferenceSet" path="MemoryTags" type="DB">
@@ -780,7 +382,7 @@
       <Property name="DataType">7</Property>
    </Tag>
    <Tag name="LogicFilterFalse" path="MemoryTags" type="DB">
-      <Property name="Value">UNKNOWN</Property>
+      <Property name="Value">FALSE</Property>
       <Property name="DataType">7</Property>
    </Tag>
    <Tag name="LogicFilterFeed" path="MemoryTags" type="DB">
@@ -788,11 +390,11 @@
       <Property name="DataType">6</Property>
    </Tag>
    <Tag name="LogicFilterNever" path="MemoryTags" type="DB">
-      <Property name="Value">UNKNOWN</Property>
+      <Property name="Value">FALSE</Property>
       <Property name="DataType">7</Property>
    </Tag>
    <Tag name="LogicFilterTrue" path="MemoryTags" type="DB">
-      <Property name="Value">UNKNOWN</Property>
+      <Property name="Value">FALSE</Property>
       <Property name="DataType">7</Property>
    </Tag>
    <Tag name="LowPatternOut" path="MemoryTags" type="DB">
@@ -880,7 +482,7 @@
       <Property name="DataType">6</Property>
    </Tag>
    <Tag name="PulseOutput" path="MemoryTags" type="DB">
-      <Property name="Value">true</Property>
+      <Property name="Value">false</Property>
       <Property name="DataType">6</Property>
    </Tag>
    <Tag name="Quality" path="MemoryTags" type="DB">
@@ -900,7 +502,7 @@
       <Property name="DataType">6</Property>
    </Tag>
    <Tag name="ReadWriteNumericOutput" path="MemoryTags" type="DB">
-      <Property name="Value">222</Property>
+      <Property name="Value">13</Property>
       <Property name="DataType">5</Property>
    </Tag>
    <Tag name="ReadWriteSink" path="MemoryTags" type="DB">
@@ -908,7 +510,7 @@
       <Property name="DataType">5</Property>
    </Tag>
    <Tag name="ReadWriteStringOutput" path="MemoryTags" type="DB">
-      <Property name="Value">42</Property>
+      <Property name="Value"></Property>
       <Property name="DataType">7</Property>
    </Tag>
    <Tag name="SelectLimitForHigh" path="MemoryTags" type="DB">
@@ -955,6 +557,26 @@
       <Property name="Value">TRUE</Property>
       <Property name="DataType">7</Property>
    </Tag>
+   <Tag name="StatisticsFeed1" path="MemoryTags" type="DB">
+      <Property name="Value">1</Property>
+      <Property name="DataType">5</Property>
+   </Tag>
+   <Tag name="StatisticsFeed2" path="MemoryTags" type="DB">
+      <Property name="Value">2</Property>
+      <Property name="DataType">5</Property>
+   </Tag>
+   <Tag name="StatisticsOut2" path="MemoryTags" type="DB">
+      <Property name="Value">0</Property>
+      <Property name="DataType">5</Property>
+   </Tag>
+   <Tag name="StatisticsOut3" path="MemoryTags" type="DB">
+      <Property name="Value">0</Property>
+      <Property name="DataType">5</Property>
+   </Tag>
+   <Tag name="StatitsticsOut1" path="MemoryTags" type="DB">
+      <Property name="Value">0</Property>
+      <Property name="DataType">5</Property>
+   </Tag>
    <Tag name="StringDateInput" path="MemoryTags" type="DB">
       <Property name="Value">0</Property>
       <Property name="DataType">7</Property>
@@ -1000,7 +622,7 @@
       <Property name="DataType">2</Property>
    </Tag>
    <Tag name="TimerOutput" path="MemoryTags" type="DB">
-      <Property name="Value">75</Property>
+      <Property name="Value">120</Property>
       <Property name="DataType">2</Property>
    </Tag>
    <Tag name="TrendInput" path="MemoryTags" type="DB">

@@ -33,6 +33,7 @@ import com.ils.blt.common.block.HysteresisType;
 import com.ils.blt.common.block.LimitType;
 import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.block.SlopeCalculationOption;
+import com.ils.blt.common.block.StatFunction;
 import com.ils.blt.common.block.TransmissionScope;
 import com.ils.blt.common.block.TrendDirection;
 import com.ils.blt.common.block.TruthValue;
@@ -40,7 +41,6 @@ import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.notification.NotificationChangeListener;
 import com.ils.blt.common.notification.NotificationKey;
 import com.ils.blt.designer.NotificationHandler;
-import com.ils.blt.designer.config.BlockPropertiesSelector;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessAnchorDescriptor;
 import com.ils.blt.designer.workspace.ProcessBlockView;
@@ -379,6 +379,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 		else if(prop.getType().equals(PropertyType.LIMIT))        setLimitTypeCombo(valueCombo);
 		else if(prop.getType().equals(PropertyType.SCOPE))	      setTransmissionScopeCombo(valueCombo);
 		else if(prop.getType().equals(PropertyType.SLOPEOPTION))  setSlopeCalculationOptionCombo(valueCombo);
+		else if(prop.getType().equals(PropertyType.STATISTICS))   setStatisticsCombo(valueCombo);
 		else if(prop.getType().equals(PropertyType.TRENDDIRECTION)) setTrendDirectionCombo(valueCombo);
 		else if(prop.getType().equals(PropertyType.TRUTHVALUE) )  setTruthValueCombo(valueCombo); 
 		valueCombo.setEditable(true);
@@ -516,7 +517,15 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 			box.addItem(opt.name());
 		}
 	}
-	
+	/**
+	 * Populate a combo box for statistics functions
+	 */
+	private void setStatisticsCombo(JComboBox<String> box) {
+		box.removeAllItems();
+		for(StatFunction type : StatFunction.values()) {
+			box.addItem(type.name());
+		}
+	}
 	/**
 	 * Populate a combo box for transmission scope
 	 */
@@ -581,7 +590,8 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 	private boolean isPropertyEnumerated(BlockProperty prop) {
 			return (prop.getBindingType().equals(BindingType.OPTION)   ||
 				    prop.getType().equals(PropertyType.BOOLEAN)        ||          
-				    prop.getType().equals(PropertyType.HYSTERESIS)     ||   
+				    prop.getType().equals(PropertyType.HYSTERESIS)     ||  
+				    prop.getType().equals(PropertyType.STATISTICS)	   ||
 				    prop.getType().equals(PropertyType.LIMIT)          ||        
 				    prop.getType().equals(PropertyType.SCOPE)          ||
 				    prop.getType().equals(PropertyType.COLOR)          ||

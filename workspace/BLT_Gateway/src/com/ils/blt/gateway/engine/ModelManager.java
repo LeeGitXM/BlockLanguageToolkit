@@ -276,6 +276,7 @@ public class ModelManager implements ProjectListener  {
 	 * @return a list of diagram tree paths. If none found, return null. 
 	 */
 	public synchronized List<SerializableResourceDescriptor> getDiagramDescriptors() {
+		if(DEBUG) log.infof("%s.getDiagramDescriptors", TAG);
 		List<SerializableResourceDescriptor> result = new ArrayList<>();
 		for( Long projectId: root.allProjects() ) {
 			List<ProcessNode> nodes = root.allNodesForProject(projectId);
@@ -293,6 +294,7 @@ public class ModelManager implements ProjectListener  {
 				}
 			}
 		}
+		if(DEBUG) log.infof("%s.getDiagramDescriptors: found %d", TAG,result.size());
 		return result;	
 	}
 	/**

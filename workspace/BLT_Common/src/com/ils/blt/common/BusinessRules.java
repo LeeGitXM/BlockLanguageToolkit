@@ -30,9 +30,8 @@ public class BusinessRules
 		int pos = path.indexOf("]");
 		if(pos>0) {
 			path = path.substring(pos+1);
-			return path.startsWith(BlockConstants.SOURCE_SINK_TAG_FOLDER);
 		}
-		return false;
+		return path.startsWith(BlockConstants.SOURCE_SINK_TAG_FOLDER);
 	}
 
 }

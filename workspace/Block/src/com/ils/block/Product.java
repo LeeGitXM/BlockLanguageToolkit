@@ -218,7 +218,7 @@ public class Product extends AbstractProcessBlock implements ProcessBlock {
 			for(QualifiedValue qv:values) {
 				if( qv.getQuality().isGood() && qv.getValue()!=null && !qv.getValue().equals(BLTProperties.UNDEFINED) ) {
 					log.tracef("%s.aggregating ... value = %sf",getName(),qv.getValue().toString());
-					result = result*((Double)qv.getValue()).doubleValue();
+					result = result*fcns.coerceToDouble(qv.getValue());
 				}
 				else {
 					return Double.NaN;

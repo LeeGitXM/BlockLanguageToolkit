@@ -9,10 +9,21 @@ package com.ils.blt.common.block;
  * that can be used by the three statistical blocks.
  */
 public enum StatFunction
-{
-            MAXIMUM,
-            MINIMUM,
-            RANGE
+{	GEOMETRIC_MEAN, 
+	KURTOSIS,
+    MAXIMUM,
+    MEAN,
+    MEDIAN,
+    MINIMUM,
+    PRODUCT, 
+    RANGE,      
+    SECOND_MOMENT, 
+    SKEW, 
+    STANDARD_DEVIATION, 
+    SUM, 
+    SUM_OF_LOGS, 
+    SUM_OF_SQUARES, 
+    VARIANCE
             ;
            
  /**

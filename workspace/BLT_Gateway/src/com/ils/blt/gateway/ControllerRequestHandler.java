@@ -48,7 +48,6 @@ import com.ils.common.ClassList;
 import com.ils.common.persistence.ToolkitProperties;
 import com.ils.common.persistence.ToolkitRecordHandler;
 import com.ils.common.watchdog.AcceleratedWatchdogTimer;
-import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
 import com.inductiveautomation.ignition.common.datasource.DatasourceStatus;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQuality;
@@ -382,12 +381,12 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			while( node!=null ) {
 				if( node instanceof ProcessDiagram ) {
 					ds = ((ProcessDiagram)node).getState();
-					//log.infof("%s.getApplication, found application = %s ",TAG,app.getName());
+					//log.debugf("%s.getApplication, found application = %s ",TAG,app.getName());
 					break;
 				}
 				else if( node instanceof ProcessApplication ) {
 					ds = ((ProcessApplication)node).getState();
-					//log.infof("%s.getApplication, found application = %s ",TAG,app.getName());
+					//log.debugf("%s.getApplication, found application = %s ",TAG,app.getName());
 					break;
 				}
 				node = controller.getProcessNode(node.getParent());
@@ -748,7 +747,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 */
 	@Override
 	public synchronized List<SerializableBlockStateDescriptor> listBlocksInDiagram(String diagramId) {
-		log.tracef("%s.listBlocksInDiagram: diagramId %s",TAG,diagramId);
+		//log.infof("%s.listBlocksInDiagram: diagramId %s",TAG,diagramId);
 		List<SerializableBlockStateDescriptor> descriptors = new ArrayList<>();
 		UUID diauuid = makeUUID(diagramId);
 		ProcessDiagram diagram = controller.getDiagram(diauuid);
@@ -756,6 +755,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			Collection<ProcessBlock> blocks = diagram.getProcessBlocks();
 			for(ProcessBlock block:blocks) {
 				SerializableBlockStateDescriptor desc = block.toDescriptor();
+				//log.infof("%s.listBlocksInDiagram: process block %s",TAG,desc.getName());
 				Map<String,String> attributes = desc.getAttributes();
 				attributes.put(BLTProperties.BLOCK_ATTRIBUTE_ID,block.getClass().getName());
 				attributes.put(BLTProperties.BLOCK_ATTRIBUTE_ID,block.getBlockId().toString());
@@ -765,7 +765,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		else {
 			log.warnf("%s.listBlocksInDiagram: no diagram found for %s",TAG,diagramId);
 		}
-		log.tracef("%s.listBlocksInDiagram: diagramId %s returning %d descriptors",TAG,diagramId,descriptors.size());
+		//log.infof("%s.listBlocksInDiagram: diagramId %s returning %d descriptors",TAG,diagramId,descriptors.size());
 		return descriptors;
 	}
 	/**
@@ -773,7 +773,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * @return a list of state descriptors for blocks that are of the specified class.
 	 */
 	public List<SerializableBlockStateDescriptor> listBlocksOfClass(String className) {
-		log.tracef("%s.listBlocksOfClass: %s",TAG,className);
+		log.debugf("%s.listBlocksOfClass: %s",TAG,className);
 		List<SerializableBlockStateDescriptor> descriptors = new ArrayList<>();
 		List<SerializableResourceDescriptor> diagrams = controller.getDiagramDescriptors();
 		for(SerializableResourceDescriptor diag:diagrams) {
@@ -782,7 +782,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 				if( desc.getClassName().equals(className)) descriptors.add(desc);
 			}
 		}
-		log.tracef("%s.listBlocksOfClass: %s returning %d descriptors",TAG,className,descriptors.size());
+		log.debugf("%s.listBlocksOfClass: %s returning %d descriptors",TAG,className,descriptors.size());
 		return descriptors;
 	}
 	
@@ -822,7 +822,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			}
 		}
 		catch(Exception ex) {
-			log.info(TAG+".listConfigurationErrors: Exception ("+ex.getMessage()+")",ex);
+			log.debug(TAG+".listConfigurationErrors: Exception ("+ex.getMessage()+")",ex);
 		}
 		return result;
 	}
@@ -1015,7 +1015,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			}
 		}
 		catch(Exception ex) {
-			log.info(TAG+".listConfigurationErrors: Exception ("+ex.getMessage()+")",ex);
+			log.debug(TAG+".listConfigurationErrors: Exception ("+ex.getMessage()+")",ex);
 		}
 		return result;
 	}
@@ -1048,7 +1048,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			}
 		}
 		catch(Exception ex) {
-			log.info(TAG+".listConfigurationErrors: Exception ("+ex.getMessage()+")",ex);
+			log.debug(TAG+".listConfigurationErrors: Exception ("+ex.getMessage()+")",ex);
 		}
 		return result;
 	}
@@ -1668,7 +1668,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 				block.propertyChange(event);
 			}
 		}
-		// Inform the designer of the change
+		// inform the designer of the change
 		controller.sendPropertyNotification(block.getBlockId().toString(), newProperty.getName(), new BasicQualifiedValue(newProperty.getValue()));
 	}
 }
