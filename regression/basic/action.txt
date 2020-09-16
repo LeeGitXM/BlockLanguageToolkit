@@ -8,7 +8,7 @@ resetDiagram ($DIAGRAM)
 tag: ActionOut      MemoryTags/ActionOut
 tagset: SingleBoolean MemoryTags/BooleanFeed
 
-Test: Action and Math Function blocks
+Test: Action Block
 Step: BooleanFeed
 Tagset: SingleBoolean
 09:59:30 true

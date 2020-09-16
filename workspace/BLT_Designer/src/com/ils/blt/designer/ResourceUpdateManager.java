@@ -3,6 +3,8 @@
  */
 package com.ils.blt.designer;
 
+import java.util.concurrent.locks.ReentrantLock;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.BLTProperties;
@@ -22,10 +24,11 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
 /**
  * Update or add the single project resource belonging to the specified node.
- * 
- * Note that a diagram is equivalent to a project resource
+ *
+ * Note that a diagram is equivalent to a project resource.
  * 
  * Use ExecutionManager.executeOnce() to invoke this in the background.
+ * Implement a locking scheme to prevent concurrent execution.
  * 
  * @author chuckc
  *
@@ -35,6 +38,7 @@ public class ResourceUpdateManager implements Runnable {
 	private static final LoggerEx log = LogUtil.getLogger(ResourceUpdateManager.class.getPackage().getName());
 	private static DesignerContext context = null;
 	private static NodeStatusManager statusManager = null;
+	private ReentrantLock sharedLock = new ReentrantLock(); 
 	private final ProjectResource res;
 	private final DiagramWorkspace workspace;
 	private final ThreadCounter counter = ThreadCounter.getInstance();
@@ -57,6 +61,7 @@ public class ResourceUpdateManager implements Runnable {
 	@Override
 	public void run() {
 		if( res!=null ) {
+			sharedLock.lock();
 			// Now save the resource, as it is.
 			Project diff = context.getProject().getEmptyCopy();
 
@@ -71,7 +76,7 @@ public class ResourceUpdateManager implements Runnable {
 					// anyway as block properties may have changed.
 					ProcessDiagramView view = (ProcessDiagramView)tab.getModel();
 					SerializableDiagram sd = view.createSerializableRepresentation();
-					log.infof("%s.run: updating ... %s(%d) %s",CLSS,tab.getName(),resourceId,sd.getState().name());
+					log.infof("%s.run: serializing ... %s(%d) %s",CLSS,tab.getName(),resourceId,sd.getState().name());
 					sd.setName(tab.getName());
 					ObjectMapper mapper = new ObjectMapper();
 					try{
@@ -87,21 +92,26 @@ public class ResourceUpdateManager implements Runnable {
 				}
 			}
 			try {
-				context.updateResource(res.getResourceId(),res.getData());   // Force an update
-				
-//				EREIAM JH - can we force a property panel update from here?
+				log.infof("%s.run: getting lock ...",CLSS);
+				if( context.requestLockQuietly(res.getResourceId()) )
+				{
+					context.updateResource(res.getResourceId(),res.getData());   // Force an update
 
-				diff.putResource(res, true);    // Mark as dirty for our controller as resource listener
-				DTGatewayInterface.getInstance().saveProject(IgnitionDesigner.getFrame(), diff, false, "Committing ...");  // Don't publish
-				for(ProjectResource pr:diff.getResources()) {
-					log.infof("%s.run: Saved %s (%d) %s %s",CLSS,pr.getName(),pr.getResourceId(),
-							  (context.getProject().isResourceDirty(pr)?"DIRTY":"CLEAN"),(pr.isLocked()?"LOCKED":"UNLOCKED"));
-					if( pr.isLocked()) pr.setLocked(false);
+					diff.putResource(res, true);    // Mark as dirty for our controller as resource listener
+					DTGatewayInterface.getInstance().saveProject(IgnitionDesigner.getFrame(), diff, true, "Committing ...");  // Do publish
+					for(ProjectResource pr:diff.getResources()) {
+						log.infof("%s.run: Saved %s (%d) %s %s",CLSS,pr.getName(),pr.getResourceId(),
+								(context.getProject().isResourceDirty(pr)?"DIRTY":"CLEAN"),(pr.isLocked()?"LOCKED":"UNLOCKED"));
+						if( pr.isLocked()) pr.setLocked(false);
+					}
+					// Make every thing clean again.
+					Project project = context.getProject();
+					project.applyDiff(diff,false);  // Mark diff resources as dirty in diff and deleted in target 
+					project.clearAllFlags();
+					context.updateLock(res.getResourceId());
+					context.releaseLock(res.getResourceId());
+					log.infof("%s.run: released lock",CLSS);
 				}
-				// Make every thing clean again.
-				Project project = context.getProject();
-				project.applyDiff(diff,false);
-				project.clearAllFlags();
 			}
 			catch(IllegalArgumentException iae) {
 				log.warnf("%s.run: Updating resource %d, it has been deleted (%s)",CLSS,res.getResourceId(),iae.getMessage());
@@ -110,7 +120,10 @@ public class ResourceUpdateManager implements Runnable {
 			catch(GatewayException ge) {
 				log.warnf("%s.run: Exception saving project resource %d (%s)",CLSS,res.getResourceId(),ge.getMessage());
 			}
+
 			((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler().triggerStatusNotifications();
+			sharedLock.unlock();
+			log.infof("%s.run: complete",CLSS);
 		}
 		this.counter.decrementCount();
 	}

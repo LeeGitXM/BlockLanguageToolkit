@@ -1,0 +1,49 @@
+#
+# Simple test of average blocks
+#
+DIAGRAM="app75/family75/statistics"
+Show: diagram $DIAGRAM
+
+tag: Statistics1    MemoryTags/StatisticsOut1
+tag: Statistics2    MemoryTags/StatisticsOut2
+tag: Statistics3    MemoryTags/StatisticsOut3
+tagset: StatisticsFeed MemoryTags/StatisticsFeed Statistics1 Statistics2 Statistics3
+
+Test: Statistics - Minimum
+Step: Statistics n Samples
+Tagset: StatisticsFeed
+09:59 0 -1 -1 -1
+09:59:30 resetDiagram ($DIAGRAM)
+09:59:45 PRIOR1 = Statistics1
+10:00 10 
+10:00:55 Assert: Statistics1 = $PRIOR1 "No result with first value"
+10:01 20
+10:01:55 Assert: Statistics1 = $PRIOR1 "No result until buffer fills"
+10:02 30
+10:02:30 Assert: Statistics1 = 15 "Statistics when buffer fills"
+10:03:00 40
+10:03:20 Assert: Statistics1 = 25 "Statistics with next reading"
+
+Step: "Statistics Time Window"
+# Time window is 2 minutes, scan is 30 seconds, 4 values held.
+# NOTE: Reset causes input blocks to emit their last value
+10:03:30 8 
+10:03:55 PRIOR2 = Statistics2
+10:03:45 resetDiagram ($DIAGRAM)
+10:04:15 Assert: Statistics2 = $PRIOR2  "No result after reset until buffer fills"
+10:06:10 Assert: Statistics2 = 8 "Statistics reaches steady state after reset"
+10:06:20 PRIOR2 = Statistics2
+10:06:30 128
+10:06:55 Assert: Statistics2 > $PRIOR2 "Statistics increasing in time"
+10:07:00 PRIOR2 = Statistics2
+10:07:30 Assert: Statistics2 > $PRIOR2 "Statistics increasing in time"
+10:08:45 Assert: Statistics2 = 128 "Ave is 128 at end of time window"
+
+Step: Statistics Over All Inputs
+10:09:00 10 -1 -1 -1
+resetDiagram ($DIAGRAM)
+10:09:30 Assert: Statistics3 = 10 "First value is the value"
+10:10:00 20
+10:10:20 30
+10:10:25 Assert: Statistics3 = 20 "Values independent of arrival time"
+10:10:30

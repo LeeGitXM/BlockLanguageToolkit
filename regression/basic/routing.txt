@@ -68,11 +68,12 @@ assert: count of blocksGloballyUpstream($DIAGRAM,"SOURCECONNECTION-358") = 8 "8 
 assert: blocksGloballyUpstream($DIAGRAM,"QUALVALUE-905") contains "JUNCTION-605" "Junction-605 is globally upstream of QUALVALUE-905"
 
 Step: Sources for Sink
-assert: sourcesForSink($DIAGRAM,"SINKCONNECTION-538") contains "SOURCECONNECTION-761" "Source 761 (Readwrite) is connected"
-assert: ! sourcesForSink($DIAGRAM,"SINKCONNECTION-538") contains "RoutingParameter" "RountingParameter is not connected"
+assert: sourcesForSink($DIAGRAM,"mork") contains "mork" "Source mork (readwrite) is connected"
+assert: ! sourcesForSink($DIAGRAM,"mork") contains "RoutingParameter" "RountingParameter is not connected"
 #  The next test actually has 2 sources since the first chart upstream has another connected chart
 # assert: count of sourcesForSink($DIAGRAM,"SINKCONNECTION-538") = 1 "1 sources for sink 538"
-assert: count of sourcesForSink($DIAGRAM,"SINKCONNECTION-538") = 2 "2 sources for sink 538"
+assert: count of sourcesForSink($DIAGRAM,"mork") = 2 "2 sources for sink mork"
+assert: count of sourcesForSink($DIAGRAM,"mindy") = 1 "1 sources for sink mindy"
 
 Step: Sinks for Source
 assert: sinksForSource($DIAGRAM,"SOURCECONNECTION-358") contains "SINKCONNECTION-456" "Sink 456 (readwrite) is connected"

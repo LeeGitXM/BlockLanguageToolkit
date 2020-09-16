@@ -2536,7 +2536,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			node.setBold(true);
 			threadCounter.reset();
 			statusManager.updateAll();
-			executionEngine.executeOnce(new ResourceSaveManager(workspace,node));
+			ResourceSaveManager rsm = new ResourceSaveManager(workspace,node);
+			rsm.saveSynchronously();
 			ThreadCompletionDetector detector = new ThreadCompletionDetector(node);
 			new Thread(detector).start();
 		}

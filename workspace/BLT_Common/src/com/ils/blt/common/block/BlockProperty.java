@@ -246,7 +246,8 @@ public class BlockProperty implements NotificationChangeListener {
 			catch(ConcurrentModificationException cme) {
 				// This is a possibility if the property listeners are also
 				// notification listeners. What a tangled web we weave.
-				log.infof("%s.valueChange of %s to %s threw ConcurrentModificationException (ignored)",TAG,getName(),val.getValue().toString());
+				log.info(String.format("%s.valueChange of %s to %s threw ConcurrentModificationException (ignored)",
+						TAG,getName(),val.getValue().toString()),cme);
 			}
 		}
 	}

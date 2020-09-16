@@ -1287,10 +1287,11 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	 */
 	public void saveDiagramResource(BlockDesignableContainer c) {
 		ProcessDiagramView diagram = (ProcessDiagramView)c.getModel();
-		logger.debugf("%s.saveDiagramResource - %s ...",TAG,diagram.getDiagramName());
+		logger.infof("%s.saveDiagramResource - %s ...",TAG,diagram.getDiagramName());
 		diagram.registerChangeListeners();     // The diagram may include new components
 		long resid = diagram.getResourceId();
 		executionEngine.executeOnce(new ResourceUpdateManager(this,context.getProject().getResource(resid)));
+		
 		diagram.setDirty(false);
 		c.setBackground(diagram.getBackgroundColorForState());
 		SwingUtilities.invokeLater(new WorkspaceRepainter());
@@ -1303,11 +1304,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	private void updateBackgroundForDirty() {
 		BlockDesignableContainer container = getSelectedContainer();
 		if( container!=null ) {
-			ProcessDiagramView view = (ProcessDiagramView)(container.getModel());
-			
-			
-			//fire item selection changed??
-			
+			ProcessDiagramView view = (ProcessDiagramView)(container.getModel());		
 			// update any open property panels
 			for (ResourceWorkspaceFrame frame: frames) {
 				if (frame instanceof PropertyEditorFrame) {
@@ -1316,11 +1313,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 						ProcessBlockView pbv = eddy.getBlock();
 						if (pbv.getClassName().toLowerCase().contains("finaldiagnosis")) {  // horrible hack, but it needs a refresh
 							((PropertyEditorFrame)frame).updateForFinalDiagnosis();
-						}
-						
+						}	
 					}
-					
-					
 				}
 			}
 

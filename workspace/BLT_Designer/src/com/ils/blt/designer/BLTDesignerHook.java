@@ -348,7 +348,8 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 			log.infof("%s: Workspace error, please correct before saving:  %s",TAG, msg);
 			ErrorUtil.showError(msg, "Save Workspace Error, save aborted");
 			save.abort(new Throwable(msg));
-		} else {
+		} 
+		else {
 			ResourceSaveManager saver = new ResourceSaveManager(getWorkspace(),rootNode);
 			saver.saveSynchronously();
 		}

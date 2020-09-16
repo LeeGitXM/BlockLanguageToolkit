@@ -1,5 +1,5 @@
 /**
- *   (c) 2013-2018  ILS Automation. All rights reserved.
+ *   (c) 2013-2020  ILS Automation. All rights reserved.
  *  
  */
 package com.ils.blt.gateway.tag;
@@ -26,7 +26,8 @@ import com.inductiveautomation.ignition.gateway.sqltags.TagProvider;
 
 /**
  *  The tag handler is a utility for creation and deletion of tags
- *  and associated folders.
+ *  and associated folders. The changes take place in both Production
+ *  and Isolation providers.
  *  
  *  WARNING: Access this class through the BlockExecutionController
  *           interfaces. The controller munges tag paths depending
@@ -46,8 +47,12 @@ public class TagHandler    {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 		this.context = ctx;
 	}
-	public void deleteTag(String path) {
-		String providerName = providerFromPath(path);
+	/**
+	 * Delete the named tag 
+	 * @param providerName tag provider
+	 * @param path tag path. Any provider supplied here will be ignored.
+	 */
+	public void deleteTag(String providerName,String path) {
 		path = stripProviderFromPath(path);
 		log.infof("%s.deleteTag [%s]%s",TAG,providerName,path);
 		TagPath tp = null;
@@ -72,10 +77,14 @@ public class TagHandler    {
 		else {
 			log.warnf("%s.deleteTag: Provider %s does not exist",TAG,providerName);
 		}
-	}
-	// Create directories as needed, then a memory tag with correct data type.
-	public void createTag(DataType type,String fullpath) {
-		String providerName = providerFromPath(fullpath);
+	} 
+	/**
+	 * Create the named memory tag. Create intervening folders, as needed. 
+	 * @param providerName tag provider
+	 * @param type DataType for the new tag
+	 * @param path tag path. Any provider supplied here will be ignored.
+	 */
+	public void createTag(String providerName,DataType type,String fullpath) {
 		String path = stripProviderFromPath(fullpath);
 		log.infof("%s.createTag [%s]%s",TAG,providerName,path);
 		TagPath tp = null;
@@ -103,11 +112,11 @@ public class TagHandler    {
 	/**
 	 * Rename a tag keeping the folder structure intact. If the tag does not
 	 * exist or the rename fails, then create the tag as a String.
+	 * @param provider name
 	 * @param name new name
-	 * @param path existing complete path
+	 * @param path existing complete path. Any provider here will be ignored
 	 */
-	public void renameTag(String name,String fullpath) {
-		String providerName = providerFromPath(fullpath);
+	public void renameTag(String providerName,String name,String fullpath) {
 		String path = stripProviderFromPath(fullpath);
 		log.infof("%s.renameTag %s [%s]%s",TAG,name,providerName,path);
 		TagValidator validator = new TagValidator(context);
@@ -128,14 +137,14 @@ public class TagHandler    {
 			catch(Exception ex) {
 				log.warnf("%s: renameTag: Exception renaming tag [%s]%s (%s)",TAG,providerName,path,ex.getLocalizedMessage());
 				path = replaceTagNameInPath(name,fullpath);
-				createTag(DataType.String,path);
+				createTag(providerName,DataType.String,path);
 				return;
 			}
 		}
 		else {
 			path = replaceTagNameInPath(name,fullpath);
 			log.warnf("%s: renameTag: referenced tag [%s] did not exist. %s created",TAG,fullpath,path);
-			createTag(DataType.String,path);
+			createTag(providerName,DataType.String,path);
 			return;
 		}
 	}

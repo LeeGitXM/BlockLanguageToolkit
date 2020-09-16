@@ -133,8 +133,15 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		controller.sendWatermarkNotification(diagramId,"");
 	}
 
+	/**
+	 * Delete the tag for both production and isolation
+	 */
+	@Override
 	public void deleteTag(String path) {
-		tagHandler.deleteTag(path);
+		String provider = getProductionTagProvider();
+		tagHandler.deleteTag(provider,path);
+		provider = getIsolationTagProvider();
+		tagHandler.deleteTag(provider,path);
 	}
 	
 	/**
@@ -178,9 +185,15 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		}
 		return block;
 	}
+	/**
+	 * Create the tag in both production and isolation
+	 */
 	@Override
 	public void createTag(DataType type,String path) {
-		tagHandler.createTag(type,path);
+		String provider = getProductionTagProvider();
+		tagHandler.createTag(provider,type,path);
+		provider = getIsolationTagProvider();
+		tagHandler.createTag(provider,type,path);
 	}
 	@Override
 	public boolean diagramExists(String uuidString) {
@@ -1155,9 +1168,15 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			controller.sendNameChangeNotification(blockId, name);
 		}
 	}
+	/**
+	 * Rename the tag in both production and isolation
+	 */
 	@Override
 	public void renameTag(String name,String path) {
-		tagHandler.renameTag(name,path);
+		String provider = getProductionTagProvider();
+		tagHandler.renameTag(provider,name,path);
+		provider = getIsolationTagProvider();
+		tagHandler.renameTag(provider,name,path);
 	}
 	@Override
 	public void resetBlock(String diagramId, String blockName) {

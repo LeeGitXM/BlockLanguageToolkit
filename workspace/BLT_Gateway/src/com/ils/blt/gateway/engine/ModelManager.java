@@ -604,7 +604,7 @@ public class ModelManager implements ProjectListener  {
 	@Override
 	public void projectUpdated(Project diff, ProjectVersion vers) { 
 		if( vers!=ProjectVersion.Staging ) return;  // Consider only the "Staging" version
-		log.infof("%s.projectUpdated: %s (%d)  %s",TAG,diff.getName(),diff.getId(),vers.toString());
+		//log.infof("%s.projectUpdated: %s (%d)  %s",TAG,diff.getName(),diff.getId(),vers.toString());
 		long projectId = diff.getId();
 		if( projectId<0 ) return;                   // Ignore global project
 		
@@ -622,10 +622,9 @@ public class ModelManager implements ProjectListener  {
 			List<ProjectResource> resources = diff.getResources();
 			Long pid = new Long(projectId);
 			for( ProjectResource res:resources ) {
-				//if( res.getResourceType().equals(BLTProperties.FOLDER_RESOURCE_TYPE)) continue;
 				log.infof("%s.projectUpdated: add/update resource %d.%d %s (%s) %s %s", TAG,projectId,res.getResourceId(),res.getName(),
 						res.getResourceType(),(diff.isResourceDirty(res)?"dirty":"clean"),(res.isLocked()?"locked":"unlocked"));
-				if(res.isLocked()) res.setLocked(false);
+				//if(res.isLocked()) res.setLocked(false);
 				analyzeResource(pid,res);
 				if( isBLTResource(res.getResourceType()) || res.getResourceType().equalsIgnoreCase("Window") ) countOfInteresting++;
 			}

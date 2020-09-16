@@ -32,7 +32,7 @@ import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceN
 public class ResourceSaveManager implements Runnable {
 	private static final String CLSS = "ResourceSaveManager";
 	private static final LoggerEx log = LogUtil.getLogger(ResourceSaveManager.class.getPackage().getName());
-	private static final boolean DEBUG = false;
+	private static final boolean DEBUG = true;
 	private static DesignerContext context = null;
 	private final AbstractResourceNavTreeNode root;	      // Root of our save.
 	private final DiagramWorkspace workspace;
@@ -68,17 +68,10 @@ public class ResourceSaveManager implements Runnable {
 	/**
 	 * Traverse the entire node hierarchy looking for diagrams that need saving.
 	 * When found, serialize into the project resource. This is in anticipation
-	 * of a top-level save.
+	 * of a top-level save. This method is called from the designer hook.
 	 */
 	public void saveSynchronously() {
 		saveDirtyDiagrams(root);
-		// Update UI
-		
-		/**
-		 * TODO:  I'm not sure exactly what the next line does.  It causes an error message to pop up saying it
-		 * 			can't get a resource lock on any open diagram.
-		 */
-//		((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler().triggerStatusNotifications();
 	}
 	
 	@Override
@@ -103,7 +96,7 @@ public class ResourceSaveManager implements Runnable {
 						  (context.getProject().isResourceDirty(res.getResourceId())?"DIRTY":"CLEAN"));
 				// If the resource is open, we need to save it
 				workspace.saveOpenDiagram(res.getResourceId());
-//				res.setLocked(false);  // doesn't help
+				log.infof("%s.saveDirtyDiagrams: saved %s",CLSS,res.getName());
 			}
 		}
 		@SuppressWarnings("rawtypes")
