@@ -2711,7 +2711,14 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			executionEngine.executeOnce(new ResourceSaveManager(workspace,node));
+			// Traverse the hierarchy under the selection, saving each step
+			node.setBold(true);
+			threadCounter.reset();
+			statusManager.updateAll();
+			ResourceSaveManager rsm = new ResourceSaveManager(workspace,node);
+			rsm.saveSynchronously();
+			ThreadCompletionDetector detector = new ThreadCompletionDetector(node);
+			new Thread(detector).start();
 		}
 	}
 	
