@@ -401,7 +401,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
                 String selection = valueCombo.getSelectedItem().toString();
                 if( !prop.getValue().toString().equalsIgnoreCase(selection)) {
 					prop.setValue(selection);
-                	parent.handlePropertyChange(prop);    // Update property immediately
+                	parent.saveDiagramCLean();   // Update property immediately
                 }
             }
         });
@@ -684,7 +684,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 							fieldValue.toString(),field.getText(),currentTimeUnit.name());
 				}
 				prop.setValue(fieldValue);
-				parent.handlePropertyChange(prop);    // Update property directly, immediately
+				parent.saveDiagramCLean();    // Update property directly, immediately
 			}
 			else {
 				log.tracef("%s.updatePropertyForField: No Change was %s, is %s", TAG,prop.getValue().toString(),fieldValue);
@@ -697,7 +697,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 				if( DEBUG ) log.infof("%s.updatePropertyForField: Adjusting %s to %s", TAG,prop.getBinding(),tagPath);
 				prop.setBinding(tagPath);
 				subscribeToTagPath(tagPath);
-				parent.handlePropertyChange(prop);		
+				parent.saveDiagramCLean();		
 			}
 		}
 	}

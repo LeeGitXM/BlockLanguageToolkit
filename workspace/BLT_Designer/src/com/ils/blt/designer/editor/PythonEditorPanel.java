@@ -43,7 +43,7 @@ public class PythonEditorPanel extends BasicEditPanel {
 
 				if(property!=null) {
 					editor.updatePanelForProperty(BlockEditConstants.HOME_PANEL,property);
-					editor.handlePropertyChange(property);      // Immediate update in gateway
+					editor.saveDiagramClean();      // Immediate update in gateway
 					setSelectedPane(BlockEditConstants.HOME_PANEL);
 				}
 			}

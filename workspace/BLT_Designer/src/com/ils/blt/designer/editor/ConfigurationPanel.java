@@ -112,7 +112,7 @@ public class ConfigurationPanel extends BasicEditPanel {
 						property.setDisplayed(false);
 					}
 				}
-				editor.handlePropertyChange(property);   // Mark the nav tree node as dirty
+				editor.saveDiagramClean();  
 				editor.updatePanelForProperty(BlockEditConstants.HOME_PANEL,property);
 				setSelectedPane(BlockEditConstants.HOME_PANEL);
 			}

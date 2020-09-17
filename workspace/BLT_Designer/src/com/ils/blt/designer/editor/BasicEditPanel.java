@@ -12,7 +12,6 @@ import javax.swing.JSeparator;
 import javax.swing.JTextField;
 
 import com.ils.blt.common.DiagramState;
-import com.ils.blt.common.block.BlockConstants;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 

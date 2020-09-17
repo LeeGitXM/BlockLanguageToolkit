@@ -123,9 +123,9 @@ public class BlockPropertyEditor extends SlidingPane   {
 	 * running diagram directly. Do not mark the diagram as "dirty" since
 	 * we've only changed a block property. Save the project resource.
 	 */
-	public void handlePropertyChange(BlockProperty property) {
-		diagram.setDirty(false);
+	public void saveDiagramClean() {
 		saveDiagram();
+		diagram.setDirty(false);
 	}
 	/**
 	 * Modify a tag path to account for global production/isolation providers

@@ -98,8 +98,6 @@ public class SourceMainPanel extends MainPanel {
 		if( propertyName.equalsIgnoreCase(PROP_NAME)) {
 			property.setValue(val);
 		}
-		else {
-			super.updatePanelValue(propertyName, val);
-		}
+		super.updatePanelValue(propertyName, val);
 	}
 }

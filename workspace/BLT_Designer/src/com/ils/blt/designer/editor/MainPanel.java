@@ -75,7 +75,7 @@ public class MainPanel extends BasicEditPanel {
 		add(separator,"span,growy");
 	}
 	
-	public void handlePropertyChange(BlockProperty prop) {editor.handlePropertyChange(prop);} 
+	public void saveDiagramCLean() {editor.saveDiagramClean();} 
 
 	/**
 	 * Iterate over panels and close any subscriptions

@@ -11,7 +11,6 @@ import java.util.Collections;
 import java.util.List;
 
 import javax.swing.JButton;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -74,10 +73,11 @@ public class SourceEditPanel extends BasicEditPanel {
 					Object binding = handler.getPropertyBinding(diag.getId(), sinkDescriptor.getIdString(), BlockConstants.BLOCK_PROPERTY_TAG_PATH);
 					tagProperty.setValue(val);
 					tagProperty.setBinding(binding.toString());
-					editor.handlePropertyChange(tagProperty) ;   // Immediately update the running diagram
 					block.setName(sinkDescriptor.getName());
 					editor.updateCorePanel(BlockEditConstants.HOME_PANEL,block); // Core attributes
+					editor.updatePanelForProperty(BlockEditConstants.HOME_PANEL, tagProperty);
 					editor.updatePanelValue(SourceMainPanel.PROP_NAME, sinkDescriptor.getName());
+					editor.saveDiagramClean() ;   // Immediately update the running diagram
 				}
 				else {
 					log.warnf("%s.OK action: property is NULL, no action taken",TAG);
