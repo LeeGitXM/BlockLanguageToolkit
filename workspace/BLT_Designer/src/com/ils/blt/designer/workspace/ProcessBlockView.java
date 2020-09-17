@@ -17,7 +17,6 @@ import javax.swing.event.EventListenerList;
 
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
-import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
@@ -255,7 +254,9 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
      * type. This has an effect only if ctypeEditable is true. This
      * flag is always negative on restore from serialization. Additionally
      * the first signal input is not disturbed. Additionally control lines and 
-     * broadcast ports are not changed.
+     * broadcast ports are not changed. In the case where the
+	 * type is ANY or TEXT, the method will look downstream and match any current
+	 * connections.
      * @param newType
      */
     public void changeConnectorType(ConnectionType newType) {
@@ -565,13 +566,16 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 	}
 
 	/**
-	 *  Change the block anchor types to match the tag
+	 *  Change the block anchor types to match the tag.
+	 *  Tags of type String, result in no change to the block.
 	 */
 	public void modifyConnectionForTagChange(BlockProperty property, DataType type) {	
 		String binding = property.getBinding();
 		if (binding != null) {
 			ConnectionType conType= determineDataTypeFromTagType(type);
-			changeConnectorType(conType);
+			if( !conType.equals(ConnectionType.TEXT)) {
+				changeConnectorType(conType);
+			}
 		}
 		
 	}
