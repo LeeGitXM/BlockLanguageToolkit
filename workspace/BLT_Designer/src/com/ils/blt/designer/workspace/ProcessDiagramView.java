@@ -1,3 +1,6 @@
+/**
+ *   (c) 2014-2020  ILS Automation. All rights reserved.
+ */
 package com.ils.blt.designer.workspace;
 
 import java.awt.Color;
@@ -196,12 +199,13 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		if( begin!=null && end!=null) {
 
 			boolean disallow = false;
+			BasicAnchorPoint eapp = null;
 			// check if any input connections
 			if( end instanceof BasicAnchorPoint && begin instanceof BasicAnchorPoint ) {
-				BasicAnchorPoint eapp = (BasicAnchorPoint)end;
+				eapp = (BasicAnchorPoint)end;
 				ConnectionType originType = null;
 
-				
+
 				ProcessBlockView origin = (ProcessBlockView)begin.getBlock();
 				BasicAnchorPoint bap = (BasicAnchorPoint)begin;
 				for(ProcessAnchorDescriptor pad:origin.getAnchors()) {
@@ -210,24 +214,20 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 						break;
 					}
 				}
-				
-				
-				 // only 1 input allowed, check to make sure it isn't already used and don't block if initializing
+
+				// If only 1 input allowed, check to make sure it isn't already used and don't block if initializing
 				if (!eapp.allowConnectionType(originType) && !suppressStateChangeNotification) { 
 					disallow = true;
 					String msg = String.format("Rejected connection.  Cannot connect %s to %s",originType.name(),eapp.getConnectionType().name());
-			        JOptionPane.showMessageDialog(null, msg, "Warning", JOptionPane.INFORMATION_MESSAGE);
+					JOptionPane.showMessageDialog(null, msg, "Warning", JOptionPane.INFORMATION_MESSAGE);
 					msg = String.format("%s.addConnection - rejected connection.  Cannot connect %s to %s",TAG,originType.name(),eapp.getConnectionType().name());
 					log.warnf(msg);
 				}
-			}
 
-			// check if input connection is of the correct type
-			if( end instanceof BasicAnchorPoint ) {
-				BasicAnchorPoint bapp = (BasicAnchorPoint)end;
-				
-				 // only 1 input allowed, check to make sure it isn't already used and don't block if initializing
-				if (!bapp.allowMultipleConnections() && !suppressStateChangeNotification) { 
+
+				// check if input connection is of the correct type
+				// only 1 input allowed, check to make sure it isn't already used and don't block if initializing
+				if (!eapp.allowMultipleConnections() && !suppressStateChangeNotification) { 
 					for(Connection cxn:connections) {
 						if(cxn.getTerminus().equals(end)) {
 							disallow = true;
@@ -239,13 +239,21 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			}
 
 			if (!disallow) { 
-				// Update the datatype from the current beginning anchor point
+				// Update the connection type from the current beginning anchor point
+				// However, if the type is ANY or String, then alter the to match the end
 				if( begin.getBlock() instanceof ProcessBlockView && begin instanceof BasicAnchorPoint ) {
 					ProcessBlockView origin = (ProcessBlockView)begin.getBlock();
 					BasicAnchorPoint bap = (BasicAnchorPoint)begin;
 					for(ProcessAnchorDescriptor pad:origin.getAnchors()) {
 						if( pad.getDisplay().equals(bap.getId())) {
-							bap.setConnectionType(pad.getConnectionType());
+							if(pad.getConnectionType().equals(ConnectionType.ANY) ||
+									pad.getConnectionType().equals(ConnectionType.TEXT)  ) {
+								bap.setConnectionType(eapp.getConnectionType());
+								pad.setConnectionType(eapp.getConnectionType());
+							}
+							else {
+								bap.setConnectionType(pad.getConnectionType());
+							}
 							break;
 						}
 					}
@@ -255,6 +263,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 				fireStateChanged();
 			}
 		}
+
 		else {
 			log.warnf("%s.addConnection - rejected attempt to add a connection with null anchor",TAG);
 		}
