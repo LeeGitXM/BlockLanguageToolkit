@@ -296,6 +296,7 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void notifyOfStatus() {
 		if(lastValue!=null) {
+			controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,lastValue);
 			controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, lastValue);
 		}
 		else {

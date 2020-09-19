@@ -208,7 +208,7 @@ public class BasicAnchorPoint extends AnchorPoint implements NotificationChangeL
 	@Override
 	public void bindingChange(String value) {}
 	@Override
-	public void diagramAlertChange(long resId, String alerting) {}
+	public void diagramStateChange(long resId, String alerting) {}
 	@Override
 	public void nameChange(String name) {}
 	/**

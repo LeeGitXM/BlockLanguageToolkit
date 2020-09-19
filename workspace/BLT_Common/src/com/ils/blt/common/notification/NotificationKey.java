@@ -71,15 +71,23 @@ public class NotificationKey
 	/**
 	 * Test a key for type.
 	 * @param key the key value 
-	 * @return  true if this is a binding key.
+	 * @return  true if this is a diagram alert key.
 	 */
-	public static boolean isDiagramAlertKey(String key) {
+	public static boolean isAlertKey(String key) {
 		return key.startsWith("A");
+	}
+	/**
+	 * Test a key for type.
+	 * @param key the key value 
+	 * @return  true if this is a diagram state change key.
+	 */
+	public static boolean isDiagramKey(String key) {
+		return key.startsWith("D");
 	}
 	/**
 	 * Test a key for type. 
 	 * @param key the key value 
-	 * @return  true if this is a binding key.
+	 * @return  true if this is a name change key.
 	 */
 	public static boolean isNameChangeKey(String key) {
 		return key.startsWith("N");

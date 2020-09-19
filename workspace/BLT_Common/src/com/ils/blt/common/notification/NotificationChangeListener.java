@@ -20,7 +20,7 @@ public interface NotificationChangeListener extends EventListener  {
 	 * @param resourceId the resource Id of the affected diagram
 	 * @param state the state of the reporting block
 	 */
-	public void diagramAlertChange(long resourceId,String state);
+	public void diagramStateChange(long resourceId,String state);
 	
 	/**
 	 * A property binding has changed

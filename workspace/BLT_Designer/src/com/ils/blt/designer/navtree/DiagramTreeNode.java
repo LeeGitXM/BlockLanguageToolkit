@@ -841,7 +841,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	
 	//============================================ Notification Change Listener =====================================
 	@Override
-	public void diagramAlertChange(long resId, String state) {
+	public void diagramStateChange(long resId, String state) {
 	}
 	@Override
 	public void bindingChange(String binding) {

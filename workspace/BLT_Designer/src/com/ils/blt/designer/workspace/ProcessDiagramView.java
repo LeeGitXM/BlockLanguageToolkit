@@ -516,7 +516,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	 * update themselves.
 	 */
 	public void registerChangeListeners() {
-		log.debugf("%s.registerChangeListeners: %s...",TAG,getName());
+		log.infof("%s.registerChangeListeners: %s...",TAG,getName());
 		NotificationHandler handler = NotificationHandler.getInstance();
 		// Connections. Register the upstream anchors (merely a convention).
 		// And while we're at it, update the connection state based on the latest
@@ -566,7 +566,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	 * on notifications from the Gateway.
 	 */
 	public void unregisterChangeListeners() {
-		log.debugf("%s.unregisterChangeListeners: ...",TAG);
+		log.infof("%s.unregisterChangeListeners: ...",TAG);
 		NotificationHandler handler = NotificationHandler.getInstance();
 		// Connections. Un-register the upstream anchors (these are what was originally registered).
 		for( Connection cxn:connections) {
@@ -687,10 +687,17 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	@Override
 	public void bindingChange(String binding) {
 		log.infof("%s.bindingChange: %s binding = %s",TAG,getName(),binding);
-	}
+	} 
 	@Override
-	public void diagramAlertChange(long resId, String alerting) {
-		log.debugf("%s.alertingChange: %s alerting = %s",TAG,getName(),alerting);
+	public void diagramStateChange(long resId, String stateString) {
+		log.infof("%s.diagramStateChange: %s (%d) state = %s",TAG,getName(),getResourceId(),stateString);
+		DiagramState ds = DiagramState.valueOf(stateString);
+		if( !ds.equals(this.state) && resId==getResourceId() ) {
+			log.infof("%s.diagramStateChange: %s state = %s",TAG,getName(),stateString);
+			setState(ds);
+			super.fireStateChanged();
+		}
+		
 	}
 	// Let the blocks subscribe to their own name changes
 	@Override
@@ -701,13 +708,6 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	 */
 	@Override
 	public void valueChange(QualifiedValue value) {
-		String stateString = value.getValue().toString();
-		DiagramState ds = DiagramState.valueOf(stateString);
-		if( !ds.equals(this.state)) {
-			log.debugf("%s.valueChange: %s state = %s",TAG,getName(),value.getValue().toString());
-			setState(ds);
-			super.fireStateChanged();
-		}
 	}
 
 	@Override

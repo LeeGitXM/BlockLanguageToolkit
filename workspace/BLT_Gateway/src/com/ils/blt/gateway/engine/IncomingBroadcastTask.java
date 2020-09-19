@@ -27,6 +27,6 @@ public class IncomingBroadcastTask implements Runnable{
 	}
 	
 	public void run()   { 
-		target.acceptValue(notification);
+		if(target!=null) target.acceptValue(notification);
 	}
 }

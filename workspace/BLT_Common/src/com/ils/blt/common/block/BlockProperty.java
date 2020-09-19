@@ -212,7 +212,7 @@ public class BlockProperty implements NotificationChangeListener {
 	}
 	// ===================================== Notification Change Listener =======================================
 	@Override
-	public void diagramAlertChange(long resId, String state) {}
+	public void diagramStateChange(long resId, String state) {}
 	/**
 	 * Update a binding based on a push notification. Note that this
 	 * does NOT trigger change listeners.

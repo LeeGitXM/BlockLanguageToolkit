@@ -133,7 +133,7 @@ public class Parameter extends AbstractProcessBlock implements ProcessBlock {
 			controller.acceptCompletionNotification(nvn);
 		}
 		// Even if locked, we update the current state
-		if( lastValue.getValue()!=null) {
+		if( lastValue!=null && lastValue.getValue()!=null) {
 			valueProperty.setValue(lastValue.getValue());
 			notifyOfStatus(lastValue);
 		}

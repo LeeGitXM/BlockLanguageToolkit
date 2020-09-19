@@ -771,7 +771,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	public void sendStateNotification(long resourceId, String val) {
 		String key = NotificationKey.keyForDiagram(resourceId);
 		try {
-			sessionManager.sendNotification(ApplicationScope.DESIGNER, BLTProperties.MODULE_ID, key, new BasicQualifiedValue(val));
+			sessionManager.sendNotification(ApplicationScope.DESIGNER, BLTProperties.MODULE_ID, key, val);
 		}
 		catch(Exception ex) {
 			// Probably no receiver registered. This is to be expected if the designer is not running.

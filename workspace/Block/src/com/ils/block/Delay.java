@@ -85,9 +85,7 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 		timer.removeWatchdog(dog);
 		log.infof("%s: Delay block reset: ",getName());
 
-		if (updateTimer != null) {
-			updateTimer.stop();
-		}
+		if(updateTimer != null) updateTimer.stop();
 		startUpdateTimer();
 		
 		buffer.clear();
@@ -101,7 +99,7 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 		super.stop();
 		timer.removeWatchdog(dog);
 		log.infof("%s: Delay block stop: ",getName());
-		updateTimer.stop();
+		if(updateTimer!=null) updateTimer.stop();
 	}
 	/**
 	 * reconnect the timer thread.
