@@ -23,6 +23,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
+import javax.swing.SwingUtilities;
 import javax.swing.tree.TreePath;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -43,6 +44,7 @@ import com.ils.blt.designer.ResourceUpdateManager;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
+import com.ils.blt.designer.workspace.WorkspaceRepainter;
 import com.inductiveautomation.ignition.client.designable.DesignableContainer;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.client.util.action.BaseAction;
@@ -219,8 +221,9 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 				ProcessBlockView pbv = (ProcessBlockView)blk;
 				pbv.setDirty(false);  // Suppresses the popup?
 			}
+			//view.registerChangeListeners();
 			workspace.saveDiagramResource(tab);
-			view.registerChangeListeners();
+			
 		}
 	}
 
@@ -359,8 +362,6 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		}
 	}
 
-	
-	
 	// copy the currently selected node UUID to the clipboard
 	private class CopyAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
@@ -670,7 +671,6 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		public void actionPerformed(ActionEvent e) {
 			ProjectResource pr = node.getProjectResource();
 			if( pr!=null ) {
-				log.infof("%s.actionPerformed: EREIAM JH saving diagram tree node  %s",TAG,pr.getName());
 				new ResourceUpdateManager(workspace,pr).run();
 //				pr.setLocked(false);  // doesn't help
 				node.setItalic(false);
@@ -693,7 +693,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	/**
 	 * Provide public access for the action of setting the state of a diagram.
 	 * In particular this is used when recursively setting state from the application
-	 * level.
+	 * level. This is the canonical way to change diagram state.
 	 *  
 	 * @param state
 	 */
@@ -705,6 +705,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 			ProjectResource res = context.getProject().getResource(resourceId);
 			BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resourceId);
 			if( tab!=null ) {
+				log.infof("%s.setDiagramState: %s now %s (open)",TAG, tab.getName(),state.name());
 				ProcessDiagramView view = (ProcessDiagramView)(tab.getModel());
 				oldState = view.getState();
 				view.setState(state);
@@ -717,6 +718,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 				SerializableDiagram sd = null;
 				ObjectMapper mapper = new ObjectMapper();
 				sd = mapper.readValue(bytes,SerializableDiagram.class);
+				log.infof("%s.setDiagramState: %s now %s (closed)",TAG,res.getName(),state.name());
 				oldState = sd.getState();
 				// Synchronize names as the resource may have been re-named since it was serialized
 				sd.setName(res.getName());
@@ -744,7 +746,8 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	 */
 	private void updateState(ProjectResource res,DiagramState state) {
 		if( res!=null ) {
-			//new ResourceUpdateManager(workspace,res).run();
+			log.infof("%s.updateState: %s now %s",TAG, res.getName(),state.name());
+			new ResourceUpdateManager(workspace,res).run();
 			statusManager.setResourceState(resourceId,state,true);
 			setDirty(false);
 		}
@@ -840,8 +843,26 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	}
 	
 	//============================================ Notification Change Listener =====================================
+	// The value is in response to a diagram state change.
+	// Do not re-inform the Gateway, since that's where this notification originated
 	@Override
 	public void diagramStateChange(long resId, String state) {
+		try {
+			DiagramState ds = DiagramState.valueOf(state);
+			statusManager.setResourceState(resourceId, ds,false);
+			// Force repaints of both NavTree and workspace
+			refresh();
+			BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resourceId);
+			if( tab!=null ) {
+				ProcessDiagramView view = (ProcessDiagramView)(tab.getModel());
+				view.setState(ds);  // There are no side effects
+				tab.setBackground(view.getBackgroundColorForState());
+				SwingUtilities.invokeLater(new WorkspaceRepainter());
+			}
+		}
+		catch(IllegalArgumentException iae) {
+			log.warnf("%s.diagramStateChange(%d): Illegal diagram state (%s)", TAG,resourceId,state);
+		}
 	}
 	@Override
 	public void bindingChange(String binding) {
@@ -850,18 +871,9 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	@Override
 	public void nameChange(String name) {
 	}
-	// The value is in response to a diagram state change.
-	// Do not re-inform the Gateway, since that's where this notification originated
 	@Override
 	public void valueChange(QualifiedValue value) {
-		try {
-			DiagramState ds = DiagramState.valueOf(value.getValue().toString());
-			statusManager.setResourceState(resourceId, ds,false);
-			refresh();   // Force a repaint
-		}
-		catch(IllegalArgumentException iae) {
-			log.warnf("%s.valueChange(%d): Illegal diagram state (%s)", TAG,resourceId,value.getValue().getClass());
-		}
+
 	}
 	@Override
 	public void watermarkChange(String newWatermark) {

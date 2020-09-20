@@ -516,7 +516,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	 * update themselves.
 	 */
 	public void registerChangeListeners() {
-		log.infof("%s.registerChangeListeners: %s...",TAG,getName());
+		//log.infof("%s.registerChangeListeners: %s...",TAG,getName());
 		NotificationHandler handler = NotificationHandler.getInstance();
 		// Connections. Register the upstream anchors (merely a convention).
 		// And while we're at it, update the connection state based on the latest
@@ -550,10 +550,8 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 				handler.addNotificationChangeListener(key,TAG, block);
 			}
 		}
-		// Register self for state and watermark changes
-		String key = NotificationKey.keyForDiagram(getResourceId());
-		handler.addNotificationChangeListener(key,TAG,this);
-		key = NotificationKey.watermarkKeyForDiagram(getId().toString());
+		// Register self for watermark changes
+		String key = NotificationKey.watermarkKeyForDiagram(getId().toString());
 		handler.addNotificationChangeListener(key,TAG,this);
 		
 		// Finally tell the Gateway to report status - on everything
@@ -566,7 +564,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	 * on notifications from the Gateway.
 	 */
 	public void unregisterChangeListeners() {
-		log.infof("%s.unregisterChangeListeners: ...",TAG);
+		//log.infof("%s.unregisterChangeListeners: ...",TAG);
 		NotificationHandler handler = NotificationHandler.getInstance();
 		// Connections. Un-register the upstream anchors (these are what was originally registered).
 		for( Connection cxn:connections) {
@@ -591,7 +589,8 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			}
 		}
 		// Finally, deregister self
-		handler.removeNotificationChangeListener(NotificationKey.keyForDiagram(getResourceId()),TAG);
+		String key = NotificationKey.watermarkKeyForDiagram(getId().toString());
+		handler.removeNotificationChangeListener(key,TAG);
 	}
 	
 	/**
@@ -690,14 +689,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	} 
 	@Override
 	public void diagramStateChange(long resId, String stateString) {
-		log.infof("%s.diagramStateChange: %s (%d) state = %s",TAG,getName(),getResourceId(),stateString);
-		DiagramState ds = DiagramState.valueOf(stateString);
-		if( !ds.equals(this.state) && resId==getResourceId() ) {
-			log.infof("%s.diagramStateChange: %s state = %s",TAG,getName(),stateString);
-			setState(ds);
-			super.fireStateChanged();
-		}
-		
+		log.infof("%s.diagramStateChange: %s (%d vs %d) state = %s",TAG,getName(),resId,getResourceId(),stateString);
 	}
 	// Let the blocks subscribe to their own name changes
 	@Override

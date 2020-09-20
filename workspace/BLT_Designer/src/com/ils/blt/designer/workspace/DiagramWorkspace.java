@@ -1172,8 +1172,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			BlockDesignableContainer tab = (BlockDesignableContainer)findDesignableContainer(resourceId);
 			open(tab);  // Selects?
 		}
-		// NOTE: We tried obtaining a lock at this point, but it always seemed to be busy without
-		//       an explicit save on opening.
 		else {
 			ProjectResource res = context.getProject().getResource(resourceId);	
 			String json = new String(res.getData());
@@ -1204,11 +1202,12 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				diagram.initBlockProperties(pbv);
 			}
 			
+			diagram.registerChangeListeners();
 			super.open(diagram);
 			diagram.setDirty(false);  // Newly opened from a serialized resource, should be in-sync.
 			// In the probable case that the designer is opened after the diagram has started
 			// running in the gateway, obtain any updates
-			diagram.registerChangeListeners();
+			
 			
 			BlockDesignableContainer tab = (BlockDesignableContainer)findDesignableContainer(resourceId);
 			tab.setBackground(diagram.getBackgroundColorForState());

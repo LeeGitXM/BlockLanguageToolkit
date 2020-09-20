@@ -105,7 +105,8 @@ public class NotificationHandler implements PushNotificationListener {
 					log.debugf("%s.receiveNotification: no receiver for key=%s,value=%s",CLSS,key,payload.toString());
 				}
 			}
-			// Notify a diagram of a state change
+			// Notify an open diagram of a state change
+			// Used mostly by NavTree to animate diagram status
 			else if(NotificationKey.isDiagramKey(key)) {
 				Map<String,NotificationChangeListener> listeners = changeListenerMap.get(key);
 				if( listeners != null ) {
