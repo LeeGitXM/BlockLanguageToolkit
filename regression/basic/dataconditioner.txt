@@ -6,7 +6,7 @@ DIAGRAM="app75/family75/dataconditioner"
 C="DATA-CONDITIONER"
 Show: diagram $DIAGRAM
 
-tagset: DataConditioner MemoryTags/MJKFeed1 MemoryTags/Quality MemoryTags/DataState
+tagset: DataConditioner MemoryTags/MJKFeed1 MemoryTags/MJKQuality MemoryTags/DataState
 tag: ConditionerData MemoryTags/ConditionerData
 tag: ConditionerQuality MemoryTags/ConditionerQuality
 

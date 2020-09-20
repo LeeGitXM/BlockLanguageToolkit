@@ -139,7 +139,9 @@ public class QualValue extends AbstractProcessBlock implements ProcessBlock {
 			}
 		}
 		else if( port.equals(QUALITY_PORT)  ) {
-			if( qv.getValue().toString().equalsIgnoreCase("good")) quality = DataQuality.GOOD_DATA;
+			Object val = qv.getValue();
+			if( val.toString().equalsIgnoreCase("good") ||
+				val.toString().toLowerCase().contains("true")) quality = DataQuality.GOOD_DATA;
 			else quality = new BasicQuality(qv.getValue().toString(),Quality.Level.Bad);
 		}
 		else if( port.equals(TIME_PORT)  ) {

@@ -218,9 +218,9 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 				// If only 1 input allowed, check to make sure it isn't already used and don't block if initializing
 				if (!eapp.allowConnectionType(originType) && !suppressStateChangeNotification) { 
 					disallow = true;
-					String msg = String.format("Rejected connection.  Cannot connect %s to %s",originType.name(),eapp.getConnectionType().name());
+					String msg = String.format("Rejected connection.  Cannot connect %s and %s",eapp.getConnectionType().name(),originType.name());
 					JOptionPane.showMessageDialog(null, msg, "Warning", JOptionPane.INFORMATION_MESSAGE);
-					msg = String.format("%s.addConnection - rejected connection.  Cannot connect %s to %s",TAG,originType.name(),eapp.getConnectionType().name());
+					msg = String.format("%s.addConnection - rejected connection.  Cannot connect %s and %s",TAG,eapp.getConnectionType().name(),originType.name());
 					log.warnf(msg);
 				}
 
