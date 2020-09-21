@@ -155,6 +155,7 @@ public class NameEditPanel extends BasicEditPanel {
 					block.setNameOffsetY(Integer.parseInt(yfield.getText()));
 					setSelectedPane(BlockEditConstants.HOME_PANEL);
 					editor.updateCorePanel(BlockEditConstants.HOME_PANEL, block);
+					editor.updatePanelForProperty(BlockEditConstants.HOME_PANEL, block.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH));
 					editor.saveDiagram();
 				}
 				catch(NumberFormatException nfe) {
