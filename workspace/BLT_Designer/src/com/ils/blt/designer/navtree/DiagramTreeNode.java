@@ -694,6 +694,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	 * Provide public access for the action of setting the state of a diagram.
 	 * In particular this is used when recursively setting state from the application
 	 * level. This is the canonical way to change diagram state.
+	 * 
 	 *  
 	 * @param state
 	 */
@@ -704,32 +705,27 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 			DiagramState oldState = null;
 			ProjectResource res = context.getProject().getResource(resourceId);
 			BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resourceId);
+			String uuidString = "";
 			if( tab!=null ) {
 				log.infof("%s.setDiagramState: %s now %s (open)",TAG, tab.getName(),state.name());
 				ProcessDiagramView view = (ProcessDiagramView)(tab.getModel());
-				oldState = view.getState();
-				view.setState(state);
-				updateState(res,state);
+				view.setState(state);		// Simply sets the view state
 				tab.setBackground(view.getBackgroundColorForState());
+				uuidString = view.getId().toString();
 			}
-			// Otherwise we need to de-serialize and re-serialize
+			// Otherwise we need to de-serialize and get the UUID
 			else {
 				byte[]bytes = res.getData();
 				SerializableDiagram sd = null;
 				ObjectMapper mapper = new ObjectMapper();
 				sd = mapper.readValue(bytes,SerializableDiagram.class);
-				log.infof("%s.setDiagramState: %s now %s (closed)",TAG,res.getName(),state.name());
-				oldState = sd.getState();
-				// Synchronize names as the resource may have been re-named since it was serialized
-				sd.setName(res.getName());
-				sd.setState(state);
-				bytes = mapper.writeValueAsBytes(sd);
-				res.setData(bytes); 
-				if( !oldState.equals(state)) {
-					updateState(res,state);
-				}
+				uuidString = sd.getId().toString();
 			}
-			
+			// Inform the gateway of the state and let listeners update the UI
+			ApplicationRequestHandler arh = new ApplicationRequestHandler();
+			arh.setDiagramState(uuidString, state.name());
+			statusManager.setResourceState(resourceId,state,true);
+			setDirty(false);
 			setIcon(getIcon());
 			refresh();
 		} 
@@ -738,20 +734,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 			ErrorUtil.showError(TAG+" Exception setting state",ex);
 		}
 	}
-	
-	/**
-	 * If there is a change, then we need to update the resource
-	 * and inform the Gateway
-	 * @param res
-	 */
-	private void updateState(ProjectResource res,DiagramState state) {
-		if( res!=null ) {
-			log.infof("%s.updateState: %s now %s",TAG, res.getName(),state.name());
-			new ResourceUpdateManager(workspace,res).run();
-			statusManager.setResourceState(resourceId,state,true);
-			setDirty(false);
-		}
-	}
+
 	
 	@Override
 	protected DesignerProjectContext projectCtx() {

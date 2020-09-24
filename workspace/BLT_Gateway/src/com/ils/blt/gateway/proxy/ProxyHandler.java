@@ -222,7 +222,7 @@ public class ProxyHandler   {
 				getBlockPropertiesCallback.setLocalVariable(0,block);
 				getBlockPropertiesCallback.setLocalVariable(1,pyList);
 				getBlockPropertiesCallback.execute(mgr);
-				log.info(TAG+".getBlockProperties returned "+ pyList);   // Should now be updated
+				log.debug(TAG+".getBlockProperties returned "+ pyList);   // Should now be updated
 				// Contents of list are Map<String,?>
 				List<?> list = toJavaTranslator.pyListToArrayList(pyList);
 
@@ -429,7 +429,7 @@ public class ProxyHandler   {
 			}
 		}
 		else {
-			log.infof("%s: getPalettePrototypes: script compilation error (%s)",TAG,getBlockPropertiesCallback.module);
+			log.warnf("%s: getPalettePrototypes: script compilation error (%s)",TAG,getBlockPropertiesCallback.module);
 		}
 		log.infof("%s: getPalettePrototypes returning %d protos from Python",TAG,prototypes.size()); 
 		return prototypes;

@@ -581,7 +581,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		}
 	}
 
-	
+	// NOTE: AttributeDisplays - ERROR - called by start(), too early if properties changed after 
 	private void updatePropertyDisplays() {
 		for (BlockProperty prop:propertyMap.values()) {
 			if (prop.isShowProperty() && prop.getDisplayedBlockUUID() != null && prop.getDisplayedBlockUUID().length() > 1) {  // so, there is a small chance that this could result in an infinite update loop

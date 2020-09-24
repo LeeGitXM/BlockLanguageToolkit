@@ -87,7 +87,7 @@ public class NotificationHandler implements PushNotificationListener {
 			String key = notice.getMessageType();
 			Object payload = notice.getMessage();	
 			if( payload==null ) return; // Ignore
-			//log.infof("%s.receiveNotification: key=%s,value=%s",CLSS,key,payload.toString());
+			log.infof("%s.receiveNotification: key=%s,value=%s",CLSS,key,payload.toString());
 			
 			// Process alert change notifications independent of "attached" status
 			if(NotificationKey.isAlertKey(key)) {
@@ -129,7 +129,7 @@ public class NotificationHandler implements PushNotificationListener {
 				Map<String,NotificationChangeListener> listeners = changeListenerMap.get(key);
 				if( listeners != null ) {
 					for(NotificationChangeListener listener:listeners.values()) {
-						log.tracef("%s.receiveNotification: value key=%s - notifying %s",CLSS,key,listener.getClass().getName());
+						log.infof("%s.receiveNotification: value key=%s - notifying %s",CLSS,key,listener.getClass().getName());
 						listener.valueChange((QualifiedValue)payload);
 					}
 					// Repaint the workspace

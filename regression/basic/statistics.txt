@@ -1,24 +1,40 @@
 #
-# Simple test of average blocks
+# Simple test of statistics blocks
+# Block types: Across Inputs, Buffer, Time Window
 #
 DIAGRAM="app75/family75/statistics"
+S1 = "STATISTICS-1"
+S2 = "STATISTICS-2"
+S3 = "STATISTICS-3"
 Show: diagram $DIAGRAM
 
 tag: Statistics1    MemoryTags/StatisticsOut1
 tag: Statistics2    MemoryTags/StatisticsOut2
 tag: Statistics3    MemoryTags/StatisticsOut3
-tagset: StatisticsFeed MemoryTags/StatisticsFeed Statistics1 Statistics2 Statistics3
+tagset: StatisticsFeed MemoryTags/StatisticsFeed1 MemoryTags/StatisticsFeed2
 
-Test: Statistics - Minimum
-Step: Statistics n Samples
+Test: Statistics Blocks -
+Step: Initial Data
 Tagset: StatisticsFeed
-09:59 0 -1 -1 -1
+09:59 -1 -1
 09:59:30 resetDiagram ($DIAGRAM)
-09:59:45 PRIOR1 = Statistics1
+09:59:35 PRIOR1 = Statistics1
+09:59:45 PRIOR2 = Statistics2
+09:59:55 PRIOR3 = Statistics3
 10:00 10 
-10:00:55 Assert: Statistics1 = $PRIOR1 "No result with first value"
+10:00:05 setProperty($DIAGRAM,$S1,"Function","MINIMUM")
+10:00:10 Assert: getProperty($DIAGRAM,$S1,"Function") = "MINIMUM" "Stat1: Function set to MINIMUM"
+10:00:15 setProperty($DIAGRAM,$S2,"Function","MINIMUM")
+10:00:20 Assert: getProperty($DIAGRAM,$S2,"Function") = "MINIMUM" "Stat2: Function set to MINIMUM"
+10:00:25 setProperty($DIAGRAM,$S3,"Function","MINIMUM")
+10:00:30 Assert: getProperty($DIAGRAM,$S3,"Function") = "MINIMUM" "Stat3: Function set to MINIMUM"
+10:00:35 Assert: Statistics1 = $PRIOR1 "Stat1: No result after reset"
+10:00:45 Assert: Statistics2 = $PRIOR2 "Stat2: No result first value"
+10:00:55 Assert: Statistics3 = $PRIOR3 "Stat3: No result first value"
 10:01 20
-10:01:55 Assert: Statistics1 = $PRIOR1 "No result until buffer fills"
+10:01:25 Assert: Statistics2 = $PRIOR2 "Stat2: No result before buffer fills"
+10:01:25 Assert: Statistics3 = $PRIOR3 "Stat3: No result before first time window"
+exit
 10:02 30
 10:02:30 Assert: Statistics1 = 15 "Statistics when buffer fills"
 10:03:00 40

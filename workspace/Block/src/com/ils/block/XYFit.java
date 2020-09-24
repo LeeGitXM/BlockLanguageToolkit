@@ -1,5 +1,5 @@
 /**
- *   (c) 2017-2020  ILS Automation. All rights reserved. 
+ *   (c) 2020  ILS Automation. All rights reserved. 
  */
 package com.ils.block;
 
@@ -35,14 +35,17 @@ import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
- * Compute the best fit line over a recent history of data points. The x-axis
- * is the point count.
+ * Compute the best fit line over a recent history of data points. The incoming
+ * points must arrive together within the space of a configured interval.
  */
 @ExecutableBlock
-public class LinearFit extends AbstractProcessBlock implements ProcessBlock {
+public class XYFit extends AbstractProcessBlock implements ProcessBlock {
 	private final static String BLOCK_PROPERTY_SCALE_FACTOR = "ScaleFactor";
 	private final static int MIN_SAMPLE_SIZE = 2;
+	private final static String CORRELATION_PORT_NAME = "correlation";
 	private final static String SLOPE_PORT_NAME = "slope";
+	private final static String X_PORT_NAME = "x";
+	private final static String Y_PORT_NAME = "y";
 
 	
 	private boolean clearOnReset = true;
@@ -57,7 +60,7 @@ public class LinearFit extends AbstractProcessBlock implements ProcessBlock {
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
 	 */
-	public LinearFit() {
+	public XYFit() {
 		queue = new FixedSizeQueue<QualifiedValue>(sampleSize);
 		initialize();
 		initializePrototype();
@@ -72,7 +75,7 @@ public class LinearFit extends AbstractProcessBlock implements ProcessBlock {
 	 * @param parent universally unique Id identifying the parent of this block
 	 * @param block universally unique Id for the block
 	 */
-	public LinearFit(ExecutionController ec,UUID parent,UUID block) {
+	public XYFit(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
 		queue = new FixedSizeQueue<QualifiedValue>(sampleSize);
 		initialize();
@@ -106,13 +109,21 @@ public class LinearFit extends AbstractProcessBlock implements ProcessBlock {
 		valueProperty.setBindingType(BindingType.ENGINE);
 		setProperty(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
 
-		// Define an input
-		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
+		// Define the x input
+		AnchorPrototype input = new AnchorPrototype(X_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
 		input.setHint(PlacementHint.L);
 		input.setIsMultiple(false);
+		input.setAnnotation("X");
+		anchors.add(input);
+		
+		// Define the y input
+		input = new AnchorPrototype(Y_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
+		input.setHint(PlacementHint.L);
+		input.setIsMultiple(false);
+		input.setAnnotation("Y");
 		anchors.add(input);
 
-		// Define a two outputs
+		// Define the main output
 		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.DATA);
 		output.setHint(PlacementHint.R);
 		anchors.add(output);
@@ -122,6 +133,12 @@ public class LinearFit extends AbstractProcessBlock implements ProcessBlock {
 		slopePort.setHint(PlacementHint.B);
 		slopePort.setAnnotation("S");
 		anchors.add(slopePort);
+		
+		AnchorPrototype correlationPort = new AnchorPrototype(CORRELATION_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.DATA);
+		correlationPort = new AnchorPrototype(SLOPE_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.DATA);
+		correlationPort.setHint(PlacementHint.B);
+		correlationPort.setAnnotation("R");
+		anchors.add(correlationPort);
 	}
 	
 
@@ -271,14 +288,14 @@ public class LinearFit extends AbstractProcessBlock implements ProcessBlock {
 	 * Augment the palette prototype for this block class.
 	 */
 	private void initializePrototype() {
-		prototype.setPaletteIconPath("Block/icons/palette/linear_fit.png");
-		prototype.setPaletteLabel("LinearFit");
-		prototype.setTooltipText("Calculate linear fit on recent history");
+		prototype.setPaletteIconPath("Block/icons/palette/xy_fit.png");
+		prototype.setPaletteLabel("XYFit");
+		prototype.setTooltipText("Calculate linear fit on recent history of x,y values");
 		prototype.setTabName(BlockConstants.PALETTE_TAB_ARITHMETIC);
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setBlockClass(getClass().getCanonicalName());
-		desc.setEmbeddedIcon("Block/icons/embedded/linear_fit_noframe.png");
+		desc.setEmbeddedIcon("Block/icons/embedded/xy_fit_noframe.png");
 		desc.setStyle(BlockStyle.SQUARE);
 		desc.setPreferredHeight(60);
 		desc.setPreferredWidth(60);

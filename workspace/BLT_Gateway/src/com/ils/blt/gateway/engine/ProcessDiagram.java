@@ -595,17 +595,20 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 				for(ProcessBlock blk:blocks.values()) {
 					if( !blk.delayBlockStart() ) blk.start();
 				}
+				
 
 				
-				// Make sure that the Inputs don't propagate an old value.
+				// The Inputs should not propagate an old value, 
+				// but instead react to the new subscriptions
 				for(ProcessBlock blk:blocks.values()) {
 					if( blk.delayBlockStart() ) {
 						blk.start();
 					}
 				}
 				
-				// Restart subscriptions for the new state
-				startSubscriptions(state);	
+				//Restart subscriptions for the new state
+				startSubscriptions(state);
+	
 			}
 
 			// Fire diagram notification change

@@ -41,10 +41,10 @@ public class BasicAnchorPoint extends AnchorPoint implements NotificationChangeL
 	protected final static SimpleDateFormat dateFormatter = new SimpleDateFormat(DEFAULT_FORMAT);
 	// Here is our repertoire of strokes and colors ...
 	// The outline strokes are black and are laid down first.
-	private final Stroke signalOutlineStroke = new BasicStroke(WorkspaceConstants.CONNECTION_WIDTH_SIGNAL);
-	private final Stroke truthvalueOutlineStroke = new BasicStroke(WorkspaceConstants.CONNECTION_WIDTH_TRUTHVALUE);
-	private final Stroke dataOutlineStroke = new BasicStroke(WorkspaceConstants.CONNECTION_WIDTH_DATA);
-	private final Stroke textOutlineStroke = new BasicStroke(WorkspaceConstants.CONNECTION_WIDTH_TEXT);
+	private static final Stroke signalOutlineStroke = new BasicStroke(WorkspaceConstants.CONNECTION_WIDTH_SIGNAL);
+	private static final Stroke truthvalueOutlineStroke = new BasicStroke(WorkspaceConstants.CONNECTION_WIDTH_TRUTHVALUE);
+	private static final Stroke dataOutlineStroke = new BasicStroke(WorkspaceConstants.CONNECTION_WIDTH_DATA);
+	private static final Stroke textOutlineStroke = new BasicStroke(WorkspaceConstants.CONNECTION_WIDTH_TEXT);
 	
 	private static final float[] DASH_PATTERN = {10f,10f};
 	private static final float PHASE = 20f;
@@ -119,24 +119,23 @@ public class BasicAnchorPoint extends AnchorPoint implements NotificationChangeL
 	}
 	public Stroke getCoreStroke(ConnectionType ctype) {
 		if( ctype.equals(ConnectionType.DATA)) {
-			if( isGood ) {
-				if( isNan || isEmpty ) return dataBadStroke;
-				else return dataCoreStroke;
+			if( !isGood || isNan || isEmpty ) {
+				return dataBadStroke;
 			}
-			else return dataBadStroke;
+			return dataCoreStroke;
 		}
 		else if( ctype.equals(ConnectionType.TRUTHVALUE)) {
-			if( isEmpty )
+			if( !isGood || isEmpty ) {
 				return truthvalueBadStroke;
-			else if( isGood )
-				return truthvalueCoreStroke;
-			else
-				return truthvalueBadStroke;
+			}
+			return truthvalueCoreStroke;
 		}
-		else   // TEXT
-			if( isEmpty ) return textBadStroke;
-			if( isGood )  return textCoreStroke;
-			else return textBadStroke;
+		else  { // TEXT, ANY
+			if( !isGood || isEmpty ) {
+				return textBadStroke;
+			}
+			return textCoreStroke;
+		}
 	}
 	/**
 	 * @return the color that covers the middle of the connection.
@@ -147,24 +146,29 @@ public class BasicAnchorPoint extends AnchorPoint implements NotificationChangeL
 	}
 
 	public Color getCoreColor(ConnectionType cType) {
-		if( isEmpty ) 
+		if( isEmpty )   {
 			return WorkspaceConstants.CONNECTION_FILL_EMPTY; // Dashed
-		else if( !isGood )
+		}
+		else if( !isGood ) {
 			return WorkspaceConstants.CONNECTION_FILL_BAD;  // Dashed
-		else if( isNan )
+		}
+		else if( isNan ) {
 			return WorkspaceConstants.CONNECTION_FILL_NAN;
+		}
 		else if( cType.equals(ConnectionType.DATA)) {
 			return WorkspaceConstants.CONNECTION_FILL_DATA;
 		}
-		else if( cType.equals(ConnectionType.TRUTHVALUE))
+		else if( cType.equals(ConnectionType.TRUTHVALUE)) {
 			if( theTruth.equals(TruthValue.TRUE))
 				return WorkspaceConstants.CONNECTION_FILL_TRUE;
 			else if( theTruth.equals(TruthValue.FALSE))
 				return WorkspaceConstants.CONNECTION_FILL_FALSE;
 			else
 				return WorkspaceConstants.CONNECTION_FILL_UNKNOWN;
-		else if( cType.equals(ConnectionType.ANY))
+		}
+		else if( cType.equals(ConnectionType.ANY)) {
 			return WorkspaceConstants.CONNECTION_FILL_ANY;
+		}
 		else
 			return WorkspaceConstants.CONNECTION_FILL_TEXT;
 	}
@@ -175,7 +179,7 @@ public class BasicAnchorPoint extends AnchorPoint implements NotificationChangeL
 	public QualifiedValue getLastValue() { return lastValue; }
 	/**
 	 * @return the stroke that that is the connection background.
-	 *         Ultimately only its edges show as outines.
+	 *         Ultimately only its edges show as outlines.
 	 */
 	public Stroke getOutlineStroke() {
 		if( cxnType.equals(ConnectionType.DATA))
@@ -195,6 +199,7 @@ public class BasicAnchorPoint extends AnchorPoint implements NotificationChangeL
 	}
 	
 	public void reset() {
+		log.infof("BasicAnchorPoint.reset: %s:%s",block.getId().toString(),id.toString());
 		isGood = true;
 		isEmpty = true;
 		isNan   = false;
@@ -212,9 +217,9 @@ public class BasicAnchorPoint extends AnchorPoint implements NotificationChangeL
 	@Override
 	public void nameChange(String name) {}
 	/**
-	 * Receive an event from the Gateway. Use the information to color
+	 * Receive notification from the Gateway. Use the information to color
 	 * the connection. By convention we use the Origin as it is already
-	 * used to determine the connection type. NOTE: registration for 
+	 * used to determine the connection type. NOTE: registration for these
 	 * events is handled by the workspace on opening.
 	 */
 	@Override
@@ -223,7 +228,7 @@ public class BasicAnchorPoint extends AnchorPoint implements NotificationChangeL
 		// Use it to determine the fill color
 		if(value.getValue()==null) return;
 		
-		log.tracef("BasicAnchorPoint.valueChange: received %s.",value.getValue().toString());
+		log.infof("BasicAnchorPoint.valueChange: %s received %s.",block.getId().toString(),value.getValue().toString());
 		isGood = value.getQuality().isGood();
 		isEmpty = false;
 		isNan = false;
@@ -231,13 +236,11 @@ public class BasicAnchorPoint extends AnchorPoint implements NotificationChangeL
 			isEmpty=true;
 			theTruth = TruthValue.UNSET;
 		}
-		
-		if( !isEmpty && isGood ) {
-//			if( cxnType.equals(ConnectionType.TRUTHVALUE)) {  
+		else if( isGood ) {
+			if( cxnType.equals(ConnectionType.TRUTHVALUE)) {  
 				theTruth = fncs.qualifiedValueAsTruthValue(value);   // set this anyway, just in case the data type is 'any'
-//			}
-//				else if( cxnType.equals(ConnectionType.DATA)) {
-				if( cxnType.equals(ConnectionType.DATA)) {
+			}
+			else if( cxnType.equals(ConnectionType.DATA)) {
 				// Dates, doubles in a data path are automatically OK
 				// If we have a string, check its format
 				if( value.getValue() instanceof String ) {
