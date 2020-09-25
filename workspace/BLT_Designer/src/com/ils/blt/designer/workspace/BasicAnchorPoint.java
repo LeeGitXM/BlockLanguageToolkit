@@ -228,7 +228,7 @@ public class BasicAnchorPoint extends AnchorPoint implements NotificationChangeL
 		// Use it to determine the fill color
 		if(value.getValue()==null) return;
 		
-		log.infof("BasicAnchorPoint.valueChange: %s received %s.",block.getId().toString(),value.getValue().toString());
+		//log.infof("BasicAnchorPoint.valueChange: %s received %s.",block.getId().toString(),value.getValue().toString());
 		isGood = value.getQuality().isGood();
 		isEmpty = false;
 		isNan = false;
