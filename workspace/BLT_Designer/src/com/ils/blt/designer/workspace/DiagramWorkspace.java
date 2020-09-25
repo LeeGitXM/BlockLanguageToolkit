@@ -1559,7 +1559,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			undoMap.put(block,  block.getBounds());
 			block.getBlock().setLocation(new Point(topLeft.x, loc.y));
 		}
-		setDirty();
 		UndoManager.getInstance().add(new UndoMoveBlocks(undoMap));
 		SwingUtilities.invokeLater(new WorkspaceRepainter());
 
@@ -1586,7 +1585,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			undoMap.put(block,  block.getBounds());
 			block.getBlock().setLocation(new Point(bottomRight.x-block.getWidth(), loc.y));
 		}
-		setDirty();
 		UndoManager.getInstance().add(new UndoMoveBlocks(undoMap));
 		SwingUtilities.invokeLater(new WorkspaceRepainter());
 	}
@@ -1603,7 +1601,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			int adjust = (bottomRight.width - block.getWidth()) / 2; 
 			block.getBlock().setLocation(new Point(bottomRight.x-block.getWidth()-adjust, loc.y));
 		}
-		setDirty();
 		UndoManager.getInstance().add(new UndoMoveBlocks(undoMap));
 		SwingUtilities.invokeLater(new WorkspaceRepainter());
 	}
@@ -1620,7 +1617,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			undoMap.put(block,  block.getBounds());
 			block.getBlock().setLocation(new Point(loc.x, topLeft.y + adjust));
 		}
-		setDirty();
 		UndoManager.getInstance().add(new UndoMoveBlocks(undoMap));
 		SwingUtilities.invokeLater(new WorkspaceRepainter());
 	}
@@ -1635,7 +1631,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			undoMap.put(block,  block.getBounds());
 			block.getBlock().setLocation(new Point(loc.x, topLeft.y));
 		}
-		setDirty();
 		UndoManager.getInstance().add(new UndoMoveBlocks(undoMap));
 		SwingUtilities.invokeLater(new WorkspaceRepainter());
 	}
@@ -1650,7 +1645,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			undoMap.put(block,  block.getBounds());
 			block.getBlock().setLocation(new Point(loc.x, bottomRight.y-block.getHeight()));
 		}
-		setDirty();
 		UndoManager.getInstance().add(new UndoMoveBlocks(undoMap));
 		SwingUtilities.invokeLater(new WorkspaceRepainter());
 	}
