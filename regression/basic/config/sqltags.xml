@@ -49,24 +49,36 @@
    </Tag>
    <Tag name="DiagnosticToolkit" path="" type="Folder"/>
    <Tag name="Connections" path="DiagnosticToolkit" type="Folder"/>
-   <Tag name="A-Route" path="DiagnosticToolkit/Connections" type="DB">
-      <Property name="Value">42</Property>
+   <Tag name="B-Route" path="DiagnosticToolkit/Connections" type="DB">
+      <Property name="Value"></Property>
       <Property name="DataType">7</Property>
    </Tag>
-   <Tag name="B-Route" path="DiagnosticToolkit/Connections" type="DB">
-      <Property name="Value">0</Property>
+   <Tag name="C-Route" path="DiagnosticToolkit/Connections" type="DB">
+      <Property name="Value"></Property>
+      <Property name="DataType">7</Property>
+   </Tag>
+   <Tag name="D-Route" path="DiagnosticToolkit/Connections" type="DB">
+      <Property name="Value">FALSE</Property>
+      <Property name="DataType">7</Property>
+   </Tag>
+   <Tag name="egg" path="DiagnosticToolkit/Connections" type="DB">
+      <Property name="Value">NEWYORK</Property>
       <Property name="DataType">7</Property>
    </Tag>
    <Tag name="mindy" path="DiagnosticToolkit/Connections" type="DB">
-      <Property name="Value">0</Property>
+      <Property name="Value">FALSE</Property>
       <Property name="DataType">7</Property>
    </Tag>
    <Tag name="mork" path="DiagnosticToolkit/Connections" type="DB">
-      <Property name="Value">0</Property>
+      <Property name="Value">95</Property>
+      <Property name="DataType">7</Property>
+   </Tag>
+   <Tag name="morkl" path="DiagnosticToolkit/Connections" type="DB">
+      <Property name="Value"></Property>
       <Property name="DataType">7</Property>
    </Tag>
    <Tag name="DoubleTag" path="DiagnosticToolkit" type="DB">
-      <Property name="Value">11</Property>
+      <Property name="Value">21</Property>
       <Property name="DataType">5</Property>
    </Tag>
    <Tag name="Flag1" path="DiagnosticToolkit" type="DB">
@@ -115,7 +127,7 @@
       <Property name="DataType">5</Property>
    </Tag>
    <Tag name="AverageOut1" path="MemoryTags" type="DB">
-      <Property name="Value">180</Property>
+      <Property name="Value">230</Property>
       <Property name="DataType">5</Property>
    </Tag>
    <Tag name="AverageOut2" path="MemoryTags" type="DB">
@@ -123,7 +135,7 @@
       <Property name="DataType">2</Property>
    </Tag>
    <Tag name="AverageOut3" path="MemoryTags" type="DB">
-      <Property name="Value">127.75510204081633</Property>
+      <Property name="Value">230</Property>
       <Property name="DataType">5</Property>
    </Tag>
    <Tag name="BooleanFeed" path="MemoryTags" type="DB">
@@ -147,7 +159,7 @@
       <Property name="DataType">6</Property>
    </Tag>
    <Tag name="BooleanOutputB" path="MemoryTags" type="DB">
-      <Property name="Value">true</Property>
+      <Property name="Value">false</Property>
       <Property name="DataType">6</Property>
    </Tag>
    <Tag name="BooleanParameter" path="MemoryTags" type="DB">
@@ -179,11 +191,11 @@
       <Property name="DataType">6</Property>
    </Tag>
    <Tag name="ConditionerData" path="MemoryTags" type="DB">
-      <Property name="Value">7.42</Property>
+      <Property name="Value">13.2</Property>
       <Property name="DataType">5</Property>
    </Tag>
    <Tag name="ConditionerQuality" path="MemoryTags" type="DB">
-      <Property name="Value">false</Property>
+      <Property name="Value">true</Property>
       <Property name="DataType">6</Property>
    </Tag>
    <Tag name="Connection-A" path="MemoryTags" type="DB">
@@ -226,7 +238,7 @@
       <Property name="DataType">2</Property>
    </Tag>
    <Tag name="DiagramOutput" path="MemoryTags" type="DB">
-      <Property name="Value">32</Property>
+      <Property name="Value">21</Property>
       <Property name="DataType">2</Property>
    </Tag>
    <Tag name="DoubleInput1" path="MemoryTags" type="DB">
@@ -377,11 +389,11 @@
       <Property name="DataType">5</Property>
    </Tag>
    <Tag name="LogicFilterAlways" path="MemoryTags" type="DB">
-      <Property name="Value">UNKNOWN</Property>
+      <Property name="Value">FALSE</Property>
       <Property name="DataType">7</Property>
    </Tag>
    <Tag name="LogicFilterFalse" path="MemoryTags" type="DB">
-      <Property name="Value">UNKNOWN</Property>
+      <Property name="Value">FALSE</Property>
       <Property name="DataType">7</Property>
    </Tag>
    <Tag name="LogicFilterFeed" path="MemoryTags" type="DB">
@@ -389,11 +401,11 @@
       <Property name="DataType">6</Property>
    </Tag>
    <Tag name="LogicFilterNever" path="MemoryTags" type="DB">
-      <Property name="Value">UNKNOWN</Property>
+      <Property name="Value">FALSE</Property>
       <Property name="DataType">7</Property>
    </Tag>
    <Tag name="LogicFilterTrue" path="MemoryTags" type="DB">
-      <Property name="Value">UNKNOWN</Property>
+      <Property name="Value">FALSE</Property>
       <Property name="DataType">7</Property>
    </Tag>
    <Tag name="LowPatternOut" path="MemoryTags" type="DB">
@@ -401,7 +413,7 @@
       <Property name="DataType">7</Property>
    </Tag>
    <Tag name="MJKFeed1" path="MemoryTags" type="DB">
-      <Property name="Value">7.42</Property>
+      <Property name="Value">26.2</Property>
       <Property name="DataType">5</Property>
    </Tag>
    <Tag name="MJKFeed2" path="MemoryTags" type="DB">
@@ -465,7 +477,7 @@
       <Property name="DataType">5</Property>
    </Tag>
    <Tag name="PatternOut1" path="MemoryTags" type="DB">
-      <Property name="Value">1.2000000000000002</Property>
+      <Property name="Value">-8.400000000000013</Property>
       <Property name="DataType">5</Property>
    </Tag>
    <Tag name="PatternOut2" path="MemoryTags" type="DB">
@@ -481,7 +493,7 @@
       <Property name="DataType">6</Property>
    </Tag>
    <Tag name="PulseOutput" path="MemoryTags" type="DB">
-      <Property name="Value">true</Property>
+      <Property name="Value">false</Property>
       <Property name="DataType">6</Property>
    </Tag>
    <Tag name="Quality" path="MemoryTags" type="DB">
@@ -489,19 +501,19 @@
       <Property name="DataType">7</Property>
    </Tag>
    <Tag name="RateOfChangeOut1" path="MemoryTags" type="DB">
-      <Property name="Value">0.08571428571428896</Property>
+      <Property name="Value">-0.6000000000000405</Property>
       <Property name="DataType">5</Property>
    </Tag>
    <Tag name="RateOfChangeOut2" path="MemoryTags" type="DB">
-      <Property name="Value">707.47619047619</Property>
+      <Property name="Value">-4,952.333333333328</Property>
       <Property name="DataType">5</Property>
    </Tag>
    <Tag name="ReadWriteBooleanOutput" path="MemoryTags" type="DB">
-      <Property name="Value">true</Property>
+      <Property name="Value">false</Property>
       <Property name="DataType">6</Property>
    </Tag>
    <Tag name="ReadWriteNumericOutput" path="MemoryTags" type="DB">
-      <Property name="Value">13</Property>
+      <Property name="Value">23</Property>
       <Property name="DataType">5</Property>
    </Tag>
    <Tag name="ReadWriteSink" path="MemoryTags" type="DB">
@@ -509,7 +521,7 @@
       <Property name="DataType">5</Property>
    </Tag>
    <Tag name="ReadWriteStringOutput" path="MemoryTags" type="DB">
-      <Property name="Value">95</Property>
+      <Property name="Value"></Property>
       <Property name="DataType">7</Property>
    </Tag>
    <Tag name="SelectLimitForHigh" path="MemoryTags" type="DB">
@@ -529,7 +541,7 @@
       <Property name="DataType">5</Property>
    </Tag>
    <Tag name="SlopeOutput" path="MemoryTags" type="DB">
-      <Property name="Value">1.8</Property>
+      <Property name="Value">-12.599999999999998</Property>
       <Property name="DataType">5</Property>
    </Tag>
    <Tag name="SQCDiagnosisInput" path="MemoryTags" type="DB">
@@ -564,15 +576,15 @@
       <Property name="Value">5</Property>
       <Property name="DataType">5</Property>
    </Tag>
+   <Tag name="StatisticsOut1" path="MemoryTags" type="DB">
+      <Property name="Value">0</Property>
+      <Property name="DataType">5</Property>
+   </Tag>
    <Tag name="StatisticsOut2" path="MemoryTags" type="DB">
       <Property name="Value">1</Property>
       <Property name="DataType">5</Property>
    </Tag>
    <Tag name="StatisticsOut3" path="MemoryTags" type="DB">
-      <Property name="Value">0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="StatitsticsOut1" path="MemoryTags" type="DB">
       <Property name="Value">0</Property>
       <Property name="DataType">5</Property>
    </Tag>
@@ -621,7 +633,7 @@
       <Property name="DataType">2</Property>
    </Tag>
    <Tag name="TimerOutput" path="MemoryTags" type="DB">
-      <Property name="Value">95</Property>
+      <Property name="Value">120</Property>
       <Property name="DataType">2</Property>
    </Tag>
    <Tag name="TrendInput" path="MemoryTags" type="DB">
@@ -629,11 +641,11 @@
       <Property name="DataType">5</Property>
    </Tag>
    <Tag name="TrendOut1" path="MemoryTags" type="DB">
-      <Property name="Value">true</Property>
+      <Property name="Value">false</Property>
       <Property name="DataType">6</Property>
    </Tag>
    <Tag name="TrendOut2" path="MemoryTags" type="DB">
-      <Property name="Value">true</Property>
+      <Property name="Value">false</Property>
       <Property name="DataType">6</Property>
    </Tag>
    <Tag name="TrendOut3" path="MemoryTags" type="DB">
@@ -641,11 +653,11 @@
       <Property name="DataType">6</Property>
    </Tag>
    <Tag name="TrendOut4" path="MemoryTags" type="DB">
-      <Property name="Value">true</Property>
+      <Property name="Value">false</Property>
       <Property name="DataType">6</Property>
    </Tag>
    <Tag name="TrendProjection" path="MemoryTags" type="DB">
-      <Property name="Value">-1.1099999999999999</Property>
+      <Property name="Value">0</Property>
       <Property name="DataType">5</Property>
    </Tag>
    <Tag name="TrendSlope" path="MemoryTags" type="DB">

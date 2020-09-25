@@ -39,7 +39,7 @@ import com.inductiveautomation.ignition.common.util.LogUtil;
  */
 @ExecutableBlock
 public class Input extends AbstractProcessBlock implements ProcessBlock {
-	private final static boolean DEBUG = true;
+	private final static boolean DEBUG = false;
 	private BlockProperty tagPathProperty = null;
 	protected BlockProperty valueProperty = null;
 
@@ -95,7 +95,11 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 		
 		if( tagPathProperty!=null && tagPathProperty.getBinding() != null && !tagPathProperty.getBinding().isEmpty() ) {
 			lastValue = controller.getTagValue(getParentId(), tagPathProperty.getBinding());
-			if(DEBUG) log.infof("%s.start: %s (%s=%s)",getName(),lastValue.getValue().toString(),tagPathProperty.getBinding(),tagPathProperty.getValue().toString());
+			if(DEBUG) {
+				log.infof("%s.start: last value %s (%s=%s)",getName(),(lastValue==null?"null":lastValue.getValue().toString()),
+						 tagPathProperty.getBinding(),
+						 (tagPathProperty.getValue()==null?"null":tagPathProperty.getValue().toString()));
+			}
 		}
 		/*
 		if( lastValue!=null &&  lastValue.getValue() != null && !isLocked()  ) {
