@@ -95,7 +95,7 @@ public class ResourceSaveManager implements Runnable {
 				log.infof("%s.saveDirtyDiagrams (if open): %s (%d) %s",CLSS,res.getName(),res.getResourceId(),
 						  (context.getProject().isResourceDirty(res.getResourceId())?"DIRTY":"CLEAN"));
 				// If the resource is open, we need to save it
-				workspace.saveOpenDiagram(res.getResourceId());
+				new ResourceUpdateManager(workspace,res).run();
 				log.infof("%s.saveDirtyDiagrams: saved %s",CLSS,res.getName());
 			}
 		}
