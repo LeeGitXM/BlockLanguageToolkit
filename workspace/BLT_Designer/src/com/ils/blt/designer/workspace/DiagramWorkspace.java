@@ -1170,7 +1170,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		logger.debugf("%s: open - already open (%s)",TAG,(isOpen(resourceId)?"true":"false"));
 		if(isOpen(resourceId) ) {
 			BlockDesignableContainer tab = (BlockDesignableContainer)findDesignableContainer(resourceId);
-			open(tab);  // Selects?
+			open(tab);  // Brings tab to front
 		}
 		else {
 			ProjectResource res = context.getProject().getResource(resourceId);	
@@ -1202,12 +1202,12 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				diagram.initBlockProperties(pbv);
 			}
 			
-			diagram.registerChangeListeners();
 			super.open(diagram);
+			saveOpenDiagram(resourceId);
 			diagram.setDirty(false);  // Newly opened from a serialized resource, should be in-sync.
 			// In the probable case that the designer is opened after the diagram has started
 			// running in the gateway, obtain any updates
-			
+			diagram.refresh();
 			
 			BlockDesignableContainer tab = (BlockDesignableContainer)findDesignableContainer(resourceId);
 			tab.setBackground(diagram.getBackgroundColorForState());

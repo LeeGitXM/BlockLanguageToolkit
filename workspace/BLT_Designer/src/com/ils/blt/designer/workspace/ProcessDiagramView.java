@@ -74,7 +74,8 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	private String watermark = "";
 	
 	/**
-	 * Constructor: Create an instance given a SerializableDiagram
+	 * Constructor: Create an instance given a SerializableDiagram. Do a save to synchronize this
+	 *              with the gateway.
 	 * @param resid
 	 * @param diagram
 	 */
@@ -120,14 +121,14 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 					log.warnf("%s.createDiagramView: Connection %s missing one or more anchor points",TAG,scxn.toString());
 				}
 			}
-		}
-		suppressStateChangeNotification = false;
+			suppressStateChangeNotification = false;
+		}  // -- end synchronized
+		
 		// Do this at the end to override state change on adding blocks/connectors.
 		// Note this shouldn't represent a change for parents
 		this.dirty = diagram.isDirty();
 		// Compute diagram size to include all blocks
 		// We do this initially. From then on it's whatever the user leaves it at.
-		//   EREIAM JH -  But not really, do we?  Only if it's BIGGER than the MIN
 		double maxX = MIN_WIDTH;
 		double maxY = MIN_HEIGHT;
 		for(ProcessBlockView blk:blockMap.values()) {
@@ -509,7 +510,21 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			setDirty(true); // Fires super method which informs the listeners.
 		}
 	}
-	
+	/**
+	 * Update the UI, including connections
+	 */
+	public void refresh() {
+		NotificationHandler handler = NotificationHandler.getInstance();
+		for( Connection cxn:connections) {
+			BasicAnchorPoint bap = (BasicAnchorPoint)cxn.getOrigin();
+			if( bap!=null ) {    // Is null when block-and-connector library is hosed.
+				ProcessBlockView blk = (ProcessBlockView)bap.getBlock();
+				String key = NotificationKey.keyForConnection(blk.getId().toString(), bap.getId().toString());
+				handler.initializePropertyValueNotification(key,blk.getLastValueForPort(bap.getId().toString()));
+				handler.addNotificationChangeListener(key,TAG, bap);
+			}
+		}
+	}
 	/**
 	 * Create keyed listeners to process notifications from the Gateway.
 	 * The listeners are very specific UI components that essentially
