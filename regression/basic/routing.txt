@@ -28,28 +28,28 @@ Step: Block Properties
 
 Step: Blocks in Diagram
 assert: blocksInDiagram($DIAGRAM) contains "INHIBITOR-551" "Inhibitor-551 is in diagram"
-assert: blocksInDiagram($DIAGRAM) contains "RoutingParameter" "RountingParameter is in diagram"
+assert: blocksInDiagram($DIAGRAM) contains "RoutingParameter" "RoutingParameter is in diagram"
 assert: count of blocksInDiagram($DIAGRAM) = 16 "16 blocks in diagram"
 
 Step: Blocks of Class
 assert: blocksOfClass($DIAGRAM,"com.ils.block.Inhibitor") contains "INHIBITOR-551" "Inhibitor-551 is an Inhibitor"
-assert: blocksOfClass($DIAGRAM,"com.ils.block.Parameter") contains "RoutingParameter" "RountingParameter is a Parameter"
+assert: blocksOfClass($DIAGRAM,"com.ils.block.Parameter") contains "RoutingParameter" "RoutingParameter is a Parameter"
 assert: ! blocksOfClass($DIAGRAM,"com.ils.block.Input") contains "INHIBITOR-551" "Inhibitor-551 is not an Input"
 
 Step: Downstream of Block
 assert: blocksDownstream($DIAGRAM,"COMMAND-225") contains "INHIBITOR-380" "Inhibitor 380 is downstream of command 225"
 assert: ! blocksDownstream($DIAGRAM,"COMMAND-225") contains "RoutingParameter" "RoutingParameter is not downstream of command 225"
 assert: count of blocksDownstream($DIAGRAM,"COMMAND-225") = 6  "6 blocks downstream of command 225"
-assert: count of blocksDownstream($DIAGRAM,"SOURCECONNECTION-358") = 2 "2 blocks downstream of SOURCECONNECTION-358"
+assert: count of blocksDownstream($DIAGRAM,"mork-source") = 2 "2 blocks downstream of source mork-source"
 
 Step: Globally Downstream of Block
 assert: blocksGloballyDownstream($DIAGRAM,"COMMAND-225") contains "INHIBITOR-380" "Inhibitor 380 is downstream of command 225"
 assert: ! blocksGloballyDownstream($DIAGRAM,"COMMAND-225") contains "RoutingParameter" "RoutingParameter is not downstream of command 225"
-assert: count of blocksGloballyDownstream($DIAGRAM,"COMMAND-225") = 20  "20 blocks downstream of command 225 (multiplediagrams)"
-assert: count of blocksGloballyDownstream($DIAGRAM,"SINKCONNECTION-538") = 14 "14 blocks downstream of SINKCONNECTION-538"
-assert: count of blocksGloballyDownstream($DIAGRAM,"SOURCECONNECTION-358") = 2 "2 blocks downstream of SOURCECONNECTION-358"
-assert: blocksGloballyDownstream($DIAGRAM,"SINKCONNECTION-538") contains "PARAMETER-682" "Parameter-682 is downstream of SINKCONNECTION-538"
-assert: blocksGloballyDownstream($DIAGRAM,"SINKCONNECTION-538") contains "QUALVALUE-905" "QualValue-905 is downstream of SINKCONNECTION-538"
+assert: count of blocksGloballyDownstream($DIAGRAM,"COMMAND-225") = 14  "14 blocks downstream of command 225 (multiplediagrams)"
+assert: count of blocksGloballyDownstream($DIAGRAM,"mork") = 8 "8 blocks downstream of mork"
+assert: count of blocksGloballyDownstream($DIAGRAM,"mork-source") = 2 "2 blocks downstream of mork-source"
+assert: blocksGloballyDownstream($DIAGRAM,"mork") contains "OUTPUT-514" "Output-514 is downstream of mork"
+assert: blocksGloballyDownstream($DIAGRAM,"mork") contains "QUALVALUE-905" "QualValue-905 is downstream of mork"
 
 Step: Upstream of Block 
 assert: blocksUpstream($DIAGRAM,"OUTPUT-817") contains "COMMAND-225" "Command-225 is upstream of OUTPUT-817"
@@ -63,22 +63,22 @@ assert: blocksGloballyUpstream($DIAGRAM,"OUTPUT-817") contains "COMMAND-225" "Co
 assert: blocksGloballyUpstream($DIAGRAM,"OUTPUT-817") contains "JUNCTION-605" "Junction-605 is upstream of OUTPUT-817"
 assert: !blocksGloballyUpstream($DIAGRAM,"OUTPUT-817") contains "OUTPUT-514" "Output 514 is not upstream of OUTPUT-817"
 assert: count of blocksGloballyUpstream($DIAGRAM,"OUTPUT-817") = 8 "8 blocks upstream of OUTPUT-817"
-assert: count of blocksGloballyUpstream($DIAGRAM,"QUALVALUE-905") = 9 "9 blocks upstream of QUALVALUE-905"
-assert: count of blocksGloballyUpstream($DIAGRAM,"SOURCECONNECTION-358") = 8 "8 blocks upstream of SOURCECONNECTION-358"
+assert: count of blocksGloballyUpstream($DIAGRAM,"QUALVALUE-905") = 6 "6 blocks upstream of QUALVALUE-905"
+assert: count of blocksGloballyUpstream($DIAGRAM,"mork-source") = 5 "5 blocks upstream of mork-source"
 assert: blocksGloballyUpstream($DIAGRAM,"QUALVALUE-905") contains "JUNCTION-605" "Junction-605 is globally upstream of QUALVALUE-905"
 
 Step: Sources for Sink
-assert: sourcesForSink($DIAGRAM,"mork") contains "mork" "Source mork (readwrite) is connected"
+assert: sourcesForSink($DIAGRAM,"mork") contains "mork-source" "Source mork-source is connected"
+assert: sourcesForSink($DIAGRAM,"mork") contains "mork-source-upstream" "Source mork-source-upstream is connected"
 assert: ! sourcesForSink($DIAGRAM,"mork") contains "RoutingParameter" "RountingParameter is not connected"
-#  The next test actually has 2 sources since the first chart upstream has another connected chart
-# assert: count of sourcesForSink($DIAGRAM,"SINKCONNECTION-538") = 1 "1 sources for sink 538"
+#  The next test actually has 2 sources since the diagram upstream has another connected chart
 assert: count of sourcesForSink($DIAGRAM,"mork") = 2 "2 sources for sink mork"
-assert: count of sourcesForSink($DIAGRAM,"mindy") = 1 "1 sources for sink mindy"
+assert: count of sourcesForSink($DIAGRAM,"mindy") = 0 "0 sources for sink mindy"
 
 Step: Sinks for Source
-assert: sinksForSource($DIAGRAM,"SOURCECONNECTION-358") contains "SINKCONNECTION-456" "Sink 456 (readwrite) is connected"
-assert: ! sinksForSource($DIAGRAM,"SOURCECONNECTION-358") contains "RoutingParameter" "RoutingParameter is not connected"
-assert: count of sinksForSource($DIAGRAM,"SOURCECONNECTION-358") = 1 "1 sinks for source 358"
+assert: sinksForSource($DIAGRAM,"mork-source") contains "mork" "Sink mork (readwrite) is connected"
+assert: ! sinksForSource($DIAGRAM,"mork-source") contains "RoutingParameter" "RoutingParameter is not connected"
+assert: count of sinksForSource($DIAGRAM,"mork-source") = 1 "1 sinks for mork-source"
 
 Step: Blocks for Tag
 assert: blocksForTag("[XOM_ISOLATION]MemoryTags/StringOut") contains "OUTPUT-514" "Output 514 uses ComparisonOut3"

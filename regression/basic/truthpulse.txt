@@ -19,6 +19,6 @@ Step: Trigger Pulse
 10:00:17 Assert: Output = TRUE  "SubDiagnosis TRUE before expiration"
 10:02:20 Assert: Output = FALSE "Pulse FALSE after expiration"
 # Timer is only updated every 5 seconds
-10:02:35 Assert: 115 < TimerInternal < 121  "Timer at 120 after expiration"
+10:02:35 Assert: 114 < TimerInternal < 121  "Timer at 120 after expiration"
 # 10:02:40 Assert: SubDiagInternal = FALSE  "SubDiagnosis FALSE after expiration"
 10:02:40 Assert: Output = FALSE  "SubDiagnosis FALSE after expiration"

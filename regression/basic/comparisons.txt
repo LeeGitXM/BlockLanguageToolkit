@@ -20,7 +20,8 @@ tagset: DateCompare MemoryTags/DateCompare1 MemoryTags/DateCompare2
 Test: Comparison blocks
 Step: Input is positive
 Tagset: ComparisonDriver
-10:00 10.
+10:00:00 0.
+10:00:05 10.
 10:00:10 Assert: ComparisonOut2 = False "Max less than limit"
 10:00:20 Assert: getState($DIAGRAM,$C2) = FALSE "Max less than limit"
 10:01 13.
