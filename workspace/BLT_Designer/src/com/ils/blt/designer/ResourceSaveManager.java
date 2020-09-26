@@ -15,6 +15,7 @@ import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.IgnitionDesigner;
+import com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignableContainer;
 import com.inductiveautomation.ignition.designer.gateway.DTGatewayInterface;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceNavTreeNode;
@@ -71,7 +72,7 @@ public class ResourceSaveManager implements Runnable {
 	 * of a top-level save. This method is called from the designer hook.
 	 */
 	public void saveSynchronously() {
-		saveDirtyDiagrams(root);
+		saveOpenDiagrams(root);
 	}
 	
 	@Override
@@ -85,25 +86,28 @@ public class ResourceSaveManager implements Runnable {
 	}
 	
 	// Recursively descend the node tree, looking for diagram resources where
-	// the associated DiagramView is out-of-synch with the project resource.
-	// When found update the project resource.
-	private void saveDirtyDiagrams(AbstractResourceNavTreeNode node) {
+	// the associated DiagramView is open. These are the only diagrams that
+	// can be out-of-sync with the gateway.
+	private void saveOpenDiagrams(AbstractResourceNavTreeNode node) {
 		ProjectResource res = node.getProjectResource();
 		node.setItalic(false);
 		if( res!=null ) {
 			if(res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
-				log.infof("%s.saveDirtyDiagrams (if open): %s (%d) %s",CLSS,res.getName(),res.getResourceId(),
+				log.debugf("%s.saveOpenDiagrams found: %s (%d) %s",CLSS,res.getName(),res.getResourceId(),
 						  (context.getProject().isResourceDirty(res.getResourceId())?"DIRTY":"CLEAN"));
 				// If the resource is open, we need to save it
-				new ResourceUpdateManager(workspace,res).run();
-				log.infof("%s.saveDirtyDiagrams: saved %s",CLSS,res.getName());
+				BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(res.getResourceId());
+				if( tab!=null ) {
+					new ResourceUpdateManager(workspace,res).run();
+					log.infof("%s.saveOpenDiagrams: saved %s",CLSS,res.getName());
+				}
 			}
 		}
 		@SuppressWarnings("rawtypes")
 		Enumeration walker = node.children();
 		while(walker.hasMoreElements()) {
 			Object child = walker.nextElement();
-			saveDirtyDiagrams((AbstractResourceNavTreeNode)child);
+			saveOpenDiagrams((AbstractResourceNavTreeNode)child);
 		}
 	}
 	

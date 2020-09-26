@@ -135,12 +135,13 @@ def listBlocksForTag(common,tagpath):
 
 # Return a list of sink blocks that are "connected" to the
 # input of the specified source. All blocks in the 
-# gateway are considered.
+# gateway are considered. The source name must be unique on the diagram.
 def listSinksForSource(common,dpath,blockName):
-	diagid = getDiagram(dpath).getSelf().toString()
-	# blocks is a list of SerializableBlockStateDescriptor
-	blocks = script.listSinksForSource(diagid,blockName)
 	#print "==================== sinksForSource ",blockName,"=============="
+	diagid = getDiagram(dpath).getSelf().toString()
+	blockid = script.getBlockId(diagid,blockName)
+	# blocks is a list of SerializableBlockStateDescriptor
+	blocks = script.listSinksForSource(diagid,blockid)
 	lst = []
 	for block in blocks:
 		#print block.getName()
@@ -150,12 +151,14 @@ def listSinksForSource(common,dpath,blockName):
 
 # Return a list of source blocks that are "connected" to
 # the output of the specified sink. All blocks in the 
-# gateway are considered.
+# gateway are considered. The sink name must be unique on 
+# the diagram.
 def listSourcesForSink(common,dpath,blockName):
-	diagid = getDiagram(dpath).getSelf().toString()
-	# blocks is a list of SerializableBlockStateDescriptor
-	blocks = script.listSourcesForSink(diagid,blockName)
 	#print "==================== sourcesForSink ",blockName,"=============="
+	diagid = getDiagram(dpath).getSelf().toString()
+	blockid = script.getBlockId(diagid,blockName)
+	# blocks is a list of SerializableBlockStateDescriptor
+	blocks = script.listSourcesForSink(diagid,blockid)
 	lst = []
 	for block in blocks:
 		#print block.getName()
