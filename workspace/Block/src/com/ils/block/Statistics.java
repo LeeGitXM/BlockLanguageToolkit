@@ -228,6 +228,7 @@ public class Statistics extends AbstractProcessBlock implements ProcessBlock {
 	public SerializableBlockStateDescriptor getInternalStatus() {
 		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
 		Map<String,String> attributes = descriptor.getAttributes();
+		attributes.put("Function", function.name());
 		for(String key:qualifiedValueMap.keySet()) {
 			QualifiedValue qv = (QualifiedValue)qualifiedValueMap.get(key);
 			if( qv!=null && qv.getValue()!=null) {
@@ -250,12 +251,17 @@ public class Statistics extends AbstractProcessBlock implements ProcessBlock {
 		if( propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_STATISTICS_FUNCTION)) {
 			try {
 				function = StatFunction.valueOf(event.getNewValue().toString());
+				if(DEBUG) log.infof("%s.propertyChange ... function = %s", getName(),function.name());
 				evaluate();
 			}
 			catch(IllegalArgumentException nfe) {
 				log.warnf("%s: propertyChange Unable to convert %s to a function (%s)",CLSS,event.getNewValue().toString(),nfe.getLocalizedMessage());
 			}
-		}	
+		}
+		// Activity buffer size handled in superior method
+		else if( !propertyName.equals(BlockConstants.BLOCK_PROPERTY_ACTIVITY_BUFFER_SIZE) ){
+			log.warnf("%s.propertyChange:Unrecognized property (%s)",getName(),propertyName);
+		}
 	}
 	/**
 	 * Send status update notification for our last latest state.

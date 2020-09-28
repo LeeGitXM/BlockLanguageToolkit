@@ -28,6 +28,7 @@ import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.ils.common.watchdog.Watchdog;
+import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.Quality;
 
@@ -107,6 +108,14 @@ public class MovingAverageTime extends AbstractProcessBlock implements ProcessBl
 		}
 	}
 
+	@Override
+	public void start() {
+		super.start();
+		if( !dog.isActive() && scanInterval>0.0 ) {
+			dog.setSecondsDelay(scanInterval);
+			timer.updateWatchdog(dog);  // pet dog
+		}
+	}
 
 	@Override
 	public void stop() {
@@ -124,12 +133,9 @@ public class MovingAverageTime extends AbstractProcessBlock implements ProcessBl
 		Quality qual = qv.getQuality();
 		if( qual.isGood() && qv.getValue()!=null && !qv.getValue().toString().isEmpty() ) {
 			try {
-				currentValue = qv;
-				log.tracef("%s.acceptValue: %s",getName(),qv.getValue().toString());
-				if( !dog.isActive() && scanInterval>0.0 ) {
-					dog.setSecondsDelay(scanInterval);
-					timer.updateWatchdog(dog);  // pet dog
-				}
+				Double dbl = Double.parseDouble(qv.getValue().toString());
+				currentValue = new BasicQualifiedValue(dbl,qv.getQuality(),qv.getTimestamp());
+				log.tracef("%s.acceptValue: %s",getName(),currentValue.getValue().toString());
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s.acceptValue exception converting incoming %s to double (%s)",getName(),qv.getValue().toString(),nfe.getLocalizedMessage());

@@ -1,5 +1,5 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved.
+ *   (c) 2014-2020  ILS Automation. All rights reserved.
  */
 package com.ils.blt.designer.editor;
 
@@ -464,16 +464,16 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 	}
 
 	/**
-	 * Populate a combo box of property name from the downstream block (signal connected)
+	 * Populate a combo box of property names from the downstream block (signal connected)
 	 */
 	private void setPropertyCombo(JComboBox<String> box, ProcessBlockView downstream) {
 		box.removeAllItems();
 		if (downstream != null) {
 			for (BlockProperty prop: downstream.getProperties()) {
-				box.addItem(prop.getName());
+				box.addItem(prop.getName().toUpperCase());
 			}
-			
-		} else {
+		} 
+		else {
 			box.addItem("Not available - Block not connected or diagram unsaved");
 		}
 	}

@@ -44,6 +44,7 @@ import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.ils.common.watchdog.Watchdog;
+import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.Quality;
 
@@ -142,6 +143,14 @@ public class StatisticsTime extends AbstractProcessBlock implements ProcessBlock
 		}
 	}
 
+	@Override
+	public void start() {
+		super.start();
+		if( !dog.isActive() && scanInterval>0.0 ) {
+			dog.setSecondsDelay(scanInterval);
+			timer.updateWatchdog(dog);  // pet dog
+		}
+	}
 
 	@Override
 	public void stop() {
@@ -159,12 +168,9 @@ public class StatisticsTime extends AbstractProcessBlock implements ProcessBlock
 		Quality qual = qv.getQuality();
 		if( qual.isGood() && qv.getValue()!=null && !qv.getValue().toString().isEmpty() ) {
 			try {
-				currentValue = qv;
+				Double dbl = Double.parseDouble(qv.getValue().toString());
+				currentValue = new BasicQualifiedValue(dbl,qv.getQuality(),qv.getTimestamp());
 				log.tracef("%s.acceptValue: %s",getName(),qv.getValue().toString());
-				if( !dog.isActive() && scanInterval>0.0 ) {
-					dog.setSecondsDelay(scanInterval);
-					timer.updateWatchdog(dog);  // pet dog
-				}
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s.acceptValue exception converting incoming %s to double (%s)",getName(),qv.getValue().toString(),nfe.getLocalizedMessage());
@@ -177,13 +183,14 @@ public class StatisticsTime extends AbstractProcessBlock implements ProcessBlock
 	
 	/**
 	 * The interval timer has expired. Evaluate the buffer.
+	 * If the currentValue is null, just re-evaluate with 
+	 * existing data.
 	 */
 	@Override
 	public void evaluate() {
-		if( currentValue==null) return;
-		// Evaluate the buffer and report
 		// Add the currentValue to the queue
-		buffer.add(currentValue);
+		if( currentValue!=null) buffer.add(currentValue);
+		// Evaluate the buffer and report
 		int maxPoints = (int)((timeWindow+0.99*scanInterval)/scanInterval);
 		while(buffer.size() > maxPoints ) {  
 			buffer.remove();
@@ -228,7 +235,7 @@ public class StatisticsTime extends AbstractProcessBlock implements ProcessBlock
 	public void propertyChange(BlockPropertyChangeEvent event) {
 		super.propertyChange(event);
 		String propertyName = event.getPropertyName();
-		log.debugf("%s(%d).propertyChange: %s = %s",getName(),hashCode(),propertyName,event.getNewValue().toString());
+		log.infof("%s(%d).propertyChange: %s = %s",getName(),hashCode(),propertyName,event.getNewValue().toString());
 		if( propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET)) {
 			try {
 				clearOnReset = Boolean.parseBoolean(event.getNewValue().toString());
@@ -263,11 +270,16 @@ public class StatisticsTime extends AbstractProcessBlock implements ProcessBlock
 		else if( propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_STATISTICS_FUNCTION)) {
 			try {
 				function = StatFunction.valueOf(event.getNewValue().toString());
-				reset();
+				currentValue=null;  // Prevents duplicate from being added to the buffer
+				evaluate();
 			}
 			catch(IllegalArgumentException nfe) {
 				log.warnf("%s: propertyChange Unable to convert %s to a function (%s)",CLSS,event.getNewValue().toString(),nfe.getLocalizedMessage());
 			}
+		}
+		// Activity buffer size handled in superior method
+		else if( !propertyName.equals(BlockConstants.BLOCK_PROPERTY_ACTIVITY_BUFFER_SIZE) ){
+			log.warnf("%s.propertyChange:Unrecognized property (%s)",getName(),propertyName);
 		}
 	}
 	/**

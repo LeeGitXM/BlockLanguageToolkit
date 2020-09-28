@@ -42,7 +42,6 @@ import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.common.FixedSizeQueue;
 import com.ils.common.watchdog.TestAwareQualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataQuality;
 
@@ -157,6 +156,7 @@ public class StatisticsSample extends AbstractProcessBlock implements ProcessBlo
 				}
 				queue.clear();
 			}
+			evaluate();
 		}
 	}
 	/**
@@ -166,6 +166,9 @@ public class StatisticsSample extends AbstractProcessBlock implements ProcessBlo
 	@Override
 	public void evaluate() {
 		if( !isLocked() && queue.size() >= sampleSize) {
+			while(queue.size() > sampleSize ) {  
+				queue.remove();
+			}
 			double result = computeStatistic();
 			// Result gets good quality and a new timestamp
 			lastValue = new TestAwareQualifiedValue(timer,new Double(result),DataQuality.GOOD_DATA);
@@ -215,10 +218,6 @@ public class StatisticsSample extends AbstractProcessBlock implements ProcessBlo
 				log.warnf("%s: propertyChange Unable to convert sample size to an integer (%s)",getName(),nfe.getLocalizedMessage());
 			}
 		}
-		// Buffer size handled in superior method
-		else if( !propertyName.equals(BlockConstants.BLOCK_PROPERTY_ACTIVITY_BUFFER_SIZE) ){
-			log.warnf("%s.propertyChange:Unrecognized property (%s)",getName(),propertyName);
-		}
 		else if( propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_STATISTICS_FUNCTION)) {
 			try {
 				function = StatFunction.valueOf(event.getNewValue().toString());
@@ -227,6 +226,10 @@ public class StatisticsSample extends AbstractProcessBlock implements ProcessBlo
 			catch(IllegalArgumentException nfe) {
 				log.warnf("%s: propertyChange Unable to convert %s to a function (%s)",CLSS,event.getNewValue().toString(),nfe.getLocalizedMessage());
 			}
+		}
+		// Activity buffer size handled in superior method
+		else if( !propertyName.equals(BlockConstants.BLOCK_PROPERTY_ACTIVITY_BUFFER_SIZE) ){
+			log.warnf("%s.propertyChange:Unrecognized property (%s)",getName(),propertyName);
 		}
 	}
 

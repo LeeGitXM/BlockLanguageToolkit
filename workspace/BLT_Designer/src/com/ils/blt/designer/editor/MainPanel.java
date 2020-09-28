@@ -22,8 +22,6 @@ import javax.swing.event.ChangeListener;
 import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.PropertyType;
-import com.ils.blt.common.notification.NotificationKey;
-import com.ils.blt.designer.NotificationHandler;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
