@@ -702,7 +702,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	 */
 	@Override
 	public void sendPropertyNotification(String blkid, String propertyName,QualifiedValue val) {
-		if( val==null ) return;
+		if( val==null ) return;    
 		String key = NotificationKey.keyForProperty(blkid,propertyName);
 		log.tracef("%s.sendPropertyNotification: %s (%s)",TAG,key,val.toString());
 		try {

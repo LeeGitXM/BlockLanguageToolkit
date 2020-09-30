@@ -100,7 +100,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 
 	
 	public PropertyPanel(DesignerContext ctx, MainPanel main,ProcessBlockView blk,BlockProperty prop, DiagramWorkspace workspace) {
-		log.debugf("%s.PropertyPanel: property %s (%s:%s) = %s",TAG,prop.getName(),prop.getType().toString(),prop.getBindingType().toString(),prop.getValue().toString());
+		log.infof("%s.PropertyPanel: property %s (%s:%s) = %s",TAG,prop.getName(),prop.getType().toString(),prop.getBindingType().toString(),prop.getValue().toString());
 		this.context = ctx;
 		this.parent = main;
 		this.block = blk;
@@ -110,6 +110,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 //		this.currentTimeUnit = TimeUnit.SECONDS;   // The "canonical" unit
 		this.currentTimeUnit = TimeUnit.MINUTES;   // Force all to be in minutes, to avoid confusing behavior in UI
 		property.addChangeListener(this);
+		log.infof("%s: add change listener on %s",TAG,property.getName());
 	
 		setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));     // 3 cells across
 		if( property.getType().equals(PropertyType.TIME) ) {
@@ -158,7 +159,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 		else if( isEnumerated ) {
 			// We add a configuration button for the simple reason of attribute display
 			add(configurationButton,"w :25:,wrap");
-			valueComboBox.setEditable(true);
+			valueComboBox.setEditable(false);
 			valueComboBox.setEnabled(true);
 		}                // Enumerated types are neither editable nor bindable
 		else if( property.getBindingType().equals(BindingType.NONE) ||
@@ -197,18 +198,24 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 		}
 		
 		// Register for notifications
-		// The "plain" (NONE) properties can be changed by python scripting
-		if(property.getBindingType().equals(BindingType.ENGINE) || property.getBindingType().equals(BindingType.NONE)) {
+		if(property.getBindingType().equals(BindingType.ENGINE)) {
 			String key = NotificationKey.keyForProperty(block.getId().toString(), property.getName());
-			log.debugf("%s.registerChangeListeners: adding %s for ENGINE",TAG,key);
+			log.debugf("%s: adding %s for ENGINE",TAG,key);
 			notificationHandler.addNotificationChangeListener(key,TAG,this);
+		}
+		// The "plain" (NONE) properties can be changed by python scripting. In these instances
+		// we are only interested in changes made AFTER the panel is displayed. 
+		else if(property.getBindingType().equals(BindingType.ENGINE) || property.getBindingType().equals(BindingType.NONE)) {
+			String key = NotificationKey.keyForProperty(block.getId().toString(), property.getName());
+			log.debugf("%s: adding %s",TAG,key);
+			notificationHandler.addNotificationChangeListener(key,TAG,this,false);
 		}
 		else if( property.getBindingType().equals(BindingType.TAG_MONITOR) ||
 				property.getBindingType().equals(BindingType.TAG_READ) ||
 				property.getBindingType().equals(BindingType.TAG_READWRITE) ||
 				property.getBindingType().equals(BindingType.TAG_WRITE)	) {
 			String key = NotificationKey.keyForPropertyBinding(block.getId().toString(), property.getName());
-			log.debugf("%s.registerChangeListeners: adding %s for %s",TAG,key,property.getBindingType().name());
+			log.debugf("%s: adding %s for %s",TAG,key,property.getBindingType().name());
 			notificationHandler.addNotificationChangeListener(key,TAG,this);
 			subscribeToTagPath(property.getBinding());
 		}
@@ -227,6 +234,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 			notificationHandler.removeNotificationChangeListener(key,TAG);
 			unsubscribeToTagPath(property.getBinding());
 		}
+		log.infof("%s.unsubscribe: remove change listener on %s",TAG,property.getName());
 		property.removeChangeListener(this);
 	}
 	// Subscribe to a tag. This will fail if the tag path is unset or illegal.
@@ -328,11 +336,13 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 				if (property.getBinding()!=null ) {
 					block.modifyConnectionForTagChange(property, type);
 				}
-			} else {
+			} 
+			else {
 		        JOptionPane.showMessageDialog(null, msg, "Warning", JOptionPane.INFORMATION_MESSAGE);
 			}
 				
-		} else {
+		} 
+		else {
 			bindingDisplayField.setVisible(false);
 			// List is the only type with a custom editor
 			if( property.getType().equals(PropertyType.LIST) ) {
@@ -387,24 +397,22 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 		this.invalidate();
 		if( prop.getValue()!=null ) {
 			final String selection = prop.getValue().toString().toUpperCase();
-			log.tracef("%s.createValueCombo: %s=%s",TAG,prop.getName(),selection);
-			SwingUtilities.invokeLater( new Runnable() {
-				public void run() {
-					valueCombo.setSelectedItem(selection);
+			log.infof("%s.createValueCombo: %s=%s",TAG,prop.getName(),selection);
+			valueCombo.setSelectedItem(selection);
+			// Add the listener after we've initialized
+			valueCombo.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent event) {
+					String selection = valueCombo.getSelectedItem().toString(); 
+					if( !prop.getValue().toString().equalsIgnoreCase(selection)) {
+						prop.setValue(selection);
+						parent.saveDiagramClean();   // Update property immediately
+					}
+					log.infof("%s.valueCombo: selected %s=%s",TAG,prop.getName(),selection);
 				}
 			});
-			valueCombo.getModel().setSelectedItem(selection);
-			//log.tracef("%s.createValueCombo: selection now=%s",TAG,valueCombo.getModel().getSelectedItem().toString());
-		} 
-		valueCombo.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                String selection = valueCombo.getSelectedItem().toString();
-                if( !prop.getValue().toString().equalsIgnoreCase(selection)) {
-					prop.setValue(selection);
-                	parent.saveDiagramCLean();   // Update property immediately
-                }
-            }
-        });
+		}
+		log.infof("%s.createValueCombo: selection now=%s",TAG,valueCombo.getModel().getSelectedItem().toString());
+
 
 		return valueCombo;
 	}
@@ -671,20 +679,27 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 		if( prop.getBindingType().equals(BindingType.NONE)) {
 			Object fieldValue = field.getText();
 			if( force || !fieldValue.equals(prop.getValue().toString())) {
-				// Coerce to the correct data type
-				if( prop.getType().equals(PropertyType.BOOLEAN ))     fieldValue = new Boolean(fncs.coerceToBoolean(fieldValue));
-				else if( prop.getType().equals(PropertyType.DOUBLE )) fieldValue = new Double(fncs.coerceToDouble(fieldValue));
-				else if( prop.getType().equals(PropertyType.INTEGER ))fieldValue = new Integer(fncs.coerceToInteger(fieldValue));
-				else if( prop.getType().equals(PropertyType.DATE ))   fieldValue = dateFormatter.format(new Date(fncs.coerceToLong(fieldValue)));
-				if( prop.getType().equals(PropertyType.TIME) || prop.getType().equals(PropertyType.TIME_SECONDS) || prop.getType().equals(PropertyType.TIME_MINUTES) ) {
-					// Scale field value for time unit. Get back to seconds.
-					double interval = fncs.coerceToDouble(fieldValue);
-					fieldValue = new Double(TimeUtility.canonicalValueForValue(interval,currentTimeUnit));
-					log.tracef("%s.updatePropertyForField: property %s,old= %s, new= %s, displayed= %s (%s)",TAG,prop.getName(),prop.getValue().toString(),
-							fieldValue.toString(),field.getText(),currentTimeUnit.name());
+				try {
+					// Coerce to the correct data type
+					if( prop.getType().equals(PropertyType.BOOLEAN ))     fieldValue = new Boolean(fncs.coerceToBoolean(fieldValue));
+					else if( prop.getType().equals(PropertyType.DOUBLE )) fieldValue = new Double(fncs.coerceToDouble(fieldValue));
+					else if( prop.getType().equals(PropertyType.INTEGER ))fieldValue = new Integer(fncs.coerceToInteger(fieldValue));
+					else if( prop.getType().equals(PropertyType.DATE ))   fieldValue = dateFormatter.format(new Date(fncs.coerceToLong(fieldValue)));
+					else if( prop.getType().equals(PropertyType.TIME) || prop.getType().equals(PropertyType.TIME_SECONDS) || prop.getType().equals(PropertyType.TIME_MINUTES) ) {
+						// Scale field value for time unit. Get back to seconds.
+						double interval = fncs.coerceToDouble(fieldValue);
+						fieldValue = new Double(TimeUtility.canonicalValueForValue(interval,currentTimeUnit));
+						log.tracef("%s.updatePropertyForField: property %s,old= %s, new= %s, displayed= %s (%s)",TAG,prop.getName(),prop.getValue().toString(),
+								fieldValue.toString(),field.getText(),currentTimeUnit.name());
+					}
+					else if( prop.getType().equals(PropertyType.STATISTICS) ) fieldValue = StatFunction.valueOf(fieldValue.toString().toUpperCase());
+				}
+				catch(IllegalArgumentException iae) {
+					log.warnf("%s.updatePropertyForField: %s:%s unable to coerce %s to %s",TAG,block.getName(),prop.getName(),
+							fieldValue.toString(),prop.getType().name());
 				}
 				prop.setValue(fieldValue);
-				parent.saveDiagramCLean();    // Update property directly, immediately
+				parent.saveDiagramClean();    // Update property directly, immediately
 			}
 			else {
 				log.tracef("%s.updatePropertyForField: No Change was %s, is %s", TAG,prop.getValue().toString(),fieldValue);
@@ -697,7 +712,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 				if( DEBUG ) log.infof("%s.updatePropertyForField: Adjusting %s to %s", TAG,prop.getBinding(),tagPath);
 				prop.setBinding(tagPath);
 				subscribeToTagPath(tagPath);
-				parent.saveDiagramCLean();		
+				parent.saveDiagramClean();		
 			}
 		}
 	}
@@ -738,8 +753,8 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 
 	@Override
 	public void valueChange(final QualifiedValue value) {
-		log.debugf("%s.valueChange: - %s new value (%s)",TAG,property.getName(),value.getValue().toString());
-		//property.setValue(value.getValue());  // Block should have its own subscription to value changes.
+		log.infof("%s.valueChange: - %s new value (%s)",TAG,property.getName(),value.getValue().toString());
+		property.setValue(value.getValue());  // Block should have its own subscription to value changes.
 		SwingUtilities.invokeLater( new Runnable() {
 			public void run() {
 				String text = value.getValue().toString();
@@ -762,9 +777,11 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 					text = dateFormatter.format(new Date(fncs.coerceToLong(text)));
 				}
 				// If we set components willy-nilly, we end up in an update loop.
-				if( isPropertyEnumerated(property)) {
+				else if( isPropertyEnumerated(property)) {
 					if( !valueComboBox.getSelectedItem().toString().equalsIgnoreCase(text)) {
+						valueComboBox.setEnabled(false);
 						valueComboBox.setSelectedItem(text.toUpperCase());
+						valueComboBox.setEnabled(true);
 					}	
 				}
 				else if(!valueDisplayField.getText().equals(text)) {

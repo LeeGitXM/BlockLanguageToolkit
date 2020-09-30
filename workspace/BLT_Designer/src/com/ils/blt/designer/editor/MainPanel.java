@@ -73,7 +73,7 @@ public class MainPanel extends BasicEditPanel {
 		add(separator,"span,growy");
 	}
 	
-	public void saveDiagramCLean() {editor.saveDiagramClean();} 
+	public void saveDiagramClean() {editor.saveDiagramClean();} 
 
 	/**
 	 * Iterate over panels and close any subscriptions

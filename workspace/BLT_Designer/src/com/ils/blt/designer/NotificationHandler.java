@@ -163,7 +163,8 @@ public class NotificationHandler implements PushNotificationListener {
 				Map<String,NotificationChangeListener> listeners = changeListenerMap.get(key);
 				if( listeners != null ) {
 					for(NotificationChangeListener listener:listeners.values()) {
-						log.tracef("%s.receiveNotification: value key=%s - notifying %s",CLSS,key,listener.getClass().getName());
+						log.tracef("%s.receiveNotification: value %s=%s - notifying %s",CLSS,
+								key,((QualifiedValue)payload).getValue().toString(),listener.getClass().getName());
 						listener.valueChange((QualifiedValue)payload);
 					}
 					// Repaint the workspace
@@ -258,6 +259,18 @@ public class NotificationHandler implements PushNotificationListener {
 	 * @param listener
 	 */
 	public void addNotificationChangeListener(String key,String source,NotificationChangeListener listener) {
+		addNotificationChangeListener(key,source,listener,true);
+	}
+	/**
+	 * The key used for PushNotification is unique for each receiver. Consequently we make a map
+	 * containing each interested recipient, by key. When an update arrives we notify each listener
+	 * registered for the event.
+	 * @param key
+	 * @param listener
+	 * @param update if true and if there is an existing notification matching the key, that notification
+	 *               is sent immediately.
+	 */
+	public void addNotificationChangeListener(String key,String source,NotificationChangeListener listener,boolean update) {
 		log.debugf("%s.addNotificationChangeListener: source=%s key=%s (%s)",CLSS,source,key,listener.getClass().getName());
 		Map<String,NotificationChangeListener> listeners = changeListenerMap.get(key);
 		if( listeners==null) {
@@ -268,7 +281,7 @@ public class NotificationHandler implements PushNotificationListener {
 		
 		// Make an immediate update 
 		Object payload = payloadMap.get(key);
-		if( payload!=null ) {
+		if( update && payload!=null ) {
 			if( NotificationKey.isNameChangeKey(key)) listener.nameChange(payload.toString());
 			else if(NotificationKey.isPropertyBindingKey(key)) listener.bindingChange(payload.toString());
 			else if(NotificationKey.isPropertyValueKey(key))    listener.valueChange((QualifiedValue)payload);

@@ -237,8 +237,8 @@ public class BlockProperty implements NotificationChangeListener {
 	 * notifications are currently NOT on the UI thread.
 	 */
 	@Override
-	public void valueChange(QualifiedValue val) {
-		log.tracef("%s(%d).valueChange %s now %s",TAG,hashCode(),getName(),val.getValue().toString());
+	public synchronized void valueChange(QualifiedValue val) {
+		//log.infof("%s(%d).valueChange %s now %s",TAG,hashCode(),getName(),val.getValue().toString());
 		if( val!=null && val.getValue()!=null) {
 			try {
 				setValue(val.getValue());

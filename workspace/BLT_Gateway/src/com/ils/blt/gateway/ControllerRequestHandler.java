@@ -26,6 +26,7 @@ import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.block.PropertyType;
+import com.ils.blt.common.block.StatFunction;
 import com.ils.blt.common.block.TransmissionScope;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.Connection;
@@ -1333,20 +1334,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		if(block!=null) {
 			for( BlockProperty property:properties ) {
 				BlockProperty existingProperty = block.getProperty(property.getName());
-				if( existingProperty!=null ) {
-					// Update the property
-					updateProperty(diagram.getState(),block,existingProperty,property);
-				}
-				else {
-					// Need to add a new one.
-					BlockProperty[] props = new BlockProperty[block.getProperties().length+1];
-					int index = 0;
-					for(BlockProperty bp:block.getProperties()) {
-						props[index] = bp;
-						index++;
-					}
-					props[index] = property;
-				}
+				setBlockProperty(parentId,blockId,property);
 			}
 		}
 	}
@@ -1370,18 +1358,11 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		if(block!=null) {
 			BlockProperty existingProperty = block.getProperty(property.getName());
 			if( existingProperty!=null ) {
-				// Update the property
+				// Update the property, notify the designer
 				updateProperty(diagram.getState(),block,existingProperty,property);
 			}
 			else {
-				// Need to add a new one.
-				BlockProperty[] props = new BlockProperty[block.getProperties().length+1];
-				int index = 0;
-				for(BlockProperty bp:block.getProperties()) {
-					props[index] = bp;
-					index++;
-				}
-				props[index] = property;
+				log.warnf("%s.setBlockProperty: Property %s not found in block %s", TAG,property.getName(),block.getName());
 			}
 		}
 	}
@@ -1415,13 +1396,10 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			if( block!=null ) {
 				BlockProperty prop = block.getProperty(pname);
 				if( prop!=null ) {
-					BlockPropertyChangeEvent bpe = new BlockPropertyChangeEvent(bname,pname,prop.getValue(),value);
-					if( prop.getType().equals(PropertyType.BOOLEAN) ) prop.setValue(fcns.coerceToBoolean(value));
-					if( prop.getType().equals(PropertyType.DOUBLE) )  prop.setValue(fcns.coerceToDouble(value));
-					if( prop.getType().equals(PropertyType.INTEGER) ) prop.setValue(fcns.coerceToInteger(value));
-					else  prop.setValue(fcns.coerceToString(value));
+					Object oldValue = prop.getValue();	
+					BlockPropertyChangeEvent bpe = new BlockPropertyChangeEvent(bname,pname,oldValue,value);	
 					block.propertyChange(bpe);
-					controller.sendPropertyNotification(block.getBlockId().toString(),pname,new BasicQualifiedValue(prop.getValue()));
+					controller.sendPropertyNotification(block.getBlockId().toString(),pname,new BasicQualifiedValue(value));
 				}
 				else{
 					log.warnf("%s.setBlockPropertyValue: Unable to find property %s in block %s:%s",TAG,pname,diagramId,bname,diagram.getName());
@@ -1648,7 +1626,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	}
 
 
-	// Handle all the intricasies of a property change
+	// Handle all the intricacies of a property change
 	private void updateProperty(DiagramState ds,ProcessBlock block,BlockProperty existingProperty,BlockProperty newProperty) {
 		if( !existingProperty.isEditable() )  return;
 		
