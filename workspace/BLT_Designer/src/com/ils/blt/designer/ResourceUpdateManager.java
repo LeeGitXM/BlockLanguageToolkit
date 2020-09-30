@@ -36,6 +36,7 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
 public class ResourceUpdateManager implements Runnable {
 	private static final String CLSS = "ResourceUpdateManager";
 	private static final LoggerEx log = LogUtil.getLogger(ResourceUpdateManager.class.getPackage().getName());
+	private static final boolean DEBUG = false;
 	private static DesignerContext context = null;
 	private static NodeStatusManager statusManager = null;
 	private ReentrantLock sharedLock = new ReentrantLock(); 
@@ -76,12 +77,12 @@ public class ResourceUpdateManager implements Runnable {
 					// anyway as block properties may have changed.
 					ProcessDiagramView view = (ProcessDiagramView)tab.getModel();
 					SerializableDiagram sd = view.createSerializableRepresentation();
-					log.infof("%s.run: serializing ... %s(%d) %s",CLSS,tab.getName(),resourceId,sd.getState().name());
+					if(DEBUG) log.infof("%s.run: serializing ... %s(%d) %s",CLSS,tab.getName(),resourceId,sd.getState().name());
 					sd.setName(tab.getName());
 					ObjectMapper mapper = new ObjectMapper();
 					try{
 						byte[] bytes = mapper.writeValueAsBytes(sd);
-						log.tracef("%s.run JSON = %s",CLSS,new String(bytes));
+						//log.tracef("%s.run JSON = %s",CLSS,new String(bytes));
 						res.setData(bytes);
 					}
 					catch(JsonProcessingException jpe) {
@@ -92,7 +93,7 @@ public class ResourceUpdateManager implements Runnable {
 				}
 			}
 			try {
-				log.infof("%s.run: getting lock ...",CLSS);
+				if(DEBUG) log.infof("%s.run: getting lock ...",CLSS);
 				if( context.requestLockQuietly(res.getResourceId()) )
 				{
 					context.updateResource(res.getResourceId(),res.getData());   // Force an update
@@ -100,8 +101,10 @@ public class ResourceUpdateManager implements Runnable {
 					diff.putResource(res, true);    // Mark as dirty for our controller as resource listener
 					DTGatewayInterface.getInstance().saveProject(IgnitionDesigner.getFrame(), diff, true, "Committing ...");  // Do publish
 					for(ProjectResource pr:diff.getResources()) {
-						log.infof("%s.run: Saved %s (%d) %s %s",CLSS,pr.getName(),pr.getResourceId(),
+						if(DEBUG) {
+							log.infof("%s.run: Saved %s (%d) %s %s",CLSS,pr.getName(),pr.getResourceId(),
 								(context.getProject().isResourceDirty(pr)?"DIRTY":"CLEAN"),(pr.isLocked()?"LOCKED":"UNLOCKED"));
+						}
 						if( pr.isLocked()) pr.setLocked(false);
 					}
 					// Make every thing clean again.
@@ -110,7 +113,7 @@ public class ResourceUpdateManager implements Runnable {
 					project.clearAllFlags();
 					context.updateLock(res.getResourceId());
 					context.releaseLock(res.getResourceId());
-					log.infof("%s.run: released lock",CLSS);
+					if(DEBUG) log.infof("%s.run: released lock",CLSS);
 				}
 			}
 			catch(IllegalArgumentException iae) {

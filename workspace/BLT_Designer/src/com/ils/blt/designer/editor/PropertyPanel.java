@@ -110,7 +110,6 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 //		this.currentTimeUnit = TimeUnit.SECONDS;   // The "canonical" unit
 		this.currentTimeUnit = TimeUnit.MINUTES;   // Force all to be in minutes, to avoid confusing behavior in UI
 		property.addChangeListener(this);
-		log.infof("%s: add change listener on %s",TAG,property.getName());
 	
 		setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));     // 3 cells across
 		if( property.getType().equals(PropertyType.TIME) ) {
@@ -234,7 +233,6 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 			notificationHandler.removeNotificationChangeListener(key,TAG);
 			unsubscribeToTagPath(property.getBinding());
 		}
-		log.infof("%s.unsubscribe: remove change listener on %s",TAG,property.getName());
 		property.removeChangeListener(this);
 	}
 	// Subscribe to a tag. This will fail if the tag path is unset or illegal.
@@ -397,7 +395,6 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 		this.invalidate();
 		if( prop.getValue()!=null ) {
 			final String selection = prop.getValue().toString().toUpperCase();
-			log.infof("%s.createValueCombo: %s=%s",TAG,prop.getName(),selection);
 			valueCombo.setSelectedItem(selection);
 			// Add the listener after we've initialized
 			valueCombo.addActionListener(new ActionListener() {
@@ -407,12 +404,10 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 						prop.setValue(selection);
 						parent.saveDiagramClean();   // Update property immediately
 					}
-					log.infof("%s.valueCombo: selected %s=%s",TAG,prop.getName(),selection);
+					if(DEBUG) log.infof("%s.valueCombo: selected %s=%s",TAG,prop.getName(),selection);
 				}
 			});
 		}
-		log.infof("%s.createValueCombo: selection now=%s",TAG,valueCombo.getModel().getSelectedItem().toString());
-
 
 		return valueCombo;
 	}
@@ -753,7 +748,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 
 	@Override
 	public void valueChange(final QualifiedValue value) {
-		log.infof("%s.valueChange: - %s new value (%s)",TAG,property.getName(),value.getValue().toString());
+		//log.infof("%s.valueChange: - %s new value (%s)",TAG,property.getName(),value.getValue().toString());
 		property.setValue(value.getValue());  // Block should have its own subscription to value changes.
 		SwingUtilities.invokeLater( new Runnable() {
 			public void run() {
