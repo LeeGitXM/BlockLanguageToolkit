@@ -33,7 +33,6 @@ import com.ils.blt.gateway.ControllerRequestHandler;
 import com.ils.blt.gateway.tag.TagListener;
 import com.ils.common.BoundedBuffer;
 import com.ils.common.persistence.ToolkitProperties;
-import com.ils.common.tag.ProviderRegistry;
 import com.ils.common.tag.TagReader;
 import com.ils.common.tag.TagUtility;
 import com.ils.common.tag.TagValidator;
@@ -41,7 +40,6 @@ import com.ils.common.tag.TagWriter;
 import com.ils.common.watchdog.AcceleratedWatchdogTimer;
 import com.ils.common.watchdog.WatchdogTimer;
 import com.inductiveautomation.ignition.common.model.ApplicationScope;
-import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -282,7 +280,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		// Prepare tag readers/writers
 		this.tagReader = new TagReader(context);
 		this.tagValidator = new TagValidator(context);
-		this.tagWriter = new TagWriter(context,new ProviderRegistry());
+		this.tagWriter = new TagWriter(context);
 		// Activate all of the blocks in the diagram.
 		modelManager.startBlocks();
 		// Once blocks are started, start tag subscriptions
