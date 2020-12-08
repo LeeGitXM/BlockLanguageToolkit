@@ -91,7 +91,6 @@ public class FinalDiagnosisPanel extends BasicEditPanel implements ActionListene
 	protected static final Dimension DESCRIPTION_AREA_SIZE  = new Dimension(280,160);
 	protected static final Dimension NAME_BOX_SIZE  = new Dimension(280,24);
 	protected static final Dimension NUMBER_BOX_SIZE  = new Dimension(50,24);
-	protected final LoggerEx log;
 	protected final ApplicationRequestHandler requestHandler;
 	private final UtilityFunctions fcns = new UtilityFunctions();
 //	protected JPanel contentPanel = null;
@@ -110,7 +109,6 @@ public class FinalDiagnosisPanel extends BasicEditPanel implements ActionListene
 		this.rb = ResourceBundle.getBundle("com.ils.blt.designer.designer");  // designer.properties
 		this.requestHandler = new ApplicationRequestHandler();
 		this.context = context;
-        this.log = LogUtil.getLogger(getClass().getPackage().getName());
         this.diagram = wrkspc.getActiveDiagram();
 
 		this.corePanel = new CorePropertyPanel(block);
@@ -364,7 +362,6 @@ public class FinalDiagnosisPanel extends BasicEditPanel implements ActionListene
 		private static final String columnConstraints = "[para]0[]0[]";
 		private static final String layoutConstraints = "ins 2";
 		private static final String rowConstraints = "[para]0[]0[]";
-		private final JTextField nameField;
 
 		public CorePropertyPanel(ProcessBlockView blk) {
 			setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));

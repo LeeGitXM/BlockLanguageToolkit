@@ -48,10 +48,10 @@ public class SourceMainPanel extends MainPanel {
 		String tagPath = prop.getBinding();
 		if( tagPath!=null ) {
 			List<SerializableBlockStateDescriptor> blocks = editor.getRequestHandler().listBlocksForTag(tagPath);
-			for(SerializableBlockStateDescriptor block:blocks) {
-				if(block.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK)) {
-					sinkName = block.getName();
-					sink = block;
+			for(SerializableBlockStateDescriptor blk:blocks) {
+				if(blk.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK)) {
+					sinkName = blk.getName();
+					sink = blk;
 					break;
 				}
 			}

@@ -853,7 +853,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	}
 	// This is the name of a block, so doesn't appear in the tree
 	@Override
-	public void nameChange(String name) {
+	public void nameChange(String nm) {
 	}
 	@Override
 	public void valueChange(QualifiedValue value) {

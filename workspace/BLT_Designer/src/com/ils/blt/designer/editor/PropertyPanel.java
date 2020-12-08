@@ -399,12 +399,12 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 			// Add the listener after we've initialized
 			valueCombo.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent event) {
-					String selection = valueCombo.getSelectedItem().toString(); 
-					if( !prop.getValue().toString().equalsIgnoreCase(selection)) {
-						prop.setValue(selection);
+					String selxn = valueCombo.getSelectedItem().toString(); 
+					if( !prop.getValue().toString().equalsIgnoreCase(selxn)) {
+						prop.setValue(selxn);
 						parent.saveDiagramClean();   // Update property immediately
 					}
-					if(DEBUG) log.infof("%s.valueCombo: selected %s=%s",TAG,prop.getName(),selection);
+					if(DEBUG) log.infof("%s.valueCombo: selected %s=%s",TAG,prop.getName(),selxn);
 				}
 			});
 		}

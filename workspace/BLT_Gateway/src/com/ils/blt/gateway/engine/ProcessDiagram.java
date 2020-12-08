@@ -91,9 +91,9 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 	}
 	public Collection<ProcessBlock> getProcessBlocks() { return blocks.values(); }
 
-	public String getProviderForState(DiagramState state) {
+	public String getProviderForState(DiagramState s) {
 		String provider = "";
-		if( state.equals(DiagramState.ISOLATED)) {
+		if( s.equals(DiagramState.ISOLATED)) {
 			provider = ControllerRequestHandler.getInstance().getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER);
 		}
 		else {

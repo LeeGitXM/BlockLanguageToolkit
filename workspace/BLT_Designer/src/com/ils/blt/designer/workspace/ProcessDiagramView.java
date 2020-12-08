@@ -636,8 +636,8 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		// ConType is the type of the proposed new connection.
 		ConnectionType conType = pblock.determineDataTypeFromTagType(type);
 
-		Collection<Connection> connections = getConnections();
-		for (Connection connection:connections) {
+		Collection<Connection> cxns = getConnections();
+		for (Connection connection:cxns) {
 			BasicAnchorPoint intended = null;
 			if (connection.getOrigin().getBlock() == pblock) {
 				intended = (BasicAnchorPoint)connection.getTerminus();
@@ -708,7 +708,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	}
 	// Let the blocks subscribe to their own name changes
 	@Override
-	public void nameChange(String name) {
+	public void nameChange(String nm) {
 	}
 	/**
 	 * The value that we expect is a state change

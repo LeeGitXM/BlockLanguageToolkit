@@ -202,9 +202,9 @@ public class Timer extends AbstractProcessBlock implements ProcessBlock {
 				OutgoingNotification sig = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 				controller.acceptCompletionNotification(sig);
 	
-				double timer = Double.parseDouble(lastValue.getValue().toString());
-				String formattedTime = String.format("%02d:%02d:%02d", TimeUtility.remainderValue(timer, TimeUnit.HOURS),
-						TimeUtility.remainderValue(timer, TimeUnit.MINUTES),TimeUtility.remainderValue(timer, TimeUnit.SECONDS));
+				double elapsed = Double.parseDouble(lastValue.getValue().toString());
+				String formattedTime = String.format("%02d:%02d:%02d", TimeUtility.remainderValue(elapsed, TimeUnit.HOURS),
+						TimeUtility.remainderValue(elapsed, TimeUnit.MINUTES),TimeUtility.remainderValue(elapsed, TimeUnit.SECONDS));
 				valueProperty.setValue(formattedTime);
 //				String path = tagProperty.getBinding().toString();
 //				if( !path.isEmpty() ) controller.updateTag(getParentId(),path, lastValue);

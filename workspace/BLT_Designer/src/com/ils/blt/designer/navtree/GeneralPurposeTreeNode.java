@@ -1297,8 +1297,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		
 		public void saveApplicationAuxData(SerializableApplication sa) {
 			
-			ApplicationRequestHandler requestHandler = new ApplicationRequestHandler();
-			String prodDb = requestHandler.getProductionDatabase();
+			ApplicationRequestHandler rh = new ApplicationRequestHandler();
+			String prodDb = rh.getProductionDatabase();
 			
 			CommonScriptExtensionManager extensionManager = CommonScriptExtensionManager.getInstance();
 			extensionManager.runScript(context.getScriptManager(), ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.PROPERTY_SET_SCRIPT, 
@@ -2095,8 +2095,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 
 	public GeneralPurposeDataContainer getFamilyAuxData(SerializableFamily sf) {
 		
-		ApplicationRequestHandler requestHandler = new ApplicationRequestHandler();
-		String prodDb = requestHandler.getProductionDatabase();
+		ApplicationRequestHandler rh = new ApplicationRequestHandler();
+		String prodDb = rh.getProductionDatabase();
 		GeneralPurposeDataContainer auxData = new GeneralPurposeDataContainer();
 		
 		CommonScriptExtensionManager extensionManager = CommonScriptExtensionManager.getInstance();
@@ -2114,8 +2114,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 
 	public void saveFamilyAuxData(SerializableFamily sf) {
 		
-		ApplicationRequestHandler requestHandler = new ApplicationRequestHandler();
-		String prodDb = requestHandler.getProductionDatabase();
+		ApplicationRequestHandler rh = new ApplicationRequestHandler();
+		String prodDb = rh.getProductionDatabase();
 		
 		CommonScriptExtensionManager extensionManager = CommonScriptExtensionManager.getInstance();
 		String idStr = sf.getId().toString();
