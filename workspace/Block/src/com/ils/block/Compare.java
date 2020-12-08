@@ -85,10 +85,12 @@ public class Compare extends AbstractProcessBlock implements ProcessBlock {
 		AnchorPrototype input = new AnchorPrototype(X_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.ANY);
 		input.setAnnotation("x");
 		input.setHint(PlacementHint.LT);
+		input.setIsMultiple(false);
 		anchors.add(input);
 		input = new AnchorPrototype(Y_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.ANY);
 		input.setAnnotation("y");
 		input.setHint(PlacementHint.LB);
+		input.setIsMultiple(false);
 		anchors.add(input);
 
 		// Define a single output
@@ -262,7 +264,7 @@ public class Compare extends AbstractProcessBlock implements ProcessBlock {
 		prototype.setPaletteIconPath("Block/icons/palette/compare.png");
 		prototype.setPaletteLabel("Compare");
 		prototype.setTooltipText("Compare the value of two inputs. Report true if the first is greater than or equal to the second.");
-		prototype.setTabName(BlockConstants.PALETTE_TAB_ANALYSIS);
+		prototype.setTabName(BlockConstants.PALETTE_TAB_OBSERVATION);
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setEmbeddedIcon("Block/icons/embedded/greater_equal.png");
@@ -272,4 +274,5 @@ public class Compare extends AbstractProcessBlock implements ProcessBlock {
 		desc.setStyle(BlockStyle.SQUARE);
 		desc.setBackground(BlockConstants.BLOCK_BACKGROUND_LIGHT_GRAY);
 	}
+
 }

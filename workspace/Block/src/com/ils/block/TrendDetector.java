@@ -120,8 +120,8 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 	 */
 	private void initialize() {	
 		setName("Trend");
-		this.isReceiver = false;
-		this.isTransmitter = false;
+//		this.setReceiver(false);
+//		this.setTransmitter(false);
 		BlockProperty calculationOptionProperty = new BlockProperty(BLOCK_PROPERTY_CALCULATION_OPTION,calculationOption,PropertyType.SLOPEOPTION,true);
 		setProperty(BLOCK_PROPERTY_CALCULATION_OPTION, calculationOptionProperty);
 		BlockProperty labelProperty = new BlockProperty(BLOCK_PROPERTY_TEST_LABEL,"",PropertyType.STRING,true);
@@ -153,14 +153,17 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 		AnchorPrototype input = new AnchorPrototype(PORT_TARGET,AnchorDirection.INCOMING,ConnectionType.DATA);
 		input.setAnnotation("T");
 		input.setHint(PlacementHint.LT);
+		input.setIsMultiple(false);
 		anchors.add(input);
 		input = new AnchorPrototype(PORT_VALUE,AnchorDirection.INCOMING,ConnectionType.DATA);
 		input.setAnnotation("V");
 		input.setHint(PlacementHint.L);
+		input.setIsMultiple(false);
 		anchors.add(input);
 		input = new AnchorPrototype(PORT_STANDARD_DEVIATION,AnchorDirection.INCOMING,ConnectionType.DATA);
 		input.setAnnotation("S");
 		input.setHint(PlacementHint.LB);
+		input.setIsMultiple(false);
 		anchors.add(input);
 
 		// Define the main output, a truth value.
@@ -467,9 +470,9 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 	 */
 	private void initializePrototype() {
 		prototype.setPaletteIconPath("Block/icons/palette/trend_observation.png");
-		prototype.setPaletteLabel("Trend");
+		prototype.setPaletteLabel("TrendDetection");
 		prototype.setTooltipText("Perform an analysis on the input to detect trends");
-		prototype.setTabName(BlockConstants.PALETTE_TAB_ANALYSIS);
+		prototype.setTabName(BlockConstants.PALETTE_TAB_STATISTICS);
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setEmbeddedLabel("Trend");

@@ -5,7 +5,6 @@ package com.ils.blt.designer.config;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -20,14 +19,13 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.WindowConstants;
 
-import com.ils.blt.client.ClientScriptExtensionManager;
+import com.ils.blt.common.script.CommonScriptExtensionManager;
 import com.ils.blt.common.script.ScriptConstants;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.ui.DualListBox;
-import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
 import net.miginfocom.swing.MigLayout;
 
@@ -43,7 +41,7 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 	private final int DIALOG_WIDTH = 600;
 	private final ProcessDiagramView diagram;
 	private final ProcessBlockView block;
-	private final ClientScriptExtensionManager extensionManager = ClientScriptExtensionManager.getInstance();
+	private final CommonScriptExtensionManager extensionManager = CommonScriptExtensionManager.getInstance();
 	private JPanel mainPanel = null;
 	private final GeneralPurposeDataContainer model;           // Data container operated on by panels
 	protected DualListBox dual;
@@ -256,7 +254,6 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 		
 		panel.add(createLabel("FinalDiagnosis.ShowExplanationWithRecommendation"),"gaptop 2,aligny top");
 		String showExplanation = (String)properties.get("ShowExplanationWithRecommendation");
-		log.errorf("showExplanation: "+showExplanation);
 		if( showExplanation==null) showExplanation="0";
 		showExplanationWithRecommendationCheckBox = createCheckBox("FinalDiagnosis.ShowExplanationWithRecommendation.Desc",(showExplanation.equals("0")?false:true));
 		panel.add(showExplanationWithRecommendationCheckBox,"alignx left");

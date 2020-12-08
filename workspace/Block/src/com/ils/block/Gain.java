@@ -1,5 +1,5 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved. 
+ *   (c) 2014-2020  ILS Automation. All rights reserved. 
  */
 package com.ils.block;
 
@@ -30,6 +30,7 @@ public class Gain extends AbstractProcessBlock implements ProcessBlock {
 	private static final String TAG = "Gain";
 	public static final String BLOCK_PROPERTY_GAIN = "Gain";
 	private double gain = 1.0;
+	private QualifiedValue lastInput = new BasicQualifiedValue(new Double(Double.NaN));
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -51,6 +52,64 @@ public class Gain extends AbstractProcessBlock implements ProcessBlock {
 		initialize();
 	}
 	
+	/**
+	 * Accept notification that a value has arrived on an input
+	 * @param vcn incoming notification
+	 */
+	@Override
+	public void acceptValue(IncomingNotification vcn) {
+		super.acceptValue(vcn);
+		String port = vcn.getConnection().getDownstreamPortName();
+		
+		if( port.equalsIgnoreCase(BlockConstants.IN_PORT_NAME) ) {
+			QualifiedValue qv = vcn.getValue();
+			if( qv!=null && qv.getValue()!=null && qv.getQuality().isGood()) {
+				lastInput = qv;
+				evaluate();
+			}
+			else {
+				if( qv!=null ) {
+					lastInput = new BasicQualifiedValue(new Double(Double.NaN),qv.getQuality(),qv.getTimestamp());
+					evaluate();
+				}
+			}	
+		}
+	}
+
+	/**
+	 * Place the result on the output.
+	 */
+	@Override
+	public void evaluate() {
+		if( !isLocked() ) {
+			try {
+				double dbl = fcns.coerceToDouble(lastInput.getValue().toString());
+				if( !Double.isNaN(dbl))  {
+					lastValue = new BasicQualifiedValue(new Double(dbl*gain),lastInput.getQuality(),lastInput.getTimestamp());
+				}
+				else {
+					lastValue = new BasicQualifiedValue(new Double(Double.NaN),lastInput.getQuality(),lastInput.getTimestamp());
+				}
+				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
+				controller.acceptCompletionNotification(nvn);
+				notifyOfStatus(lastValue);
+			}
+			catch(NumberFormatException nfe) {
+				log.warnf("%s.acceptValue: Unable to convert incoming value to a double (%s)",TAG,nfe.getLocalizedMessage());
+			}
+		}
+	}
+
+	/**
+	 * Send status update notification for our last latest state.
+	 */
+	@Override
+	public void notifyOfStatus() {
+		notifyOfStatus(lastValue);
+	}
+	private void notifyOfStatus(QualifiedValue qv) {
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
+	}
 	
 	/**
 	 * Handle a change to the delay interval or buffer size
@@ -62,57 +121,12 @@ public class Gain extends AbstractProcessBlock implements ProcessBlock {
 		if( propertyName.equals(BLOCK_PROPERTY_GAIN) ) {
 			try {
 				gain = Double.parseDouble(event.getNewValue().toString());
+				evaluate();
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s: propertyChange Unable to convert gain value to a double (%s)",TAG,nfe.getLocalizedMessage());
 			}
 		}
-	}
-	/**
-	 * A new value has appeared on an input anchor. Add it to the list and trigger the delay timer.
-	 * @param vcn change notification.
-	 */
-	@Override
-	public void acceptValue(IncomingNotification vcn) {
-		super.acceptValue(vcn);
-		if( !isLocked() ) {
-			QualifiedValue qv = vcn.getValue();
-			if( qv!=null && qv.getValue()!=null && qv.getQuality().isGood()) {
-				try {
-					Double dbl = Double.parseDouble(qv.getValue().toString());
-					if( vcn.getConnection().getDownstreamPortName().equalsIgnoreCase(BlockConstants.IN_PORT_NAME)) {
-						double value = dbl.doubleValue();
-						value = value*gain;
-						lastValue = new BasicQualifiedValue(new Double(value),qv.getQuality(),qv.getTimestamp());
-						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
-						controller.acceptCompletionNotification(nvn);
-						notifyOfStatus(lastValue);
-					}
-					else {
-						log.warnf("%s.acceptValue: Unexpected port designation (%s)",TAG,vcn.getConnection().getDownstreamPortName());
-					}
-				}
-				catch(NumberFormatException nfe) {
-					log.warnf("%s.acceptValue: Unable to convert incoming value to a double (%s)",TAG,nfe.getLocalizedMessage());
-				}
-			}
-			else {
-				if( qv!=null ) {
-					lastValue = new BasicQualifiedValue(new Double(Double.NaN),qv.getQuality(),qv.getTimestamp());
-					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
-					controller.acceptCompletionNotification(nvn);
-					notifyOfStatus(qv);
-				}
-			}
-		}
-	}
-	/**
-	 * Send status update notification for our last latest state.
-	 */
-	@Override
-	public void notifyOfStatus() {}
-	private void notifyOfStatus(QualifiedValue qv) {
-		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
 	/**
 	 * Add properties that are new for this class.
@@ -141,6 +155,7 @@ public class Gain extends AbstractProcessBlock implements ProcessBlock {
 		prototype.setPaletteLabel("Gain");
 		prototype.setTooltipText("Multiply the incoming value by a specified constant");
 		prototype.setTabName(BlockConstants.PALETTE_TAB_ARITHMETIC);
+		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setBlockClass(getClass().getCanonicalName());
 		desc.setEmbeddedLabel("K");

@@ -85,16 +85,20 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 		AnchorPrototype input = new AnchorPrototype(VALUE_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
 		input.setAnnotation("V");
 		input.setHint(PlacementHint.LT);
+		input.setIsMultiple(false);
 		anchors.add(input);
 		input = new AnchorPrototype(QUALITY_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.TRUTHVALUE);
 		input.setAnnotation("Q");
 		input.setHint(PlacementHint.LB);
+		input.setIsMultiple(false);
 		anchors.add(input);
 
 		// Define two outputs
 		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.DATA);
+		output.setAnnotation("D");
 		anchors.add(output);
 		AnchorPrototype sig = new AnchorPrototype(STATUS_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.TRUTHVALUE);
+		sig.setAnnotation("S");
 		anchors.add(sig);
 	}
 	

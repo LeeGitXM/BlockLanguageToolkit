@@ -75,8 +75,8 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	protected PalettePrototype prototype = null;
 	protected boolean delayStart = false;
 	protected boolean locked     = false;
-	protected boolean isReceiver = false;
-	protected boolean isTransmitter = false;
+	private boolean isReceiver = false;
+//	private boolean isTransmitter = false;
 	protected boolean running = false;
 	protected TruthValue state = TruthValue.UNSET;
 	protected Date stateChangeTimestamp = null;
@@ -88,6 +88,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	/** Describe ports/stubs where connections join the block */
 	protected List<AnchorPrototype> anchors;
 	protected final UtilityFunctions fcns = new UtilityFunctions();
+	private int instanceVersion = 0;  // version for this specific instance of a block. Used in upgrades  
 
 	
 	/**
@@ -121,6 +122,8 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 * Create an initial list of properties. There are none for the base class.
 	 * We also add a stub for signals. Every block has this connection, but,
 	 * by default, it is hidden.
+	 * 
+	 * If you update any of these block properties, make sure to add version check and update code into the start() method. 
 	 */
 	private void initialize() {
 		this.state = TruthValue.UNSET;
@@ -141,8 +144,8 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		prototype = new PalettePrototype();
 		BlockDescriptor blockDescriptor = prototype.getBlockDescriptor();
 		blockDescriptor.setAnchors(anchors);
-		blockDescriptor.setReceiveEnabled(isReceiver);
-		blockDescriptor.setTransmitEnabled(isTransmitter);
+		blockDescriptor.setReceiveEnabled(isReceiver());
+//		blockDescriptor.setTransmitEnabled(isTransmitter());
 		
 		// Currently this refers to a path in /images of the BLT_Designer source area.
 		prototype.setPaletteIconPath("unknown.png");
@@ -179,7 +182,9 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	@Override
 	public boolean delayBlockStart() { return this.delayStart; }
 	@Override
-	public List<AnchorPrototype>getAnchors() { return anchors; }
+	public List<AnchorPrototype>getAnchors() { 
+		return anchors; 
+		}
 	public GeneralPurposeDataContainer getAuxiliaryData() {return auxiliaryData;}
 	public void setAuxiliaryData(GeneralPurposeDataContainer auxiliaryData) {this.auxiliaryData = auxiliaryData;}
 	@Override
@@ -293,6 +298,18 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 				}
 			}
 		}
+
+		// NOT SURE WHY THIS DOESN"T WORK.  
+		// ALL BlockProperties fail with NotSerializableException, only on Input and Output blocks for getSroucesForSink call
+		// MAYBE its isn't needed?  wth?
+//		Map<String,BlockProperty> properties = descriptor.getProperties();
+//		if( propertyMap.size()>0 ) {
+//			for (String key:propertyMap.keySet()) {
+//				BlockProperty thingy = propertyMap.get(key);
+//				properties.put(key, thingy);
+//			}
+//		}
+		
 		return descriptor;
 	}
 	@Override
@@ -347,10 +364,10 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		this.locked = locked;
 		
 	}
-	@Override
+//	@Override
 	public boolean isReceiver() { return isReceiver; }
-	@Override
-	public boolean isTransmitter() { return isTransmitter; }
+//	@Override
+//	public boolean isTransmitter() { return isTransmitter; }
 	
 	/**
 	 * Add a time-stamped entry to the block's activity log.
@@ -454,6 +471,21 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		if( prop!=null && value!=null ) {
 			recordActivity(Activity.ACTIVITY_PROPERTY,name,value.toString());
 			prop.setValue(value);
+			
+			// check if this property is displayed in a DisplayPropertyBlock and update it.
+			if (prop.isShowProperty() && prop.getDisplayedBlockUUID() != null && prop.getDisplayedBlockUUID().length() > 1) {  // so, there is a small chance that this could result in an infinite update loop
+
+				// need to have a way to inject this into the notification buffer of the execution controller.  Add a signal connection if none exist
+				// the destination block won't have an input defined, so no line will be drawn
+
+				Signal siggy = new Signal(BlockConstants.COMMAND_CONFIGURE, BlockConstants.BLOCK_PROPERTY_TEXT, value.toString());  // this should always be a string anyway.
+				QualifiedValue qv = new TestAwareQualifiedValue(timer,siggy);
+				
+				OutgoingNotification note = new OutgoingNotification(this,BlockConstants.SIGNAL_PORT_NAME, qv);
+				
+				controller.sendPropertyUpdateNotification(note, prop.getDisplayedBlockUUID());
+				
+			}
 		}
 	}
 	/**
@@ -465,30 +497,32 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 */
 	@Override
 	public void acceptValue(IncomingNotification incoming) {
-		checkIncomingValue(incoming );
-		QualifiedValue qv = incoming.getValue();
-		String port = incoming.getPropertyName();
-		// Check to see if the notification applies to a bound property.
-		if(port!=null) {
-			if( qv!=null && qv.getValue()!=null ) {
-				// Trigger a property change in the block
-				BlockPropertyChangeEvent e = new BlockPropertyChangeEvent(getName(),port,getProperty(port).getValue(),qv.getValue());
-				propertyChange(e);
+		if( running ) {
+			checkIncomingValue(incoming );
+			QualifiedValue qv = incoming.getValue();
+			String port = incoming.getPropertyName();
+			// Check to see if the notification applies to a bound property.
+			if(port!=null) {
+				if( qv!=null && qv.getValue()!=null ) {
+					// Trigger a property change in the block
+					BlockPropertyChangeEvent e = new BlockPropertyChangeEvent(getName(),port,getProperty(port).getValue(),qv.getValue());
+					propertyChange(e);
+				}
+				else {
+					recordActivity(Activity.ACTIVITY_RECEIVE_NULL,port);
+				}
 			}
 			else {
-				recordActivity(Activity.ACTIVITY_RECEIVE_NULL,port);
-			}
-		}
-		else {
-			port = incoming.getConnection().getDownstreamPortName();
-			String value ="NULL";
-			if( qv!=null && qv.getValue()!=null ) {
-				value = qv.getValue().toString();
-				String key = incoming.getConnection().getSource().toString();
-				recordActivity(Activity.ACTIVITY_RECEIVE,port,value,key);
-			}
-			else {
-				recordActivity(Activity.ACTIVITY_RECEIVE_NULL,port);
+				port = incoming.getConnection().getDownstreamPortName();
+				String value ="NULL";
+				if( qv!=null && qv.getValue()!=null ) {
+					value = qv.getValue().toString();
+					String key = incoming.getConnection().getSource().toString();
+					recordActivity(Activity.ACTIVITY_RECEIVE,port,value,key);
+				}
+				else {
+					recordActivity(Activity.ACTIVITY_RECEIVE_NULL,port);
+				}
 			}
 		}
 	}
@@ -504,30 +538,32 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 */
 	@Override
 	public void acceptValue(SignalNotification sn) {
-		Signal sig = sn.getSignal();
-		recordActivity(Activity.ACTIVITY_RECEIVE,sig.getCommand());
-		if( sig.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_CONFIGURE) ) {
-			String propertyName = sig.getArgument();
-			BlockProperty bp = getProperty(propertyName);
-			if( bp!=null ) {
-				// Simulate the signal payload coming in as a value change. We don't really know the source
-				BlockPropertyChangeEvent event = new BlockPropertyChangeEvent(getBlockId().toString(), propertyName, bp.getValue(), sig.getPayload());
-				propertyChange(event);
-				QualifiedValue qv = new TestAwareQualifiedValue(timer,bp.getValue());  // Value now event payload.
-				controller.sendPropertyNotification(getBlockId().toString(),bp.getName(), qv);
+		if( running ) {
+			Signal sig = sn.getSignal();
+			recordActivity(Activity.ACTIVITY_RECEIVE,sig.getCommand());
+			if( sig.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_CONFIGURE) ) {
+				String propertyName = sig.getArgument();
+				BlockProperty bp = getProperty(propertyName);
+				if( bp!=null ) {
+					// Simulate the signal payload coming in as a value change. We don't really know the source
+					BlockPropertyChangeEvent event = new BlockPropertyChangeEvent(getBlockId().toString(), propertyName, bp.getValue(), sig.getPayload());
+					propertyChange(event);
+					QualifiedValue qv = new TestAwareQualifiedValue(timer,bp.getValue());  // Value now event payload.
+					controller.sendPropertyNotification(getBlockId().toString(),bp.getName(), qv);
+				}
 			}
-		}
-		else if( sig.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_EVALUATE) ) {
-			evaluate();
-		}
-		else if( sig.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_LOCK) ) {
-			setLocked(true);
-		}
-		else if( sig.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_RESET) ) {
-			reset();
-		}
-		else if( sig.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_UNLOCK) ) {
-			setLocked(false);
+			else if( sig.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_EVALUATE) ) {
+				evaluate();
+			}
+			else if( sig.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_LOCK) ) {
+				setLocked(true);
+			}
+			else if( sig.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_RESET) ) {
+				reset();
+			}
+			else if( sig.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_UNLOCK) ) {
+				setLocked(false);
+			}
 		}
 	}
 	/**
@@ -547,6 +583,28 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 			}
 		}
 	}
+
+	// NOTE: AttributeDisplays - ERROR - called by start(), too early if properties changed after 
+	private void updatePropertyDisplays() {
+		for (BlockProperty prop:propertyMap.values()) {
+			if (prop.isShowProperty() && prop.getDisplayedBlockUUID() != null && prop.getDisplayedBlockUUID().length() > 1) {  // so, there is a small chance that this could result in an infinite update loop
+		
+				// need to have a way to inject this into the notification buffer of the execution controller.  Add a signal connection if none exist
+				// the destination block won't have an input defined, so no line will be drawn
+		
+				Signal siggy = new Signal(BlockConstants.COMMAND_CONFIGURE, BlockConstants.BLOCK_PROPERTY_TEXT, prop.getValue().toString());  // this should always be a string anyway.
+				QualifiedValue qv = new TestAwareQualifiedValue(timer,siggy);
+				
+				OutgoingNotification note = new OutgoingNotification(this,BlockConstants.SIGNAL_PORT_NAME, qv);
+				
+				controller.sendPropertyUpdateNotification(note, prop.getDisplayedBlockUUID());
+				
+			}
+		}
+	}
+	
+	
+	
 	/**
 	 * Start any active monitoring or processing within the block.
 	 * This default method does nothing. In general, a start does
@@ -558,6 +616,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		this.lastValue = null;
 		recordActivity(Activity.ACTIVITY_START,"");
 		this.stateChangeTimestamp = new Date(timer.getTestTime());
+		updatePropertyDisplays();
 	}
 	/**
 	 * Terminate any active operations within the block.
@@ -570,7 +629,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		recordActivity(Activity.ACTIVITY_STOP,"");
 	}
 	/**
-	 * This method is called by the WatchdogTimer subsystem on
+	 * This method is called by the WatchdogTimer on
 	 * a WatchdogObserver to indicate a timeout.
 	 */
 	public void evaluate() {}
@@ -617,12 +676,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 								val = dateFormatter.parse(val.toString());
 							}
 							catch(ParseException pe) {
-								try {
-									val = new Double(fcns.coerceToDouble(val));
-								}
-								catch(NumberFormatException nfe) {
-									val = Double.NaN;
-								}
+								val = new Double(fcns.coerceToDouble(val));
 							}
 						}
 					}
@@ -755,13 +809,23 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 */
 	@Override
 	public boolean usesTag(String tagpath) {
-		int pos = tagpath.indexOf("]");
-		if(pos>0) tagpath = tagpath.substring(pos+1);
-		for(BlockProperty property:propertyMap.values()) {
-			String binding = property.getBinding();
-			if( binding.endsWith(tagpath)) return true;
+		boolean result = false;
+		if( tagpath!=null && !tagpath.isEmpty() ) {
+			int pos = tagpath.indexOf("]");
+			if(pos>0) tagpath = tagpath.substring(pos+1);
+			for(BlockProperty property:propertyMap.values()) {
+				String binding = property.getBinding();
+				if( binding!=null && !binding.isEmpty() ) {
+					pos = binding.indexOf("]");
+					if(pos>0) binding = binding.substring(pos+1);
+					if( binding.equalsIgnoreCase(tagpath)) {
+						result = true;
+						break;
+					}
+				}
+			}
 		}
-		return false;
+		return result;
 	}
 	/**
 	 * Check the block configuration for missing or conflicting
@@ -976,4 +1040,32 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	@Override
 	public String toString() { return getName(); }
 
+//	public void setTransmitter(boolean isTransmitter) {
+//		this.isTransmitter = isTransmitter;
+//	}
+//
+	public void setReceiver(boolean isReceiver) {
+		this.isReceiver = isReceiver;
+	}
+
+
+	public void setBlockInstanceVersion(int version) {
+		this.instanceVersion = version;
+	}
+
+	// This should be overridden to return the derived class block version.  See And block for example
+	public int getBlockVersion() {
+		return 0;
+	}
+	
+	// used to update blocks in case of anchor or default property changes
+	public boolean update() {
+		return false;
+	}
+
+	// check to see if this block type has been updated since this instance was constructed.  
+	// Useful when updating blocks, check current version against serialized version
+	public boolean versionUpdateRequired() {
+		return (getBlockVersion() > instanceVersion);
+	}
 }

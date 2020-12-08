@@ -86,14 +86,17 @@ public class QualValue extends AbstractProcessBlock implements ProcessBlock {
 		AnchorPrototype tim = new AnchorPrototype(TIME_PORT,AnchorDirection.INCOMING,ConnectionType.ANY);
 		tim.setAnnotation("T");
 		tim.setHint(PlacementHint.LT);
+		tim.setIsMultiple(true);
 		anchors.add(tim);
 		AnchorPrototype input = new AnchorPrototype(VALUE_PORT,AnchorDirection.INCOMING,ConnectionType.ANY);
 		input.setAnnotation("V");
 		input.setHint(PlacementHint.L);
+		input.setIsMultiple(true);
 		anchors.add(input);
 		AnchorPrototype qual = new AnchorPrototype(QUALITY_PORT,AnchorDirection.INCOMING,ConnectionType.TEXT);
 		qual.setAnnotation("Q");
 		qual.setHint(PlacementHint.LB);
+		qual.setIsMultiple(true);
 		anchors.add(qual);
 
 		// Define a single output
@@ -136,7 +139,9 @@ public class QualValue extends AbstractProcessBlock implements ProcessBlock {
 			}
 		}
 		else if( port.equals(QUALITY_PORT)  ) {
-			if( qv.getValue().toString().equalsIgnoreCase("good")) quality = DataQuality.GOOD_DATA;
+			Object val = qv.getValue();
+			if( val.toString().equalsIgnoreCase("good") ||
+				val.toString().toLowerCase().contains("true")) quality = DataQuality.GOOD_DATA;
 			else quality = new BasicQuality(qv.getValue().toString(),Quality.Level.Bad);
 		}
 		else if( port.equals(TIME_PORT)  ) {
@@ -182,8 +187,8 @@ public class QualValue extends AbstractProcessBlock implements ProcessBlock {
 			lastValue = new BasicQualifiedValue(value.getValue(),q,ts);
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 			controller.acceptCompletionNotification(nvn);
-			notifyOfStatus(lastValue);
 			value = lastValue;
+			notifyOfStatus();
 			log.tracef("%s.evaluate: %s %s %s",getName(),value.getValue().toString(),
 					value.getQuality().getName(),customFormatter.format(value.getTimestamp()));
 		}

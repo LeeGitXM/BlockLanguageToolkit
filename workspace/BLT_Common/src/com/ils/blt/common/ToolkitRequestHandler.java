@@ -14,6 +14,7 @@ import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
+import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 
 /**
  *  This interface is a common point for managing requests to the gateway dealing with
@@ -34,6 +35,16 @@ public interface ToolkitRequestHandler  {
 	 * Remove all current diagrams from the controller.
 	 */
 	public void clearController();
+	/**
+	 * Create a SQLTag memory tag given its path and data type. The path must contain the
+	 * provider name in brackets.
+	 */
+	public void createTag(DataType type,String path);
+	/**
+	 * Delete a SQLTag given its path. The path must contain the
+	 * provider name in brackets.
+	 */
+	public void deleteTag(String path);
 	/**
 	 * Determine whether or not the indicated diagram is known to the controller.
 	 * @param diagramId string representation of the diagram's unique id
@@ -254,6 +265,11 @@ public interface ToolkitRequestHandler  {
 	 */
 	public List<SerializableBlockStateDescriptor> listBlocksGloballyUpstreamOf(String diagramId,String blockName); 
 	/**
+	 * @param className fully qualified class name of blocks to be listed
+	 * @return a list of state descriptors for blocks that are of the specified class.
+	 */
+	public List<SerializableBlockStateDescriptor> listBlocksOfClass(String className);
+	/**
 	 * Query a diagram in the gateway for list of its blocks that are upstream
 	 * of the specified block. 
 	 * @param diagramId of the parent diagram
@@ -291,7 +307,7 @@ public interface ToolkitRequestHandler  {
 	/**
 	 * @param diagramId identifier of the diagram to be queried, a String
 	 * @param className fully qualified class name of blocks to be listed
-	 * @return a list of ids for blocks owned by a specified diagram that
+	 * @return a list of block descriptors for blocks owned by a specified diagram that
 	 *         are of a specified class.
 	 */
 	public List<SerializableBlockStateDescriptor> listDiagramBlocksOfClass(String diagramId,String className);
@@ -312,25 +328,24 @@ public interface ToolkitRequestHandler  {
 	 * @return a list of resources known to the BlockController.
 	 */
 	public List<SerializableResourceDescriptor> listResourceNodes();
-	
 	/**
 	 * Query the gateway for list of its sink blocks associated with the
 	 * specified source. The blocks that are returned are not constrained
 	 * to be part of the same diagram, family or application.
 	 * @param diagramId of the parent diagram
-	 * @param blockName name of the block within the diagram 
+	 * @param blockId Id of the source block
 	 * @return a list of blocks logically connected to the source.
 	 */
-	public List<SerializableBlockStateDescriptor> listSinksForSource(String diagramId,String blockName) ;
+	public List<SerializableBlockStateDescriptor> listSinksForSource(String diagramId,String blockId) ;
 	/**
 	 * Query the gateway for list of its source blocks associated with the
 	 * specified sink. The blocks that are returned are not constrained
 	 * to be part of the same diagram, family or application.
 	 * @param diagramId of the parent diagram
-	 * @param blockName name of the block within the diagram  
+	 * @param blockId Id of the sink block  
 	 * @return a list of blocks logically connected to the sink.
 	 */
-	public List<SerializableBlockStateDescriptor> listSourcesForSink(String diagramId,String blockName) ;
+	public List<SerializableBlockStateDescriptor> listSourcesForSink(String diagramId,String blockId) ;
 	/** 
 	 * @param diagramId of the parent diagram
 	 * @param blockName name of the block within the diagram
@@ -351,6 +366,17 @@ public interface ToolkitRequestHandler  {
 	 * @param blockId id of the subject block as a string
 	 */
 	public void propagateBlockState(String diagramId,String blockId) ;
+		/** Update a single property for a block 
+		 * @param duuid diagram unique Id
+		 * @param buuid block unique Id
+		 * @param name the new name
+		 */
+		public void renameBlock(String duuid,String buuid,String name ) ;
+	/**
+	 * Rename a SQLTag given its path and new name. The path must contain the
+	 * provider name in brackets.
+	 */
+	public void renameTag(String name,String path);
 	/**
 	 * Execute reset() on a specified block
 	 * @param diagramId of the parent diagram
@@ -433,6 +459,16 @@ public interface ToolkitRequestHandler  {
 	 * @param property the changed property
 	 */
 	public void setBlockProperty(UUID duuid,UUID buuid,BlockProperty property ) ;
+	
+	/** Change the binding on a block property in such a way that the block and UI
+	 * are notified of the change.
+	 *  
+	 * @param diagramId diagram's unique Id as a String
+	 * @param blockId Id of the block as a String
+	 * @param prop the changed property
+	 * @param value the new binding of the property. The value must be a legal tag path 
+	 */
+	public void setBlockPropertyBinding(String diagramId,String blockId,String prop,String value ) ;
 	
 	/** Change the value of a block property in such a way that the block and UI
 	 * are notified of the change.

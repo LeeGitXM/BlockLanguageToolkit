@@ -9,7 +9,6 @@ import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.serializable.SerializableApplication;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
-import com.ils.common.GeneralPurposeDataContainer;
 
 /**
  * An application is a specialized process node.

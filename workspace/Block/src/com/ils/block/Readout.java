@@ -8,7 +8,6 @@ import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
 import com.ils.blt.common.ProcessBlock;
-import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BindingType;
@@ -85,8 +84,9 @@ public class Readout extends AbstractProcessBlock implements ProcessBlock {
 		valueProperty.setBindingType(BindingType.ENGINE);
 		setProperty(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
 		
-		// Define a single input -- but allow multiple connections
+		// Define a single input 
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.ANY);
+		input.setIsMultiple(false);
 		anchors.add(input);
 
 		// Define a single output
@@ -194,6 +194,7 @@ public class Readout extends AbstractProcessBlock implements ProcessBlock {
 		prototype.setPaletteLabel("Readout");
 		prototype.setTooltipText("Show current connection value. Sample formats: %s (string), %3.2f (float), %d (integer)");
 		prototype.setTabName(BlockConstants.PALETTE_TAB_MISC);
+		
 		BlockDescriptor view = prototype.getBlockDescriptor();
 		view.setBlockClass(getClass().getCanonicalName());
 		view.setStyle(BlockStyle.READOUT);

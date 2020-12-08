@@ -1,5 +1,5 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved.
+ *   (c) 2014-2020  ILS Automation. All rights reserved.
  */
 package com.ils.blt.designer.editor;
 
@@ -16,11 +16,21 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
-import com.ils.blt.client.ClientScriptExtensionManager;
+import com.ils.blt.common.ApplicationRequestHandler;
+import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.BusinessRules;
+import com.ils.blt.common.block.BlockConstants;
+import com.ils.blt.common.block.BlockProperty;
+import com.ils.blt.common.script.CommonScriptExtensionManager;
 import com.ils.blt.common.script.ScriptConstants;
+import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
+import com.ils.blt.common.serializable.SerializableResourceDescriptor;
+import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.workspace.ProcessBlockView;
+import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.ils.blt.designer.workspace.WorkspaceRepainter;
-import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
+import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
+import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
 import net.miginfocom.swing.MigLayout;
@@ -81,49 +91,77 @@ public class NameEditPanel extends BasicEditPanel {
 		okButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if( !nameField.getText().isEmpty()) {
-					ClientScriptExtensionManager sem = ClientScriptExtensionManager.getInstance();
-					boolean nameCollision = false;
-					for (Block blk: editor.getDiagram().getBlocks()) {
-						if (((ProcessBlockView)blk).getName().equalsIgnoreCase(nameField.getText())) {
-							if (((ProcessBlockView)blk).getClassName().toLowerCase().contains("finaldiagnosis") ||
-								((ProcessBlockView)blk).getClassName().toLowerCase().contains("sqcdiagnosis")) {
-								nameCollision = true;
-							}
+					DesignerContext context = editor.getContext();
+					ProcessDiagramView diagram = editor.getDiagram();
+					
+					// only check if name has changed.
+					if (block.isDiagnosis() && nameField.getText().equalsIgnoreCase(block.getName()) == false) {
+						
+						BLTDesignerHook hook = (BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID);
+						String msg = hook.scanForDiagnosisNameConflicts(diagram, nameField.getText());// send name and block
+						if (msg != null && msg.length() > 1) {
+							log.infof("Naming error: " + msg);
+							ErrorUtil.showError("Naming error, duplicate diagnosis name: " + msg);
+							return;  // abort save
+							
 						}
 					}
-					if (!nameCollision) {
-						if( sem.getClassNames().contains(block.getClassName()) ) {
-							try {
-								
-								DesignerContext context = editor.getContext();
-										
-								sem.runScript(context.getScriptManager(),block.getClassName(), ScriptConstants.NODE_RENAME_SCRIPT, 
-										editor.getDiagram().getId().toString(),block.getName(),nameField.getText());     // Old name, new name
-							}
-							catch( Exception ex ) {
-								log.errorf("NameEditPanel.constructor: Exception ("+ex.getMessage()+")",ex); // Throw stack trace
-							}
+					CommonScriptExtensionManager sem = CommonScriptExtensionManager.getInstance();
+					if( sem.getClassNames().contains(block.getClassName()) ) {
+						try {
+							sem.runScript(context.getScriptManager(),block.getClassName(), ScriptConstants.NODE_RENAME_SCRIPT, 
+									editor.getDiagram().getId().toString(),block.getName(),nameField.getText());     // Old name, new name
 						}
-						block.setName(nameField.getText());
-					} else {
-						JOptionPane.showMessageDialog(editor,
-								"A block by that name already exists, please choose a different name",
-								"Name Collision warning",
-								JOptionPane.WARNING_MESSAGE);
+						catch( Exception ex ) {
+							log.errorf("NameEditPanel.constructor: Exception ("+ex.getMessage()+")",ex); // Throw stack trace
+						}
 					}
-					try {
-						block.setNameDisplayed(annotationCheckBox.isSelected());
-						block.setNameOffsetX(Integer.parseInt(xfield.getText()));
-						block.setNameOffsetY(Integer.parseInt(yfield.getText()));
-						setSelectedPane(BlockEditConstants.HOME_PANEL);
-						editor.updatePanelForBlock(BlockEditConstants.HOME_PANEL, block);
-						editor.saveDiagram();
+
+					block.setName(nameField.getText());
+					editor.updateCorePanel(BlockEditConstants.HOME_PANEL,block);
+					if( block.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK) ) {
+						BlockProperty prop = block.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
+						String path = prop.getBinding();
+						ApplicationRequestHandler handler = editor.getRequestHandler();
+						// If the tag is is in the standard location, rename it
+						// otherwise, create a new one. Name must be a legal tag path element.
+						if( !BusinessRules.isStandardConnectionsFolder(path) ) {
+							String provider = getProvider();
+							path = String.format("[%s]%s/%s",provider,BlockConstants.SOURCE_SINK_TAG_FOLDER,nameField.getText());
+							handler.createTag(DataType.String,path);
+						}
+						else {
+							handler.renameTag(nameField.getText(), path);
+							path = renamePath(nameField.getText(), path);
+						}
+						prop.setBinding(path);
+						
+						// Perform similar modification on connected sources
+						// Use the scripting interface to handle diagrams besides the current
+						// The block name has already changed.
+						for(SerializableBlockStateDescriptor desc:handler.listSourcesForSink(diagram.getId().toString(),block.getId().toString())) {
+							SerializableResourceDescriptor rd = handler.getDiagramForBlock(desc.getIdString());
+							if( rd==null ) continue;
+							log.infof("NameEditPanel.actionPerformed: sink connected to %s",desc.getName());
+							handler.setBlockPropertyBinding(rd.getId(), desc.getIdString(),BlockConstants.BLOCK_PROPERTY_TAG_PATH,path);
+							handler.renameBlock(rd.getId(), desc.getIdString(), nameField.getText());
+							editor.saveDiagram(rd.getResourceId());
+						}
 					}
-					catch(NumberFormatException nfe) {
-						JOptionPane.showMessageDialog(NameEditPanel.this, String.format("Illegal value for offset--please re-enter (%s)",nfe.getLocalizedMessage()),
-								"Display Parameter Entry Error",JOptionPane.ERROR_MESSAGE);
-						block.setNameDisplayed(false);
-					}
+				}
+				try {
+					block.setNameDisplayed(annotationCheckBox.isSelected());
+					block.setNameOffsetX(Integer.parseInt(xfield.getText()));
+					block.setNameOffsetY(Integer.parseInt(yfield.getText()));
+					setSelectedPane(BlockEditConstants.HOME_PANEL);
+					editor.updateCorePanel(BlockEditConstants.HOME_PANEL, block);
+					editor.updatePanelForProperty(BlockEditConstants.HOME_PANEL, block.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH));
+					editor.saveDiagram();
+				}
+				catch(NumberFormatException nfe) {
+					JOptionPane.showMessageDialog(NameEditPanel.this, String.format("Illegal value for offset--please re-enter (%s)",nfe.getLocalizedMessage()),
+							"Display Parameter Entry Error",JOptionPane.ERROR_MESSAGE);
+					block.setNameDisplayed(false);
 				}
 			}
 		});
@@ -148,7 +186,15 @@ public class NameEditPanel extends BasicEditPanel {
 		field.setEditable(true);
 		return field;
 	}
-
+	// Replace the last element of path with name
+	private String renamePath(String name,String path) {
+		int index = path.lastIndexOf("/");
+		if( index>0 ) {
+			path = path.substring(0, index+1);
+			path = path + name;
+		}
+		return path;
+	}
 	/**
 	 * Change the values displayed given a new block.
 	 * @param blk

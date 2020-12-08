@@ -3,7 +3,6 @@
  */
 package com.ils.block;
 
-import java.util.Date;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
@@ -17,13 +16,10 @@ import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.PlacementHint;
 import com.ils.blt.common.block.PropertyType;
-import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.control.ExecutionController;
-import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
-import com.ils.blt.common.notification.SignalNotification;
 import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
@@ -31,7 +27,7 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 /**
  * This class is a no-op. It simply passes its input onto the output.
  */
-@ExecutableBlock
+
 public class ControlCounter extends AbstractProcessBlock implements ProcessBlock {
 	private BlockProperty valueProperty = null;
 	private int counter = 0;
@@ -74,6 +70,7 @@ public class ControlCounter extends AbstractProcessBlock implements ProcessBlock
 		// Define an input
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
 		input.setHint(PlacementHint.L);
+		input.setIsMultiple(false);
 		anchors.add(input);
 
 		// Define a single output

@@ -21,6 +21,7 @@ import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
+import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
@@ -62,10 +63,16 @@ public class GatewayRpcDispatcher   {
 		requestHandler.clearWatermark(diagramId);
 	}
 	
+	
 	public void clearController() {
 		requestHandler.clearController();
 	}
-
+	public void createTag(DataType type,String path) {
+		requestHandler.createTag(type, path);
+	}
+	public void deleteTag(String path) {
+		requestHandler.deleteTag(path);
+	}
 	/**
 	 * This should always succeed because we create a block in the gateway whenever we 
 	 * create one from the palette.
@@ -75,9 +82,6 @@ public class GatewayRpcDispatcher   {
 	public Boolean diagramExists(String uuidString) {
 		return new Boolean(requestHandler.diagramExists(uuidString));
 	}
-
-
-	
 
 	public String getApplicationName(String uuid) {
 		return requestHandler.getApplicationName(uuid);
@@ -314,7 +318,9 @@ public class GatewayRpcDispatcher   {
 	public List<SerializableBlockStateDescriptor> listBlocksInDiagram(String diagramId) {
 		return requestHandler.listBlocksInDiagram(diagramId);
 	}
-	
+	public List<SerializableBlockStateDescriptor> listBlocksOfClass(String className) {
+		return requestHandler.listBlocksOfClass(className);
+	}
 	public List<SerializableBlockStateDescriptor> listBlocksUpstreamOf(String diagramId, String blockName) {
 		return requestHandler.listBlocksUpstreamOf(diagramId, blockName);
 	}
@@ -339,12 +345,12 @@ public class GatewayRpcDispatcher   {
 		return requestHandler.listResourceNodes();
 	}
 
-	public List<SerializableBlockStateDescriptor> listSinksForSource(String diagramId,String blockName) {
-		return requestHandler.listSinksForSource(diagramId,blockName);
+	public List<SerializableBlockStateDescriptor> listSinksForSource(String diagramId,String blockId) {
+		return requestHandler.listSinksForSource(diagramId,blockId);
 	}
 
-	public List<SerializableBlockStateDescriptor> listSourcesForSink(String diagramId,String blockName) {
-		return requestHandler.listSourcesForSink(diagramId,blockName);
+	public List<SerializableBlockStateDescriptor> listSourcesForSink(String diagramId,String blockId) {
+		return requestHandler.listSourcesForSink(diagramId,blockId);
 	}
 	
 	public String pathForBlock(String diagramId,String blockName) {
@@ -387,6 +393,19 @@ public class GatewayRpcDispatcher   {
 	 */
 	public List<SerializableBlockStateDescriptor> queryDiagram(String diagId) {
 		return  requestHandler.listBlocksInDiagram(diagId);
+	}
+	/** Change the name of a block
+	 * 
+	 */
+	public void renameBlock(String diagramIdString,String blockIdString,String name) {
+		requestHandler.renameBlock(diagramIdString, blockIdString, name);
+	}
+	/**
+	 * Rename a SQLTag given its path and new name. The path must contain the
+	 * provider name in brackets.
+	 */
+	public void renameTag(String name,String path) {
+		requestHandler.renameTag(name,path);
 	}
 	/**
 	 * Reset a block in a diagram given string forms of their UUID
@@ -503,6 +522,18 @@ public class GatewayRpcDispatcher   {
 		catch(IOException ioe) {
 			log.warnf("%s.setBlockProperty: IO exception (%s)",TAG,ioe.getLocalizedMessage());
 		}; 
+	}
+	
+	/** Change the value of a block property in such a way that the block and UI
+	 * are notified of the change.
+	 *  
+	 * @param diagramId diagram's unique Id as a String
+	 * @param blockId Id of the block as a String
+	 * @param pname the changed property
+	 * @param bind the new binding value of the property. The binding is a tag path.
+	 */
+	public void setBlockPropertyBinding(String diagramId,String blockId,String pname,String binding )  {
+		requestHandler.setBlockPropertyBinding(diagramId,blockId,pname,binding);
 	}
 
 	/** Change the value of a block property in such a way that the block and UI

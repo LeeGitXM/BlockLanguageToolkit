@@ -7,6 +7,10 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Image;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.FileWriter;
@@ -19,9 +23,9 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
+import javax.swing.SwingUtilities;
 import javax.swing.tree.TreePath;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
@@ -32,16 +36,16 @@ import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
-import com.ils.blt.common.serializable.UUIDResetHandler;
+import com.ils.blt.designer.AuxiliaryDataRestoreManager;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.NotificationHandler;
-import com.ils.blt.designer.ResourceCreateManager;
 import com.ils.blt.designer.ResourceDeleteManager;
 import com.ils.blt.designer.ResourceUpdateManager;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
+import com.ils.blt.designer.workspace.WorkspaceRepainter;
 import com.inductiveautomation.ignition.client.designable.DesignableContainer;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.client.util.action.BaseAction;
@@ -49,7 +53,6 @@ import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.execution.ExecutionManager;
 import com.inductiveautomation.ignition.common.execution.impl.BasicExecutionEngine;
-import com.inductiveautomation.ignition.common.model.ApplicationScope;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.ProjectChangeListener;
@@ -90,6 +93,8 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	protected final ImageIcon closedDisabledIcon;
 	protected final ImageIcon openRestrictedIcon;
 	protected final ImageIcon closedRestrictedIcon;
+//	private CutAction cutDiagramAction = null;
+	private CopyAction copyDiagramAction = null;
 
 	/**
 	 * Constructor. A DiagramTreeNode is created initially without child resources.
@@ -118,7 +123,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		openRestrictedIcon = iconFromPath("Block/icons/navtree/diagram_isolated.png");
 		closedRestrictedIcon = iconFromPath("Block/icons/navtree/diagram_closed_isolated.png");
 		setIcon( closedIcon);
-		setItalic(context.getProject().isResourceDirty(resource));
+//		setItalic(context.getProject().isResourceDirty(resource));  // EREIAM JH - Disabled until italic system fixed
 		context.addProjectChangeListener(this);
 		
 		NotificationHandler notificationHandler = NotificationHandler.getInstance();
@@ -142,10 +147,10 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 			ProcessDiagramView view = (ProcessDiagramView)tab.getModel();
 			cleanView = !view.isDirty();
 		}
-		ExportDiagramAction exportAction = new ExportDiagramAction(menu.getRootPane(),resourceId);
+		ExportDiagramAction exportAction = new ExportDiagramAction(menu.getRootPane(),resourceId, this);
 		exportAction.setEnabled(cleanView);
 		menu.add(exportAction);
-		DuplicateDiagramAction duplicateAction = new DuplicateDiagramAction(this);
+//		DuplicateDiagramAction duplicateAction = new DuplicateDiagramAction(this);
 		DeleteDiagramAction diagramDeleteAction = new DeleteDiagramAction(this);
 		DebugDiagramAction debugAction = new DebugDiagramAction();
 		ResetDiagramAction resetAction = new ResetDiagramAction();
@@ -155,6 +160,8 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		// States are: ACTIVE, DISABLED, ISOLATED
 		DiagramState state = statusManager.getResourceState(resourceId);
 		saveAction = new SaveDiagramAction(this);
+		copyDiagramAction = new CopyAction(this);
+//		cutDiagramAction = new CutAction(this);
 		SetStateAction ssaActive = new SetStateAction(DiagramState.ACTIVE);
 		ssaActive.setEnabled(!state.equals(DiagramState.ACTIVE));
 		SetStateAction ssaDisable = new SetStateAction(DiagramState.DISABLED);
@@ -169,7 +176,9 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		menu.add(setStateMenu);
 		menu.add(saveAction);
 		menu.addSeparator();
-		menu.add(duplicateAction);
+		menu.add(copyDiagramAction);
+//		menu.add(cutDiagramAction);
+//		menu.add(duplicateAction);
 		menu.add(renameAction);
         menu.add(diagramDeleteAction);
         menu.addSeparator();
@@ -213,8 +222,9 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 				ProcessBlockView pbv = (ProcessBlockView)blk;
 				pbv.setDirty(false);  // Suppresses the popup?
 			}
+			//view.registerChangeListeners();
 			workspace.saveDiagramResource(tab);
-			view.registerChangeListeners();
+			
 		}
 	}
 
@@ -352,82 +362,128 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 			}
 		}
 	}
-	private class DuplicateDiagramAction extends BaseAction {
+
+	// copy the currently selected node UUID to the clipboard
+	private class CopyAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
 		private final AbstractResourceNavTreeNode parentNode;
-		public DuplicateDiagramAction(AbstractResourceNavTreeNode pNode)  {
-			super(PREFIX+".DuplicateNode",IconUtil.getIcon("copy"));  // preferences
+
+		public CopyAction(AbstractResourceNavTreeNode pNode)  {
+			super(PREFIX+".CopyNode",IconUtil.getIcon("copy"));
 			this.parentNode = pNode;
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			try {
-				EventQueue.invokeLater(new Runnable() {
-					public void run() {
-						long newId;
+           final Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 
-						try {	
-							newId = context.newResourceId();
-							ProjectResource res = parentNode.getProjectResource();
-							byte[] bytes = res.getData();
-							// It would be nice to simply use the clone constructor, but
-							// unfortunately, we have to replace all UUIDs with new ones
-							ObjectMapper mapper = new ObjectMapper();
-							mapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL,true);
-							SerializableDiagram sd = mapper.readValue(new String(bytes), SerializableDiagram.class);
-							if( sd!=null ) {
-
-								
-								ProcessDiagramView diagram = new ProcessDiagramView(res.getResourceId(),sd, context);
-//								boolean diagnosis = false;
-								for( Block blk:diagram.getBlocks()) {
-									ProcessBlockView pbv = (ProcessBlockView)blk;
-									if (pbv.isDiagnosis()) {
-//										diagnosis = true;
-										String originalName = pbv.getName();
-										renameDiagnosis(sd, pbv);
-										workspace.copyAuxData(pbv, originalName);
-								//  TODO - EREIAM JH figure out a way to call 		Saveauxdata from here
-										continue;
-									}
-								}
-								
-								
-
-								UUIDResetHandler uuidHandler = new UUIDResetHandler(sd);
-								uuidHandler.convertUUIDs();
-								sd.setDirty(true);    // Dirty because gateway doesn't know about it yet
-								sd.setState(DiagramState.DISABLED);
-								String json = mapper.writeValueAsString(sd);
-								GeneralPurposeTreeNode grandparent = (GeneralPurposeTreeNode)parentNode.getParent();
-								ProjectResource resource = new ProjectResource(newId,
-										BLTProperties.MODULE_ID, BLTProperties.DIAGRAM_RESOURCE_TYPE,
-										grandparent.nextFreeName(grandparent,sd.getName()), ApplicationScope.GATEWAY, json.getBytes());
-								
-								resource.setParentUuid(grandparent.getUUID());
-								new ResourceCreateManager(resource).run();	
-								grandparent.selectChild(new long[] {newId} );
-								statusManager.setResourceState(newId, sd.getState(),false);
-							}
-							else {
-								ErrorUtil.showWarning(String.format("Failed to deserialize diagram (%s)",res.getName()),"Clone Diagram");
-							}
-						}
-						catch( IOException ioe) {
-							// Should never happen, we just picked this off a chooser
-							log.warnf("%s: actionPerformed, IOException(%s)",TAG,ioe.getLocalizedMessage()); 
-						}
-						catch (Exception ex) {
-							log.errorf("%s: actionPerformed: Unhandled Exception (%s)",TAG,ex.getMessage());
-						}
-					}
-				});
-			} 
-			catch (Exception err) {
-				ErrorUtil.showError(TAG+" Exception cloning diagram",err);
-			}
+           ProjectResource res = parentNode.getProjectResource();
+           if (parentNode instanceof GeneralPurposeTreeNode) {
+        	   executionEngine.executeOnce(new AuxiliaryDataRestoreManager(workspace,(GeneralPurposeTreeNode)parentNode));
+           }
+           
+           String data = ""+res.getResourceId();
+           Transferable t =  new StringSelection(GeneralPurposeTreeNode.BLT_COPY_OPERATION + data);
+				   
+		   if (t != null) {
+			   try { 
+				   clipboard.setContents(t, null); 
+			   } catch (Exception ex) {
+				   ErrorUtil.showError(String.format("actionPerformed: Unhandled Exception (%s)",ex.getMessage()), "Copy Diagram");
+			   }
+		   }
+				   
 		}
-	} 
+	}
+
+//	// copy the currently selected node UUID to the clipboard
+//	private class CutAction extends BaseAction {
+//		private static final long serialVersionUID = 1L;
+//		private final AbstractResourceNavTreeNode parentNode;
+//
+//		public CutAction(AbstractResourceNavTreeNode pNode)  {
+//			super(PREFIX+".CutNode",IconUtil.getIcon("cut"));
+//			this.parentNode = pNode;
+//		}
+//
+//		public void actionPerformed(ActionEvent e) {
+//	       final Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+//
+//	       ProjectResource res = parentNode.getProjectResource();
+//           String data = ""+res.getResourceId();
+//           
+//           Transferable t =  new StringSelection(GeneralPurposeTreeNode.BLT_CUT_OPERATION + data);
+//				   
+//		   if (t != null) {
+//			   try { 
+//				   clipboard.setContents(t, null); 
+//			   } catch (Exception ex) {
+//				   ErrorUtil.showError(String.format("actionPerformed: Unhandled Exception (%s)",ex.getMessage()), "Cut Diagram");
+//			   }
+//		   }
+//				   
+//		}
+//	}
+
+	
+	
+//	private class DuplicateDiagramAction extends BaseAction {
+//		private static final long serialVersionUID = 1L;
+//		private final AbstractResourceNavTreeNode parentNode;
+//		public DuplicateDiagramAction(AbstractResourceNavTreeNode pNode)  {
+//			super(PREFIX+".DuplicateNode",IconUtil.getIcon("copy"));  // preferences
+//			this.parentNode = pNode;
+//		}
+//
+//		public void actionPerformed(ActionEvent e) {
+//			try {
+//				EventQueue.invokeLater(new Runnable() {
+//					public void run() {
+//						long newId;
+//
+//						try {	
+//							newId = context.newResourceId();
+//							ProjectResource res = parentNode.getProjectResource();
+//							byte[] bytes = res.getData();
+//							// It would be nice to simply use the clone constructor, but
+//							// unfortunately, we have to replace all UUIDs with new ones
+//							ObjectMapper mapper = new ObjectMapper();
+//							mapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL,true);
+//							SerializableDiagram sd = mapper.readValue(new String(bytes), SerializableDiagram.class);
+//							if( sd!=null ) {
+//								UUIDResetHandler uuidHandler = new UUIDResetHandler(sd);
+//								uuidHandler.convertUUIDs();
+//								sd.setDirty(true);    // Dirty because gateway doesn't know about it yet
+//								sd.setState(DiagramState.DISABLED);
+//								String json = mapper.writeValueAsString(sd);
+//								GeneralPurposeTreeNode grandparent = (GeneralPurposeTreeNode)parentNode.getParent();
+//								ProjectResource resource = new ProjectResource(newId,
+//										BLTProperties.MODULE_ID, BLTProperties.DIAGRAM_RESOURCE_TYPE,
+//										grandparent.nextFreeName(grandparent,sd.getName()), ApplicationScope.GATEWAY, json.getBytes());
+//								
+//								resource.setParentUuid(grandparent.getUUID());
+//								new ResourceCreateManager(resource).run();	
+//								grandparent.selectChild(new long[] {newId} );
+//								statusManager.setResourceState(newId, sd.getState(),false);
+//							}
+//							else {
+//								ErrorUtil.showWarning(String.format("Failed to deserialize diagram (%s)",res.getName()),"Clone Diagram");
+//							}
+//						}
+//						catch( IOException ioe) {
+//							// Should never happen, we just picked this off a chooser
+//							log.warnf("%s: actionPerformed, IOException(%s)",TAG,ioe.getLocalizedMessage()); 
+//						}
+//						catch (Exception ex) {
+//							log.errorf("%s: actionPerformed: Unhandled Exception (%s)",TAG,ex.getMessage());
+//						}
+//					}
+//				});
+//			} 
+//			catch (Exception err) {
+//				ErrorUtil.showError(TAG+" Exception cloning diagram",err);
+//			}
+//		}
+//	} 
 	// From the root node, recursively log the contents of the tree
 	private class DebugDiagramAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
@@ -447,9 +503,11 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
     	private static final long serialVersionUID = 1L;
     	private final static String POPUP_TITLE = "Export Diagram";
     	private final Component anchor;
-    	public ExportDiagramAction(Component c,long resid)  {
+    	private DiagramTreeNode node;
+    	public ExportDiagramAction(Component c,long resid, DiagramTreeNode nodeIn)  {
     		super(PREFIX+".ExportDiagram",IconUtil.getIcon("export1")); 
     		anchor = c;
+    		node = nodeIn;
     	}
 
     	public void actionPerformed(final ActionEvent e) {
@@ -457,6 +515,8 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
     		try {
     			EventQueue.invokeLater(new Runnable() {
     				public void run() {
+    					
+    					
     					ExportDialog dialog = new ExportDialog(context.getFrame());
     					Object source = e.getSource();
     					if( source instanceof Component) {
@@ -480,6 +540,10 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
     							}
 
     							if( output.canWrite() ) {
+    								// restore auxiliary data so it gets included in the export.  
+    								//  The parent of a diagram has to be a GeneralPurposeTreeNode.
+    								executionEngine.executeOnce(new AuxiliaryDataRestoreManager(workspace, (GeneralPurposeTreeNode)node.getParent()));
+    		    					
     								ProjectResource res = context.getProject().getResource(resourceId);
     								if( res!=null ) {
 
@@ -609,6 +673,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 			ProjectResource pr = node.getProjectResource();
 			if( pr!=null ) {
 				new ResourceUpdateManager(workspace,pr).run();
+//				pr.setLocked(false);  // doesn't help
 				node.setItalic(false);
 			}
 		}
@@ -629,7 +694,8 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	/**
 	 * Provide public access for the action of setting the state of a diagram.
 	 * In particular this is used when recursively setting state from the application
-	 * level.
+	 * level. This is the canonical way to change diagram state.
+	 * 
 	 *  
 	 * @param state
 	 */
@@ -640,30 +706,27 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 			DiagramState oldState = null;
 			ProjectResource res = context.getProject().getResource(resourceId);
 			BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resourceId);
+			String uuidString = "";
 			if( tab!=null ) {
+				log.infof("%s.setDiagramState: %s now %s (open)",TAG, tab.getName(),state.name());
 				ProcessDiagramView view = (ProcessDiagramView)(tab.getModel());
-				oldState = view.getState();
-				view.setState(state);
-				updateState(res,state);
+				view.setState(state);		// Simply sets the view state
 				tab.setBackground(view.getBackgroundColorForState());
+				uuidString = view.getId().toString();
 			}
-			// Otherwise we need to de-serialize and re-serialize
+			// Otherwise we need to de-serialize and get the UUID
 			else {
 				byte[]bytes = res.getData();
 				SerializableDiagram sd = null;
 				ObjectMapper mapper = new ObjectMapper();
 				sd = mapper.readValue(bytes,SerializableDiagram.class);
-				oldState = sd.getState();
-				// Synchronize names as the resource may have been re-named since it was serialized
-				sd.setName(res.getName());
-				sd.setState(state);
-				bytes = mapper.writeValueAsBytes(sd);
-				res.setData(bytes); 
-				if( !oldState.equals(state)) {
-					updateState(res,state);
-				}
+				uuidString = sd.getId().toString();
 			}
-			
+			// Inform the gateway of the state and let listeners update the UI
+			ApplicationRequestHandler arh = new ApplicationRequestHandler();
+			arh.setDiagramState(uuidString, state.name());
+			statusManager.setResourceState(resourceId,state,true);
+			setDirty(false);
 			setIcon(getIcon());
 			refresh();
 		} 
@@ -672,19 +735,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 			ErrorUtil.showError(TAG+" Exception setting state",ex);
 		}
 	}
-	
-	/**
-	 * If there is a change, then we need to update the status manager
-	 * There is a race condition in the gateway if we attempt to save.
-	 * @param res
-	 */
-	private void updateState(ProjectResource res,DiagramState state) {
-		if( res!=null ) {
-			//new ResourceUpdateManager(workspace,res).run();
-			statusManager.setResourceState(resourceId,state,true);
-			setDirty(false);
-		}
-	}
+
 	
 	@Override
 	protected DesignerProjectContext projectCtx() {
@@ -760,7 +811,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	 */
 	public void updateUI(boolean drty) {
 		log.debugf("%s.setDirty: dirty = %s",TAG,(drty?"true":"false"));
-		setItalic(drty);
+//		setItalic(drty);     // EREIAM JH - Disabled until italic system fixed
 		if( saveAction!=null ) saveAction.setEnabled(drty);
 		refresh();
 	}
@@ -776,24 +827,37 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	}
 	
 	//============================================ Notification Change Listener =====================================
+	// The value is in response to a diagram state change.
+	// Do not re-inform the Gateway, since that's where this notification originated
 	@Override
-	public void diagramAlertChange(long resId, String state) {
+	public void diagramStateChange(long resId, String state) {
+		try {
+			DiagramState ds = DiagramState.valueOf(state);
+			statusManager.setResourceState(resourceId, ds,false);
+			// Force repaints of both NavTree and workspace
+			refresh();
+			BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resourceId);
+			if( tab!=null ) {
+				ProcessDiagramView view = (ProcessDiagramView)(tab.getModel());
+				view.setState(ds);  // There are no side effects
+				tab.setBackground(view.getBackgroundColorForState());
+				SwingUtilities.invokeLater(new WorkspaceRepainter());
+			}
+		}
+		catch(IllegalArgumentException iae) {
+			log.warnf("%s.diagramStateChange(%d): Illegal diagram state (%s)", TAG,resourceId,state);
+		}
 	}
 	@Override
 	public void bindingChange(String binding) {
 	}
-	// The value is in response to a diagram state change.
-	// Do not re-inform the Gateway, since that's where this notification originated
+	// This is the name of a block, so doesn't appear in the tree
+	@Override
+	public void nameChange(String name) {
+	}
 	@Override
 	public void valueChange(QualifiedValue value) {
-		try {
-			DiagramState ds = DiagramState.valueOf(value.getValue().toString());
-			statusManager.setResourceState(resourceId, ds,false);
-			refresh();   // Force a repaint
-		}
-		catch(IllegalArgumentException iae) {
-			log.warnf("%s.valueChange(%d): Illegal diagram state (%s)", TAG,resourceId,value.getValue().getClass());
-		}
+
 	}
 	@Override
 	public void watermarkChange(String newWatermark) {

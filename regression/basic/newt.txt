@@ -11,7 +11,12 @@ Test: Write to a single tag
 Step: Increament an integer tag
 Tagset: SingleFeed
 10:00:00 1
+10:00:05 Assert: Feed = 1 "Tag = 1"
 10:00:20 2
+10:00:25 Assert: Feed = 2 "Tag = 2"
 10:00:30 3
+10:00:35 Assert: Feed = 3 "Tag = 3"
 10:00:40 4
+10:00:45 Assert: Feed = 4 "Tag = 4"
 10:00:50 5
+10:00:55 Assert: Feed = 5 "Tag = 5"

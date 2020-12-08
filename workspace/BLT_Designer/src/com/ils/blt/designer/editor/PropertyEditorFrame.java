@@ -32,7 +32,7 @@ import com.jidesoft.docking.DockableFrame;
 public class PropertyEditorFrame extends DockableFrame implements ResourceWorkspaceFrame{
 	private static final String TAG = "PropertyEditorFrame";
 	public static final String DOCKING_KEY = "ProcessDiagramEditorFrame";
-	public static final String TITLE = "Block Properties Editor";
+	public static final String TITLE = "Symbolic AI Property Editor";
 	public static final String SHORT_TITLE = "Properties";
 	private final DesignerContext context;
 	private final DiagramWorkspace workspace;
@@ -78,6 +78,21 @@ public class PropertyEditorFrame extends DockableFrame implements ResourceWorksp
 		return true;
 	}
 	
+	public BlockPropertyEditor getEditor() {
+		return editor;
+	}
+
+	public void updateForFinalDiagnosis() {
+		if( editor!=null ) editor.shutdown();
+		editor = new BlockPropertyEditor(context,workspace,editor.getBlock());
+		contentPanel.removeAll();
+		//Create a scroll pane
+	    JScrollPane scrollPane = new JScrollPane(editor);
+		contentPanel.add(scrollPane,BorderLayout.CENTER);
+		validate();
+	}
+
+
 	private class DiagramWorkspaceListener extends DesignableWorkspaceAdapter {
 		@Override
 		public void itemSelectionChanged(List<JComponent> selections) {

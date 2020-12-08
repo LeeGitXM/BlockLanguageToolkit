@@ -32,6 +32,7 @@ public class NoteUIView extends AbstractUIView implements BlockViewUI, ChangeLis
 	private BlockProperty textProperty;
 	private BlockProperty widthProperty;
 	private BlockProperty heightProperty;
+	private BlockProperty backgroundColorProperty;
 	
 	public NoteUIView(ProcessBlockView view) {
 		super(view,0,0);
@@ -53,14 +54,17 @@ public class NoteUIView extends AbstractUIView implements BlockViewUI, ChangeLis
 		boolean hasText  = false;
 		boolean hasWidth = false;
 		boolean hasHeight= false;
+		boolean hasBackgroundColor= false;
 		for(BlockProperty property: properties ) {
 			if(property.getName().equals(BlockConstants.BLOCK_PROPERTY_TEXT))        hasText = true;
 			else if(property.getName().equals(BlockConstants.BLOCK_PROPERTY_WIDTH))  hasWidth= true;
 			else if(property.getName().equals(BlockConstants.BLOCK_PROPERTY_HEIGHT)) hasHeight=true;
+			else if(property.getName().equals(BlockConstants.BLOCK_PROPERTY_BACKGROUND_COLOR))  hasBackgroundColor= true;
 		}
-		if(!hasText) properties.add(new BlockProperty(BlockConstants.BLOCK_PROPERTY_TEXT,new BasicQualifiedValue(""),PropertyType.STRING,true));
-		if(!hasWidth) properties.add(new BlockProperty(BlockConstants.BLOCK_PROPERTY_WIDTH,new BasicQualifiedValue(new Integer(block.getPreferredWidth())),PropertyType.INTEGER,true));
-		if(!hasHeight) properties.add(new BlockProperty(BlockConstants.BLOCK_PROPERTY_HEIGHT,new BasicQualifiedValue(new Integer(block.getPreferredHeight())),PropertyType.INTEGER,true));
+		if(!hasText) properties.add(new BlockProperty(BlockConstants.BLOCK_PROPERTY_TEXT,"",PropertyType.STRING,true));
+		if(!hasWidth) properties.add(new BlockProperty(BlockConstants.BLOCK_PROPERTY_WIDTH,new Integer(block.getPreferredWidth()),PropertyType.INTEGER,true));
+		if(!hasHeight) properties.add(new BlockProperty(BlockConstants.BLOCK_PROPERTY_HEIGHT,new Integer(block.getPreferredHeight()),PropertyType.INTEGER,true));
+		if(!hasBackgroundColor) properties.add(new BlockProperty(BlockConstants.BLOCK_PROPERTY_BACKGROUND_COLOR,block.getBackgroundColor(),PropertyType.COLOR,true));
 	
 		// To save repeatedly picking through the property list (we already did it once), pull out
 		// the ones we are interested in. We listen for changes so we can promptly update the display
@@ -77,6 +81,10 @@ public class NoteUIView extends AbstractUIView implements BlockViewUI, ChangeLis
 				heightProperty = property;
 				heightProperty.addChangeListener(this);
 			}
+			else if(property.getName().equals(BlockConstants.BLOCK_PROPERTY_BACKGROUND_COLOR)) {
+				backgroundColorProperty = property;
+				backgroundColorProperty.addChangeListener(this);
+			}
 		}	
 	}
 
@@ -91,12 +99,32 @@ public class NoteUIView extends AbstractUIView implements BlockViewUI, ChangeLis
 		Font font = getFont();
 		Color foreground = this.getForeground();
 		Color background = this.getBackground();
+		Boolean opaque = false;
+
+		String selectedBackgroundName = (String)backgroundColorProperty.getValue();
+		
+		if (selectedBackgroundName != null) {
+			Color selectedBackground = null;
+		    try {
+		        selectedBackground = (Color)Color.class.getField(selectedBackgroundName.toUpperCase()).get(null);
+		    } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
+				selectedBackground = null;
+		    }
+			if (selectedBackground != null) {
+				background = selectedBackground;
+			}
+			background = selectedBackground;
+			opaque = true;
+		}
+		
+		final String finText = "<html>" + text + "</html>";
 		
 		// Display using the block properties:
 		label.setForeground(foreground);
 		label.setBackground(background);
+		label.setOpaque(opaque);
 		label.setFont(font);
-		label.setText(text);
+		label.setText(finText);
 		label.setSize(width, height); // TODO: should be setting this somewhere else than paint method?!
 		label.setBorder(border);
 		label.validate();

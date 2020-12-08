@@ -11,8 +11,8 @@ import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
 import javax.swing.JTextField;
 
-import com.ils.blt.client.component.PrefuseViewerComponent;
 import com.ils.blt.common.BLTProperties;
+import com.ils.common.component.PrefuseViewerComponent;
 import com.inductiveautomation.factorypmi.designer.property.customizers.DynamicPropertyProviderCustomizer;
 import com.inductiveautomation.vision.api.designer.beans.CommonBeanInfo;
 import com.inductiveautomation.vision.api.designer.beans.CustomizerDescriptor;

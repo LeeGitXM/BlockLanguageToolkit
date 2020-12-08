@@ -2,11 +2,17 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+<<<<<<< HEAD
 	<classpathentry combineaccessrules="false" kind="src" path="/BLT_Client"/>
+=======
+>>>>>>> BLT2
 	<classpathentry combineaccessrules="false" kind="src" path="/BLT_Common"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/BlockDef"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/External"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/Ignition-79"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ILS_Common"/>
+<<<<<<< HEAD
+=======
+	<classpathentry combineaccessrules="false" kind="src" path="/BlockDef"/>
+>>>>>>> BLT2
 	<classpathentry kind="output" path="bin"/>
 </classpath>

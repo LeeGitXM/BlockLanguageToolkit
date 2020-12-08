@@ -1,5 +1,5 @@
 /**
- *   (c) 2017  ILS Automation. All rights reserved. 
+ *   (c) 2017-2020  ILS Automation. All rights reserved. 
  */
 package com.ils.block;
 
@@ -23,7 +23,6 @@ import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.PlacementHint;
 import com.ils.blt.common.block.PropertyType;
-import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
@@ -36,7 +35,8 @@ import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
- * This class is a no-op. It simply passes its input onto the output.
+ * Compute the best fit line over a recent history of data points. The x-axis
+ * is the point count.
  */
 @ExecutableBlock
 public class LinearFit extends AbstractProcessBlock implements ProcessBlock {
@@ -109,6 +109,7 @@ public class LinearFit extends AbstractProcessBlock implements ProcessBlock {
 		// Define an input
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
 		input.setHint(PlacementHint.L);
+		input.setIsMultiple(false);
 		anchors.add(input);
 
 		// Define a two outputs
@@ -272,8 +273,8 @@ public class LinearFit extends AbstractProcessBlock implements ProcessBlock {
 	private void initializePrototype() {
 		prototype.setPaletteIconPath("Block/icons/palette/linear_fit.png");
 		prototype.setPaletteLabel("LinearFit");
-		prototype.setTooltipText("Calculate linear (or cubic) fit on recent history");
-		prototype.setTabName(BlockConstants.PALETTE_TAB_ANALYSIS);
+		prototype.setTooltipText("Calculate linear fit on recent history");
+		prototype.setTabName(BlockConstants.PALETTE_TAB_ARITHMETIC);
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setBlockClass(getClass().getCanonicalName());

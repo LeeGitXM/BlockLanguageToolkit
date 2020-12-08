@@ -114,6 +114,7 @@ public class LogicLatch extends AbstractProcessBlock implements ProcessBlock {
 		
 		// Define a single input
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.TRUTHVALUE);
+		input.setIsMultiple(false);
 		anchors.add(input);
 		
 		// Define a single output
@@ -129,6 +130,7 @@ public class LogicLatch extends AbstractProcessBlock implements ProcessBlock {
 		prototype.setPaletteLabel("LogicLatch");
 		prototype.setTooltipText("Retain first value received until reset");
 		prototype.setTabName(BlockConstants.PALETTE_TAB_LOGIC);
+		
 		BlockDescriptor view = prototype.getBlockDescriptor();
 		view.setEmbeddedIcon("Block/icons/embedded/latch.png");
 		view.setBlockClass(getClass().getCanonicalName());

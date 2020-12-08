@@ -1,5 +1,5 @@
 /**
- *   (c) 2013-2016  ILS Automation. All rights reserved.
+ *   (c) 2013-2020  ILS Automation. All rights reserved.
  *  
  */
 package com.ils.blt.designer;
@@ -33,7 +33,7 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  *  method that is invoked.
  */
 public class NotificationHandler implements PushNotificationListener {
-	private static String TAG = "NotificationHandler";
+	private static String CLSS = "NotificationHandler";
 	private final LoggerEx log;
 	private final Map<String,Map<String,NotificationChangeListener>> changeListenerMap;
 	private final Map<String,Object> payloadMap;        // Keyed by the message type.
@@ -85,74 +85,127 @@ public class NotificationHandler implements PushNotificationListener {
 		String moduleId = notice.getModuleId();
 		if( moduleId.equals(BLTProperties.MODULE_ID)) {
 			String key = notice.getMessageType();
-			Object payload = notice.getMessage();
-			log.tracef("%s.receiveNotification: key=%s,value=%s",TAG,key,(payload==null?"null":payload.toString()));
+			Object payload = notice.getMessage();	
 			if( payload==null ) return; // Ignore
+			//log.infof("%s.receiveNotification: key=%s,value=%s",CLSS,key,payload.toString());
 			
 			// Process alert change notifications independent of "attached" status
-			if(NotificationKey.isDiagramAlertKey(key)) {
+			if(NotificationKey.isAlertKey(key)) {
 				Map<String,NotificationChangeListener> listeners = changeListenerMap.get(key);
 				if( listeners != null ) {
 					for(NotificationChangeListener listener:listeners.values()) {
-						log.tracef("%s.receiveNotification: key=%s - notifying %s",TAG,key,listener.getClass().getName());
-						// Listener is the node status manager - // Refresh the Nav tree
+						// Listener is the node status manager - // Refresh the bell badges on the Nav tree
+						//log.infof("%s.receiveNotification: diagram key=%s - notifying %s of %s",CLSS,key,
+						//		listener.getClass().getName(),payload.toString());
 						long resourceId = Long.parseLong(key.substring(2));
-						listener.diagramAlertChange(resourceId, payload.toString());
+						listener.diagramStateChange(resourceId, payload.toString());
 					}
 				}
 				else {
-					log.debugf("%s.receiveNotification: no receiver for key=%s,value=%s",TAG,key,payload.toString());
+					log.debugf("%s.receiveNotification: no receiver for key=%s,value=%s",CLSS,key,payload.toString());
 				}
 			}
-			else if(hook==null || !hook.attachDiagrams()) {
-				;  // Ignore UI updates if the diagrams are "detached" 
+			// Notify an open diagram of a state change
+			// Used mostly by NavTree to animate diagram status
+			else if(NotificationKey.isDiagramKey(key)) {
+				Map<String,NotificationChangeListener> listeners = changeListenerMap.get(key);
+				if( listeners != null ) {
+					for(NotificationChangeListener listener:listeners.values()) {
+						//log.infof("%s.receiveNotification: diagram key=%s - notifying %s of %s, ",CLSS,key,
+								  //listener.getClass().getName(),payload.toString());
+						// Listener is a diagram, the value is the new state. 
+						// The diagram is expected to ignore all but its own resId
+						long resourceId = Long.parseLong(key.substring(2));
+						listener.diagramStateChange(resourceId, payload.toString());
+					}
+				}
+				else {
+					log.debugf("%s.receiveNotification: no receiver for key=%s,value=%s",CLSS,key,payload.toString());
+				}
 			}
-			else if( payload instanceof QualifiedValue ) {
+			// Listener is a basic anchor point.
+			else if(NotificationKey.isConnectionKey(key)) {
 				payloadMap.put(key, payload);
 				Map<String,NotificationChangeListener> listeners = changeListenerMap.get(key);
 				if( listeners != null ) {
-
 					for(NotificationChangeListener listener:listeners.values()) {
-						log.tracef("%s.receiveNotification: key=%s - notifying %s",TAG,key,listener.getClass().getName());
+						//log.infof("%s.receiveNotification: value key=%s - notifying %s",CLSS,key,listener.getClass().getName());
 						listener.valueChange((QualifiedValue)payload);
 					}
 					// Repaint the workspace
 					SwingUtilities.invokeLater(new WorkspaceRepainter());
 				}
 				else {
-					log.debugf("%s.receiveNotification: no receiver for key=%s,value=%s",TAG,key,payload.toString());
+					log.debugf("%s.receiveNotification: no receiver for key=%s,value=%s",CLSS,key,payload.toString());
 				}
 			}
-			else if(NotificationKey.isPropertyBindingKey(key)) {
+			else if(hook==null || !hook.attachDiagrams()) {
+				;  // Ignore UI updates if the diagrams are "detached" 
+			}
+			else if(NotificationKey.isNameChangeKey(key)) {
+				payloadMap.put(key, payload);
 				Map<String,NotificationChangeListener> listeners = changeListenerMap.get(key);
 				if( listeners != null ) {
 					for(NotificationChangeListener listener:listeners.values()) {
-						log.tracef("%s.receiveNotification: key=%s - notifying %s",TAG,key,listener.getClass().getName());
+						log.tracef("%s.receiveNotification: rename key=%s - notifying %s",CLSS,key,listener.getClass().getName());
+						listener.nameChange(payload.toString());
+					}
+					// Repaint the workspace
+					SwingUtilities.invokeLater(new WorkspaceRepainter());
+				}
+				else {
+					log.debugf("%s.receiveNotification: no receiver for key=%s,value=%s",CLSS,key,payload.toString());
+				}
+			}
+			// Payload is a qualified value
+			else if(NotificationKey.isPropertyValueKey(key)) {
+				payloadMap.put(key, payload);
+				Map<String,NotificationChangeListener> listeners = changeListenerMap.get(key);
+				if( listeners != null ) {
+					for(NotificationChangeListener listener:listeners.values()) {
+						log.tracef("%s.receiveNotification: value %s=%s - notifying %s",CLSS,
+								key,((QualifiedValue)payload).getValue().toString(),listener.getClass().getName());
+						listener.valueChange((QualifiedValue)payload);
+					}
+					// Repaint the workspace
+					SwingUtilities.invokeLater(new WorkspaceRepainter());
+				}
+				else {
+					log.debugf("%s.receiveNotification: no receiver for key=%s,value=%s",CLSS,key,payload.toString());
+				}
+			}
+			else if(NotificationKey.isPropertyBindingKey(key)) {
+				payloadMap.put(key, payload);
+				Map<String,NotificationChangeListener> listeners = changeListenerMap.get(key);
+				if( listeners != null ) {
+					for(NotificationChangeListener listener:listeners.values()) {
+						log.tracef("%s.receiveNotification: binding key=%s - notifying %s",CLSS,key,listener.getClass().getName());
 						listener.bindingChange(payload.toString());
 					}
 					// Repaint the workspace
 					SwingUtilities.invokeLater(new WorkspaceRepainter());
 				}
 				else {
-					log.debugf("%s.receiveNotification: no receiver for key=%s,value=%s",TAG,key,payload.toString());
+					log.debugf("%s.receiveNotification: no receiver for key=%s,value=%s",CLSS,key,payload.toString());
 				}
 			}
 			else if(NotificationKey.isWatermarkKey(key)) {
+				payloadMap.put(key, payload);
 				Map<String,NotificationChangeListener> listeners = changeListenerMap.get(key);
 				if( listeners != null ) {
 					for(NotificationChangeListener listener:listeners.values()) {
-						log.tracef("%s.receiveNotification: key=%s - notifying %s",TAG,key,listener.getClass().getName());
+						log.tracef("%s.receiveNotification: key=%s - notifying %s",CLSS,key,listener.getClass().getName());
 						listener.watermarkChange(payload.toString());
 					}
 					// Repaint the workspace
 					SwingUtilities.invokeLater(new WorkspaceRepainter());
 				}
 				else {
-					log.debugf("%s.receiveNotification: no receiver for key=%s,value=%s",TAG,key,payload.toString());
+					log.debugf("%s.receiveNotification: no receiver for key=%s,value=%s",CLSS,key,payload.toString());
 				}
 			}
 			else {
-				log.warnf("%s.receiveNotification: key:%s, payload %s=%s (ignored)",TAG,key,payload.getClass().getName(),payload.toString());
+				log.warnf("%s.receiveNotification: key:%s, payload %s=%s (ignored)",CLSS,key,payload.getClass().getName(),payload.toString());
 			}
 			
 		}
@@ -160,9 +213,30 @@ public class NotificationHandler implements PushNotificationListener {
 	/**
 	 * Receive notification from a ProcessViewDiagram in the Designer. This is a mechanism
 	 * to restore the diagram display to its state prior to its last serialization.
+	 * Note: This is used only blocks whose names have been programatically changed.
+	 */
+	public void initializeBlockNameNotification(String key,String name) {
+		if( key==null || name==null) return;
+		// Only initialize the payload map if the key doesn't exist
+		Object payload = payloadMap.get(key);
+		if(payload==null) payloadMap.put(key, name);
+		Map<String,NotificationChangeListener> listeners = changeListenerMap.get(key);
+		if( listeners != null ) {
+			for(NotificationChangeListener listener:listeners.values()) {
+				log.tracef("%s.initializeBlockNameNotification: key=%s - notifying %s",CLSS,key,listener.getClass().getName());
+				if( NotificationKey.isNameChangeKey(key) ) listener.nameChange(name);
+			}
+			// Repaint the workspace
+			SwingUtilities.invokeLater(new WorkspaceRepainter());
+		}
+	}
+
+	/**
+	 * Receive notification from a ProcessViewDiagram in the Designer. This is a mechanism
+	 * to restore the diagram display to its state prior to its last serialization.
 	 * Note: This is used only for properties bound to ENGINE.
 	 */
-	public void initializeNotification(String key,QualifiedValue value) {
+	public void initializePropertyValueNotification(String key,QualifiedValue value) {
 		if( key==null || value==null) return;
 		// Only initialize the payload map if the key doesn't exist
 		Object payload = payloadMap.get(key);
@@ -170,7 +244,7 @@ public class NotificationHandler implements PushNotificationListener {
 		Map<String,NotificationChangeListener> listeners = changeListenerMap.get(key);
 		if( listeners != null ) {
 			for(NotificationChangeListener listener:listeners.values()) {
-				log.tracef("%s.initializeNotification: key=%s - notifying %s",TAG,key,listener.getClass().getName());
+				log.tracef("%s.initializePropertyValueNotification: key=%s - notifying %s",CLSS,key,listener.getClass().getName());
 				if( NotificationKey.isPropertyValueKey(key) ) listener.valueChange(value);
 			}
 			// Repaint the workspace
@@ -185,7 +259,19 @@ public class NotificationHandler implements PushNotificationListener {
 	 * @param listener
 	 */
 	public void addNotificationChangeListener(String key,String source,NotificationChangeListener listener) {
-		log.debugf("%s.addNotificationChangeListener: source=%s key=%s (%s)",TAG,source,key,listener.getClass().getName());
+		addNotificationChangeListener(key,source,listener,true);
+	}
+	/**
+	 * The key used for PushNotification is unique for each receiver. Consequently we make a map
+	 * containing each interested recipient, by key. When an update arrives we notify each listener
+	 * registered for the event.
+	 * @param key
+	 * @param listener
+	 * @param update if true and if there is an existing notification matching the key, that notification
+	 *               is sent immediately.
+	 */
+	public void addNotificationChangeListener(String key,String source,NotificationChangeListener listener,boolean update) {
+		log.debugf("%s.addNotificationChangeListener: source=%s key=%s (%s)",CLSS,source,key,listener.getClass().getName());
 		Map<String,NotificationChangeListener> listeners = changeListenerMap.get(key);
 		if( listeners==null) {
 			listeners = new HashMap<>();
@@ -195,8 +281,11 @@ public class NotificationHandler implements PushNotificationListener {
 		
 		// Make an immediate update 
 		Object payload = payloadMap.get(key);
-		if( payload!=null && ((QualifiedValue)payload).getValue()!=null ) {
-			listener.valueChange((QualifiedValue)payload);
+		if( update && payload!=null ) {
+			if( NotificationKey.isNameChangeKey(key)) listener.nameChange(payload.toString());
+			else if(NotificationKey.isPropertyBindingKey(key)) listener.bindingChange(payload.toString());
+			else if(NotificationKey.isPropertyValueKey(key))    listener.valueChange((QualifiedValue)payload);
+			else if(NotificationKey.isWatermarkKey(key)) listener.watermarkChange(payload.toString());
 			// Repaint the workspace
 			SwingUtilities.invokeLater(new WorkspaceRepainter());
 		}
@@ -207,7 +296,7 @@ public class NotificationHandler implements PushNotificationListener {
 	 * @param key
 	 */
 	public void removeNotificationChangeListener(String key, String source) {
-		log.tracef("%s.removeNotificationChangeListener: key=%s",TAG,key);
+		log.tracef("%s.removeNotificationChangeListener: key=%s",CLSS,key);
 		Map<String,NotificationChangeListener> listeners = changeListenerMap.get(key);
 		if( listeners!=null ) {
 			listeners.remove(source);

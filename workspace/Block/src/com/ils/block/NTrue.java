@@ -22,7 +22,6 @@ import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
-import com.ils.blt.common.connection.ProcessConnection;
 import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
@@ -72,6 +71,15 @@ public class NTrue extends AbstractProcessBlock implements ProcessBlock {
 		qualifiedValueMap = new HashMap<>();
 		initialize();
 	}
+	/**
+	 * Initialize the qualified value map.
+	 */
+	@Override
+	public void start() {
+		super.start();
+		reconcileQualifiedValueMap(BlockConstants.IN_PORT_NAME,qualifiedValueMap,TruthValue.UNSET);
+		log.debugf("%s.start: initialized %d inputs",getName(),qualifiedValueMap.size());
+	}
 	
 	/**
 	 * Define the synchronization property and ports.
@@ -89,6 +97,7 @@ public class NTrue extends AbstractProcessBlock implements ProcessBlock {
 		
 		// Define a single input -- but allow multiple connections
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.TRUTHVALUE);
+		input.setIsMultiple(true);
 		anchors.add(input);
 
 		// Define a single output
@@ -172,6 +181,15 @@ public class NTrue extends AbstractProcessBlock implements ProcessBlock {
 		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
 		Map<String,String> attributes = descriptor.getAttributes();
 		attributes.put("Value", state.name());
+		for(String key:qualifiedValueMap.keySet()) {
+			QualifiedValue qv = (QualifiedValue)qualifiedValueMap.get(key);
+			if( qv!=null && qv.getValue()!=null) {
+				attributes.put(key, String.valueOf(qv.getValue()));
+			}
+			else {
+				attributes.put(key,"NULL"); 
+			}
+		}
 		return descriptor;
 	}
 	

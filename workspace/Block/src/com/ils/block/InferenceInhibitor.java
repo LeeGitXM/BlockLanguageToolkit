@@ -6,7 +6,6 @@ package com.ils.block;
 import java.util.Map;
 import java.util.UUID;
 
-import com.ils.block.annotation.ExecutableBlock;
 import com.ils.blt.common.ProcessBlock;
 import com.ils.blt.common.block.Activity;
 import com.ils.blt.common.block.AnchorDirection;
@@ -33,7 +32,6 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
  * Values that arrive during the inhibit period are discarded. Otherwise
  * values are propagated without change.
  */
-@ExecutableBlock
 public class InferenceInhibitor extends AbstractProcessBlock implements ProcessBlock {
 	private boolean inhibiting = false;
 	private TruthValue controlValue = TruthValue.UNSET;
@@ -74,20 +72,6 @@ public class InferenceInhibitor extends AbstractProcessBlock implements ProcessB
 		}
 
 	}
-	/**
-	 * Under the right circumstances we propagate the initial value.
-	 */
-	@Override
-	public void start() {
-		super.start();
-		if(propagateOnStart()) {
-			lastValue = new TestAwareQualifiedValue(timer,initialValue);
-			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
-			controller.acceptCompletionNotification(nvn);
-			state = initialValue;
-		}
-	}
-	
 	/**
 	 * A new value has appeared on an input anchor. If we are in an "inhibit" state, then 
 	 * retain this value until we are un-inhibited.
@@ -143,8 +127,6 @@ public class InferenceInhibitor extends AbstractProcessBlock implements ProcessB
 			}
 		}
 	}
-	
-
 
 	/**
 	 * @return a block-specific description of internal statue
@@ -158,7 +140,6 @@ public class InferenceInhibitor extends AbstractProcessBlock implements ProcessB
 		
 		return descriptor;
 	}
-
 
 	/**
 	 * Add properties that are new for this class.
@@ -178,12 +159,13 @@ public class InferenceInhibitor extends AbstractProcessBlock implements ProcessB
 		// Define a data input
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.TRUTHVALUE);
 		input.setHint(PlacementHint.L);
+		input.setIsMultiple(false);
 		anchors.add(input);
 		
 		// Define the control input
 		AnchorPrototype triggerIn = new AnchorPrototype(BlockConstants.CONTROL_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.TRUTHVALUE);
 		triggerIn.setHint(PlacementHint.T);
-		triggerIn.setAnnotation("T");
+//		triggerIn.setAnnotation("T");
 		anchors.add(triggerIn);
 		
 		// Define a single output
@@ -198,7 +180,7 @@ public class InferenceInhibitor extends AbstractProcessBlock implements ProcessB
 	@Override
 	public void propertyChange(BlockPropertyChangeEvent event) {
 		super.propertyChange(event);
-		this.isReceiver = true;
+//		this.setReceiver(true);
 		String propertyName = event.getPropertyName();
 		if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_TRIGGER)) {
 			trigger = TruthValue.valueOf(event.getNewValue().toString().toUpperCase());	

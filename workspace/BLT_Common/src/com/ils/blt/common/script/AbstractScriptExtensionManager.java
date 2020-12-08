@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.python.core.PyDictionary;
 import org.python.core.PyList;
@@ -87,7 +88,6 @@ public abstract class AbstractScriptExtensionManager {
 		else if( flavor.equals(ScriptConstants.NODE_DELETE_SCRIPT))  {
 			entry = "delete";
 			arglist = "uuid";
-//			arglist = "uuid,aux";  // EREIAM JH - added aux data, but only blocks seemed to get it, others empty
 		}
 		else if( flavor.equals(ScriptConstants.NODE_RENAME_SCRIPT))  {
 			entry = "rename";
@@ -191,6 +191,7 @@ public abstract class AbstractScriptExtensionManager {
 		}
 		else {
 			log.warnf("%s.runScript: Unknown python script type (%s)",CLSS,key);
+		    System.out.println();
 		}
 	}
 	

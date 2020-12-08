@@ -2,13 +2,14 @@ log: Block Language Toolkit Regression Suite
 #
 # Run the collection of tests for the "simple" diagrams
 #
-run: readwrite.txt
+run: action.txt
 run: arithmetic.txt
 run: average.txt
 run: comparisons.txt
 run: curvefit.txt
 run: dataconditioner.txt
 run: datecompare.txt
+run: finaldiagnosis.txt
 run: gain.txt
 run: highlimit.txt
 run: inference-memory.txt
@@ -16,16 +17,21 @@ run: inhibit.txt
 run: inhibit-inference.txt
 run: logic.txt
 run: logicfilter.txt
+run: multiple.txt
+run: newt.txt
+run: observations.txt
 run: one-trend.txt
 run: pattern.txt
 run: persistence.txt
 run: pythonblocks.txt
+run: readwrite.txt
 run: readwrite-labdata.txt
 run: routing.txt
 run: selector.txt
 run: setproperty.txt
 run: sqc.txt
 run: sqclogic.txt
+run: statistics.txt
 run: sum.txt
 run: switch.txt
 run: timedlimits.txt

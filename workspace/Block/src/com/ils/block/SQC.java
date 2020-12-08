@@ -13,6 +13,7 @@ import com.ils.block.annotation.ExecutableBlock;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagnosticDiagram;
 import com.ils.blt.common.ProcessBlock;
+import com.ils.blt.common.block.Activity;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BlockConstants;
@@ -96,8 +97,8 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	private void initialize() {	
 		setName("SQC");
-		this.isReceiver = true;
-		this.isTransmitter = true;
+//		this.setReceiver(true);
+//		this.setTransmitter(true);
 		BlockProperty clearProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET,new Boolean(clearOnReset),PropertyType.BOOLEAN,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET, clearProperty);
 		BlockProperty limitProperty = new BlockProperty(BLOCK_PROPERTY_SQC_LIMIT,new Double(limit),PropertyType.DOUBLE,true);
@@ -115,14 +116,17 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 		AnchorPrototype input = new AnchorPrototype(PORT_TARGET,AnchorDirection.INCOMING,ConnectionType.DATA);
 		input.setAnnotation("T");
 		input.setHint(PlacementHint.LT);
+		input.setIsMultiple(false);
 		anchors.add(input);
 		input = new AnchorPrototype(PORT_VALUE,AnchorDirection.INCOMING,ConnectionType.DATA);
 		input.setAnnotation("V");
 		input.setHint(PlacementHint.L);
+		input.setIsMultiple(false);
 		anchors.add(input);
 		input = new AnchorPrototype(PORT_STANDARD_DEVIATION,AnchorDirection.INCOMING,ConnectionType.DATA);
 		input.setAnnotation("S");
 		input.setHint(PlacementHint.LB);
+		input.setIsMultiple(false);
 		anchors.add(input);
 
 		// Define the main output, a truth value.
@@ -132,7 +136,26 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 	
 	@Override
 	public void reset() {
-		super.reset();
+//		super.reset();  // this block needs to propagate UNKNOWN
+		
+		this.state = TruthValue.UNKNOWN;
+		this.lastValue = null;
+		recordActivity(Activity.ACTIVITY_RESET,"");
+		if( controller!=null ) {
+			// Send notifications on all outputs to indicate empty connections.
+			// For truth-values, actually propagate UNKNWON since UNSET doesn't get propagated
+			for(AnchorPrototype ap:getAnchors()) {
+				if( ap.getAnchorDirection().equals(AnchorDirection.OUTGOING) ) {
+					if( ap.getConnectionType().equals(ConnectionType.TRUTHVALUE) ) {
+						QualifiedValue UNKNOWN_TRUTH_VALUE = new TestAwareQualifiedValue(timer,TruthValue.UNKNOWN);
+						controller.sendConnectionNotification(getBlockId().toString(), ap.getName(),UNKNOWN_TRUTH_VALUE);
+						OutgoingNotification nvn = new OutgoingNotification(this,ap.getName(),UNKNOWN_TRUTH_VALUE);
+						controller.acceptCompletionNotification(nvn);
+					}
+				}
+			}
+		}
+
 		if( clearOnReset ) {
 			clear();
 		}
@@ -416,7 +439,7 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 		prototype.setPaletteIconPath("Block/icons/palette/SQC.png");
 		prototype.setPaletteLabel("SQC");
 		prototype.setTooltipText("Perform an SPC analysis on the input and place results on output");
-		prototype.setTabName(BlockConstants.PALETTE_TAB_ANALYSIS);
+		prototype.setTabName(BlockConstants.PALETTE_TAB_STATISTICS);
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setEmbeddedLabel("SQC");

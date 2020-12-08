@@ -23,12 +23,14 @@ import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
+import com.ils.blt.common.notification.NotificationChangeListener;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.designer.workspace.ui.AbstractUIView;
 import com.ils.blt.designer.workspace.ui.UIFactory;
 import com.ils.common.GeneralPurposeDataContainer;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
+import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockComponent;
@@ -51,7 +53,7 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.impl.Ab
  * Note: initUI is called from the AbstractBlock constructor which is called
  *       when the diagram is opened.
  */
-public class ProcessBlockView extends AbstractBlock implements ChangeListener {
+public class ProcessBlockView extends AbstractBlock implements ChangeListener, NotificationChangeListener {
 	private static final String TAG = "ProcessBlockView";
 	private final static Random random = new Random();
 	private Map<String,ProcessAnchorDescriptor> anchors;
@@ -59,7 +61,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 	private GeneralPurposeDataContainer auxiliaryData = null;
 	private final ChangeEvent changeEvent;
 	private int background = Color.white.getRGB();
-	private final String className;
+	private String className;
 	private boolean dirty = false;   // A newly created block is clean because we initially sync with the gateway
 	private String editorClass = null; // Class name of custom editor for this block
 	private boolean encapsulation = false; // Is this an encapsulation block
@@ -78,13 +80,15 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 	private final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
 	private int preferredHeight = 0;              // Size the view to "natural" size
 	private int preferredWidth  = 0;              // Size the view to "natural" size
+	private String backgroundColor  = "GREY";
 	private Collection<BlockProperty> properties;
-	private boolean receiveEnabled = false;
+//	private boolean receiveEnabled = false;
 	private TruthValue state = TruthValue.UNSET;
+	private String badgeChar = null;
 	private String statusText;                    // Auxiliary text to display
 	private UUID subworkspaceId = null;           // Encapsulated diagram if encapsulation block
 	private BlockStyle style = BlockStyle.SQUARE;
-	private boolean transmitEnabled = false;
+//	private boolean transmitEnabled = false;
 	private AbstractUIView ui = null;
 	private UUID uuid = null;
 	
@@ -113,8 +117,9 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 		this.nameDisplayed  = descriptor.isNameDisplayed();
 		this.nameOffsetX    = descriptor.getNameOffsetX();
 		this.nameOffsetY    = descriptor.getNameOffsetY();
-		this.receiveEnabled = descriptor.isReceiveEnabled();
-		this.transmitEnabled= descriptor.isTransmitEnabled();
+		this.badgeChar      = descriptor.getBadgeChar();
+//		this.receiveEnabled = descriptor.isReceiveEnabled();
+//		this.transmitEnabled= descriptor.isTransmitEnabled();
 
 		this.anchors = new HashMap<>();
 		int order = 0;
@@ -157,8 +162,9 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 		this.nameOffsetY   = sb.getNameOffsetY();
 		this.state = sb.getState();
 		this.statusText = sb.getStatusText();
-		this.receiveEnabled  = sb.isReceiveEnabled();
-		this.transmitEnabled = sb.isTransmitEnabled();
+		this.badgeChar      = sb.getBadgeChar();
+//		this.receiveEnabled  = sb.isReceiveEnabled();
+//		this.transmitEnabled = sb.isTransmitEnabled();
 		this.subworkspaceId = sb.getSubworkspaceId();
 		this.anchors = new HashMap<>();
 		if(sb.getAnchors()!=null ) {
@@ -194,7 +200,6 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 		result.setHidden(anchor.isHidden());
 		result.setHint(anchor.getHint());
 		result.setMultiple(anchor.isMultiple());
-		result.setHidden(anchor.isHidden());
 		result.setSortOrder(anchor.getSortOrder());
 		return result;
 	}
@@ -221,8 +226,9 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 		result.setStatusText(getStatusText());
 		result.setStyle(getStyle());
 		result.setSubworkspaceId(subworkspaceId);
-		result.setReceiveEnabled(isReceiveEnabled());
-		result.setTransmitEnabled(isTransmitEnabled());
+//		result.setReceiveEnabled(isReceiveEnabled());
+//		result.setTransmitEnabled(isTransmitEnabled());
+		result.setBadgeChar(getBadgeChar());
 		result.setX(getLocation().x);
 		result.setY(getLocation().y);
 		
@@ -248,43 +254,78 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
      * type. This has an effect only if ctypeEditable is true. This
      * flag is always negative on restore from serialization. Additionally
      * the first signal input is not disturbed. Additionally control lines and 
-     * broadcast ports are not changed.
+     * broadcast ports are not changed. In the case where the
+	 * type is ANY or TEXT, the method will look downstream and match any current
+	 * connections.
      * @param newType
      */
     public void changeConnectorType(ConnectionType newType) {
     	if(ctypeEditable) {
-    		boolean foundSignal = false;
+    		boolean changed = false;
     		for( ProcessAnchorDescriptor anchor:getAnchors()) {
-    			if( !foundSignal && anchor.getConnectionType().equals(ConnectionType.SIGNAL)) {
-    				foundSignal = true;
+    			if( anchor.getConnectionType().equals(ConnectionType.SIGNAL)) {
+    				continue;  // Signal port is not changeable
     			}
     			else if(anchor.getDisplay().equals(BlockConstants.RECEIVER_PORT_NAME) ||
     					anchor.getDisplay().equals(BlockConstants.BROADCAST_PORT_NAME) ) {
     				continue;
     			}
-    			else {
+    			else if( !anchor.getConnectionType().equals(newType)){
+    				changed = true;
     				anchor.setConnectionType(newType);
     			}
     		}
-    		ui.reconfigure();
-    		fireStateChanged();
+    		if( changed ) {
+    			getUi().reconfigure();
+    			fireStateChanged();
+    		}
     	}
     }
 
 	@Override
 	public Block copy(Map<UUID, UUID> arg0) {
-		log.infof("%s: copy ...", TAG);
-		return null;
+		
+		//		This doesn't make a lot of sense.  Why does ignition pass
+		//      in a list of blocks selected when this only returns a single
+		//      block?  Very odd.  Not sure what to do with the rest of them
+		
+		ProcessBlockView newBlock = null;
+		for (UUID me:arg0.values()) {  
+			newBlock = new ProcessBlockView(this.convertToSerializable());
+			newBlock.uuid = me;
+		}
+		
+		return newBlock;
 	}
+	
 	@Override
 	public Collection<AnchorPoint> getAnchorPoints() {
-		if( ui==null ) ui = factory.getUI(style, this);
-		return ui.getAnchorPoints();	
+		if( getUi()==null ) {
+			ui = factory.getUI(style, this);
+		}
+		return getUi().getAnchorPoints();	
 	}
-	public Collection<ProcessAnchorDescriptor> getAnchors() { return anchors.values(); }
-	public GeneralPurposeDataContainer getAuxiliaryData() {return auxiliaryData;}
-	public int getBackground() { return background;}
-	public String getClassName() { return className; }
+	
+	public Collection<ProcessAnchorDescriptor> getAnchors() { 
+		return anchors.values(); 
+	}
+	
+	public GeneralPurposeDataContainer getAuxiliaryData() {
+		return auxiliaryData;
+	}
+	
+	public int getBackground() { 
+		return background;
+	}
+	
+	public synchronized String getClassName() { 
+//		removeXomFromBlockName();
+		String ret = new String(className);
+		if(ret.toLowerCase().startsWith("xom.block.")) {
+			ret = "ils." + ret.substring(4);
+		}
+		return ret; 
+	}
 
 	/** 
 	 * Define a default drop target based on the connector's anchor point 
@@ -328,28 +369,41 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 	public Point getLocation() {
 		return location;
 	}
+	// Simply do a linear search
+	public BlockProperty getProperty(String nam) {
+		BlockProperty result = null;
+		for( BlockProperty prop:getProperties()) {
+			if( prop.getName().equalsIgnoreCase(nam)) {
+				result = prop;
+				break;
+			}
+		}
+		return result;
+	}
 	public String getName() {return name;}
 	public int getNameOffsetX() { return nameOffsetX; }
 	public int getNameOffsetY() { return nameOffsetY; }
 	public int getPreferredHeight() {return preferredHeight;}
 	public int getPreferredWidth() {return preferredWidth;}
+	public String getBackgroundColor() {return backgroundColor;}
 	public Collection<BlockProperty> getProperties() { return properties; }
 	public TruthValue getState() {return state;}
 	public String getStatusText() { return statusText; }
 	public BlockStyle getStyle() { return style; }
+	public String getBadgeChar() { return badgeChar; }
 	public UUID getSubworkspaceId() {return subworkspaceId;}
 	
 	@Override
 	public void initUI(BlockComponent blk) {
 		ui = factory.getUI(style, this);
-		ui.install(blk);
+		getUi().install(blk);
 	}
 	public boolean isCtypeEditable() {return ctypeEditable;}
 	public boolean isDirty() {return dirty;}
 	public boolean isEncapsulation() {return encapsulation;}
 	public boolean isLocked() {return locked;}
 	public boolean isNameDisplayed() { return nameDisplayed; }
-	public boolean isReceiveEnabled() {return receiveEnabled;}
+//	public boolean isReceiveEnabled() {return receiveEnabled;}
 	public boolean isSignalAnchorDisplayed() {
 		for(ProcessAnchorDescriptor pad:anchors.values()) {
 			if(pad.getDisplay().equals(BlockConstants.SIGNAL_PORT_NAME)) {
@@ -358,7 +412,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 		}
 		return false;
 	}
-	public boolean isTransmitEnabled() {return transmitEnabled;}
+//	public boolean isTransmitEnabled() {return transmitEnabled;}
 	public void recordLatestValue(String port,QualifiedValue qv) {
 		if( qv==null || qv.getValue()==null) return;
 		log.tracef("%s.recordLatestValue: %s (%s) port %s (%s)",TAG,getName(),getId().toString(),port,qv.getValue().toString());
@@ -371,7 +425,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 		}
 	}
 	public void setAuxiliaryData(GeneralPurposeDataContainer auxiliaryData) {this.auxiliaryData = auxiliaryData;}
-	public void setCtypeEditable(boolean ctypeEditable) {this.ctypeEditable = ctypeEditable;}
+	public void setCtypeEditable(boolean flag) {this.ctypeEditable = flag;}
 	public void setDirty(boolean dirty) {this.dirty = dirty;} 
 	public void setEditorClass(String editorClass) {this.editorClass = editorClass;}
 	public void setEncapsulation(boolean encapsulation) {this.encapsulation = encapsulation;}
@@ -380,7 +434,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 	public void setEmbeddedLabel(String embeddedLabel) {this.embeddedLabel = embeddedLabel;}
 	public void setIconPath(String iconPath) {this.iconPath = iconPath;}
 	public void setLocked(boolean flag) {this.locked = flag;}
-	public void setName(String label) {this.name = label;}
+	public void setName(String label) {this.name = label; fireStateChanged(); }
 	public void setNameDisplayed(boolean showName) {this.nameDisplayed = showName;}
 	public void setNameOffsetX(int nameOffsetX) {this.nameOffsetX = nameOffsetX;}
 	public void setNameOffsetY(int nameOffsetY) {this.nameOffsetY = nameOffsetY;}
@@ -391,8 +445,11 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 	}
 	public void setPreferredHeight(int preferredHeight) {this.preferredHeight = preferredHeight;}
 	public void setPreferredWidth(int preferredWidth) {this.preferredWidth = preferredWidth;}
-	public void setProperties(Collection<BlockProperty> props) { this.properties = props; }
-	public void setReceiveEnabled(boolean receiveEnabled) {this.receiveEnabled = receiveEnabled;}
+	public void setPreferredWidth(String backgroundColor) {this.backgroundColor = backgroundColor;}
+	public void setProperties(Collection<BlockProperty> props) { 
+		this.properties = props; 
+		}
+//	public void setReceiveEnabled(boolean receiveEnabled) {this.receiveEnabled = receiveEnabled;}
 	public void setBackground(int b)  { this.background = b; }
 	// Find the generic signal anchor and set its "hidden" property
 	public void setSignalAnchorDisplayed(boolean flag) {
@@ -407,7 +464,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 	public void setStatusText(String statusText) { this.statusText = statusText; }
 	public void setStyle(BlockStyle s) { if( style!=null )this.style = s; }
 	public void setSubworkspaceId(UUID subworkspaceId) {this.subworkspaceId = subworkspaceId;}
-	public void setTransmitEnabled(boolean transmitEnabled) {this.transmitEnabled = transmitEnabled;}
+//	public void setTransmitEnabled(boolean transmitEnabled) {this.transmitEnabled = transmitEnabled;}
 	
 	
 	
@@ -498,23 +555,84 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 	  */
 	@Override
 	public void stateChanged(ChangeEvent e) {
-		if( ui != null ) {
+		if( getUi() != null ) {
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
-					ui.update();
+					getUi().update();
 				}
 			});
 		}
 		
 	}
 
+	/**
+	 *  Change the block anchor types to match the tag.
+	 *  Tags of type String, result in no change to the block.
+	 */
+	public void modifyConnectionForTagChange(BlockProperty property, DataType type) {	
+		String binding = property.getBinding();
+		if (binding != null) {
+			ConnectionType conType= determineDataTypeFromTagType(type);
+			if( !conType.equals(ConnectionType.TEXT)) {
+				changeConnectorType(conType);
+			}
+		}
+		
+	}
+
+	public ConnectionType determineDataTypeFromTagType(DataType type) {
+		ConnectionType conType = ConnectionType.ANY;
+		if (type == DataType.Int1 || 
+			type == DataType.Int2 ||
+			type == DataType.Int4 ||
+			type == DataType.Int8 ||
+			type == DataType.Float4 ||
+			type == DataType.Float8 ) {
+			conType = ConnectionType.DATA; 
+		} else  if (type == DataType.String || 
+			type == DataType.Text ) {
+			conType = ConnectionType.TEXT; 
+		} else  if (type == DataType.Boolean) { 
+			conType = ConnectionType.TRUTHVALUE; 
+		}
+		return conType;
+	}
+
+	public AbstractUIView getUi() {
+		return ui;
+	}
+
 	public boolean isDiagnosis() {
 		boolean ret = false;
 		if (getClassName().toLowerCase().contains("finaldiagnosis") ||
-				getClassName().toLowerCase().contains("sqcdiagnosis")) {
+			getClassName().toLowerCase().contains("sqcdiagnosis")) {
 			ret = true;
 		}
 		return ret;
+	}
+
+	// =================================== NotificationChangeListener =====================
+	@Override
+	public void diagramStateChange(long resourceId, String state) {	
+	}
+
+	@Override
+	public void bindingChange(String binding) {
+	}
+	
+	@Override
+	public void nameChange(String name) {
+		setName(name);
+	}
+
+	@Override
+	public void valueChange(QualifiedValue value) {	
+	}
+
+	@Override
+	public void watermarkChange(String newWatermark) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

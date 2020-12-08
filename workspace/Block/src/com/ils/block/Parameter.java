@@ -73,6 +73,7 @@ public class Parameter extends AbstractProcessBlock implements ProcessBlock {
 		// Define a single input
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.ANY);
 		input.setHint(PlacementHint.L);
+		input.setIsMultiple(false);
 		anchors.add(input);
 		// Define a single output
 		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.ANY);
@@ -132,7 +133,7 @@ public class Parameter extends AbstractProcessBlock implements ProcessBlock {
 			controller.acceptCompletionNotification(nvn);
 		}
 		// Even if locked, we update the current state
-		if( lastValue.getValue()!=null) {
+		if( lastValue!=null && lastValue.getValue()!=null) {
 			valueProperty.setValue(lastValue.getValue());
 			notifyOfStatus(lastValue);
 		}

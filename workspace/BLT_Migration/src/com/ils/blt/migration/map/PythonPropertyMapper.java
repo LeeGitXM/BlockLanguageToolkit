@@ -74,8 +74,8 @@ public class PythonPropertyMapper {
 					descriptors.put(BLTProperties.PALETTE_NAME_DISPLAYED,(bd.isNameDisplayed()?"true":"false"));
 					descriptors.put(BLTProperties.PALETTE_NAME_OFFSET_X,String.valueOf(bd.getNameOffsetX()));
 					descriptors.put(BLTProperties.PALETTE_NAME_OFFSET_Y,String.valueOf(bd.getNameOffsetY()));
-					descriptors.put(BLTProperties.PALETTE_RECEIVE_ENABLED,(bd.isReceiveEnabled()?"true":"false"));
-					descriptors.put(BLTProperties.PALETTE_TRANSMIT_ENABLED,(bd.isTransmitEnabled()?"true":"false"));
+//					descriptors.put(BLTProperties.PALETTE_RECEIVE_ENABLED,(bd.isReceiveEnabled()?"true":"false"));
+//					descriptors.put(BLTProperties.PALETTE_TRANSMIT_ENABLED,(bd.isTransmitEnabled()?"true":"false"));
 					descriptors.put(BLTProperties.PALETTE_TOOLTIP,bp.getTooltipText());
 					descriptors.put(BLTProperties.PALETTE_TAB_NAME,bp.getTabName());
 					descriptors.put(BLTProperties.PALETTE_VIEW_BACKGROUND,String.valueOf(bd.getBackground()));
@@ -245,12 +245,12 @@ public class PythonPropertyMapper {
 						else if( key.equalsIgnoreCase(BLTProperties.PALETTE_NAME_OFFSET_Y) ) {
 							iblock.setNameOffsetY(fcns.coerceToInteger(value));
 						}
-						else if( key.equalsIgnoreCase(BLTProperties.PALETTE_RECEIVE_ENABLED) ) {
-							iblock.setReceiveEnabled(value.equalsIgnoreCase("true"));
-						}
-						else if( key.equalsIgnoreCase(BLTProperties.PALETTE_TRANSMIT_ENABLED) ) {
-							iblock.setTransmitEnabled(value.equalsIgnoreCase("true"));
-						}
+//						else if( key.equalsIgnoreCase(BLTProperties.PALETTE_RECEIVE_ENABLED) ) {
+//							iblock.setReceiveEnabled(value.equalsIgnoreCase("true"));
+//						}
+//						else if( key.equalsIgnoreCase(BLTProperties.PALETTE_TRANSMIT_ENABLED) ) {
+//							iblock.setTransmitEnabled(value.equalsIgnoreCase("true"));
+//						}
 						else if( key.equalsIgnoreCase(BLTProperties.PALETTE_TOOLTIP) ) {
 							;
 						}

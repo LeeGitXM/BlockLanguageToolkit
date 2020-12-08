@@ -176,6 +176,20 @@ public class NodeStatusManager implements NotificationChangeListener   {
 		return node;
 	}
 	
+//	/**
+//	 * Improved version of findNode.  Some newly created nodes don't seem to make it into here
+//	 * @param resourceId
+//	 * @return the AbstractResourceNavTreeNode associated with the specified resourceId.
+//	 */
+//	public AbstractResourceNavTreeNode findNodeSlower(long resourceId) {
+//		log.debugf("%s.findNodeSlower(%d)",TAG,resourceId);
+//		Long key = new Long(resourceId);
+//		AbstractResourceNavTreeNode node = null;
+//		StatusEntry se = childrenByResourceId.get(key);
+//		if( se!=null ) node=se.getNode();
+//		return node;
+//	}
+//	
 	private void recursivelyDeleteChildren(Set<Long> children) {
 		if( children==null ) return;
 		for(Long child:children) {
@@ -217,7 +231,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 		log.tracef("%s.setResourceState: %s(%d) = %s",TAG,se.getName(),resourceId,bs.name());
 	}
 	/**
-	 * Called aftrer a save from the main menu. Update the status
+	 * Called after a save from the main menu. Update the status
 	 * of the nav-tree nodes.
 	 */
 	public void updateAll() {
@@ -226,6 +240,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 			StatusEntry se = statusByResourceId.get(key);
 			if( se!=null ) {
 				se.setClean();
+//				context.getProject().clearAllFlags();  // EREIAM JH - is this premature?
 				se.reportDirtyState();
 			}
 		}
@@ -296,7 +311,8 @@ public class NodeStatusManager implements NotificationChangeListener   {
 		public void setParent(long pid) { this.parentId=pid; }
 		public DiagramState getState() { return state; }
 		// Note: isDirty refers to the node of interest alone, excluding children
-		public boolean isDirty() {return context.getProject().isResourceDirty(resourceId);}
+		public boolean isDirty() {return context.getProject().isResourceDirty(resourceId);}   //  This still shows dirty AFTER save just long enough to mess up the node italics system
+//		public boolean isDirty() {return se.node.isResourceDirty(resourceId);}  // EREIAM JH - didn't have time to work this out
 
 		public void prepareToBeDeleted() {
 			if( node instanceof NavTreeNodeInterface && resourceId!=BLTProperties.ROOT_RESOURCE_ID) {
@@ -324,7 +340,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 
 // ================================ Notification Change Listener =========================================
 @Override
-public void diagramAlertChange(long resId, String state) {
+public void diagramStateChange(long resId, String state) {
 	StatusEntry se = statusByResourceId.get(new Long(resId));
 	se.setAlerting(state.equalsIgnoreCase("true"));
 	se.getNode().reload();
@@ -332,6 +348,9 @@ public void diagramAlertChange(long resId, String state) {
 
 @Override
 public void bindingChange(String binding) {}
+
+@Override
+public void nameChange(String name) {}
 
 @Override
 public void valueChange(QualifiedValue value) {}

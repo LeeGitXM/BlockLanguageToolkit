@@ -18,6 +18,7 @@ import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
+import com.inductiveautomation.ignition.common.util.LogUtil;
 
 /**
  * A Source Connection is a special class that receives values directly
@@ -30,7 +31,10 @@ public class SourceConnection extends Input implements ProcessBlock {
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
 	 */
 	public SourceConnection() {
-		super();
+		initialize();
+		initializePrototype();
+		log = LogUtil.getLogger(getClass().getPackage().getName()+".source");
+		log.debugf("Creating a SourceConnection for the palette");
 	}
 
 	/**
@@ -44,7 +48,7 @@ public class SourceConnection extends Input implements ProcessBlock {
 		super(ec,parent,block);
 	}
 	@Override
-	public String getClassName() {return BLTProperties.CLASS_NAME_SOURCE;}
+	public String getClassName() {return BlockConstants.BLOCK_CLASS_SOURCE;}
 	/**
 	 * A source block has has a special form of the explanation method in that
 	 * the explanation is derived from the most recent block to write to its
@@ -116,21 +120,21 @@ public class SourceConnection extends Input implements ProcessBlock {
 	 * Augment the palette prototype for this block class.
 	 */
 	protected void initializePrototype() {
-		prototype.setPaletteIconPath("Block/icons/palette/in_connection.png");
+		prototype.setPaletteIconPath("Block/icons/palette/source.png");
 		prototype.setPaletteLabel("Source");
 		prototype.setTooltipText("Receive data from a sink of the same name");
 		prototype.setTabName(BlockConstants.PALETTE_TAB_CONNECTIVITY);
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
+		desc.setBlockClass(getClass().getCanonicalName());
+		desc.setStyle(BlockStyle.ARROW);
 		desc.setPreferredHeight(40);
 		desc.setPreferredWidth(50);
-		desc.setBlockClass(getClass().getCanonicalName());
 		desc.setBackground(new Color(127,127,127).getRGB()); // Dark gray
-		desc.setStyle(BlockStyle.ARROW);
 		desc.setCtypeEditable(true);
 		desc.setNameDisplayed(true);
 		desc.setNameOffsetX(25);
-		desc.setNameOffsetY(45);
+		desc.setNameOffsetY(45);	
 	}
 	
 	/**

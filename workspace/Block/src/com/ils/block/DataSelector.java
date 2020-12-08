@@ -31,6 +31,8 @@ public class DataSelector extends AbstractProcessBlock implements ProcessBlock {
 	private static final String IN_PORT2_NAME = "in2";
 	private QualifiedValue in1 = null;  // save most recent inputs in case switch is thrown
 	private QualifiedValue in2 = null;
+	private boolean in1Received = false;
+	private boolean in2Received = false;
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -63,10 +65,12 @@ public class DataSelector extends AbstractProcessBlock implements ProcessBlock {
 		AnchorPrototype input1 = new AnchorPrototype(IN_PORT1_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
 		input1.setHint(PlacementHint.LT);
 		input1.setAnnotation("1");
+		input1.setIsMultiple(false);
 		anchors.add(input1);
 		AnchorPrototype input2 = new AnchorPrototype(IN_PORT2_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
 		input2.setHint(PlacementHint.LB);
 		input2.setAnnotation("2");
+		input2.setIsMultiple(false);
 		anchors.add(input2);
 		AnchorPrototype control = new AnchorPrototype(BlockConstants.RECEIVER_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.TRUTHVALUE);
 		control.setHint(PlacementHint.T);
@@ -78,7 +82,7 @@ public class DataSelector extends AbstractProcessBlock implements ProcessBlock {
 		anchors.add(output);
 		
 		for(AnchorPrototype desc:getAnchors()) {
-			log.tracef("EREIAM JH - initAnchorPoints counts(tblr)" + desc.getAnnotation() + " " + desc.getConnectionType().name());
+			log.trace("initAnchorPoints counts(tblr)" + desc.getAnnotation() + " " + desc.getConnectionType().name());
 		}
 			
 
@@ -100,8 +104,8 @@ public class DataSelector extends AbstractProcessBlock implements ProcessBlock {
 				this.state = qualifiedValueAsTruthValue(vcn.getValue());
 
 				QualifiedValue out = null;
-				if( state.equals(TruthValue.TRUE)) { out = in1;	}
-				if( state.equals(TruthValue.FALSE)) { out = in2; }
+				if( in1Received && state.equals(TruthValue.TRUE)) { out = in1;	} // don't propagate unless initial values have come in 
+				if( in2Received && state.equals(TruthValue.FALSE)) { out = in2; }
 				if (out != null) {
 					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,out);
 					controller.acceptCompletionNotification(nvn);
@@ -111,6 +115,7 @@ public class DataSelector extends AbstractProcessBlock implements ProcessBlock {
 			}
 			else if( vcn.getConnection().getDownstreamPortName().equalsIgnoreCase(IN_PORT1_NAME)) {
 				in1 = vcn.getValue();
+				in1Received = true;
 				if( state.equals(TruthValue.TRUE)) {
 					lastValue = vcn.getValue();
 					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
@@ -120,6 +125,7 @@ public class DataSelector extends AbstractProcessBlock implements ProcessBlock {
 			}
 			else if( vcn.getConnection().getDownstreamPortName().equalsIgnoreCase(IN_PORT2_NAME)) {
 				in2 = vcn.getValue();
+				in2Received = true;
 				if( state.equals(TruthValue.FALSE)) {
 					lastValue = vcn.getValue();
 					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
@@ -152,7 +158,15 @@ public class DataSelector extends AbstractProcessBlock implements ProcessBlock {
 		notifyOfStatus(lastValue);
 	}
 	
-	
+	/**
+	 */
+	@Override
+	public void reset() {
+		in1Received = false;
+		in2Received = false;
+	}
+
+		
 	private void notifyOfStatus(QualifiedValue qv) {
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}

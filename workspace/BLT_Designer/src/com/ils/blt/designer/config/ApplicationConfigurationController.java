@@ -4,9 +4,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.ils.blt.client.ClientScriptExtensionManager;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.DiagramState;
+import com.ils.blt.common.script.CommonScriptExtensionManager;
 import com.ils.blt.common.script.ScriptConstants;
 import com.ils.blt.common.serializable.SerializableApplication;
 import com.ils.blt.designer.navtree.GeneralPurposeTreeNode;
@@ -23,7 +23,7 @@ public class ApplicationConfigurationController {
 	protected final DesignerContext context;
 	private final ApplicationConfigurationDialog dialog;
 	private final ApplicationRequestHandler requestHandler;
-	private final ClientScriptExtensionManager extensionManager = ClientScriptExtensionManager.getInstance();
+	private final CommonScriptExtensionManager extensionManager = CommonScriptExtensionManager.getInstance();
 	private final GeneralPurposeTreeNode node;
 	private final SortedListModel<String> outputListModel;
 	protected final LoggerEx log;

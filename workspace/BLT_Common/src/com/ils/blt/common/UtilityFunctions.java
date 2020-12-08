@@ -34,12 +34,12 @@ public class UtilityFunctions  {
 	 */
 	public double parseDouble(String val) {
 		double result = Double.NaN;
-		if( !val.isEmpty()) {
+		if( !val.isEmpty() ) {
 			try{
 				result = Double.parseDouble(val);
 			}
 			catch(NumberFormatException nfe) {
-				//log.error(TAG+".parseDouble: Format exception "+nfe.getLocalizedMessage(),nfe); // prints stack trace
+				//log.error(TAG+".parseDouble: Format exception "+nfe.getLocalizedMessage(),nfe);
 				log.errorf("%s.parseDouble: Format exception for value %s",TAG,val);
 			}
 		}
@@ -105,7 +105,7 @@ public class UtilityFunctions  {
 		if( val!=null ) {
 			if( val instanceof Double)       result = ((Double)val).doubleValue();
 			else if( val instanceof Integer) result = ((Integer)val).intValue();
-			else                             result  = parseDouble(val.toString());	
+			else                             result  = parseDouble(val.toString());
 		}
 		return result;
 	}
@@ -114,7 +114,7 @@ public class UtilityFunctions  {
 	 * Force a Double, Integer or String to an int. Reports NumberFormatException
 	 * for bad input - and sets result to 0.
 	 */
-	public int coerceToInteger(Object val) {
+	public int coerceToInteger(Object val) throws NumberFormatException {
 		int result = 0;
 		if( val !=null ) {
 			if( val instanceof Integer)      result = ((Integer)val).intValue();
@@ -128,7 +128,7 @@ public class UtilityFunctions  {
 	 * Force a Double, Integer or String to an int. Reports NumberFormatException
 	 * for bad input - and sets result to 0.
 	 */
-	public long coerceToLong(Object val) {
+	public long coerceToLong(Object val) throws NumberFormatException {
 		long result = 0;
 		if( val !=null ) {
 			if( val instanceof Long)         result = ((Long)val).longValue();

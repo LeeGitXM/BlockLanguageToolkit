@@ -23,7 +23,7 @@ public class UUIDResetHandler   {
 	private final static String TAG = "UUIDResetHandler";
 	private final LoggerEx log;
 	private final SerializableDiagram diagram;
-	private final Map<UUID,UUID> blockLookup;      // Get new UUID from original
+	private final HashMap<UUID,UUID> blockLookup;      // Get new UUID from original
 	
 
 	
@@ -54,6 +54,9 @@ public class UUIDResetHandler   {
 			original = sb.getId();
 			sb.setId(UUID.randomUUID());
 			sb.setOriginalId(original);
+			if (blockLookup.get(original) != null) {
+				log.error("Duplicate block UUID found!! We are about to lose a link!! Original - :" + original.toString() + ": was linked to :" + blockLookup.get(original).toString() + ": now switching to :" + sb.getId().toString());
+			}
 			blockLookup.put(original, sb.getId());
 			for(SerializableAnchor sa:sb.getAnchors()) {
 				sa.setId(UUID.randomUUID());
@@ -111,6 +114,10 @@ public class UUIDResetHandler   {
 		}
 
 		return success;
+	}
+
+	public HashMap<UUID,UUID> getBlockLookup() {
+		return blockLookup;
 	}
 	
 }

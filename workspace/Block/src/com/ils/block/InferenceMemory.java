@@ -87,10 +87,12 @@ public class InferenceMemory extends AbstractProcessBlock implements ProcessBloc
 		AnchorPrototype setInput = new AnchorPrototype(SET_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.TRUTHVALUE);
 		setInput.setHint(PlacementHint.LT);
 		setInput.setAnnotation("S");
+		setInput.setIsMultiple(false);
 		anchors.add(setInput);
 		AnchorPrototype resetInput = new AnchorPrototype(RESET_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.TRUTHVALUE);
 		resetInput.setHint(PlacementHint.LB);
 		resetInput.setAnnotation("R");
+		resetInput.setIsMultiple(false);
 		anchors.add(resetInput);
 
 		// Define a single output

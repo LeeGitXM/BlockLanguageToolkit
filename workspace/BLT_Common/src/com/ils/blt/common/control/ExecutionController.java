@@ -29,7 +29,6 @@ public interface ExecutionController  {
 	public void acceptBroadcastNotification(BroadcastNotification note);
 	public void acceptCompletionNotification(OutgoingNotification note);
 	public void acceptConnectionPostNotification(ConnectionPostNotification note);
-	public void alterSubscription(UUID diagramId,UUID id,String propertyName);
 	public void clearCache();
 	public void clearSubscriptions();
 	public DiagnosticDiagram getDiagram(String diagramId);
@@ -49,10 +48,12 @@ public interface ExecutionController  {
 	public QualifiedValue getTagValue(UUID diagramId,String path);
 	public void sendAlertNotification(long resid, String val);
 	public void sendConnectionNotification(String blockid, String port, QualifiedValue val);
+	public void sendNameChangeNotification(String blockid, String name);
 	public void sendPropertyBindingNotification(String id, String propertyName, String val);
 	public void sendPropertyNotification(String id, String propertyName, QualifiedValue val);
 	public void sendStateNotification(long resid, String val);
 	public void sendWatermarkNotification(String diagramid, String val);
 	public void updateTag(UUID diagramId,String path,QualifiedValue val);
-	public String validateTag(UUID diagramId,String tagPath); 
+	public String validateTag(UUID diagramId,String tagPath);
+	void sendPropertyUpdateNotification(OutgoingNotification note, String blockId); 
 }

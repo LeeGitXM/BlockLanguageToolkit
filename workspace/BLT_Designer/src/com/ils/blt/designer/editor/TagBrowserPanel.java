@@ -16,6 +16,8 @@ import javax.swing.JTree;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
+import com.ils.blt.common.BusinessRules;
+import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
 import com.inductiveautomation.ignition.client.sqltags.tree.SQLTagTreeModel;
 import com.inductiveautomation.ignition.client.sqltags.tree.TagRenderer;
@@ -31,11 +33,12 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
 public class TagBrowserPanel extends BasicEditPanel {
 	private static final long serialVersionUID = 1L;
 	private final DesignerContext context;
-	private String selectedPath = "";
+	private static String selectedPath = "";
 	private BlockProperty property = null;
 	private final JTree tagTree;
 	private final TagRenderer cellRenderer;
 	private final TreeSelectionModel tagTreeSelectionModel;
+	private static TreePath lastSelected = null;
 	
 	public TagBrowserPanel(DesignerContext ctx,final BlockPropertyEditor editor) {
 		super(editor);
@@ -55,6 +58,9 @@ public class TagBrowserPanel extends BasicEditPanel {
 		treePane.setPreferredSize(BlockEditConstants.TREE_SIZE);
 		add(treePane,BorderLayout.CENTER);
 		JPanel buttonPanel = new JPanel();
+		if (lastSelected != null) {
+			tagTreeSelectionModel.setSelectionPath(lastSelected);  // open to last selected path
+		}
 		
 		JButton okButton = new JButton("OK");
 		buttonPanel.add(okButton);
@@ -65,15 +71,35 @@ public class TagBrowserPanel extends BasicEditPanel {
 					// It's possible to select something that's not a node.
 					if(selectedPaths[0].getLastPathComponent() instanceof TagTreeNode ) {
 						TagTreeNode node = (TagTreeNode)(selectedPaths[0].getLastPathComponent());
+						lastSelected = selectedPaths[0];
 						selectedPath = node.getTagPath().toString();
 						selectedPath = editor.modifyPathForProvider(selectedPath);
 						if(property!=null) {
 							log.debugf("TagBrowserPanel set property %s, binding now %s",property.getName(),selectedPath);
-							property.setBinding(selectedPath);
+							// Before changing the value check some business rules.
+							if( property.getName().equals(BlockConstants.BLOCK_PROPERTY_TAG_PATH) &&
+								!BusinessRules.isStandardConnectionsFolder(selectedPath) &&
+								(editor.getBlock().getClassName().equals(BlockConstants.BLOCK_CLASS_SINK)||
+								 editor.getBlock().getClassName().equals(BlockConstants.BLOCK_CLASS_SOURCE)) ) {
+								JOptionPane.showMessageDialog(TagBrowserPanel.this, 
+										String.format("The tag path for a source or sink block must be in the %s tag folder.",
+												BlockConstants.SOURCE_SINK_TAG_FOLDER));	
+							}
+							else if( property.getName().equals(BlockConstants.BLOCK_PROPERTY_TAG_PATH) &&
+									BusinessRules.isStandardConnectionsFolder(selectedPath) &&
+									(editor.getBlock().getClassName().equals(BlockConstants.BLOCK_CLASS_INPUT)||
+									 editor.getBlock().getClassName().equals(BlockConstants.BLOCK_CLASS_OUTPUT)) ) {
+									JOptionPane.showMessageDialog(TagBrowserPanel.this, 
+										String.format("The tag path for an input or output block cannot be in the %s tag folder.",
+													BlockConstants.SOURCE_SINK_TAG_FOLDER));	
+							}
+							else {
+								property.setBinding(selectedPath);
+								editor.updatePanelForProperty(BlockEditConstants.HOME_PANEL,property);
+								editor.saveDiagramClean();      // Immediate update in gateway
+								setSelectedPane(BlockEditConstants.HOME_PANEL);
+							}
 						}
-						updatePanelForProperty(BlockEditConstants.HOME_PANEL,property);
-						editor.handlePropertyChange(property);      // Immediate update in gateway
-						setSelectedPane(BlockEditConstants.HOME_PANEL);
 					}
 				}
 				else {

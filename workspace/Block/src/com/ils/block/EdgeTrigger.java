@@ -131,7 +131,7 @@ public class EdgeTrigger extends AbstractProcessBlock implements ProcessBlock {
 	public void propertyChange(BlockPropertyChangeEvent event) {
 		super.propertyChange(event);
 		String propertyName = event.getPropertyName();
-		if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_HOLD_INTERVAL) ) {
+		if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_INTERVAL) ) {
 			try {
 				holdInterval = Double.parseDouble(event.getNewValue().toString());
 				if( holdInterval<0 ) holdInterval = -holdInterval;
@@ -167,13 +167,14 @@ public class EdgeTrigger extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	private void initialize() {
 		setName("EdgeTrigger");
-		BlockProperty constant = new BlockProperty(BlockConstants.BLOCK_PROPERTY_HOLD_INTERVAL,new Double(holdInterval),PropertyType.TIME_SECONDS,true);
-		setProperty(BlockConstants.BLOCK_PROPERTY_HOLD_INTERVAL, constant);
+		BlockProperty constant = new BlockProperty(BlockConstants.BLOCK_PROPERTY_INTERVAL,new Double(holdInterval),PropertyType.TIME_SECONDS,true);
+		setProperty(BlockConstants.BLOCK_PROPERTY_INTERVAL, constant);
 		BlockProperty trigProp = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TRIGGER,trigger.name(),PropertyType.BOOLEAN,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_TRIGGER, trigProp);
 		
 		// Define a single input
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.TRUTHVALUE);
+		input.setIsMultiple(false);
 		anchors.add(input);
 		
 		// Define a single output
@@ -189,6 +190,7 @@ public class EdgeTrigger extends AbstractProcessBlock implements ProcessBlock {
 		prototype.setPaletteLabel("EdgeTrigger");
 		prototype.setTooltipText("Hold targeted value for a specified delay before reverting  (~secs)");
 		prototype.setTabName(BlockConstants.PALETTE_TAB_CONTROL);
+		
 		BlockDescriptor view = prototype.getBlockDescriptor();
 		view.setEmbeddedIcon("Block/icons/embedded/edge_trigger.png");
 		view.setBlockClass(getClass().getCanonicalName());

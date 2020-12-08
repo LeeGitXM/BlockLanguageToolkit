@@ -1,0 +1,35 @@
+#
+# Simple test of Gain and Compare
+#
+DIAGRAM="app75/family75/gain"
+COMP="COMPARE-354"
+Show: diagram $DIAGRAM
+resetDiagram ($DIAGRAM)
+
+notification: compareGain  notificationKey.construct($DIAGRAM,$COMP,"out")
+tag: GainOutput MemoryTags/GainOutput
+tagset: GainFeed MemoryTags/GainFeed1 MemoryTags/GainFeed2
+Tagset: GainFeed
+
+Test: Gain and Compare
+Step: Positive Feed 1
+10:00 1 
+10:01 2
+10:01:55 Assert: GainOutput = 8 "Product is 8"
+10:02 3 
+10:02:30 Assert: compareGain = FALSE "Observe positive notification"
+10:02:40 Assert: getState($DIAGRAM,$COMP) = FALSE "Observe positive state"
+10:03 , 4
+10:03:55 Assert: GainOutput = 16 "Product is 16"
+
+Step: Negative Feed
+10:04 , -0.1
+10:05 -2.5
+10:05:55 Assert: GainOutput = -10 "Product is -10"
+10:06 -1.4 
+10:07 , -12.
+10:07:45 Assert: GainOutput = -48 "Product is -48"
+10:07:50 Assert: compareGain = TRUE "Observe negative notification"
+10:07:55 Assert: getState($DIAGRAM,$COMP) = TRUE "Observe negative state"
+10:08 0
+10:08:55 Assert: GainOutput = 0 "Product is 0"

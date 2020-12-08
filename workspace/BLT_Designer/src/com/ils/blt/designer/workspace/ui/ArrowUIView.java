@@ -29,7 +29,7 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorT
  */
 public class ArrowUIView extends AbstractUIView implements BlockViewUI {
 	private static final long serialVersionUID = 6644400470545202522L;
-	private static final int DEFAULT_HEIGHT = 60;
+	private static final int DEFAULT_HEIGHT = 46;
 	private static final int DEFAULT_WIDTH  = 80;
 	private final static double STEM_WIDTH = 0.6;   // Fraction of width for stem of arrow
 	private final static double STEM_HEIGHT = 0.5;  // Fraction of height
@@ -46,8 +46,8 @@ public class ArrowUIView extends AbstractUIView implements BlockViewUI {
 	 *  The arrow allows only a single input and/or a single output. Place them
 	 *  on the left and right, respectively.
 	 */
-	@Override
-	protected void initAnchorPoints() {
+//	@Override - NT ANY MORE.  Why does this have it's own?  Should just use the default
+	protected void initAnchorPointsa() {
 		Dimension sz = getPreferredSize();
 		int inSegmentCount = 0;
 		int inputIndex = 0;

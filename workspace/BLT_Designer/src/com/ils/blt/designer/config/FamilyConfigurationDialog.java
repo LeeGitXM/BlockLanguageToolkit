@@ -21,8 +21,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
-import com.ils.blt.client.ClientScriptExtensionManager;
 import com.ils.blt.common.DiagramState;
+import com.ils.blt.common.script.CommonScriptExtensionManager;
 import com.ils.blt.common.script.ScriptConstants;
 import com.ils.blt.common.serializable.SerializableFamily;
 import com.ils.blt.designer.navtree.GeneralPurposeTreeNode;
@@ -39,7 +39,7 @@ public class FamilyConfigurationDialog extends ConfigurationDialog  {
 	private static final long serialVersionUID = 2882399376824334427L;
 	private final int DIALOG_HEIGHT = 280;
 	private final int DIALOG_WIDTH = 400;
-	private final ClientScriptExtensionManager extensionManager = ClientScriptExtensionManager.getInstance();
+	private final CommonScriptExtensionManager extensionManager = CommonScriptExtensionManager.getInstance();
 	private final SerializableFamily family;
 	private final GeneralPurposeDataContainer model;           // Data container operated on by panels
 	private final GeneralPurposeTreeNode node;

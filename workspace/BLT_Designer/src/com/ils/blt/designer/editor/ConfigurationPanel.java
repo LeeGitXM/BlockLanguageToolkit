@@ -40,9 +40,12 @@ public class ConfigurationPanel extends BasicEditPanel {
 	private final JLabel headingLabel;
 	private final JComboBox<String> bindingTypeCombo;
 	private final JComboBox<String> propertyTypeCombo;
+	private final JLabel connectedId;
+	// delete the next 3 lines - obsolete
 	private final JCheckBox annotationCheckBox;
 	private final JTextField xfield;
 	private final JTextField yfield;
+
 
 	public ConfigurationPanel(final BlockPropertyEditor editor) {
 		super(editor);
@@ -69,15 +72,25 @@ public class ConfigurationPanel extends BasicEditPanel {
 
 		JPanel displayPanel = new JPanel();
 		displayPanel.setLayout(new MigLayout("ins 2","[para]0[]0[]0[]0[]","[]10[]2"));
-		addSeparator(displayPanel,"Attribute Display");
+
+		// for now, only show if it already has one.  You can turn it off but not on.  obsolete feature 
+		// remove this next section - obsolete
 		annotationCheckBox = new JCheckBox("Display ?");
+		xfield = createOffsetTextField("0");
+		yfield = createOffsetTextField("0");
+		addSeparator(displayPanel,"");
+		annotationCheckBox.setEnabled(false);
+		xfield.setEnabled(false);
+		yfield.setEnabled(false);
 		displayPanel.add(annotationCheckBox,"skip,gapafter 15");
 		displayPanel.add(createLabel("X offset"),"");
-		xfield = createOffsetTextField("0");
 		displayPanel.add(xfield,"");
 		displayPanel.add(createLabel("Y offset"),"gapbefore 15");
-		yfield = createOffsetTextField("0");
 		displayPanel.add(yfield,"wrap");
+
+		addSeparator(displayPanel,"Connected Property Display Block Info");
+		connectedId = createLabel("Not Set");
+		displayPanel.add(connectedId, "");
 		interiorPanel.add(displayPanel,"");
 
 		// The OK button copies data from the components and sets the property properties.
@@ -99,8 +112,8 @@ public class ConfigurationPanel extends BasicEditPanel {
 						property.setDisplayed(false);
 					}
 				}
-				editor.handlePropertyChange(property);   // Mark the nav tree node as dirty
-				updatePanelForProperty(BlockEditConstants.HOME_PANEL,property);
+				editor.saveDiagramClean();  
+				editor.updatePanelForProperty(BlockEditConstants.HOME_PANEL,property);
 				setSelectedPane(BlockEditConstants.HOME_PANEL);
 			}
 		});
@@ -125,9 +138,19 @@ public class ConfigurationPanel extends BasicEditPanel {
 		bindingTypeCombo.setEnabled(prop.getBindingType().equals(BindingType.NONE)||
 				                    prop.getBindingType().equals(BindingType.TAG_MONITOR));
 		propertyTypeCombo.setSelectedItem(prop.getType().toString());
+		if (prop.isShowProperty()) {
+			connectedId.setText("display block UUID:" + prop.getDisplayedBlockUUID().toString());
+		} else {
+			connectedId.setText("No connected display block");
+		}
+		// delete this next section - obsolete
 		annotationCheckBox.setSelected(prop.isDisplayed());
 		xfield.setText(String.valueOf(prop.getDisplayOffsetX()));
 		yfield.setText(String.valueOf(prop.getDisplayOffsetY()));
+		if (prop.isDisplayed()) {  // if it is displayed then allow it to be turned off, but not back on (obsolete feature)
+			annotationCheckBox.setEnabled(true);
+		}
+
 	}
 
 	/**
@@ -153,6 +176,9 @@ public class ConfigurationPanel extends BasicEditPanel {
 				if( !BindingType.ENGINE.equals(prop.getBindingType()) ) continue;
 			}
 			else if(type.name().equals(BindingType.TAG_READ.name()) ) continue;
+			else if(type.name().equals(BindingType.OPTION.name()) ) { 
+				if( !BindingType.OPTION.equals(prop.getBindingType()) ) continue;
+			}
 			else if(type.name().equals(BindingType.TAG_WRITE.name()) ) continue;
 			else if(type.name().equals(BindingType.TAG_READWRITE.name()) ) continue;
 			// We also disallow tag bindings to complex datatypes
@@ -165,10 +191,12 @@ public class ConfigurationPanel extends BasicEditPanel {
 					!pt.equals(PropertyType.STRING) &&
 					!pt.equals(PropertyType.TIME_MINUTES) &&
 					!pt.equals(PropertyType.TIME_SECONDS) &&
-					!pt.equals(PropertyType.TIME) 		)     continue;
+					!pt.equals(PropertyType.TIME))
+						continue;
 			}
 			else {                   // NONE
-				if( BindingType.ENGINE.equals(prop.getBindingType()) ) continue;
+				if( BindingType.ENGINE.equals(prop.getBindingType())) 
+					continue;
 			}
 			log.tracef("%s.createBindingTypeCombo: %s",TAG,type.name());
 			box.addItem(type.name());

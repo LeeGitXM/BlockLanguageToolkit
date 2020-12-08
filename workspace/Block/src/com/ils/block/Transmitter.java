@@ -66,6 +66,7 @@ public class Transmitter extends AbstractProcessBlock implements ProcessBlock {
 		
 		// Define a single input - we get an input from the connection and broadcast it.
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.BROADCAST_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.SIGNAL);
+		input.setIsMultiple(false);
 		anchors.add(input);
 	}
 	

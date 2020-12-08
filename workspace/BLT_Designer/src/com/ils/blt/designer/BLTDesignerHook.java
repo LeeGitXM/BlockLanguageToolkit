@@ -8,6 +8,9 @@ import java.awt.Component;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
+import java.io.IOException;
+import java.util.Enumeration;
+import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -18,20 +21,27 @@ import javax.swing.JRootPane;
 import javax.swing.SwingUtilities;
 
 import org.apache.commons.lang3.builder.ToStringStyle;
-
-import com.ils.blt.client.ClientScriptExtensionManager;
-import com.ils.blt.client.component.diagview.DiagramViewer;
-import com.ils.blt.client.component.recmap.RecommendationMap;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.ApplicationScriptFunctions;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.script.AbstractScriptExtensionManager;
+import com.ils.blt.common.script.CommonScriptExtensionManager;
+import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.designer.navtree.GeneralPurposeTreeNode;
 import com.ils.blt.designer.search.BLTSearchProvider;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
+import com.ils.blt.designer.workspace.ProcessBlockView;
+import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.ils.blt.designer.workspace.WorkspaceRepainter;
+import com.ils.common.component.DiagramViewer;
+import com.ils.common.component.recmap.RecommendationMap;
 import com.inductiveautomation.factorypmi.designer.palette.model.DefaultPaletteItemGroup;
 import com.inductiveautomation.ignition.client.util.action.StateChangeAction;
+import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.licensing.LicenseState;
 import com.inductiveautomation.ignition.common.project.Project;
@@ -39,6 +49,7 @@ import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.script.ScriptManager;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
+import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
 import com.inductiveautomation.ignition.designer.gui.IconUtil;
 import com.inductiveautomation.ignition.designer.model.AbstractDesignerModuleHook;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
@@ -46,10 +57,12 @@ import com.inductiveautomation.ignition.designer.model.SaveContext;
 import com.inductiveautomation.ignition.designer.model.menu.JMenuMerge;
 import com.inductiveautomation.ignition.designer.model.menu.MenuBarMerge;
 import com.inductiveautomation.ignition.designer.model.menu.WellKnownMenuConstants;
+import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceNavTreeNode;
 import com.inductiveautomation.vision.api.designer.VisionDesignerInterface;
 import com.inductiveautomation.vision.api.designer.palette.JavaBeanPaletteItem;
 import com.inductiveautomation.vision.api.designer.palette.Palette;
 import com.inductiveautomation.vision.api.designer.palette.PaletteItemGroup;
+import com.jidesoft.action.CommandBar;
 import com.jidesoft.docking.DockingManager;
 
 public class BLTDesignerHook extends AbstractDesignerModuleHook  {
@@ -87,11 +100,115 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		mgr.addScriptModule(BLTProperties.DIAGRAM_SCRIPT_PACKAGE,ApplicationScriptFunctions.class);
 	}
 	
+	// Insert toolbar items 
+    @Override
+    public List<CommandBar> getModuleToolbars() {
+    	return null;
+//		ArrayList<CommandBar> bars = new ArrayList<>();
+//		alignBar = new CommandBar();
+//		alignBar.setKey("bltAlign");
+//
+//		
+//		JideButton btn = new JideButton();
+//		String ICON_PATH  = "Block/icons/editor/align_left.png";
+//		Image img = ImageLoader.getInstance().loadImage(ICON_PATH ,BlockEditConstants.BUTTON_SIZE);
+//		if( img !=null) {
+//			Icon icon = new ImageIcon(img);
+//			btn.setIcon(icon);
+//			btn.setToolTipText("This does a thing");
+//			btn.addActionListener(new ActionListener() {
+//				public void actionPerformed(ActionEvent e){
+//					workspace.alignLeft();
+//				}
+//			});
+//		}
+//		alignBar.add(btn);
+//		
+//		btn = new JideButton();
+//		ICON_PATH  = "Block/icons/editor/align_right.png";
+//		img = ImageLoader.getInstance().loadImage(ICON_PATH ,BlockEditConstants.BUTTON_SIZE);
+//		if( img !=null) {
+//			Icon icon = new ImageIcon(img);
+//			btn.setIcon(icon);
+//			btn.setToolTipText("This does a thing");
+//			btn.addActionListener(new ActionListener() {
+//				public void actionPerformed(ActionEvent e){
+//					workspace.alignRight();
+//				}
+//			});
+//		}
+//		alignBar.add(btn);
+//
+//		btn = new JideButton();
+//		ICON_PATH  = "Block/icons/editor/align_top.png";
+//		img = ImageLoader.getInstance().loadImage(ICON_PATH ,BlockEditConstants.BUTTON_SIZE);
+//		if( img !=null) {
+//			Icon icon = new ImageIcon(img);
+//			btn.setIcon(icon);
+//			btn.setToolTipText("This does a thing");
+//			btn.addActionListener(new ActionListener() {
+//				public void actionPerformed(ActionEvent e){
+//					workspace.alignTop();
+//				}
+//			});
+//		}
+//		alignBar.add(btn);
+//		
+//		btn = new JideButton();
+//		ICON_PATH  = "Block/icons/editor/align_bottom.png";
+//		img = ImageLoader.getInstance().loadImage(ICON_PATH ,BlockEditConstants.BUTTON_SIZE);
+//		if( img !=null) {
+//			Icon icon = new ImageIcon(img);
+//			btn.setIcon(icon);
+//			btn.setToolTipText("This does a thing");
+//			btn.addActionListener(new ActionListener() {
+//				public void actionPerformed(ActionEvent e){
+//					workspace.alignBottom();
+//				}
+//			});
+//		}
+//		alignBar.add(btn);
+//
+//		btn = new JideButton();
+//		ICON_PATH  = "Block/icons/editor/align_horizontal.png";
+//		img = ImageLoader.getInstance().loadImage(ICON_PATH ,BlockEditConstants.BUTTON_SIZE);
+//		if( img !=null) {
+//			Icon icon = new ImageIcon(img);
+//			btn.setIcon(icon);
+//			btn.setToolTipText("This does a thing");
+//			btn.addActionListener(new ActionListener() {
+//				public void actionPerformed(ActionEvent e){
+//					workspace.alignHeightCenter();
+//				}
+//			});
+//		}
+//		alignBar.add(btn);
+//
+//		btn = new JideButton();
+//		ICON_PATH  = "Block/icons/editor/align_vertical.png";
+//		img = ImageLoader.getInstance().loadImage(ICON_PATH ,BlockEditConstants.BUTTON_SIZE);
+//		if( img !=null) {
+//			Icon icon = new ImageIcon(img);
+//			btn.setIcon(icon);
+//			btn.setToolTipText("This does a thing");
+//			btn.addActionListener(new ActionListener() {
+//				public void actionPerformed(ActionEvent e){
+//					workspace.alignWidthCenter();
+//				}
+//			});
+//		}
+//		alignBar.add(btn);
+//
+//		bars.add(alignBar);
+//		return bars;
+//    	
+    }
+
 	// Insert a menu to allow control of database and tag provider.
     @Override
     public MenuBarMerge getModuleMenu() {
 
-    	log.infof("DesignerHook in Menu merge %s",(diagramsAttached?"TRUE":"FALSE"));
+    	//log.infof("DesignerHook in Menu merge %s",(diagramsAttached?"TRUE":"FALSE"));
     	MenuBarMerge merge = new MenuBarMerge(BLTProperties.MODULE_ID);  // as suggested in javadocs
     	merge.addSeparator();
     	merge.addSeparator();
@@ -188,7 +305,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 			
 		    // Initialize all the script modules from parameters stored in the ORM.
 			// We use all combinations of classes/flavors.
-		    ClientScriptExtensionManager sem = ClientScriptExtensionManager.getInstance();
+		    CommonScriptExtensionManager sem = CommonScriptExtensionManager.getInstance();
 		    for( String flavor: sem.getFlavors() ) {
 		    	for(String clss: sem.getClassNames() ) {
 		    		String key = AbstractScriptExtensionManager.makeKey(clss, flavor);
@@ -223,8 +340,18 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	@Override
 	public void notifyProjectSaveStart(SaveContext save) {
 		log.infof("%s: NotifyProjectSaveStart",TAG);
-		ResourceSaveManager saver = new ResourceSaveManager(getWorkspace(),rootNode);
-		saver.saveSynchronously();
+		
+		// check if problems with save, just notify for now.  Can do save.abort() if it's serious
+		String msg = rootNode.scanForNameConflicts(rootNode);
+		if (msg != null && msg.length() > 1) {
+			log.infof("%s: Workspace error, please correct before saving:  %s",TAG, msg);
+			ErrorUtil.showError(msg, "Save Workspace Error, save aborted");
+			save.abort(new Throwable(msg));
+		} 
+		else {
+			ResourceSaveManager saver = new ResourceSaveManager(getWorkspace(),rootNode);
+			saver.saveSynchronously();
+		}
 		nodeStatusManager.updateAll();
 	}
 	
@@ -279,6 +406,9 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		super.shutdown();
 	}
 	// Search the menu tree to see if the same menu has been added by another module
+	//
+	//	TODO EREIAM JH - Why does this always return false?????????????
+	//
 	private boolean menuExists(Frame frame,String title) {
 		for(Component c:context.getFrame().getComponents() ) {
     		if( c instanceof JRootPane ) {
@@ -312,7 +442,9 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		
 		return false;
 	}
-	 /**
+
+
+	/**
      * Display a popup dialog for configuration of dialog execution parameters.
      * Run in a separate thread, as a modal dialog in-line here will freeze the UI.
      */
@@ -338,4 +470,95 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
             validator.setVisible(true);
         }
     }
+	
+	
+	public GeneralPurposeTreeNode findApplicationForDiagram(ProcessDiagramView diagram) {
+		NodeStatusManager mgr = getNavTreeStatusManager();
+		GeneralPurposeTreeNode rootNode = (GeneralPurposeTreeNode)mgr.findNode(-1);
+		AbstractResourceNavTreeNode ret = applicationForDiagram(null, rootNode, diagram);
+		return (ret == null?null:(GeneralPurposeTreeNode)ret);
+
+	}
+
+	public AbstractResourceNavTreeNode applicationForDiagram(AbstractResourceNavTreeNode app, AbstractResourceNavTreeNode node, ProcessDiagramView diagram) {
+		AbstractResourceNavTreeNode ret = null;
+
+		if (node.getProjectResource() != null && node.getProjectResource().getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
+			if (diagram.getName().equals(node.getName())) {
+				ProjectResource bob = node.getProjectResource();
+				ret = app;
+			}
+		} else {
+			if (node.getProjectResource() != null && node.getProjectResource().getResourceType().equals(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
+				app = node;
+			}
+			Enumeration<AbstractResourceNavTreeNode> enumer = node.children();
+			while(enumer.hasMoreElements() && ret == null) {
+				AbstractResourceNavTreeNode theNode = enumer.nextElement();
+				ret = applicationForDiagram(app, theNode, diagram);
+			}
+		}
+		return ret;
+	}
+		
+//	public Block findDiagnosisBlockByName(ProcessDiagramView diagram, String name) {
+//		Block ret = null;
+//		
+//		return ret;
+//	}
+
+	public String scanForDiagnosisNameConflicts(ProcessDiagramView diagram, String name) {
+		String ret = "";
+		// find application for the diagram.  This isn't particularly efficient as it traverses the whole tree
+		GeneralPurposeTreeNode node = findApplicationForDiagram(diagram);
+		
+		ret = parseChildForDiagnosisName(node, name);
+		
+		return ret;
+	}
+
+	public String parseChildForDiagnosisName(AbstractResourceNavTreeNode theNode, String name) {
+		String ret = "";
+		if (theNode.getProjectResource().getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
+
+			ProjectResource res = context.getProject().getResource(theNode.getProjectResource().getResourceId());	
+			String json = new String(res.getData());
+			SerializableDiagram sd = null;
+			ObjectMapper mapper = new ObjectMapper();
+			mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+			mapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL,true);
+			try {
+				sd = mapper.readValue(json,SerializableDiagram.class);
+			} 
+			catch (JsonParseException jpe) {
+//				logger.warnf("%s: open parse exception (%s)",CLSS,jpe.getLocalizedMessage());
+			} 
+			catch (JsonMappingException jme) {
+//				logger.warnf("%s: open mapping exception (%s)",CLSS,jme.getLocalizedMessage());
+			} 
+			catch (IOException ioe) {
+//				logger.warnf("%s: open io exception (%s)",CLSS,ioe.getLocalizedMessage());
+			}
+			ProcessDiagramView diagram = new ProcessDiagramView(res.getResourceId(),sd, context);
+			for( Block blk:diagram.getBlocks()) {
+				ProcessBlockView pbv = (ProcessBlockView)blk;
+				if (pbv.isDiagnosis()) {
+					if (pbv.getName().equalsIgnoreCase(name)) {
+						ret += "Duplicate " + pbv.getClassName() + " block named " + pbv.getName() + " found in diagram " + diagram.getName() + "\r\n";
+					}
+				}
+			
+			}
+		} else {
+			Enumeration<AbstractResourceNavTreeNode> enumer = theNode.children();
+			while(enumer.hasMoreElements()) {
+				AbstractResourceNavTreeNode aNode = enumer.nextElement();
+				ret += parseChildForDiagnosisName(aNode, name);
+			}
+		}
+		return ret;
+	}
+	
+	
+	
 }

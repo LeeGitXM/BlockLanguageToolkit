@@ -81,6 +81,7 @@ public class DataSwitch extends AbstractProcessBlock implements ProcessBlock {
 		// Define a data input
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.ANY);
 		input.setHint(PlacementHint.L);
+		input.setIsMultiple(false);
 		anchors.add(input);
 		
 		// Define a control port
@@ -179,6 +180,7 @@ public class DataSwitch extends AbstractProcessBlock implements ProcessBlock {
 		prototype.setPaletteLabel("DataSwitch");
 		prototype.setTooltipText("Divert incoming values to an output determined by the control value");
 		prototype.setTabName(BlockConstants.PALETTE_TAB_CONTROL);
+		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setEmbeddedIcon("Block/icons/embedded/3_way_switch.png");
 		desc.setBlockClass(getClass().getCanonicalName());

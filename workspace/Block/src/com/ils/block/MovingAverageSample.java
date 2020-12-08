@@ -82,6 +82,7 @@ public class MovingAverageSample extends AbstractProcessBlock implements Process
 		
 		// Define a single input.
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
+		input.setIsMultiple(false);
 		anchors.add(input);
 
 		// Define the main output, a truth value.
@@ -210,7 +211,7 @@ public class MovingAverageSample extends AbstractProcessBlock implements Process
 	 */
 	private void initializePrototype() {
 		prototype.setPaletteIconPath("Block/icons/palette/moving_average.png");
-		prototype.setPaletteLabel("SampleAve");
+		prototype.setPaletteLabel("Average(n)");
 		prototype.setTooltipText("Compute the moving average of the input and place results on output");
 		prototype.setTabName(BlockConstants.PALETTE_TAB_STATISTICS);
 		

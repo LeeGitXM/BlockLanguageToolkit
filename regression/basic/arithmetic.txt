@@ -14,7 +14,7 @@ tag: Arithmetic5    MemoryTags/ArithmeticOut5
 tagset: SingleBoolean MemoryTags/BooleanFeed
 tagset: DualInput     MemoryTags/DoubleInput1 MemoryTags/DoubleInput2
 
-Test: Action and Math Function blocks
+Test: Action Blocks
 Step: BooleanFeed
 Tagset: SingleBoolean
 09:59:30 true

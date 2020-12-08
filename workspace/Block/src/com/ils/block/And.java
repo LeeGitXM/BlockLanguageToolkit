@@ -19,6 +19,7 @@ import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockStyle;
+import com.ils.blt.common.block.PlacementHint;
 import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
@@ -26,6 +27,7 @@ import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
+import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
@@ -37,13 +39,14 @@ import com.inductiveautomation.ignition.common.sqltags.model.types.DataQuality;
  * is available. Inputs and outputs are truth-values.
  */
 @ExecutableBlock
-public class And extends AbstractProcessBlock implements ProcessBlock {
+public class And extends AbstractProcessBlock {
 	// Keep map of values by originating block id
 	protected final Map<String,QualifiedValue> qualifiedValueMap;
 	private final Watchdog dog;
 	private BlockProperty valueProperty = null;
 	private double synchInterval = 0.5; // 1/2 sec synchronization by default
-	
+	private static final int blockVersion = 1;  // update this when making attribute changes.  Check against instanceVersion for deserialized blocks to see if they require updating
+
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
 	 */
@@ -88,6 +91,7 @@ public class And extends AbstractProcessBlock implements ProcessBlock {
 		// Define a single output
 		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.TRUTHVALUE);
 		anchors.add(output);
+		
 	}
 	
 	/**
@@ -98,6 +102,7 @@ public class And extends AbstractProcessBlock implements ProcessBlock {
 		super.start();
 		reconcileQualifiedValueMap(BlockConstants.IN_PORT_NAME,qualifiedValueMap,TruthValue.UNSET);
 		log.debugf("%s.start: initialized %d inputs",getName(),qualifiedValueMap.size());
+
 	}
 	/**
 	 * Disconnect from the timer thread.
@@ -169,7 +174,25 @@ public class And extends AbstractProcessBlock implements ProcessBlock {
 		return explanation;
 	}
 	
-	
+	/**
+	 * @return a block-specific description of internal statue
+	 */
+	@Override
+	public SerializableBlockStateDescriptor getInternalStatus() {
+		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
+		Map<String,String> attributes = descriptor.getAttributes();
+		attributes.put("Value", state.name());
+		for(String key:qualifiedValueMap.keySet()) {
+			QualifiedValue qv = (QualifiedValue)qualifiedValueMap.get(key);
+			if( qv!=null && qv.getValue()!=null) {
+				attributes.put(key, String.valueOf(qv.getValue()));
+			}
+			else {
+				attributes.put(key,"NULL"); 
+			}
+		}
+		return descriptor;
+	}
 	/**
 	 * The coalescing time has expired. Place the current state on the output,
 	 * if it has changed.
@@ -293,4 +316,21 @@ public class And extends AbstractProcessBlock implements ProcessBlock {
 		else if(allTrue) result = TruthValue.TRUE;
 		return result;	
 	}
+
+	@Override
+	public int getBlockVersion() {
+		return blockVersion;
+	}
+	
+	@Override
+	public boolean update() {
+		boolean success = false;
+
+		for (AnchorPrototype anc:anchors) {
+			anc.setHint(PlacementHint.BL);
+		}
+
+		return success;
+	}
+
 }

@@ -1,5 +1,5 @@
 /**
- *   (c) 2014-2015  ILS Automation. All rights reserved.
+ *   (c) 2014-2020  ILS Automation. All rights reserved.
  *  
  */
 package com.ils.blt.common;
@@ -22,6 +22,7 @@ import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.common.persistence.ToolkitProperties;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
+import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 
@@ -76,6 +77,28 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		}
 		catch(Exception ge) {
 			log.infof("%s.clearWatermark: GatewayException (%s)",TAG,ge.getMessage());
+		}
+	}
+	public void createTag(DataType type,String path) {
+		try {
+			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+									BLTProperties.MODULE_ID, "createTag",type,path);
+		}
+		catch(Exception ge) {
+			log.infof("%s.createTag: GatewayException (%s)",TAG,ge.getMessage());
+		}
+	}
+	/**
+	 * Delete a SQLTag given its path. The path must contain the
+	 * provider name in brackets.
+	 */
+	public void deleteTag(String path) {
+		try {
+			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+									BLTProperties.MODULE_ID, "deleteTag",path);
+		}
+		catch(Exception ge) {
+			log.infof("%s.deleteTag: GatewayException (%s)",TAG,ge.getMessage());
 		}
 	}
 	/**
@@ -596,6 +619,22 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		return result;
 	}
 	/**
+	 * @param className fully qualified class name of blocks to be listed
+	 * @return a list of state descriptors for blocks that are of the specified class.
+	 */
+	@Override
+	public List<SerializableBlockStateDescriptor> listBlocksOfClass(String className) {
+		List<SerializableBlockStateDescriptor> result = null;
+		try {
+			result = (List<SerializableBlockStateDescriptor> )GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "listBlocksOfClass",className);
+		}
+		catch(Exception ge) {
+			log.infof("%s.listBlocksOfClass: GatewayException (%s)",TAG,ge.getMessage());
+		}
+		return result;
+	}
+	/**
 	 * Query a diagram in the gateway for list of its blocks that are downstream
 	 * of the specified block. If any of those blocks are sinks, then continue
 	 * the search on the diagrams they are connected to.
@@ -635,7 +674,6 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		}
 		return result;
 	}
-	
 	@SuppressWarnings("unchecked")
 	@Override
 	public List<SerializableBlockStateDescriptor> listBlocksUpstreamOf(String diagramId, String blockId) {
@@ -747,11 +785,11 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<SerializableBlockStateDescriptor> listSinksForSource(String diagramId, String blockName) {
+	public List<SerializableBlockStateDescriptor> listSinksForSource(String diagramId, String blockId) {
 		List<SerializableBlockStateDescriptor> blockList = new ArrayList<>();
 		try {
 			blockList = (List<SerializableBlockStateDescriptor>)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "listSinksForSource",diagramId,blockName);
+					BLTProperties.MODULE_ID, "listSinksForSource",diagramId,blockId);
 		}
 		catch(Exception ge) {
 			log.infof("%s.listSinksForSource: GatewayException (%s)",TAG,ge.getMessage());
@@ -762,11 +800,11 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<SerializableBlockStateDescriptor> listSourcesForSink(String diagramId, String blockName) {
+	public List<SerializableBlockStateDescriptor> listSourcesForSink(String diagramId, String blockId) {
 		List<SerializableBlockStateDescriptor> blockList = new ArrayList<>();
 		try {
 			blockList = (List<SerializableBlockStateDescriptor>)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "listSourcesForSink",diagramId,blockName);
+					BLTProperties.MODULE_ID, "listSourcesForSink",diagramId,blockId);
 		}
 		catch(Exception ge) {
 			log.infof("%s.listSourcesForSink: GatewayException (%s)",TAG,ge.getMessage());
@@ -835,7 +873,33 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 			log.infof("%s.propagateBlockState: GatewayException (%s)",TAG,ge.getMessage());
 		}
 	}
-	
+	/** Change the name of a block 
+	 * @param duuid diagram unique Id
+	 * @param buuid block unique Id
+	 * @param name the new name
+	 */
+	public void renameBlock(String duuid,String buuid,String name ) {
+		try {
+			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+				BLTProperties.MODULE_ID, "renameBlock",duuid,buuid,name);
+		}
+		catch(Exception ge) {
+			log.infof("%s.renameBlock: GatewayException (%s)",TAG,ge.getMessage());
+		}
+	}
+	/**
+	 * Rename a SQLTag given its path and new name. The path must contain the
+	 * provider name in brackets.
+	 */
+	public void renameTag(String name,String path) {
+		try {
+			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+				BLTProperties.MODULE_ID, "renameTag",name,path);
+		}
+		catch(Exception ge) {
+			log.infof("%s.renameTag: GatewayException (%s)",TAG,ge.getMessage());
+		}
+	}
 	/**
 	 * Execute reset() on a specified block
 	 */
@@ -1047,7 +1111,23 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 			log.infof("%s.setBlockProperty: GatewayException (%s)",TAG,ge.getMessage());
 		}		
 	}
-	
+	/** Change the binding on a block property in such a way that the block and UI
+	 * are notified of the change.
+	 *  
+	 * @param diagramId diagram's unique Id as a String
+	 * @param blockId Id of the block as a string
+	 * @param pname the changed property
+	 * @param value the new binding of the property. The value must be a legal tag path 
+	 */
+	public void setBlockPropertyBinding(String diagramId,String blockId,String pname,String value ) {
+		try {
+			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+				BLTProperties.MODULE_ID, "setBlockPropertyBinding", diagramId,blockId, pname,value);
+		}
+		catch(Exception ge) {
+			log.infof("%s.setBlockPropertyBinding: GatewayException (%s)",TAG,ge.getMessage());
+		}	
+	}
 	/** Change the value of a block property in such a way that the block and UI
 	 * are notified of the change.
 	 *  
@@ -1263,6 +1343,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		}
 		catch(Exception ge) {
 			log.infof("%s.setBlockProperties: GatewayException (%s)",TAG,ge.getMessage());
-		}		
+		}
+		
 	}
 }

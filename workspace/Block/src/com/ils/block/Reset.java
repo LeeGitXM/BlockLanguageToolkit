@@ -69,6 +69,7 @@ public class Reset extends AbstractProcessBlock implements ProcessBlock {
 		
 		// Define a single input
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.TRUTHVALUE);
+		input.setIsMultiple(false);
 		anchors.add(input);
 		
 		// Define a single output
@@ -169,6 +170,6 @@ public class Reset extends AbstractProcessBlock implements ProcessBlock {
 		desc.setPreferredHeight(60);
 		desc.setPreferredWidth(60);
 		desc.setStyle(BlockStyle.SQUARE);
-		desc.setReceiveEnabled(true);
+//		desc.setReceiveEnabled(true);
 	}
 }

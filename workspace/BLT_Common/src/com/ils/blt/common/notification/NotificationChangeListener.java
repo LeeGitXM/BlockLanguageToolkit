@@ -1,5 +1,5 @@
 /**
-   *   (c) 2014-2016  ILS Automation. All rights reserved. 
+  *   (c) 2014-2020  ILS Automation. All rights reserved. 
  */
 package com.ils.blt.common.notification;
 
@@ -20,13 +20,16 @@ public interface NotificationChangeListener extends EventListener  {
 	 * @param resourceId the resource Id of the affected diagram
 	 * @param state the state of the reporting block
 	 */
-	public void diagramAlertChange(long resourceId,String state);
+	public void diagramStateChange(long resourceId,String state);
 	
 	/**
 	 * A property binding has changed
 	 */
 	public void bindingChange(String binding);
-	
+	/**
+	 * The name has changed
+	 */
+	public void nameChange(String name);
 	/**
 	 * Just send the new value.
 	 */

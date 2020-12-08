@@ -69,6 +69,7 @@ public class MovingAverage extends AbstractProcessBlock implements ProcessBlock 
 		
 		// Define a single input.
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
+		input.setIsMultiple(true);
 		anchors.add(input);
 
 		// Define the main output, a data value.
@@ -139,7 +140,9 @@ public class MovingAverage extends AbstractProcessBlock implements ProcessBlock 
 	 * Send status update notification for our last latest state.
 	 */
 	@Override
-	public void notifyOfStatus() {}
+	public void notifyOfStatus() {
+		notifyOfStatus(lastValue);
+	}
 	private void notifyOfStatus(QualifiedValue qval) {
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qval);
 	}

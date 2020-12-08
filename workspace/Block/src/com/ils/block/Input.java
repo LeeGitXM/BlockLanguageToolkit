@@ -39,6 +39,7 @@ import com.inductiveautomation.ignition.common.util.LogUtil;
  */
 @ExecutableBlock
 public class Input extends AbstractProcessBlock implements ProcessBlock {
+	private final static boolean DEBUG = false;
 	private BlockProperty tagPathProperty = null;
 	protected BlockProperty valueProperty = null;
 
@@ -74,30 +75,40 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 		tagPathProperty.setBinding("");
 		tagPathProperty.setBindingType(BindingType.TAG_READ);
 		setProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH, tagPathProperty);
+		
 		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,"",PropertyType.OBJECT,false);
 		valueProperty.setBindingType(BindingType.ENGINE);
 		setProperty(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
 		
 		// Define a single output
-		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.DATA);
+		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.ANY);
 		anchors.add(output);
 	}
 
 	/**
-	 * We may have received a premature value due to creation of a subscription 
-	 * before we're actually started. Pass that value on now. (May be unnecessary)
+	 * 
+	 * The tag subscriptions are created after the block start. 
 	 */
 	@Override
 	public void start() {
 		super.start();
+		
 		if( tagPathProperty!=null && tagPathProperty.getBinding() != null && !tagPathProperty.getBinding().isEmpty() ) {
 			lastValue = controller.getTagValue(getParentId(), tagPathProperty.getBinding());
+			if(DEBUG) {
+				log.infof("%s.start: last value %s (%s=%s)",getName(),(lastValue==null?"null":lastValue.getValue().toString()),
+						 tagPathProperty.getBinding(),
+						 (tagPathProperty.getValue()==null?"null":tagPathProperty.getValue().toString()));
+			}
 		}
+		/*
 		if( lastValue!=null &&  lastValue.getValue() != null && !isLocked()  ) {
-			log.debugf("%s.start: %s (%s)",getName(),lastValue.getValue().toString(),lastValue.getQuality().getName());
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 			controller.acceptCompletionNotification(nvn);
+			//notifyOfStatus();
+			
 		}
+		*/
 	}
 
 	@Override
@@ -119,17 +130,16 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 				String valueString = lastValue.getValue().toString();
 				String qualityString = (lastValue.getQuality()==null?"NO QUALITY":lastValue.getQuality().getName());
 				String timestampString = (lastValue.getTimestamp()==null?"NO TIME":dateFormatter.format(lastValue.getTimestamp()));
-				log.debugf("%s.acceptValue: propagating %s (%s at %s)",getName(),valueString,qualityString,timestampString);
+				if(DEBUG)log.infof("%s.acceptValue: propagating %s (%s at %s)",getName(),valueString,qualityString,timestampString);
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 				controller.acceptCompletionNotification(nvn);
 			}
-			else {
+			else { 
 				log.warnf("%s.acceptValue: received a null value, ignoring",getName());
 			}
 		}
 		// Even if locked, we update the current state
 		if( lastValue!=null && lastValue.getValue()!=null) {
-			valueProperty.setValue(lastValue.getValue());
 			notifyOfStatus(lastValue);
 		}
 		else {
@@ -201,18 +211,24 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public synchronized void propertyChange(BlockPropertyChangeEvent event) {
 		super.propertyChange(event);
-		String propertyName = event.getPropertyName();
-		//if(propertyName.equals(BlockConstants.BLOCK_PROPERTY_TAG_PATH)) {
-		//	log.debugf("%s.propertyChange tag path now %s",getName(),event.getNewValue().toString());
-		//}
+		if( DEBUG ) {
+			String propertyName = event.getPropertyName();
+			if(propertyName.equals(BlockConstants.BLOCK_PROPERTY_TAG_PATH)) {
+				log.infof("%s.propertyChange: %s (%s) now %s",getName(),propertyName,tagPathProperty.getBinding().toString(),event.getNewValue().toString());
+			}
+		}
 	}
 	
+	@Override 
+	public String getClassName() {return BlockConstants.BLOCK_CLASS_INPUT;}
+
 	/**
 	 * Send status update notification for our last output value.
 	 */
 	@Override
 	public void notifyOfStatus() {
 		if( lastValue!=null && lastValue.getValue()!=null) {
+			valueProperty.setValue(lastValue.getValue());
 			notifyOfStatus(lastValue);
 		}	
 	}
@@ -240,10 +256,13 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setBlockClass(getClass().getCanonicalName());
 		desc.setStyle(BlockStyle.ARROW);
-		desc.setPreferredHeight(45);
+		desc.setPreferredHeight(46);
 		desc.setPreferredWidth(60);
 		desc.setBackground(Color.cyan.getRGB());
 		desc.setCtypeEditable(true);
+		desc.setNameDisplayed(true);
+		desc.setNameOffsetX(25);
+		desc.setNameOffsetY(45);
 	}
 	
 	/**
@@ -262,4 +281,6 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 		}
 		return summary;
 	}
+
+
 }

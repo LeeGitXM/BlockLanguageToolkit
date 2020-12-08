@@ -41,8 +41,7 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 	private int count = 0;     // Countdown - number of intervals to go ...
 	private double scanInterval = 10.;  // ~secs
 	private double timeWindow = 0.;  // ~secs
-//	private String trigger = "TRUE";     // Nothing will trigger until this is set
-	private TruthValue trigger = TruthValue.TRUE; 
+	private TruthValue trigger = TruthValue.TRUE;     // Nothing will trigger until this is set * 08/22/19 Pete wants this to default to TRUE
 	private BlockProperty valueProperty = null;
 	private final Watchdog dog;
 	/**
@@ -86,8 +85,10 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 
 		// Define a single output and a single input
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.TRUTHVALUE);
-		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.TRUTHVALUE);
+		input.setIsMultiple(false);
 		anchors.add(input);
+
+		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.TRUTHVALUE);
 		anchors.add(output);
 	}
 	
@@ -160,8 +161,8 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 			timer.updateWatchdog(dog);  // pet dog
 			
 			double timeRemaining = count*scanInterval;
-			TimeUnit tu = TimeUtility.unitForValue(timeRemaining);
-			String formattedTime = String.format("%.1f %s", TimeUtility.valueForCanonicalValue(timeRemaining, tu),TimeUtility.abbreviationForUnit(tu));
+			String formattedTime = String.format("%02d:%02d:%02d", TimeUtility.remainderValue(timeRemaining, TimeUnit.HOURS),
+					TimeUtility.remainderValue(timeRemaining, TimeUnit.MINUTES),TimeUtility.remainderValue(timeRemaining, TimeUnit.SECONDS));
 			log.debugf("%s.evaluate: cycle %d property value =  %s.",getName(),count,formattedTime);
 			valueProperty.setValue(formattedTime);
 			notifyOfStatus();
@@ -261,13 +262,14 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 		prototype.setPaletteIconPath("Block/icons/palette/PMIDigitalDisplay32.png");
 		prototype.setPaletteLabel("PersistGate");
 		prototype.setTooltipText("Monitor the incoming value for change over a specified period");
-		prototype.setTabName(BlockConstants.PALETTE_TAB_OBSERVATION);
+		prototype.setTabName(BlockConstants.PALETTE_TAB_TIMERS_COUNTERS);
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setBlockClass(getClass().getCanonicalName());
-		desc.setPreferredHeight(40);
-		desc.setPreferredWidth(80);
+		desc.setPreferredHeight(46);
+		desc.setPreferredWidth(90);
 		desc.setStyle(BlockStyle.READOUT);
-		desc.setReceiveEnabled(true);
+		desc.setBadgeCharacter("p");
+//		desc.setReceiveEnabled(true);
 	}
 }

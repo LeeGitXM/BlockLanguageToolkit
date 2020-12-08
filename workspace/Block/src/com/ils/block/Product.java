@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
-import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.ProcessBlock;
 import com.ils.blt.common.block.Activity;
 import com.ils.blt.common.block.AnchorDirection;
@@ -19,12 +18,12 @@ import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.PropertyType;
-import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
+import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
@@ -78,6 +77,7 @@ public class Product extends AbstractProcessBlock implements ProcessBlock {
 		
 		// Define a single input -- but allow multiple connections
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
+		input.setIsMultiple(true);
 		anchors.add(input);
 
 		// Define a single output
@@ -91,7 +91,7 @@ public class Product extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void start() {
 		super.start();
-		reconcileQualifiedValueMap(BlockConstants.IN_PORT_NAME,valueMap,BLTProperties.UNDEFINED);
+		reconcileQualifiedValueMap(BlockConstants.IN_PORT_NAME,valueMap,Double.NaN);
 	}
 	/**
 	 * Disconnect from the timer thread.
@@ -101,22 +101,7 @@ public class Product extends AbstractProcessBlock implements ProcessBlock {
 		super.stop();
 		timer.removeWatchdog(dog);
 	}
-	/**
-	 * Handle a change to the coalescing interval.
-	 */
-	@Override
-	public void propertyChange(BlockPropertyChangeEvent event) {
-		super.propertyChange(event);
-		String propertyName = event.getPropertyName();
-		if(propertyName.equals(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL)) {
-			try {
-				synchInterval = Double.parseDouble(event.getNewValue().toString());
-			}
-			catch(NumberFormatException nfe) {
-				log.warnf("%s: propertyChange Unable to convert synch interval to a double (%s)",getName(),nfe.getLocalizedMessage());
-			}
-		}
-	}
+
 
 	/**
 	 * Notify the block that a new value has appeared on one of its input anchors.
@@ -128,6 +113,7 @@ public class Product extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void acceptValue(IncomingNotification incoming) {
 		super.acceptValue(incoming);
+		
 		QualifiedValue qv = incoming.getValue();
 		if( qv!=null && qv.getValue()!=null ) {
 			String key = incoming.getConnection().getSource().toString();
@@ -167,6 +153,25 @@ public class Product extends AbstractProcessBlock implements ProcessBlock {
 			notifyOfStatus(lastValue);
 		}
 	}
+	
+	/**
+	 * @return a block-specific description of internal statue
+	 */
+	@Override
+	public SerializableBlockStateDescriptor getInternalStatus() {
+		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
+		Map<String,String> attributes = descriptor.getAttributes();
+		for(String key:valueMap.keySet()) {
+			QualifiedValue qv = (QualifiedValue)valueMap.get(key);
+			if( qv!=null && qv.getValue()!=null) {
+				attributes.put(key, String.valueOf(qv.getValue()));
+			}
+			else {
+				attributes.put(key,"NULL"); 
+			}
+		}
+		return descriptor;
+	}
 	/**
 	 * Send status update notification for our last latest state.
 	 */
@@ -174,9 +179,25 @@ public class Product extends AbstractProcessBlock implements ProcessBlock {
 	public void notifyOfStatus() {
 		notifyOfStatus(lastValue);
 	}
-
 	private void notifyOfStatus(QualifiedValue qv) {
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
+	}
+	
+	/**
+	 * Handle a change to the coalescing interval.
+	 */
+	@Override
+	public void propertyChange(BlockPropertyChangeEvent event) {
+		super.propertyChange(event);
+		String propertyName = event.getPropertyName();
+		if(propertyName.equals(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL)) {
+			try {
+				synchInterval = Double.parseDouble(event.getNewValue().toString());
+			}
+			catch(NumberFormatException nfe) {
+				log.warnf("%s: propertyChange Unable to convert synch interval to a double (%s)",getName(),nfe.getLocalizedMessage());
+			}
+		}
 	}
 	/**
 	 * On a save, make sure that our map of connections is proper. 
@@ -184,7 +205,7 @@ public class Product extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	@Override
 	public void validateConnections() {
-		reconcileQualifiedValueMap(BlockConstants.IN_PORT_NAME,valueMap,BLTProperties.UNDEFINED);
+		reconcileQualifiedValueMap(BlockConstants.IN_PORT_NAME,valueMap,Double.NaN);
 	}
 	/**
 	 * Augment the palette prototype for this block class.
@@ -214,9 +235,9 @@ public class Product extends AbstractProcessBlock implements ProcessBlock {
 		if(!values.isEmpty()) {
 			result = 1.;
 			for(QualifiedValue qv:values) {
-				if( qv.getQuality().isGood() && qv.getValue()!=null && !qv.getValue().equals(BLTProperties.UNDEFINED) ) {
+				if( qv.getQuality().isGood() && qv.getValue()!=null && !qv.getValue().equals(Double.NaN) ) {
 					log.tracef("%s.aggregating ... value = %sf",getName(),qv.getValue().toString());
-					result = result*((Double)qv.getValue()).doubleValue();
+					result = result*fcns.coerceToDouble(qv.getValue());
 				}
 				else {
 					return Double.NaN;

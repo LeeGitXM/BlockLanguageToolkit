@@ -73,6 +73,8 @@ public class Note extends AbstractProcessBlock implements ProcessBlock {
 		setProperty(BlockConstants.BLOCK_PROPERTY_WIDTH, width);		
 		BlockProperty height = new BlockProperty(BlockConstants.BLOCK_PROPERTY_HEIGHT, Integer.valueOf(DEFAULT_HEIGHT), PropertyType.INTEGER,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_HEIGHT, height);		
+		BlockProperty backgroundColor = new BlockProperty(BlockConstants.BLOCK_PROPERTY_BACKGROUND_COLOR, "TRANSPARENT", PropertyType.COLOR,true);
+		setProperty(BlockConstants.BLOCK_PROPERTY_BACKGROUND_COLOR, backgroundColor);		
 	}
 	
 	/**
@@ -83,6 +85,7 @@ public class Note extends AbstractProcessBlock implements ProcessBlock {
 		prototype.setPaletteLabel("Note");
 		prototype.setTooltipText("Any notes you would care to enter.");
 		prototype.setTabName(BlockConstants.PALETTE_TAB_MISC);
+
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setBlockClass(getClass().getCanonicalName());
 		desc.setStyle(BlockStyle.NOTE);

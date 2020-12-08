@@ -48,13 +48,13 @@ public class ToolkitRecordListener extends BasicToolkitRecordListener implements
 	
 	// Set the tag providers for all properties in diagrams that match
 	// the specified state.
-	private void setTagProvider(DiagramState state,String name) {
+	private void setTagProvider(DiagramState state,String providerName) {
 		ModelManager mm = BlockExecutionController.getInstance().getDelegate();
 		List<ProcessDiagram> diagrams = mm.getDiagrams();
 		for(ProcessDiagram diagram:diagrams) {
 			if(diagram.getState().equals(state)) {
 				diagram.stopSubscriptions();
-				diagram.updatePropertyProviders(name);
+				diagram.updatePropertyProviders(providerName);
 				diagram.startSubscriptions(state);
 			}
 		}

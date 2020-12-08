@@ -65,6 +65,7 @@ public class TimeReadout extends Readout implements ProcessBlock {
 		
 		// Define a single input -- but allow multiple connections
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.ANY);
+		input.setIsMultiple(true);
 		anchors.add(input);
 
 		// Define a single output
@@ -103,7 +104,9 @@ public class TimeReadout extends Readout implements ProcessBlock {
 			if( !isLocked()  ) {
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 				controller.acceptCompletionNotification(nvn);
+				controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, lastValue);
 				try {
+					
 					String value = "";
 					// Convert the value according to the data type specified by the format.
 					if( lastValue.getValue() instanceof java.util.Date ) {
@@ -113,14 +116,13 @@ public class TimeReadout extends Readout implements ProcessBlock {
 						value = customFormatter.format(lastValue.getTimestamp());
 					}
 			
-					
 					valueProperty.setValue(value);
 					log.tracef("%s.acceptValue: port %s formatted value =  %s.",getName(),incoming.getConnection().getUpstreamPortName(),value);
 					
-					QualifiedValue qv = new BasicQualifiedValue(value,lastValue.getQuality(),lastValue.getTimestamp()); 
-					valueProperty.setValue(value);
-					log.tracef("%s.acceptValue: port %s formatted value =  %s.",getName(),incoming.getConnection().getUpstreamPortName(),value);
-					notifyOfStatus(qv);
+					QualifiedValue qv = new BasicQualifiedValue(valueProperty.getValue(),lastValue.getQuality(),lastValue.getTimestamp()); 
+//					log.tracef("%s.acceptValue: port %s formatted value =  %s.",getName(),incoming.getConnection().getUpstreamPortName(),value);
+
+					controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,qv);
 				}
 				catch(Exception ex) {
 					log.warn(getName()+".acceptValue: error formatting timestamp",ex);  // Print stack trace
@@ -137,6 +139,7 @@ public class TimeReadout extends Readout implements ProcessBlock {
 		prototype.setPaletteLabel("TimeReadout");
 		prototype.setTooltipText("Show the time the most recent value. Use SimpleDateFormat to configure the output.");
 		prototype.setTabName(BlockConstants.PALETTE_TAB_MISC);
+		
 		BlockDescriptor view = prototype.getBlockDescriptor();
 		view.setBlockClass(getClass().getCanonicalName());
 		view.setStyle(BlockStyle.READOUT);

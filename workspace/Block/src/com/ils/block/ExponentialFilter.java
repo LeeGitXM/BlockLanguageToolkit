@@ -75,6 +75,7 @@ public class ExponentialFilter extends AbstractProcessBlock implements ProcessBl
 		
 		// Define a single input
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
+		input.setIsMultiple(false);
 		anchors.add(input);
 		
 		// Define a single output
@@ -147,7 +148,7 @@ public class ExponentialFilter extends AbstractProcessBlock implements ProcessBl
 		String propertyName = event.getPropertyName();
 		if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW) ) {
 			try {
-				window = Double.parseDouble(event.getNewValue().toString());
+				window = Double.parseDouble(event.getNewValue().toString());  // adapt for minutes
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s: propertyChange Unable to convert filter value to a double (%s)",TAG,nfe.getLocalizedMessage());

@@ -35,7 +35,9 @@ public class BlockProperty implements NotificationChangeListener {
 	private PropertyType type = PropertyType.STRING;
 	private String binding = "";
 	private BindingType bindingType = BindingType.NONE;
-	private boolean displayed   = false;
+	private boolean displayed  = false;
+	private boolean showProperty  = false;
+	private String displayedBlockUUID = "";  // parent is used if this property is displayed.  This way we know what block to update
 	private int displayOffsetX = BlockConstants.DEFAULT_ATTRIBUTE_OFFSET_X;
 	private int displayOffsetY = BlockConstants.DEFAULT_ATTRIBUTE_OFFSET_Y;
 
@@ -107,9 +109,16 @@ public class BlockProperty implements NotificationChangeListener {
 	public boolean isEditable() {return editable;}
 	public void setEditable(boolean editable) {this.editable = editable;}
 	public String getBinding() {return binding;}
-	public void setBinding(String lnk) {this.binding = lnk;}
+	public void setBinding(String lnk) {
+		this.binding = lnk;
+		notifyChangeListeners();
+	}
 	public String getName() {return name;}
 	public void setName(String name) {this.name = name;}
+	public boolean isShowProperty() {return showProperty;}
+	public void setShowProperty(boolean shown) {this.showProperty = shown;}
+	public String getDisplayedBlockUUID() {return displayedBlockUUID;}
+	public void setDisplayedBlockUUID(String displayedBlockUUID) {this.displayedBlockUUID = displayedBlockUUID;	}
 	public boolean isDisplayed() {return displayed;}
 	public void setDisplayed(boolean shown) {this.displayed = shown;}
 	public int getDisplayOffsetX() {return displayOffsetX;}
@@ -182,6 +191,8 @@ public class BlockProperty implements NotificationChangeListener {
 		BlockProperty clone = new BlockProperty(getName(),getValue(),getType(),isEditable());
 		clone.setBinding(getBinding());
 		clone.setDisplayed(isDisplayed());
+		clone.setShowProperty(isShowProperty());
+		clone.setDisplayedBlockUUID(getDisplayedBlockUUID());
 		clone.setDisplayOffsetX(getDisplayOffsetX());
 		clone.setDisplayOffsetY(getDisplayOffsetY());
 		clone.setBindingType(getBindingType());
@@ -201,7 +212,7 @@ public class BlockProperty implements NotificationChangeListener {
 	}
 	// ===================================== Notification Change Listener =======================================
 	@Override
-	public void diagramAlertChange(long resId, String state) {}
+	public void diagramStateChange(long resId, String state) {}
 	/**
 	 * Update a binding based on a push notification. Note that this
 	 * does NOT trigger change listeners.
@@ -218,14 +229,16 @@ public class BlockProperty implements NotificationChangeListener {
 			log.infof("%s.bindingChange of %s to %s threw ConcurrentModificationException (ignored)",TAG,getName(),bindTo);
 		}
 	}
+	@Override
+	public void nameChange(String val) {}
 	/**
 	 * Update a value based on a push notification. Note that this
 	 * triggers any change listeners on this property. These
 	 * notifications are currently NOT on the UI thread.
 	 */
 	@Override
-	public void valueChange(QualifiedValue val) {
-		log.tracef("%s(%d).valueChange %s now %s",TAG,hashCode(),getName(),val.getValue().toString());
+	public synchronized void valueChange(QualifiedValue val) {
+		//log.infof("%s(%d).valueChange %s now %s",TAG,hashCode(),getName(),val.getValue().toString());
 		if( val!=null && val.getValue()!=null) {
 			try {
 				setValue(val.getValue());
@@ -233,12 +246,14 @@ public class BlockProperty implements NotificationChangeListener {
 			catch(ConcurrentModificationException cme) {
 				// This is a possibility if the property listeners are also
 				// notification listeners. What a tangled web we weave.
-				log.infof("%s.valueChange of %s to %s threw ConcurrentModificationException (ignored)",TAG,getName(),val.getValue().toString());
+				log.info(String.format("%s.valueChange of %s to %s threw ConcurrentModificationException (ignored)",
+						TAG,getName(),val.getValue().toString()),cme);
 			}
 		}
 	}
 	@Override
 	public void watermarkChange(String val) {}
+
 
 
 }

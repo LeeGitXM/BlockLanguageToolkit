@@ -211,13 +211,13 @@ public class TruthValuePulse extends AbstractProcessBlock implements ProcessBloc
 		prototype.setPaletteIconPath("Block/icons/palette/true_pulse.png");
 		prototype.setPaletteLabel("TruthPulse");
 		prototype.setTooltipText("On reset, emit a truth-value for a configured interval");
-		prototype.setTabName(BlockConstants.PALETTE_TAB_CONTROL);
+		prototype.setTabName(BlockConstants.PALETTE_TAB_CONNECTIVITY);
 		BlockDescriptor view = prototype.getBlockDescriptor();
 		view.setEmbeddedIcon("Block/icons/embedded/signal_pulse.png");
 		view.setBlockClass(getClass().getCanonicalName());
 		view.setStyle(BlockStyle.SQUARE);
 		view.setPreferredHeight(60);
 		view.setPreferredWidth(60);
-		view.setReceiveEnabled(true);
+//		view.setReceiveEnabled(true);
 	}
 }

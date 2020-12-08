@@ -1,9 +1,12 @@
 package com.ils.blt.designer.search;
 
+import java.awt.Frame;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+
+import javax.swing.JComponent;
 
 import com.ils.blt.common.BLTProperties;
 import com.inductiveautomation.ignition.common.gui.progress.TaskProgressListener;
@@ -16,7 +19,7 @@ import com.inductiveautomation.ignition.designer.findreplace.SearchProvider;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
 public class BLTSearchProvider implements SearchProvider {
-	private final String TAG = "BLTSearchProvider";
+	private final String TAG = "SAISearchProvider";
 	public final static int SEARCH_APPLICATION = 1;
 	public final static int SEARCH_FAMILY = 2;
 	public final static int SEARCH_DIAGRAM = 4;
@@ -43,7 +46,7 @@ public class BLTSearchProvider implements SearchProvider {
 
 	@Override
 	public String getName() {
-		return "Diagnostic Toolkit";
+		return "Symbolic AI";
 	}
 
 	@Override
@@ -105,4 +108,5 @@ public class BLTSearchProvider implements SearchProvider {
 		log.infof("%s.selectedObjectsToString",TAG);
 		return null;
 	}
+	
 }

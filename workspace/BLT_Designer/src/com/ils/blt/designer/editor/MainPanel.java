@@ -16,15 +16,19 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.JTextField;
-
-import net.miginfocom.swing.MigLayout;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.PropertyType;
+import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
+import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
+
+import net.miginfocom.swing.MigLayout;
 
 /**
  * This is the "home" panel that first appears when editing a block. It contains
@@ -35,37 +39,41 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
 @SuppressWarnings("serial")
 public class MainPanel extends BasicEditPanel {
 	private final static String TAG = "MainPanel";
-	private final ProcessBlockView block;
-	private final Map<String,PropertyPanel> panelMap;
-	private final CorePropertyPanel corePanel;
+	protected final ProcessBlockView block;
+	protected final Map<String,PropertyPanel> panelMap;
+	protected final CorePropertyPanel corePanel;
+	protected final DesignerContext context;
+	protected final DiagramWorkspace workspace;
 
-	public MainPanel(DesignerContext context,BlockPropertyEditor editor,ProcessBlockView blk) {
+	public MainPanel(DesignerContext context,BlockPropertyEditor editor,ProcessBlockView blk, DiagramWorkspace wrkspc) {
 		super(editor);
 		this.block = blk;
 		this.panelMap = new HashMap<String,PropertyPanel>();
 		this.corePanel = new CorePropertyPanel(block);
-
+		this.context = context;
+		this.workspace = wrkspc;
+		// Always display the core panel
 		setLayout(new MigLayout("top,flowy,ins 2,gapy 0:10:15","","[top]0[]"));
 		add(corePanel,"grow,push");
-
+	}
+	// This must be called after the constructor in order to lay out the components
+	public void initialize() {
 		log.debugf("%s.mainPanel: - editing %s (%s)",TAG,block.getId().toString(),block.getClassName());
 		PropertyPanel propertyPanel = null;
 		// Now fill the editor. We use the same panel class for each property.
 		for(BlockProperty property:block.getProperties()) {
 			// We have gotten null from serialization problems ...
 			if( property==null || property.getName()==null) continue;
-			log.debugf("%s.init: - creating panel for property %s",TAG,property.getName());
-			propertyPanel = new PropertyPanel(context,this,blk,property);
+			propertyPanel = new PropertyPanel(context,this,block,property,workspace);
 			add(propertyPanel,"skip,growx,push,gaptop 0,gapbottom 0");
 			panelMap.put(property.getName(), propertyPanel);
-
 		}
 		// "Sacrificial" row - else we had trouble scrolling to the bottom
 		JSeparator separator = new JSeparator();
 		add(separator,"span,growy");
 	}
 	
-	public void handlePropertyChange(BlockProperty prop) {editor.handlePropertyChange(prop);} 
+	public void saveDiagramClean() {editor.saveDiagramClean();} 
 
 	/**
 	 * Iterate over panels and close any subscriptions
@@ -79,7 +87,7 @@ public class MainPanel extends BasicEditPanel {
 	 * This is the property summary on the main panel.
 	 * @param pbv block view
 	 */
-	public void updatePanelForBlock(ProcessBlockView pbv) {
+	public void updateCorePanel(ProcessBlockView pbv) {
 		 corePanel.updatePanelForBlock(pbv);
 	}
 	/**
@@ -87,15 +95,21 @@ public class MainPanel extends BasicEditPanel {
 	 * @param prop
 	 */
 	public void updatePanelForProperty(BlockProperty prop ) {
-		log.tracef("%s.updatePanelForProperty: %s", TAG,prop.getName());
+		log.infof("%s.updatePanelForProperty: %s = %s", TAG,prop.getName(),prop.getValue().toString());
 		PropertyPanel pp = panelMap.get(prop.getName());
-		if( pp!=null ) pp.update();
+		if( pp!=null ) pp.updatePanelUI();
+	}
+	
+	public void updatePanelValue(String propertyName,Object val) {
+		log.infof("%s.updatePanelValue: %s = %s", TAG,propertyName,val.toString());
+		PropertyPanel pp = panelMap.get(propertyName);
+		if( pp!=null ) pp.valueChange(new BasicQualifiedValue(val));
 	}
 	/**
 	 * These properties are present in every block.
-	 * class, label, state, statusText
+	 * class, label, state, statusText.
 	 */
-	private class CorePropertyPanel extends JPanel {
+	private class CorePropertyPanel extends JPanel implements ChangeListener {
 		private static final String columnConstraints = "[para]0[]0[]";
 		private static final String layoutConstraints = "ins 2";
 		private static final String rowConstraints = "[para]0[]0[]";
@@ -112,10 +126,29 @@ public class MainPanel extends BasicEditPanel {
 			add(createTextField(blk.getClassName()),"span,growx");
 			add(createLabel("UUID"),"skip");
 			add(createTextField(blk.getId().toString()),"span,growx");
+			
+			// Listen on block name changes
+			block.addChangeListener(this);
 		}
 		
 		public void updatePanelForBlock(ProcessBlockView pbv) {
 			nameField.setText(pbv.getName());
+		}
+		
+		@Override
+		public void finalize()  {
+			block.removeChangeListener(this);
+			try {
+				super.finalize();
+			}
+			catch(Throwable t) {}
+		}
+		// --------------------------------- Change Listener ----------------------------
+		// When we get an event, read the name from the block
+
+		@Override
+		public void stateChanged(ChangeEvent e) {
+			nameField.setText(block.getName());
 		}
 	}
 	
@@ -141,7 +174,7 @@ public class MainPanel extends BasicEditPanel {
 			btn.setPreferredSize(BlockEditConstants.BUTTON_SIZE);
 			btn.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e){
-					updatePanelForProperty(BlockEditConstants.CONFIGURATION_PANEL,prop);
+					editor.updatePanelForProperty(BlockEditConstants.CONFIGURATION_PANEL,prop);
 					setSelectedPane(BlockEditConstants.CONFIGURATION_PANEL);
 				}
 			});
@@ -174,13 +207,13 @@ public class MainPanel extends BasicEditPanel {
 						prop.getBindingType().equals(BindingType.TAG_READ)   ||
 						prop.getBindingType().equals(BindingType.TAG_READWRITE) ||
 						prop.getBindingType().equals(BindingType.TAG_WRITE)	 )  {
-						updatePanelForProperty(BlockEditConstants.TAG_BROWSER_PANEL,prop);
+						editor.updatePanelForProperty(BlockEditConstants.TAG_BROWSER_PANEL,prop);
 						setSelectedPane(BlockEditConstants.TAG_BROWSER_PANEL);
 					}
 					// Use special editor for list types
 					else if( prop.getType().equals(PropertyType.LIST) ) {
 						log.debugf("%s.editButton actionPerformed for property %s (%s)",TAG,prop.getName(),prop.getType());
-						updatePanelForProperty(BlockEditConstants.LIST_EDIT_PANEL,prop);
+						editor.updatePanelForProperty(BlockEditConstants.LIST_EDIT_PANEL,prop);
 						setSelectedPane(BlockEditConstants.LIST_EDIT_PANEL);
 					}
 					else {
@@ -215,7 +248,7 @@ public class MainPanel extends BasicEditPanel {
 			btn.addActionListener(new ActionListener() {
 				// Determine the correct panel, depending on the property type
 				public void actionPerformed(ActionEvent e){
-					updatePanelForBlock(BlockEditConstants.NAME_EDIT_PANEL,blk);
+					editor.updateCorePanel(BlockEditConstants.NAME_EDIT_PANEL,blk);
 					setSelectedPane(BlockEditConstants.NAME_EDIT_PANEL);
 				}
 			});

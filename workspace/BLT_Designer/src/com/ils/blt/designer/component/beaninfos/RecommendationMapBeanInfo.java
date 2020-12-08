@@ -9,9 +9,9 @@ import java.beans.IntrospectionException;
 
 import javax.swing.ImageIcon;
 
-import com.ils.blt.client.component.recmap.RecMapConstants;
-import com.ils.blt.client.component.recmap.RecommendationMap;
 import com.ils.blt.common.BLTProperties;
+import com.ils.common.component.recmap.RecMapConstants;
+import com.ils.common.component.recmap.RecommendationMap;
 import com.inductiveautomation.factorypmi.designer.property.customizers.DynamicPropertyProviderCustomizer;
 import com.inductiveautomation.factorypmi.designer.property.customizers.StyleCustomizer;
 import com.inductiveautomation.ignition.common.BundleUtil;

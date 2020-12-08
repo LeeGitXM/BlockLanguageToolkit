@@ -34,7 +34,7 @@ Step: In-Range Values
 09:58:30 resetDiagram ($DIAGRAM)
 09:59 .9 1.0 0.01
 09:59:45 resetBlock($DIAGRAM,$S3)
-10:00 Assert: getState($DIAGRAM,$S3) = UNSET    "3 state  UNSET after block reset"
+10:00 Assert: getState($DIAGRAM,$S3) = UNKNOWN    "3 state  UNKNOWN after block reset"
 10:00:10 Assert: SQC3                = UNKNOWN  "3 output UNKNOWN after reset"
 10:00:13 Assert: getState($DIAGRAM,$S4) = UNKNOWN  "4 state  UNKNOWN before threshold"
 10:00:15 Assert: SQC4                   = UNKNOWN  "4 output UNKNOWN before threshold"
@@ -43,12 +43,14 @@ Step: In-Range Values
 10:00:52 Assert: SQC3                   = UNKNOWN "3 output UNKNOWN at first value"
 10:00:57 Assert: getState($DIAGRAM,$S1) = UNKNOWN  "1 state  UNKNOWN before threshold"
 10:00:58 Assert: SQC1                   = UNKNOWN  "1 output UNKNOWN before threshold"
+10:00:57 Assert: getState($DIAGRAM,$S1) = UNKNOWN  "1 state  UNKNOWN before threshold"
+10:00:58 Assert: SQC1                   = UNKNOWN  "1 output UNKNOWN before threshold"
 10:01 0.1 
 10:01:50 Assert: getState($DIAGRAM,$S3) = false "3 state  false before threshold"
 10:01:55 Assert: SQC3                   = false "3 output false before threshold"
 10:02:00 1.1
 10:02:15 Assert: getState($DIAGRAM,$S1) = false "1 state  false at threshold"
-10:02:20 Assert: getExplanation($DIAGRAM,$S1) = "SQC SQC-1 (limit HIGH), 4 of 4 within limits (3 required)" "1 explanation of 4 of 4 within limits is correct"
+10:02:20 Assert: getExplanation($DIAGRAM,$S1) = "SQC SQC-1 (limit HIGH), 4 of 4 within limits (3 expected)" "1 explanation of 4 of 4 within limits is correct"
 10:02:42 Assert: SQC1                   = false "1 output false at threshold"
 10:02:45 Assert: getState($DIAGRAM,$S2) = false "2 state  false at threshold"
 10:02:47 Assert: SQC2                   = false "2 output false at threshold"
@@ -120,7 +122,8 @@ Step: Out-of-Range Values
 
 Step: Clear On Reset
 10:16    resetBlock($DIAGRAM,$S1)
-10:16:10 Assert: SQC1 = UNKNOWN  "1 downstream output UNKNOWN after block reset"
+# next line is incorrect since UNSET doesn't propoagate
+# 10:16:10 Assert: SQC1 = UNKNOWN  "1 downstream output UNKNOWN after block reset"
 10:16:05    resetDiagram ($DIAGRAM)
 10:16:20 Assert: getState($DIAGRAM,$S2) != UNKNOWN "2 state  not UNKNOWN after reset"
 10:16:25 Assert: SQC2                   != UNKNOWN "2 output not UNKNOWN after reset"

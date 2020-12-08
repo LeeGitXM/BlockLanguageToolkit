@@ -19,12 +19,12 @@ import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.PropertyType;
-import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
+import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
@@ -79,6 +79,7 @@ public class Sum extends AbstractProcessBlock implements ProcessBlock {
 		
 		// Define a single input -- but allow multiple connections
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
+		input.setIsMultiple(true);
 		anchors.add(input);
 
 		// Define a single output
@@ -87,17 +88,13 @@ public class Sum extends AbstractProcessBlock implements ProcessBlock {
 	}
 	
 	
-	@Override
-	public void reset() {
-		super.reset();
-	}
 	/**
 	 * Initialize the qualified value map.
 	 */
 	@Override
 	public void start() {
 		super.start();
-		reconcileQualifiedValueMap(BlockConstants.IN_PORT_NAME,valueMap,BLTProperties.UNDEFINED);
+		reconcileQualifiedValueMap(BlockConstants.IN_PORT_NAME,valueMap,Double.NaN);
 	}
 	/**
 	 * Disconnect from the timer thread.
@@ -136,6 +133,9 @@ public class Sum extends AbstractProcessBlock implements ProcessBlock {
 			valueMap.put(key, qv);
 			recordActivity(Activity.ACTIVITY_RECEIVE,key,qv.getValue().toString());
 		}
+		else {
+			log.warnf("%s.acceptValue: received null value",getName());
+		}
 	}
 	
 	/**
@@ -145,21 +145,21 @@ public class Sum extends AbstractProcessBlock implements ProcessBlock {
 	public void evaluate() {
 		//log.infof("%s.evaluate ...", getName());
 		if( !isLocked() && !valueMap.isEmpty()) {
-			//synchronized(this) {
-				double value = getAggregateResult();
-				log.debugf("%s.evaluate ... value = %3.2f", getName(),value);
-				lastValue = new TestAwareQualifiedValue(timer,new Double(value),getAggregateQuality());
-				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
-				controller.acceptCompletionNotification(nvn);
-				notifyOfStatus(lastValue);
-			//}	
+			double value = getAggregateResult();
+			log.debugf("%s.evaluate ... value = %3.2f", getName(),value);
+			lastValue = new TestAwareQualifiedValue(timer,new Double(value),getAggregateQuality());
+			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
+			controller.acceptCompletionNotification(nvn);
+			notifyOfStatus(lastValue);
 		}
 	}
 	/**
 	 * Send status update notification for our last latest state.
 	 */
 	@Override
-	public void notifyOfStatus() {}
+	public void notifyOfStatus() {
+		notifyOfStatus(lastValue);
+	}
 	private void notifyOfStatus(QualifiedValue qv) {
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
@@ -185,7 +185,7 @@ public class Sum extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	@Override
 	public void validateConnections() {
-		reconcileQualifiedValueMap(BlockConstants.IN_PORT_NAME,valueMap,BLTProperties.UNDEFINED);
+		reconcileQualifiedValueMap(BlockConstants.IN_PORT_NAME,valueMap,Double.NaN);
 	}
 	/**
 	 * Define the palette prototype for this block class.
@@ -211,18 +211,35 @@ public class Sum extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	private double getAggregateResult() {
 		Collection<QualifiedValue> values = valueMap.values();
-		double result = Double.NaN;
-		result = 0.;
+		double result = 0.;
 		for(QualifiedValue qv:values) {
-			if( qv.getQuality().isGood() && qv.getValue()!=null && !qv.getValue().equals(BLTProperties.UNDEFINED) ) {
+			if( qv.getQuality().isGood() && qv.getValue()!=null && !qv.getValue().equals(Double.NaN) ) {
 				log.tracef("%s.aggregating ... value = %sf",getName(),qv.getValue().toString());
-				result = result+((Double)qv.getValue()).doubleValue();
+				result = result+fcns.coerceToDouble(qv.getValue());
 			}
 			else {
 				return Double.NaN;
 			}
 		}
 		return result;	
+	}
+	/**
+	 * @return a block-specific description of internal statue
+	 */
+	@Override
+	public SerializableBlockStateDescriptor getInternalStatus() {
+		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
+		Map<String,String> attributes = descriptor.getAttributes();
+		for(String key:valueMap.keySet()) {
+			QualifiedValue qv = (QualifiedValue)valueMap.get(key);
+			if( qv!=null && qv.getValue()!=null) {
+				attributes.put(key, String.valueOf(qv.getValue()));
+			}
+			else {
+				attributes.put(key,"NULL"); 
+			}
+		}
+		return descriptor;
 	}
 	/**
 	 * Compute the overall product, presumably because of a new input.

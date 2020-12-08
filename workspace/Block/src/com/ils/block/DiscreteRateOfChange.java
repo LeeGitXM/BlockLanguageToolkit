@@ -104,6 +104,8 @@ public class DiscreteRateOfChange extends AbstractProcessBlock implements Proces
 		// Define an input
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
 		input.setHint(PlacementHint.L);
+		input.setIsMultiple(false);
+	
 		anchors.add(input);
 
 		// Define a single output
@@ -253,7 +255,7 @@ public class DiscreteRateOfChange extends AbstractProcessBlock implements Proces
 		prototype.setPaletteIconPath("Block/icons/palette/rate_of_change.png");
 		prototype.setPaletteLabel("DiscreteChange");
 		prototype.setTooltipText("Compute the instantaneous rate of change based on a quadratic or cubic fit over recent history");
-		prototype.setTabName(BlockConstants.PALETTE_TAB_ANALYSIS);
+		prototype.setTabName(BlockConstants.PALETTE_TAB_ARITHMETIC);
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setBlockClass(getClass().getCanonicalName());

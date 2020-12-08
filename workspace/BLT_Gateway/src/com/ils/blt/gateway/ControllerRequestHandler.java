@@ -26,6 +26,7 @@ import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.block.PropertyType;
+import com.ils.blt.common.block.StatFunction;
 import com.ils.blt.common.block.TransmissionScope;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.Connection;
@@ -43,6 +44,7 @@ import com.ils.blt.gateway.engine.ProcessDiagram;
 import com.ils.blt.gateway.engine.ProcessFamily;
 import com.ils.blt.gateway.engine.ProcessNode;
 import com.ils.blt.gateway.proxy.ProxyHandler;
+import com.ils.blt.gateway.tag.TagHandler;
 import com.ils.common.ClassList;
 import com.ils.common.persistence.ToolkitProperties;
 import com.ils.common.persistence.ToolkitRecordHandler;
@@ -52,6 +54,7 @@ import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.Quality;
+import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.gateway.datasource.Datasource;
@@ -76,6 +79,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	private final GatewayScriptExtensionManager sem = GatewayScriptExtensionManager.getInstance();
 	private ToolkitRecordHandler toolkitRecordHandler;
 	private final UtilityFunctions fcns;
+	private TagHandler tagHandler; 
     
 	/**
 	 * Initialize with instances of the classes to be controlled.
@@ -131,6 +135,17 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	}
 
 	/**
+	 * Delete the tag for both production and isolation
+	 */
+	@Override
+	public void deleteTag(String path) {
+		String provider = getProductionTagProvider();
+		tagHandler.deleteTag(provider,path);
+		provider = getIsolationTagProvider();
+		tagHandler.deleteTag(provider,path);
+	}
+	
+	/**
 	 * Create an instance of a named class. If the class is not found in the JVM, try Python 
 	 * @param className class to create
 	 * @param parentId diagram identifier
@@ -170,6 +185,16 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			log.warnf("%s.createInstance: Security exception creating %s (%s)",TAG,className,iae.getLocalizedMessage()); 
 		}
 		return block;
+	}
+	/**
+	 * Create the tag in both production and isolation
+	 */
+	@Override
+	public void createTag(DataType type,String path) {
+		String provider = getProductionTagProvider();
+		tagHandler.createTag(provider,type,path);
+		provider = getIsolationTagProvider();
+		tagHandler.createTag(provider,type,path);
 	}
 	@Override
 	public boolean diagramExists(String uuidString) {
@@ -370,12 +395,12 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			while( node!=null ) {
 				if( node instanceof ProcessDiagram ) {
 					ds = ((ProcessDiagram)node).getState();
-					//log.infof("%s.getApplication, found application = %s ",TAG,app.getName());
+					//log.debugf("%s.getApplication, found application = %s ",TAG,app.getName());
 					break;
 				}
 				else if( node instanceof ProcessApplication ) {
 					ds = ((ProcessApplication)node).getState();
-					//log.infof("%s.getApplication, found application = %s ",TAG,app.getName());
+					//log.debugf("%s.getApplication, found application = %s ",TAG,app.getName());
 					break;
 				}
 				node = controller.getProcessNode(node.getParent());
@@ -673,23 +698,26 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	@Override
 	public synchronized List<SerializableBlockStateDescriptor> listBlocksForTag(String tagpath) {
 		List<SerializableBlockStateDescriptor> results = new ArrayList<>();
-		List<SerializableResourceDescriptor> descriptors = controller.getDiagramDescriptors();
-		for(SerializableResourceDescriptor descriptor:descriptors) {
-			UUID diagId = makeUUID(descriptor.getId());
+		if( tagpath!=null && !tagpath.isEmpty() ) {
+			List<SerializableResourceDescriptor> descriptors = controller.getDiagramDescriptors();
+			for(SerializableResourceDescriptor descriptor:descriptors) {
+				UUID diagId = makeUUID(descriptor.getId());
 
-			ProcessDiagram diagram = controller.getDiagram(diagId);
-			if( diagram!=null) {
-				Collection<ProcessBlock> blocks = diagram.getProcessBlocks();
-				for(ProcessBlock block:blocks) {
-					if( block.usesTag(tagpath)) {
-						results.add(block.toDescriptor());
+				ProcessDiagram diagram = controller.getDiagram(diagId);
+				if( diagram!=null) {
+					Collection<ProcessBlock> blocks = diagram.getProcessBlocks();
+					for(ProcessBlock block:blocks) {
+						if( block.usesTag(tagpath)) {
+							results.add(block.toDescriptor());
+						}
 					}
 				}
-			}
-			else {
-				log.warnf("%s.listBlocksForTag: no diagram found for id %s",TAG,diagId.toString());
+				else {
+					log.warnf("%s.listBlocksForTag: no diagram found for id %s",TAG,diagId.toString());
+				}
 			}
 		}
+		log.warnf("%s.listBlocksForTag: %s returns %d blocks",TAG,tagpath,results.size());
 		return results;
 	}
 	public synchronized List<SerializableBlockStateDescriptor> listBlocksGloballyDownstreamOf(String diagramId, String blockName) {
@@ -706,7 +734,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		return descriptors;
 	}
 	public synchronized List<SerializableBlockStateDescriptor> listBlocksGloballyUpstreamOf(String diagramId, String blockName) {
-		log.infof("%s.listBlocksGloballyUpstreamOf: diagramId %s:%s",TAG,diagramId,blockName);
+		log.tracef("%s.listBlocksGloballyUpstreamOf: diagramId %s:%s",TAG,diagramId,blockName);
 		List<SerializableBlockStateDescriptor> descriptors = new ArrayList<>();
 		UUID diauuid = makeUUID(diagramId);
 		ProcessDiagram diagram = controller.getDiagram(diauuid);
@@ -722,7 +750,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		else {
 			log.warnf("%s.listBlocksGloballyUpstreamOf: no diagram found for %s",TAG,diagramId);
 		}
-		log.infof("%s.listBlocksGloballyUpstreamOf: diagramId %s returning %d descriptors",TAG,diagramId,descriptors.size());
+		log.tracef("%s.listBlocksGloballyUpstreamOf: diagramId %s returning %d descriptors",TAG,diagramId,descriptors.size());
 		return descriptors;
 	}
 	
@@ -733,7 +761,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 */
 	@Override
 	public synchronized List<SerializableBlockStateDescriptor> listBlocksInDiagram(String diagramId) {
-		log.infof("%s.listBlocksInDiagram: diagramId %s",TAG,diagramId);
+		//log.infof("%s.listBlocksInDiagram: diagramId %s",TAG,diagramId);
 		List<SerializableBlockStateDescriptor> descriptors = new ArrayList<>();
 		UUID diauuid = makeUUID(diagramId);
 		ProcessDiagram diagram = controller.getDiagram(diauuid);
@@ -741,6 +769,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			Collection<ProcessBlock> blocks = diagram.getProcessBlocks();
 			for(ProcessBlock block:blocks) {
 				SerializableBlockStateDescriptor desc = block.toDescriptor();
+				//log.infof("%s.listBlocksInDiagram: process block %s",TAG,desc.getName());
 				Map<String,String> attributes = desc.getAttributes();
 				attributes.put(BLTProperties.BLOCK_ATTRIBUTE_ID,block.getClass().getName());
 				attributes.put(BLTProperties.BLOCK_ATTRIBUTE_ID,block.getBlockId().toString());
@@ -750,7 +779,24 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		else {
 			log.warnf("%s.listBlocksInDiagram: no diagram found for %s",TAG,diagramId);
 		}
-		log.infof("%s.listBlocksInDiagram: diagramId %s returning %d descriptors",TAG,diagramId,descriptors.size());
+		//log.infof("%s.listBlocksInDiagram: diagramId %s returning %d descriptors",TAG,diagramId,descriptors.size());
+		return descriptors;
+	}
+	/**
+	 * @param className fully qualified class name of blocks to be listed
+	 * @return a list of state descriptors for blocks that are of the specified class.
+	 */
+	public List<SerializableBlockStateDescriptor> listBlocksOfClass(String className) {
+		log.debugf("%s.listBlocksOfClass: %s",TAG,className);
+		List<SerializableBlockStateDescriptor> descriptors = new ArrayList<>();
+		List<SerializableResourceDescriptor> diagrams = controller.getDiagramDescriptors();
+		for(SerializableResourceDescriptor diag:diagrams) {
+			List<SerializableBlockStateDescriptor> blocks = listBlocksInDiagram(diag.getId());
+			for(SerializableBlockStateDescriptor desc:blocks) {
+				if( desc.getClassName().equals(className)) descriptors.add(desc);
+			}
+		}
+		log.debugf("%s.listBlocksOfClass: %s returning %d descriptors",TAG,className,descriptors.size());
 		return descriptors;
 	}
 	
@@ -771,7 +817,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 
 	@Override
 	public synchronized List<SerializableBlockStateDescriptor> listConfigurationErrors() {
-		log.infof("%s.listConfigurationErrors:",TAG);
+		log.tracef("%s.listConfigurationErrors:",TAG);
 		List<SerializableBlockStateDescriptor> result = new ArrayList<>();
 		List<SerializableResourceDescriptor> descriptors = controller.getDiagramDescriptors();
 		try {
@@ -790,7 +836,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			}
 		}
 		catch(Exception ex) {
-			log.info(TAG+".listConfigurationErrors: Exception ("+ex.getMessage()+")",ex);
+			log.debug(TAG+".listConfigurationErrors: Exception ("+ex.getMessage()+")",ex);
 		}
 		return result;
 	}
@@ -874,24 +920,25 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	
 	/**
 	 * Do an exhaustive search for all sink blocks that have the same binding
-	 * as the specified block. We cover all diagrams in the system.
+	 * as the specified block. We cover all diagrams in the system. There 
+	 * shoud only be one.
 	 * 
 	 * @param diagramId identifier for the diagram
-	 * @param blockName name of the source
+	 * @param blockId Id of the source
 	 * @return a list of block descriptors for the sinks that were found
 	 */
 	@Override
-	public synchronized List<SerializableBlockStateDescriptor> listSinksForSource(String diagramId,String blockName) {
+	public synchronized List<SerializableBlockStateDescriptor> listSinksForSource(String diagramId,String blockId) {
 		List<SerializableBlockStateDescriptor> results = new ArrayList<>();
 		UUID diagramuuid = makeUUID(diagramId);
 		ProcessDiagram diagram = controller.getDiagram(diagramuuid);
 		ProcessBlock source = null;
 		if(diagram!=null) {
-			source = diagram.getBlockByName(blockName);
+			source = diagram.getBlock(makeUUID(blockId));
 		}
 	
 		String tagPath = null;
-		if( source!=null && source.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SOURCE) ) {
+		if( source!=null && (source.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SOURCE))) {
 			BlockProperty prop = source.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
 			if( prop!=null ) tagPath = fcns.providerlessPath(prop.getBinding());
 		}
@@ -902,7 +949,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 				UUID diaguuid = makeUUID(desc.getId());
 				diagram = controller.getDiagram(diaguuid);
 				for(ProcessBlock sink:diagram.getProcessBlocks()) {
-					if( sink.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SINK) ) {
+					if( sink.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SINK) ) {
 						BlockProperty prop = sink.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
 						if( prop!=null && tagPath.equalsIgnoreCase(fcns.providerlessPath(prop.getBinding()))  ) {
 							results.add(sink.toDescriptor());
@@ -912,7 +959,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			}
 		}
 		else {
-			log.warnf("%s.listSinksForSource: Block %s not found, not a source or not bound",TAG,blockName);
+			log.warnf("%s.listSinksForSource: Block %s not found, not a source/input or not bound",TAG,blockId);
 		}
 		return results;
 	}
@@ -920,21 +967,21 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * Do an exhaustive search for all source blocks that have the same binding
 	 * as the specified block. We cover all diagrams in the system.
 	 * @param diagramId identifier for the diagram
-	 * @param blockName name of the sink
+	 * @param blockId Id of the sink
 	 * @return a list of descriptors for the sources that were found
 	 */
 	@Override
-	public synchronized List<SerializableBlockStateDescriptor> listSourcesForSink(String diagramId,String blockName) {
+	public synchronized List<SerializableBlockStateDescriptor> listSourcesForSink(String diagramId,String blockId) {
 		List<SerializableBlockStateDescriptor> results = new ArrayList<>();
 		UUID diagramuuid = makeUUID(diagramId);
 		ProcessDiagram diagram = controller.getDiagram(diagramuuid);
 		ProcessBlock sink = null;
 		if(diagram!=null) {
-			sink = diagram.getBlockByName(blockName);
+			sink = diagram.getBlock(makeUUID(blockId));
 		}
 
 		String tagPath = null;
-		if( sink!=null && sink.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SINK)) {
+		if( sink!=null && (sink.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SINK))) {
 			BlockProperty prop = sink.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
 			if( prop!=null ) tagPath = fcns.providerlessPath(prop.getBinding());
 		}
@@ -945,7 +992,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 				UUID diaguuid = makeUUID(descriptor.getId());
 				diagram = controller.getDiagram(diaguuid);
 				for(ProcessBlock source:diagram.getProcessBlocks()) {
-					if( source.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SOURCE) ) {
+					if( source.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SOURCE) ) {
 						BlockProperty prop = source.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
 						if( prop!=null && tagPath.equalsIgnoreCase(fcns.providerlessPath(prop.getBinding()))  ) {
 							results.add(source.toDescriptor());
@@ -955,13 +1002,13 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			}
 		}
 		else {
-			log.warnf("%s.listSourcesForSink: Block %s not found, not a sink or not bound",TAG,blockName);
+			log.warnf("%s.listSourcesForSink: Block %s not found, not a sink/output or not bound",TAG,blockId);
 		}
 		return results;
 	}
 	@Override
 	public synchronized List<SerializableBlockStateDescriptor> listSubscriptionErrors() {
-		log.infof("%s.listSubscriptionErrors:",TAG);
+		log.tracef("%s.listSubscriptionErrors:",TAG);
 		List<SerializableBlockStateDescriptor> result = new ArrayList<>();
 		List<SerializableResourceDescriptor> descriptors = controller.getDiagramDescriptors();
 		try {
@@ -982,14 +1029,14 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			}
 		}
 		catch(Exception ex) {
-			log.info(TAG+".listConfigurationErrors: Exception ("+ex.getMessage()+")",ex);
+			log.debug(TAG+".listConfigurationErrors: Exception ("+ex.getMessage()+")",ex);
 		}
 		return result;
 	}
 	
 	@Override
 	public synchronized List<SerializableBlockStateDescriptor> listUnresponsiveBlocks(double hours,String className) {
-		log.infof("%s.listUnresponsiveBlocks: Hrs %f, class %s,",TAG,hours,className);
+		log.tracef("%s.listUnresponsiveBlocks: Hrs %f, class %s,",TAG,hours,className);
 		List<SerializableBlockStateDescriptor> result = new ArrayList<>();
 		List<SerializableResourceDescriptor> descriptors = controller.getDiagramDescriptors();
 		long interval = (long)(hours*3600*1000);  // mses
@@ -1015,7 +1062,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			}
 		}
 		catch(Exception ex) {
-			log.info(TAG+".listConfigurationErrors: Exception ("+ex.getMessage()+")",ex);
+			log.debug(TAG+".listConfigurationErrors: Exception ("+ex.getMessage()+")",ex);
 		}
 		return result;
 	}
@@ -1103,6 +1150,34 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			blockUUID = UUID.nameUUIDFromBytes(blockId.getBytes());
 		}
 		controller.propagateBlockState(diagramUUID, blockUUID);
+	}
+	/**
+	 * Set the name of a block. Property listeners are notified. 
+	 * @param diagramId diagram Id
+	 * @param blockId Id of the target block
+	 * @param name the new name
+	 */
+	@Override
+	public void renameBlock(String diagramId, String blockId, String name) {
+		UUID diagramUUID = makeUUID(diagramId);
+		ProcessDiagram diagram = controller.getDiagram(diagramUUID);
+		ProcessBlock block = null;
+		UUID blockUUID = makeUUID(blockId);
+		if( diagram!=null ) block = diagram.getBlock(blockUUID);
+		if(block!=null) {
+			block.setName(name);
+			controller.sendNameChangeNotification(blockId, name);
+		}
+	}
+	/**
+	 * Rename the tag in both production and isolation
+	 */
+	@Override
+	public void renameTag(String name,String path) {
+		String provider = getProductionTagProvider();
+		tagHandler.renameTag(provider,name,path);
+		provider = getIsolationTagProvider();
+		tagHandler.renameTag(provider,name,path);
 	}
 	@Override
 	public void resetBlock(String diagramId, String blockName) {
@@ -1203,6 +1278,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		ProcessDiagram diagram = BlockExecutionController.getInstance().getDiagram(diagramUUID);
 		if( diagram!=null ) {
 			// Create a broadcast notification
+			log.warnf("%s.sendTimestampedSignal: Sending a signal to diagram %s for %s command",TAG,diagramId,command);
 			Signal sig = new Signal(command,message,argument);
 			BroadcastNotification broadcast = new BroadcastNotification(diagram.getSelf(),TransmissionScope.LOCAL,
 					                              new BasicQualifiedValue(sig,new BasicQuality(),new Date(time)));
@@ -1258,20 +1334,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		if(block!=null) {
 			for( BlockProperty property:properties ) {
 				BlockProperty existingProperty = block.getProperty(property.getName());
-				if( existingProperty!=null ) {
-					// Update the property
-					updateProperty(diagram.getState(),block,existingProperty,property);
-				}
-				else {
-					// Need to add a new one.
-					BlockProperty[] props = new BlockProperty[block.getProperties().length+1];
-					int index = 0;
-					for(BlockProperty bp:block.getProperties()) {
-						props[index] = bp;
-						index++;
-					}
-					props[index] = property;
-				}
+				setBlockProperty(parentId,blockId,property);
 			}
 		}
 	}
@@ -1295,22 +1358,27 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		if(block!=null) {
 			BlockProperty existingProperty = block.getProperty(property.getName());
 			if( existingProperty!=null ) {
-				// Update the property
+				// Update the property, notify the designer
 				updateProperty(diagram.getState(),block,existingProperty,property);
 			}
 			else {
-				// Need to add a new one.
-				BlockProperty[] props = new BlockProperty[block.getProperties().length+1];
-				int index = 0;
-				for(BlockProperty bp:block.getProperties()) {
-					props[index] = bp;
-					index++;
-				}
-				props[index] = property;
+				log.warnf("%s.setBlockProperty: Property %s not found in block %s", TAG,property.getName(),block.getName());
 			}
 		}
 	}
 
+	/** Change the binding value of a block property in such a way that the block and UI
+	 * are notified of the change.
+	 *  
+	 * @param diagramId diagram's unique Id as a String (not used)
+	 * @param blockId block Id as a String
+	 * @param pname the changed property
+	 * @param binding the new binding value of the property. The value will be a tagpath as a String.
+	 */
+	public void setBlockPropertyBinding(String diagramId,String blockId,String pname,String binding )  {
+		controller.sendPropertyBindingNotification(blockId, pname, binding);
+	}
+	
 	/** Change the value of a block property in such a way that the block and UI
 	 * are notified of the change.
 	 *  
@@ -1328,13 +1396,10 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			if( block!=null ) {
 				BlockProperty prop = block.getProperty(pname);
 				if( prop!=null ) {
-					BlockPropertyChangeEvent bpe = new BlockPropertyChangeEvent(bname,pname,prop.getValue(),value);
-					if( prop.getType().equals(PropertyType.BOOLEAN) ) prop.setValue(fcns.coerceToBoolean(value));
-					if( prop.getType().equals(PropertyType.DOUBLE) ) prop.setValue(fcns.coerceToDouble(value));
-					if( prop.getType().equals(PropertyType.INTEGER) ) prop.setValue(fcns.coerceToInteger(value));
-					else  prop.setValue(fcns.coerceToString(value));
+					Object oldValue = prop.getValue();	
+					BlockPropertyChangeEvent bpe = new BlockPropertyChangeEvent(bname,pname,oldValue,value);	
 					block.propertyChange(bpe);
-					controller.sendPropertyNotification(block.getBlockId().toString(),pname,new BasicQualifiedValue(prop.getValue()));
+					controller.sendPropertyNotification(block.getBlockId().toString(),pname,new BasicQualifiedValue(value));
 				}
 				else{
 					log.warnf("%s.setBlockPropertyValue: Unable to find property %s in block %s:%s",TAG,pname,diagramId,bname,diagram.getName());
@@ -1380,6 +1445,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	public void setContext(GatewayContext cntx) {
 		this.context = cntx;
 		toolkitRecordHandler = new ToolkitRecordHandler(context); 
+		tagHandler = new TagHandler(context);
 	}
 
 
@@ -1560,7 +1626,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	}
 
 
-	// Handle all the intricasies of a property change
+	// Handle all the intricacies of a property change
 	private void updateProperty(DiagramState ds,ProcessBlock block,BlockProperty existingProperty,BlockProperty newProperty) {
 		if( !existingProperty.isEditable() )  return;
 		
@@ -1599,7 +1665,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 				block.propertyChange(event);
 			}
 		}
-		// Inform the designer of the change
+		// inform the designer of the change
 		controller.sendPropertyNotification(block.getBlockId().toString(), newProperty.getName(), new BasicQualifiedValue(newProperty.getValue()));
 	}
 }

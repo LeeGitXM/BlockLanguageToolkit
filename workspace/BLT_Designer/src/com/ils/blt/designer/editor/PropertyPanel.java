@@ -1,5 +1,5 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved.
+ *   (c) 2014-2020  ILS Automation. All rights reserved.
  */
 package com.ils.blt.designer.editor;
 
@@ -11,11 +11,13 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.Collection;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
@@ -31,13 +33,18 @@ import com.ils.blt.common.block.HysteresisType;
 import com.ils.blt.common.block.LimitType;
 import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.block.SlopeCalculationOption;
+import com.ils.blt.common.block.StatFunction;
 import com.ils.blt.common.block.TransmissionScope;
 import com.ils.blt.common.block.TrendDirection;
 import com.ils.blt.common.block.TruthValue;
+import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.notification.NotificationChangeListener;
 import com.ils.blt.common.notification.NotificationKey;
 import com.ils.blt.designer.NotificationHandler;
+import com.ils.blt.designer.workspace.DiagramWorkspace;
+import com.ils.blt.designer.workspace.ProcessAnchorDescriptor;
 import com.ils.blt.designer.workspace.ProcessBlockView;
+import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.inductiveautomation.ignition.client.sqltags.ClientTagManager;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.sqltags.model.Tag;
@@ -45,9 +52,13 @@ import com.inductiveautomation.ignition.common.sqltags.model.TagPath;
 import com.inductiveautomation.ignition.common.sqltags.model.TagProp;
 import com.inductiveautomation.ignition.common.sqltags.model.event.TagChangeEvent;
 import com.inductiveautomation.ignition.common.sqltags.model.event.TagChangeListener;
+import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
+import com.inductiveautomation.ignition.common.sqltags.model.types.ExpressionType;
 import com.inductiveautomation.ignition.common.sqltags.parser.TagPathParser;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
+import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
+import com.inductiveautomation.ignition.designer.blockandconnector.model.Connection;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
 import net.miginfocom.swing.MigLayout;
@@ -64,6 +75,7 @@ import net.miginfocom.swing.MigLayout;
  */
 public class PropertyPanel extends JPanel implements ChangeListener, FocusListener, KeyListener, NotificationChangeListener,TagChangeListener {
 	private static final long serialVersionUID = 2264535784255009984L;
+	private static final boolean DEBUG = false;
 	private static SimpleDateFormat dateFormatter = new SimpleDateFormat(BlockConstants.TIMESTAMP_FORMAT);
 	private final NotificationHandler notificationHandler = NotificationHandler.getInstance();
 	private static UtilityFunctions fncs = new UtilityFunctions();
@@ -84,13 +96,17 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 	private final ProcessBlockView block;
 	private final BlockProperty property;
 	private TimeUnit currentTimeUnit;
+	private final DiagramWorkspace workspace;
+
 	
-	public PropertyPanel(DesignerContext ctx, MainPanel main,ProcessBlockView blk,BlockProperty prop) {
-		log.debugf("%s.PropertyPanel: property %s (%s:%s) = %s",TAG,prop.getName(),prop.getType().toString(),prop.getBindingType().toString(),prop.getValue().toString());
+	public PropertyPanel(DesignerContext ctx, MainPanel main,ProcessBlockView blk,BlockProperty prop, DiagramWorkspace workspace) {
+		log.infof("%s.PropertyPanel: property %s (%s:%s) = %s",TAG,prop.getName(),prop.getType().toString(),prop.getBindingType().toString(),prop.getValue().toString());
 		this.context = ctx;
 		this.parent = main;
 		this.block = blk;
 		this.property = prop;
+		this.workspace = workspace;
+
 //		this.currentTimeUnit = TimeUnit.SECONDS;   // The "canonical" unit
 		this.currentTimeUnit = TimeUnit.MINUTES;   // Force all to be in minutes, to avoid confusing behavior in UI
 		property.addChangeListener(this);
@@ -101,12 +117,15 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 //			currentTimeUnit = TimeUtility.unitForValue(propValue);
 //			main.addSeparator(this,property.getName()+" ~ "+currentTimeUnit.name().toLowerCase());
 			main.addSeparator(this,property.getName()+" ~ "+TimeUnit.MINUTES.name().toLowerCase());
-		} else if( property.getType().equals(PropertyType.TIME_SECONDS) ) {
+		} 
+		else if( property.getType().equals(PropertyType.TIME_SECONDS) ) {
 			this.currentTimeUnit = TimeUnit.SECONDS;
 			main.addSeparator(this,property.getName()+" ~ "+TimeUnit.SECONDS.name().toLowerCase());
-		} else if( property.getType().equals(PropertyType.TIME_MINUTES) ) {
+		} 
+		else if( property.getType().equals(PropertyType.TIME_MINUTES) ) {
 			main.addSeparator(this,property.getName()+" ~ "+TimeUnit.MINUTES.name().toLowerCase());
-		} else {
+		} 
+		else {
 			main.addSeparator(this,property.getName());
 		}
 
@@ -139,7 +158,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 		else if( isEnumerated ) {
 			// We add a configuration button for the simple reason of attribute display
 			add(configurationButton,"w :25:,wrap");
-			valueComboBox.setEditable(true);
+			valueComboBox.setEditable(false);
 			valueComboBox.setEnabled(true);
 		}                // Enumerated types are neither editable nor bindable
 		else if( property.getBindingType().equals(BindingType.NONE) ||
@@ -178,18 +197,24 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 		}
 		
 		// Register for notifications
-		// The "plain" (NONE) properties can be changed by python scripting
-		if(property.getBindingType().equals(BindingType.ENGINE) || property.getBindingType().equals(BindingType.NONE)) {
+		if(property.getBindingType().equals(BindingType.ENGINE)) {
 			String key = NotificationKey.keyForProperty(block.getId().toString(), property.getName());
-			log.debugf("%s.registerChangeListeners: adding %s for ENGINE",TAG,key);
+			log.debugf("%s: adding %s for ENGINE",TAG,key);
 			notificationHandler.addNotificationChangeListener(key,TAG,this);
+		}
+		// The "plain" (NONE) properties can be changed by python scripting. In these instances
+		// we are only interested in changes made AFTER the panel is displayed. 
+		else if(property.getBindingType().equals(BindingType.ENGINE) || property.getBindingType().equals(BindingType.NONE)) {
+			String key = NotificationKey.keyForProperty(block.getId().toString(), property.getName());
+			log.debugf("%s: adding %s",TAG,key);
+			notificationHandler.addNotificationChangeListener(key,TAG,this,false);
 		}
 		else if( property.getBindingType().equals(BindingType.TAG_MONITOR) ||
 				property.getBindingType().equals(BindingType.TAG_READ) ||
 				property.getBindingType().equals(BindingType.TAG_READWRITE) ||
 				property.getBindingType().equals(BindingType.TAG_WRITE)	) {
 			String key = NotificationKey.keyForPropertyBinding(block.getId().toString(), property.getName());
-			log.debugf("%s.registerChangeListeners: adding %s for %s",TAG,key,property.getBindingType().name());
+			log.debugf("%s: adding %s for %s",TAG,key,property.getBindingType().name());
 			notificationHandler.addNotificationChangeListener(key,TAG,this);
 			subscribeToTagPath(property.getBinding());
 		}
@@ -212,24 +237,28 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 	}
 	// Subscribe to a tag. This will fail if the tag path is unset or illegal.
 	// The provider has been set in the panel constructor.
-	private void subscribeToTagPath(String path) {
-		if( path==null || path.length()==0 ) return;  // Fail silently for path not set
-		log.tracef("%s.subscribeToTagPath: - %s (%s)",TAG,property.getName(),path);
-		ClientTagManager tmgr = context.getTagManager();
+	private DataType subscribeToTagPath(String path) {
+		DataType type = null;
+		if( path==null || path.length()==0 ) return null;  // Fail silently for path not set
+		if(DEBUG)log.infof("%s.subscribeToTagPath: - %s (%s)",TAG,property.getName(),path);
+		 ClientTagManager tmgr = context.getTagManager();
 		try {
 			TagPath tp = TagPathParser.parse(path);
+			Tag tag = tmgr.getTag(tp);
+			type = tag.getDataType();
 			tmgr.subscribe(tp, this);
 		}
 		catch(IOException ioe) {
 			log.errorf("%s.subscribeToTagPath tag path parse error for %s (%s)",TAG,path,ioe.getMessage());
 		}
+		return type;
 	}
 	
 	// Unsubscribe to a tag
 	private void unsubscribeToTagPath(String path) {
 		if( path==null || path.length()==0 ) return;  // Fail silently for path not set
 		
-		log.debugf("%s.unsubscribeToTagPath: - %s (%s)",TAG,property.getName(),path);
+		if(DEBUG)log.infof("%s.unsubscribeToTagPath: - %s (%s)",TAG,property.getName(),path);
 		ClientTagManager tmgr = context.getTagManager();
 		try {
 			TagPath tp = TagPathParser.parse(path);
@@ -241,19 +270,19 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 	}
 	
 	// Update the panel UI for new property data. Called from Config panel via main panel.
-	public void update() {
+	public void updatePanelUI() {
 		String text = "";
 		// For TIME we scale the value
 		if( property.getType().equals(PropertyType.TIME) || property.getType().equals(PropertyType.TIME_SECONDS) || property.getType().equals(PropertyType.TIME_MINUTES) ) {
 			double propValue = fncs.coerceToDouble(property.getValue());
 			text = fncs.coerceToString(TimeUtility.valueForCanonicalValue(propValue,currentTimeUnit));
-			log.debugf("%s.update: property %s,value= %s, display= %s (%s)",TAG,property.getName(),property.getValue().toString(),
+			log.debugf("%s.updatePanelUI: property %s,value= %s, display= %s (%s)",TAG,property.getName(),property.getValue().toString(),
 													text,currentTimeUnit.name());
 		}
 		else {
 			text = fncs.coerceToString(property.getValue());
 			// For list we lop off the delimiter.
-			log.debugf("%s.updateForProperty: property %s, raw value= %s",TAG,property.getName(),text);
+			if( DEBUG ) log.infof("%s.updatePanelUI: property %s, raw value= %s",TAG,property.getName(),text);
 		}
 		
 		valueDisplayField.setText(text);
@@ -261,18 +290,56 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 				property.getBindingType().equals(BindingType.TAG_READ) ||
 				property.getBindingType().equals(BindingType.TAG_READWRITE) ||
 				property.getBindingType().equals(BindingType.TAG_WRITE)	) {
-			// The display field has the old binding - use it to unsubscribe
-			String oldPath = bindingDisplayField.getText();
-			unsubscribeToTagPath(oldPath);
 			
+			String msg = null;
 			String tagPath = fncs.coerceToString(property.getBinding());
-			bindingDisplayField.setText(tagPath);
-			subscribeToTagPath(tagPath);
-			editButton.setVisible(true);
-			bindingDisplayField.setVisible(true);
-			valueDisplayField.setEnabled(false);
-			valueDisplayField.setEditable(false);
-		}
+			// we should only do  this check if it affects the connection type
+			Tag tag = null;
+			Integer tagProp = null;
+			if( BlockConstants.BLOCK_PROPERTY_TAG_PATH.equalsIgnoreCase(property.getName())) {
+				ProcessDiagramView dview = workspace.getActiveDiagram();
+				ClientTagManager tmgr = context.getTagManager();
+				DataType typ = null;
+				try {
+					TagPath tp = TagPathParser.parse(tagPath);
+					tag = tmgr.getTag(tp);
+					tagProp = (Integer)tag.getAttribute(TagProp.ExpressionType).getValue();
+					typ = tag.getDataType();
+				} 
+				catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				// block binding to expressions for output
+				if (block.getClassName().equals(BlockConstants.BLOCK_CLASS_OUTPUT) && tagProp != ExpressionType.None.getIntValue()) {  // only update the tagpath property
+					msg = "Unable to bind expression tag to output";
+				} 
+				else {
+					msg = dview.isValidBindingChange(block,property,tagPath,typ,tagProp);
+				}
+			}
+			if (msg == null) {
+				// The display field has the old binding - use it to unsubscribe
+				String oldPath = bindingDisplayField.getText();
+				unsubscribeToTagPath(oldPath);
+				
+				bindingDisplayField.setText(tagPath);
+				
+				DataType type = subscribeToTagPath(tagPath);
+				editButton.setVisible(true);
+				bindingDisplayField.setVisible(true);
+				valueDisplayField.setEnabled(false);
+				valueDisplayField.setEditable(false);
+				// we should only do  this check if it affects the connection type.
+				if (property.getBinding()!=null ) {
+					block.modifyConnectionForTagChange(property, type);
+				}
+			} 
+			else {
+		        JOptionPane.showMessageDialog(null, msg, "Warning", JOptionPane.INFORMATION_MESSAGE);
+			}
+				
+		} 
 		else {
 			bindingDisplayField.setVisible(false);
 			// List is the only type with a custom editor
@@ -314,10 +381,13 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 		final JComboBox<String> valueCombo = new JComboBox<String>();
 		if(prop.getBindingType().equals(BindingType.OPTION))      setOptionCombo(valueCombo,prop);
 		else if( prop.getType().equals(PropertyType.BOOLEAN))     setBooleanCombo(valueCombo);
+		else if( prop.getType().equals(PropertyType.COLOR))       setColorCombo(valueCombo);
+		else if( prop.getType().equals(PropertyType.PROPERTY))    setPropertyCombo(valueCombo, getSignalDownStreamBlock());
 		else if(prop.getType().equals(PropertyType.HYSTERESIS))   setHysteresisTypeCombo(valueCombo);
 		else if(prop.getType().equals(PropertyType.LIMIT))        setLimitTypeCombo(valueCombo);
 		else if(prop.getType().equals(PropertyType.SCOPE))	      setTransmissionScopeCombo(valueCombo);
 		else if(prop.getType().equals(PropertyType.SLOPEOPTION))  setSlopeCalculationOptionCombo(valueCombo);
+		else if(prop.getType().equals(PropertyType.STATISTICS))   setStatisticsCombo(valueCombo);
 		else if(prop.getType().equals(PropertyType.TRENDDIRECTION)) setTrendDirectionCombo(valueCombo);
 		else if(prop.getType().equals(PropertyType.TRUTHVALUE) )  setTruthValueCombo(valueCombo); 
 		valueCombo.setEditable(true);
@@ -325,24 +395,19 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 		this.invalidate();
 		if( prop.getValue()!=null ) {
 			final String selection = prop.getValue().toString().toUpperCase();
-			log.tracef("%s.createValueCombo: %s=%s",TAG,prop.getName(),selection);
-			SwingUtilities.invokeLater( new Runnable() {
-				public void run() {
-					valueCombo.setSelectedItem(selection);
+			valueCombo.setSelectedItem(selection);
+			// Add the listener after we've initialized
+			valueCombo.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent event) {
+					String selection = valueCombo.getSelectedItem().toString(); 
+					if( !prop.getValue().toString().equalsIgnoreCase(selection)) {
+						prop.setValue(selection);
+						parent.saveDiagramClean();   // Update property immediately
+					}
+					if(DEBUG) log.infof("%s.valueCombo: selected %s=%s",TAG,prop.getName(),selection);
 				}
 			});
-			valueCombo.getModel().setSelectedItem(selection);
-			//log.tracef("%s.createValueCombo: selection now=%s",TAG,valueCombo.getModel().getSelectedItem().toString());
-		} 
-		valueCombo.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                String selection = valueCombo.getSelectedItem().toString();
-                if( !prop.getValue().toString().equalsIgnoreCase(selection)) {
-					prop.setValue(selection);
-                	parent.handlePropertyChange(prop);    // Update property immediately
-                }
-            }
-        });
+		}
 
 		return valueCombo;
 	}
@@ -353,6 +418,67 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 		box.removeAllItems();
 		box.addItem(Boolean.TRUE.toString().toUpperCase());
 		box.addItem(Boolean.FALSE.toString().toUpperCase());
+	}
+
+	/**
+	 * Populate a combo box for colors 
+	 */
+	private void setColorCombo(JComboBox<String> box) {
+		box.removeAllItems();
+		box.addItem("TRANSPARENT");
+		box.addItem("RED");
+		box.addItem("GREEN");
+		box.addItem("BLUE");
+		box.addItem("WHITE");
+		box.addItem("YELLOW");
+		box.addItem("GRAY");
+		box.addItem("LIGHT_GRAY");
+		box.addItem("DARK_GRAY");
+		box.addItem("ORANGE");
+		box.addItem("MAGENTA");
+		box.addItem("PINK");
+		box.addItem("CYAN");
+	}
+	
+	/**
+	 * Follow the signal connection and get the downstream block
+	 */
+	private ProcessBlockView getSignalDownStreamBlock() {
+		ProcessBlockView ret = null;
+		ProcessDiagramView pdv = workspace.getActiveDiagram();
+		Collection<Connection> connections = pdv.getConnections();
+		for (Connection connection:connections) {
+			Block origin = connection.getOrigin().getBlock();
+			Block terminus = connection.getTerminus().getBlock();
+			if (origin.equals(block) && origin instanceof ProcessBlockView ) {
+				ProcessBlockView found = (ProcessBlockView) terminus;
+				for (ProcessAnchorDescriptor pad:found.getAnchors()) {
+					if (pad.getConnectionType().equals(ConnectionType.SIGNAL)) {
+						ret = found;
+						break;
+					}
+				}
+			}
+			if (ret != null) {  // Got it.  Stop looking
+				break;
+			}
+		}
+		return ret;
+	}
+
+	/**
+	 * Populate a combo box of property names from the downstream block (signal connected)
+	 */
+	private void setPropertyCombo(JComboBox<String> box, ProcessBlockView downstream) {
+		box.removeAllItems();
+		if (downstream != null) {
+			for (BlockProperty prop: downstream.getProperties()) {
+				box.addItem(prop.getName().toUpperCase());
+			}
+		} 
+		else {
+			box.addItem("Not available - Block not connected or diagram unsaved");
+		}
 	}
 	
 	/**
@@ -394,7 +520,15 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 			box.addItem(opt.name());
 		}
 	}
-	
+	/**
+	 * Populate a combo box for statistics functions
+	 */
+	private void setStatisticsCombo(JComboBox<String> box) {
+		box.removeAllItems();
+		for(StatFunction type : StatFunction.values()) {
+			box.addItem(type.name());
+		}
+	}
 	/**
 	 * Populate a combo box for transmission scope
 	 */
@@ -457,11 +591,14 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 	}
 	// Enumerated types use a combo box instead of a text field
 	private boolean isPropertyEnumerated(BlockProperty prop) {
-			return (prop.getBindingType().equals(BindingType.OPTION)  ||
-				    prop.getType().equals(PropertyType.BOOLEAN)       ||          
-				    prop.getType().equals(PropertyType.HYSTERESIS)     ||   
+			return (prop.getBindingType().equals(BindingType.OPTION)   ||
+				    prop.getType().equals(PropertyType.BOOLEAN)        ||          
+				    prop.getType().equals(PropertyType.HYSTERESIS)     ||  
+				    prop.getType().equals(PropertyType.STATISTICS)	   ||
 				    prop.getType().equals(PropertyType.LIMIT)          ||        
 				    prop.getType().equals(PropertyType.SCOPE)          ||
+				    prop.getType().equals(PropertyType.COLOR)          ||
+				    prop.getType().equals(PropertyType.PROPERTY)       ||
 				    prop.getType().equals(PropertyType.SLOPEOPTION)    ||
 				    prop.getType().equals(PropertyType.TRENDDIRECTION) ||
 				    prop.getType().equals(PropertyType.TRUTHVALUE)          ); 
@@ -532,25 +669,32 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 	// carriage return in the field, but not with a loss of focus.
 	private void updatePropertyForField(EditableField field,boolean force) {
 		BlockProperty prop = field.getProperty();
-		log.debugf("%s.updatePropertyForField: %s (%s:%s)", TAG,prop.getName(),prop.getType().name(),prop.getBindingType().name());
+		if( DEBUG ) log.infof("%s.updatePropertyForField: %s (%s:%s)", TAG,prop.getName(),prop.getType().name(),prop.getBindingType().name());
 		// If there is a value change, then update the property (or binding)
 		if( prop.getBindingType().equals(BindingType.NONE)) {
 			Object fieldValue = field.getText();
 			if( force || !fieldValue.equals(prop.getValue().toString())) {
-				// Coerce to the correct data type
-				if( prop.getType().equals(PropertyType.BOOLEAN ))     fieldValue = new Boolean(fncs.coerceToBoolean(fieldValue));
-				else if( prop.getType().equals(PropertyType.DOUBLE )) fieldValue = new Double(fncs.coerceToDouble(fieldValue));
-				else if( prop.getType().equals(PropertyType.INTEGER ))fieldValue = new Integer(fncs.coerceToInteger(fieldValue));
-				else if( prop.getType().equals(PropertyType.DATE ))   fieldValue = dateFormatter.format(new Date(fncs.coerceToLong(fieldValue)));
-				if( prop.getType().equals(PropertyType.TIME) || prop.getType().equals(PropertyType.TIME_SECONDS) || prop.getType().equals(PropertyType.TIME_MINUTES) ) {
-					// Scale field value for time unit. Get back to seconds.
-					double interval = fncs.coerceToDouble(fieldValue);
-					fieldValue = new Double(TimeUtility.canonicalValueForValue(interval,currentTimeUnit));
-					log.tracef("%s.updatePropertyForField: property %s,old= %s, new= %s, displayed= %s (%s)",TAG,prop.getName(),prop.getValue().toString(),
-							fieldValue.toString(),field.getText(),currentTimeUnit.name());
+				try {
+					// Coerce to the correct data type
+					if( prop.getType().equals(PropertyType.BOOLEAN ))     fieldValue = new Boolean(fncs.coerceToBoolean(fieldValue));
+					else if( prop.getType().equals(PropertyType.DOUBLE )) fieldValue = new Double(fncs.coerceToDouble(fieldValue));
+					else if( prop.getType().equals(PropertyType.INTEGER ))fieldValue = new Integer(fncs.coerceToInteger(fieldValue));
+					else if( prop.getType().equals(PropertyType.DATE ))   fieldValue = dateFormatter.format(new Date(fncs.coerceToLong(fieldValue)));
+					else if( prop.getType().equals(PropertyType.TIME) || prop.getType().equals(PropertyType.TIME_SECONDS) || prop.getType().equals(PropertyType.TIME_MINUTES) ) {
+						// Scale field value for time unit. Get back to seconds.
+						double interval = fncs.coerceToDouble(fieldValue);
+						fieldValue = new Double(TimeUtility.canonicalValueForValue(interval,currentTimeUnit));
+						log.tracef("%s.updatePropertyForField: property %s,old= %s, new= %s, displayed= %s (%s)",TAG,prop.getName(),prop.getValue().toString(),
+								fieldValue.toString(),field.getText(),currentTimeUnit.name());
+					}
+					else if( prop.getType().equals(PropertyType.STATISTICS) ) fieldValue = StatFunction.valueOf(fieldValue.toString().toUpperCase());
+				}
+				catch(IllegalArgumentException iae) {
+					log.warnf("%s.updatePropertyForField: %s:%s unable to coerce %s to %s",TAG,block.getName(),prop.getName(),
+							fieldValue.toString(),prop.getType().name());
 				}
 				prop.setValue(fieldValue);
-				parent.handlePropertyChange(prop);    // Update property directly, immediately
+				parent.saveDiagramClean();    // Update property directly, immediately
 			}
 			else {
 				log.tracef("%s.updatePropertyForField: No Change was %s, is %s", TAG,prop.getValue().toString(),fieldValue);
@@ -560,16 +704,17 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 			if( !field.getText().equals(prop.getBinding()) ) {
 				unsubscribeToTagPath(prop.getBinding());
 				String tagPath = parent.getEditor().modifyPathForProvider(field.getText());
+				if( DEBUG ) log.infof("%s.updatePropertyForField: Adjusting %s to %s", TAG,prop.getBinding(),tagPath);
 				prop.setBinding(tagPath);
 				subscribeToTagPath(tagPath);
-				parent.handlePropertyChange(prop);		
+				parent.saveDiagramClean();		
 			}
 		}
 	}
 	// ======================================= Notification Change Listener ===================================
 	@Override
 	public void bindingChange(String binding) {
-		log.debugf("%s.bindingChange: - %s new binding (%s)",TAG,property.getName(),binding);
+		if(DEBUG )log.infof("%s.bindingChange: - %s new binding (%s)",TAG,property.getName(),binding);
 		//property.setValue(value.getValue());  // Block should have its own subscription to value changes.
 		SwingUtilities.invokeLater( new Runnable() {
 			public void run() {
@@ -581,9 +726,30 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 		});
 	}
 	@Override
+	public void diagramStateChange(long resId, String state) {}
+	// We get this when another entity changes a property. We just need to re-display.
+	@Override
+	public void nameChange(String name) {
+		
+	}
+	/**
+	 * The source of the event is a property. 
+	 * Ignore if the binding has not changed.
+	 */
+	@Override
+	public void stateChanged(ChangeEvent e) {
+		BlockProperty source = (BlockProperty)e.getSource();
+		if( source.getBinding()!=null && !source.getBinding().equals(property.getBinding())) {
+			if(DEBUG) log.infof("%s.stateChanged: - %s -> %s",TAG,property.getBinding(),source.getBinding());
+			updatePanelUI();	
+		}
+	}
+	
+
+	@Override
 	public void valueChange(final QualifiedValue value) {
-		log.debugf("%s.valueChange: - %s new value (%s)",TAG,property.getName(),value.getValue().toString());
-		//property.setValue(value.getValue());  // Block should have its own subscription to value changes.
+		//log.infof("%s.valueChange: - %s new value (%s)",TAG,property.getName(),value.getValue().toString());
+		property.setValue(value.getValue());  // Block should have its own subscription to value changes.
 		SwingUtilities.invokeLater( new Runnable() {
 			public void run() {
 				String text = value.getValue().toString();
@@ -606,9 +772,11 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 					text = dateFormatter.format(new Date(fncs.coerceToLong(text)));
 				}
 				// If we set components willy-nilly, we end up in an update loop.
-				if( isPropertyEnumerated(property)) {
+				else if( isPropertyEnumerated(property)) {
 					if( !valueComboBox.getSelectedItem().toString().equalsIgnoreCase(text)) {
+						valueComboBox.setEnabled(false);
 						valueComboBox.setSelectedItem(text.toUpperCase());
+						valueComboBox.setEnabled(true);
 					}	
 				}
 				else if(!valueDisplayField.getText().equals(text)) {
@@ -617,7 +785,8 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 			}
 		});
 	}
-	
+	@Override
+	public void watermarkChange(String mark) {}
 	// =========================================== Tag Change Listener ===================================
 	// Set this to null as we're interested in all tag properties
 	@Override
@@ -645,17 +814,4 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 			log.warnf("%s.tagChanged: Unknown tag (%s)",TAG,(tag==null?"null":tag.getName()));
 		}
 	}
-	
-	// =========================================== Change Listener ===================================
-	@Override
-	public void diagramAlertChange(long resId, String state) {}
-	// We get this when another entity changes a property. We just need to re-display.
-	@Override
-	public void stateChanged(ChangeEvent e) {
-		//log.infof("%s.stateChanged: - %s",TAG,property.getName());
-		update();	
-	}
-	@Override
-	public void watermarkChange(String mark) {}
-	
 }

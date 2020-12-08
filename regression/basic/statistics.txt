@@ -1,0 +1,110 @@
+#
+# Simple test of statistics blocks
+# Block types: Across Inputs, Buffer, Time Window
+#
+DIAGRAM="app75/family75/statistics"
+S1 = "STATISTICS-1"
+S2 = "STATISTICS-2"
+S3 = "STATISTICS-3"
+Show: diagram $DIAGRAM
+
+tag: Statistics1    MemoryTags/StatisticsOut1
+tag: Statistics2    MemoryTags/StatisticsOut2
+tag: Statistics3    MemoryTags/StatisticsOut3
+tagset: StatisticsFeed MemoryTags/StatisticsFeed1 MemoryTags/StatisticsFeed2
+
+Test: Statistics Blocks -
+Step: Initial Data
+Tagset: StatisticsFeed
+09:59:00 10 5
+09:59:35 PRIOR1 = Statistics1
+09:59:45 PRIOR2 = Statistics2
+09:59:55 PRIOR3 = Statistics3
+10:00:00 resetBlock($DIAGRAM,$S1)
+10:00:05 resetBlock($DIAGRAM,$S2)
+10:00:15 Assert: Statistics1 = $PRIOR1 "Stat1: No result after reset"
+10:00:25 setProperty($DIAGRAM,$S1,"Function","MINIMUM")
+10:00:30 Assert: getProperty($DIAGRAM,$S1,"Function") = "MINIMUM" "Stat1: Function set to MINIMUM"
+10:00:35 setProperty($DIAGRAM,$S2,"Function","MINIMUM")
+10:00:40 Assert: getProperty($DIAGRAM,$S2,"Function") = "MINIMUM" "Stat2: Function set to MINIMUM"
+10:00:45 resetBlock($DIAGRAM,$S3)
+10:00:50 setProperty($DIAGRAM,$S3,"Function","MINIMUM")
+10:00:55 Assert: getProperty($DIAGRAM,$S3,"Function") = "MINIMUM" "Stat3: Function set to MINIMUM"
+10:01:00 Assert: Statistics2 = $PRIOR2 "Stat2: No result first value"
+10:01:05 Assert: Statistics3 = $PRIOR3 "Stat3: No result first value"
+10:01:10 20
+10:01:15 Assert: Statistics2 = $PRIOR2 "Stat2: No result before buffer fills"
+10:01:20 Assert: Statistics3 = $PRIOR3 "Stat3: No result before first time window"
+
+Step: "Statistics Time Window"
+# Time window is 1 minutes, scan is 15 seconds, 4 values held.
+10:01:25 30
+10:01:30 Assert: Statistics3 = 10 "Stat3: Value on expiration of time window"
+10:01:35 40
+10:01:40 Assert: Statistics3 = 10 "Stat3: No change with greater value"
+10:02:00 setProperty($DIAGRAM,$S3,"Function","MAXIMUM")
+10:02:05 Assert: getProperty($DIAGRAM,$S3,"Function") = "MAXIMUM" "Stat3: Function set to MAXIMUM"
+10:02:20 Assert: Statistics3 = 40 "Stat3: Now value is max received"
+
+Step: Statistics Over Sample Buffer
+# Sample size 4
+10:02:30 Assert: Statistics2 = $PRIOR2 "Stat2: No result before buffer fills"
+10:02:35 50
+10:02:30 Assert: Statistics2 = 20 "Stat2: Result when buffer fills"
+10:02:40 60
+
+10:03:00 Assert: Statistics2 = 20 "Stat2: No change with greater value"
+10:03:05 setProperty($DIAGRAM,$S2,"Function","MAXIMUM")
+10:03:10 Assert: getProperty($DIAGRAM,$S2,"Function") = "MAXIMUM" "Stat2: Function set to MAXIMUM"
+10:03:15 Assert: Statistics2 = 60 "Stat2: Now value is max received"
+10:03:05 setProperty($DIAGRAM,$S2,"Function","MEDIAN")
+10:03:10 Assert: getProperty($DIAGRAM,$S2,"Function") = "MEDIAN" "Stat2: Function set to MEDIAN"
+10:03:55 Assert: Statistics2 = 40 "Stat2: Now value is a median received"
+10:03:05 setProperty($DIAGRAM,$S2,"Function","GEOMETRIC_MEAN")
+10:03:10 Assert: getProperty($DIAGRAM,$S2,"Function") = "GEOMETRIC_MEAN" "Stat2: Function set to GEOMETRIC_MEAN"
+10:03:15 Assert: 37. < Statistics2 < 38. "Stat2: Now value is a geometric mean received"
+10:03:20 setProperty($DIAGRAM,$S2,"Function","KURTOSIS")
+10:03:25 Assert: getProperty($DIAGRAM,$S2,"Function") = "KURTOSIS" "Stat2: Function set to KURTOSIS"
+10:03:30 Assert: -1.2 < Statistics2 < -1.1 "Stat2: Now value is a kurtosis received"
+10:03:35 setProperty($DIAGRAM,$S2,"Function","SECOND_MOMENT")
+10:03:40 Assert: getProperty($DIAGRAM,$S2,"Function") = "SECOND_MOMENT" "Stat2: Function set to SECOND_MOMENT"
+10:03:45 Assert: Statistics2 = 1000 "Stat2: Now value is a second moment received"
+10:03:55 setProperty($DIAGRAM,$S2,"Function","SKEW")
+10:04:00 Assert: getProperty($DIAGRAM,$S2,"Function") = "SKEW" "Stat2: Function set to SKEW"
+10:04:05 Assert: Statistics2 = 0. "Stat2: Now value is a skew received"
+10:04:10 setProperty($DIAGRAM,$S2,"Function","STANDARD_DEVIATION")
+10:04:15 Assert: getProperty($DIAGRAM,$S2,"Function") = "STANDARD_DEVIATION" "Stat2: Function set to STANDARD_DEVIATION"
+10:04:20 Assert: 15 < Statistics2 < 16 "Stat2: Now value is a standard deviation received"
+10:04:25 setProperty($DIAGRAM,$S2,"Function","VARIANCE")
+10:04:30 Assert: getProperty($DIAGRAM,$S2,"Function") = "VARIANCE" "Stat2: Function set to VARIANCE"
+10:04:35 Assert: 249 < Statistics2 < 251 "Stat2: Now value is a variance received"
+
+Step: Statistics Over All Inputs
+10:05:20 Assert: Statistics1 = 5 "Stat1: No change with greater value"
+10:05:25 setProperty($DIAGRAM,$S1,"Function","MAXIMUM")
+10:05:25 Assert: getProperty($DIAGRAM,$S1,"Function") = "MAXIMUM" "Stat1: Function set to MAXIMUM"
+10:05:35 Assert: Statistics1 = 60 "Stat1: Now value is max received"
+10:05:40 50
+10:05:45 Assert: Statistics1 = 50 "Stat1: Responds to new maximum"
+10:05:50 50 100
+10:05:55 Assert: Statistics1 = 100 "Stat1: Responds to other tag"
+10:06:00 setProperty($DIAGRAM,$S1,"Function","RANGE")
+10:06:05 Assert: getProperty($DIAGRAM,$S1,"Function") = "RANGE" "Stat1: Function set to RANGE"
+10:06:10 Assert: Statistics1 = 50 "Stat1: Now value is range"
+10:06:20 setProperty($DIAGRAM,$S1,"Function","MEAN")
+10:06:30 Assert: getProperty($DIAGRAM,$S1,"Function") = "MEAN" "Stat1: Function set to MEAN"
+10:06:35 Assert: Statistics1 = 75 "Stat1: Now value is mean"
+10:06:40 setProperty($DIAGRAM,$S1,"Function","SUM")
+10:06:45 Assert: getProperty($DIAGRAM,$S1,"Function") = "SUM" "Stat1: Function set to SUM"
+10:06:50 Assert: Statistics1 = 150 "Stat1: Now value is sum"
+10:06:55 setProperty($DIAGRAM,$S1,"Function","PRODUCT")
+10:07:00 Assert: getProperty($DIAGRAM,$S1,"Function") = "PRODUCT" "Stat1: Function set to PRODUCT"
+10:07:05 Assert: Statistics1 = 5000 "Stat1: Now value is product"
+10:07:10 setProperty($DIAGRAM,$S1,"Function","SUM_OF_LOGS")
+10:07:20 Assert: getProperty($DIAGRAM,$S1,"Function") = "SUM_OF_LOGS" "Stat1: Function set to SUM_OF_LOGS"
+10:07:25 Assert: 8.5 < Statistics1 < 8.6 "Stat1: Now value is sum of logs"
+10:07:30 setProperty($DIAGRAM,$S1,"Function","SUM_OF_SQUARES")
+10:07:30 Assert: getProperty($DIAGRAM,$S1,"Function") = "SUM_OF_SQUARES" "Stat1: Function set to SUM_OF_SQUARES"
+10:07:45 Assert: Statistics1 = 12500 "Stat1: Now value is sum of squares"
+
+10:07:50 -1  -1

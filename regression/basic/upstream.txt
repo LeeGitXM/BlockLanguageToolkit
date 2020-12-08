@@ -16,29 +16,38 @@ script: blocksGloballyUpstream interfaces.listBlocksGloballyUpstreamOf(dpath,bna
 
 Test: Finding Blocks Upstream of a Sink
 Step: Upstream of Sink 
-assert: blocksUpstream($DIAGRAM,"CaSqcToCrx") contains "CaLow9Of9" "CaLow9Of9 is upstream of CaSqcToCrx"
-assert: blocksUpstream($DIAGRAM,"CaSqcToCrx") contains "CaSqc" "CaSqc is upstream of CaSqcToCrx"
-assert: !blocksUpstream($DIAGRAM,"CaSqcToCrx") contains "CatIsInPath" "CatIsInPath is not upstream of CaSqcToCrx"
-assert: count of blocksUpstream($DIAGRAM,"CaSqcToCrx") = 18 "18 blocks upstream of CaSqcToCrx"
+assert: blocksUpstream($DIAGRAM,"mindy") contains "CaLow9Of9" "CaLow9Of9 is upstream of mindy"
+assert: blocksUpstream($DIAGRAM,"mindy") contains "CaSqc" "CaSqc is upstream of mindy"
+assert: !blocksUpstream($DIAGRAM,"mindy") contains "CatIsInPath" "CatIsInPath is not upstream of mindy"
+assert: count of blocksUpstream($DIAGRAM,"mindy") = 18 "18 blocks upstream of mindy"
 assert: count of blocksUpstream($DIAGRAM,"IlsExportName1338") = 26 "26 blocks upstream of And 1338"
 assert: count of blocksUpstream($DIAGRAM,"CstrRxInUse") = 3 "3 blocks upstream of CstrRxInUse"
 assert: count of blocksUpstream($DIAGRAM,"IlsExportName1335") = 2 "2 blocks upstream of LogicLatch 1335"
 assert: count of blocksUpstream($DIAGRAM,"CaSqc") = 17 "17 blocks upstream of SQC Diagnosis"
 assert: count of blocksUpstream($DIAGRAM,"IlsExportName1345") = 0 "0 blocks upstream of lab data"
-assert: ! blocksUpstream($DIAGRAM,"CaSqcToCrx") contains "CaProblemForCstr" "CaProblemForCstr FD is not upstream of CaSqcToCrx"
+assert: ! blocksUpstream($DIAGRAM,"mindy") contains "CaProblemForCstr" "CaProblemForCstr FD is not upstream of mindy"
 
 Step: Globally Upstream of Sink
-assert: blocksGloballyUpstream($DIAGRAM,"CaSqcToCrx") contains "CaLow9Of9" "CaLow9Of9 is upstream of CaSqcToCrx-817"
-assert: blocksGloballyUpstream($DIAGRAM,"CaSqcToCrx") contains "CaSqc" "CaSqc is upstream of CaSqcToCrx"
-assert: !blocksGloballyUpstream($DIAGRAM,"CaSqcToCrx") contains "CatIsInPath" "CatIsInPath is not upstream of CaSqcToCrx-817"
-assert: count of blocksGloballyUpstream($DIAGRAM,"CaSqcToCrx") = 18 "18 blocks upstream of CaSqcToCrx"
+assert: blocksGloballyUpstream($DIAGRAM,"mindy") contains "CaLow9Of9" "CaLow9Of9 is upstream of mindy"
+assert: blocksGloballyUpstream($DIAGRAM,"mindy") contains "CaSqc" "CaSqc is upstream of mindy"
+assert: !blocksGloballyUpstream($DIAGRAM,"mindy") contains "CatIsInPath" "CatIsInPath is not upstream of mindy"
+assert: count of blocksGloballyUpstream($DIAGRAM,"mindy") = 18 "18 blocks upstream of mindy"
 assert: count of blocksGloballyUpstream($DIAGRAM,"IlsExportName1345") = 0 "0 blocks upstream of lab data"
-assert: count of blocksGloballyUpstream($DIAGRAM,"IlsExportName1338") = 26 "26 blocks upstream of And 1338"
+# the next test should be 31 because it tracks back through the connected chart via sink
+assert: count of blocksGloballyUpstream($DIAGRAM,"IlsExportName1338") = 31 "31 blocks upstream of And 1338"
 assert: count of blocksGloballyUpstream($DIAGRAM,"CstrRxInUse") = 3 "3 blocks upstream of CstrRxInUse"
-assert: count of blocksGloballyUpstream($DIAGRAM,"IlsExportName1335") = 2 "2 blocks upstream of LogicLatch 1335"
+# the next test should be 7 because it tracks back through the connected chart via sink
+# assert: count of blocksGloballyUpstream($DIAGRAM,"IlsExportName1335") = 2 "2 blocks upstream of LogicLatch 1335"
+assert: count of blocksGloballyUpstream($DIAGRAM,"IlsExportName1335") = 7 "7 blocks upstream of LogicLatch 1335"
 assert: count of blocksGloballyUpstream($DIAGRAM,"CaSqc") = 17 "17 blocks upstream of SQC Diagnosis"
-assert: count of blocksGloballyUpstream($DIAGRAM,"IlsExportName1335") = 2 "2 blocks upstream of LogicLatch 1335"
-assert: count of blocksGloballyUpstream($DIAGRAM,"CatIsInPath") = 0 "0 blocks upstream of CatIsInPath"
-assert: count of blocksGloballyUpstream($DIAGRAM,"IlsExportName1338") = 26 "26 blocks upstream of And 1338"
-assert: blocksGloballyUpstream($DIAGRAM,"IlsExportName1338") contains "CatIsInPath" "CatIsInPath is globally upstream of And 1338"
+# the next test should be 7 because it tracks back through the connected chart via sink
+#assert: count of blocksGloballyUpstream($DIAGRAM,"IlsExportName1335") = 7 "7 blocks upstream of LogicLatch 1335"
+assert: count of blocksGloballyUpstream($DIAGRAM,"IlsExportName1335") = 7 "7 blocks upstream of LogicLatch 1335"
+# the next test should be 5 because it it's a sink/source
+# assert: count of blocksGloballyUpstream($DIAGRAM,"INHIBITOR-380") = 0 "0 blocks upstream of INHIBITOR-380"
+assert: count of blocksGloballyUpstream($DIAGRAM,"mork-source-upstream") = 5 "5 blocks upstream of mork-source-upstream"
+# the next test should be 31 because it tracks back through the connected chart via sink
+# assert: count of blocksGloballyUpstream($DIAGRAM,"IlsExportName1338") = 26 "26 blocks upstream of And 1338"
+assert: count of blocksGloballyUpstream($DIAGRAM,"IlsExportName1338") = 31 "31 blocks upstream of And 1338"
+assert: blocksGloballyUpstream($DIAGRAM,"IlsExportName1338") contains "INHIBITOR-380" "INHIBITOR-380 is globally upstream of And 1338"
 

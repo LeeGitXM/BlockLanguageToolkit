@@ -40,9 +40,6 @@ public class BasicExecutionController implements ExecutionController  {
 	public void acceptConnectionPostNotification(ConnectionPostNotification note){
 		log.warnf("%s.acceptConnectionPostNotification: WARNING: Executed from stub class",TAG);
 	}
-	public void alterSubscription(UUID diagramId,UUID id,String propertyName){
-		log.warnf("%s.alterSubscription: WARNING: Executed from stub class",TAG);
-	}
 	@Override
 	public void clearCache() {
 		log.warnf("%s.clearCache: WARNING: Executed from stub class",TAG);
@@ -116,6 +113,9 @@ public class BasicExecutionController implements ExecutionController  {
 	public void sendConnectionNotification(String blockid, String port, QualifiedValue val) {
 		log.warnf("%s.sendConnectionNotification: WARNING: Executed from stub class",TAG);
 	}
+	public void sendNameChangeNotification(String blockid, String name) {
+		log.warnf("%s.sendNameChangeNotification: WARNING: Executed from stub class",TAG);
+	}
 	public void sendPropertyBindingNotification(String id, String propertyName, String val){
 		log.warnf("%s.sendPropertyBindingNotification: WARNING: Executed from stub class",TAG);
 	}
@@ -134,6 +134,9 @@ public class BasicExecutionController implements ExecutionController  {
 	public String validateTag(UUID diagramId,String tagPath) {
 		log.warnf("%s.validateTag: WARNING: Executed from stub class",TAG);
 		return null;
+	}
+	public void sendPropertyUpdateNotification(OutgoingNotification note, String blockId) {
+		log.warnf("%s.sendPropertyUpdateNotification: WARNING: Executed from stub class",TAG);
 	}
 
 }

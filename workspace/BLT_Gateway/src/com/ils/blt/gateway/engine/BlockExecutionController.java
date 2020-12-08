@@ -40,7 +40,6 @@ import com.ils.common.tag.TagWriter;
 import com.ils.common.watchdog.AcceleratedWatchdogTimer;
 import com.ils.common.watchdog.WatchdogTimer;
 import com.inductiveautomation.ignition.common.model.ApplicationScope;
-import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -123,8 +122,32 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 			try {
 				if(!stopped) buffer.put(note);
 			}
-			catch( InterruptedException ie ) {}
+			catch( InterruptedException ie ) {
+				log.error("ERROR INJECTING SIGNAL MESSAGE ", ie);
+				
+			}
 		}
+	}
+	
+	@Override
+	public void sendPropertyUpdateNotification(OutgoingNotification inNote, String destId) {  // this bypasses the normal execution buffer
+		
+		ProcessBlock pb = inNote.getBlock();
+		if( log.isTraceEnabled() ) {
+			log.tracef("%s.run: processing incoming note from %s:%s = %s", TAG,pb.toString(),inNote.getPort(),inNote.getValue().toString());
+		}
+		// Send the push notification
+		sendConnectionNotification(pb.getBlockId().toString(),inNote.getPort(),inNote.getValue());
+		ProcessDiagram dm = modelManager.getDiagram(pb.getParentId());
+		if( dm!=null && inNote!=null && inNote.getValue()!=null) {
+			ProcessBlock destBlock = dm.getBlock(UUID.fromString(destId));
+
+			SignalNotification vcn = new SignalNotification(destBlock,inNote.getValue());
+			
+			threadPool.execute(new IncomingBroadcastTask(vcn.getBlock(),vcn));
+		}
+		
+		
 	}
 	
 	/**
@@ -165,24 +188,6 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		}
 	}
 
-	/**
-	 * Change a tag subscription for a block's property. We assume that the property
-	 * has been updated and contains the new path.
-	 */
-	@Override
-	public void alterSubscription(UUID diagramId,UUID blockId,String propertyName) {
-		ProcessDiagram diagram = modelManager.getDiagram(diagramId);
-		if( diagram!=null) {
-			ProcessBlock block = diagram.getBlock(blockId);
-			if( block!=null ) {
-				BlockProperty bp = block.getProperty(propertyName);
-				if( bp!=null ) {
-					tagListener.removeSubscription(block,bp);
-					startSubscription(diagram.getState(),block,bp);
-				}
-			}
-		}
-	}
 	/**
 	 * Clear cached values to guarantee that next access forces a read from persistent storage.
 	 */
@@ -279,7 +284,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		// Activate all of the blocks in the diagram.
 		modelManager.startBlocks();
 		// Once blocks are started, start tag subscriptions
-		tagListener.start(context);
+		tagListener.restartSubscriptions(context);
 	}
 	
 	/**
@@ -525,13 +530,13 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	}
 	/**
 	 * Start a subscription for a block attribute associated with a tag.
+	 * Do nothing if block is disabled.
 	 */
 	public void startSubscription(DiagramState ds,ProcessBlock block,BlockProperty property) {
 		if( ds.equals(DiagramState.DISABLED)|| block==null || property==null || 
 				!(property.getBindingType().equals(BindingType.TAG_READ) || 
 				  property.getBindingType().equals(BindingType.TAG_READWRITE) ||
 				  property.getBindingType().equals(BindingType.TAG_MONITOR) )   ) return;
-		
 		guaranteeBindingHasProvider(ds,property);
 		String tagPath = property.getBinding();
 		tagListener.defineSubscription(block,property,tagPath);
@@ -695,7 +700,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	 */
 	@Override
 	public void sendPropertyNotification(String blkid, String propertyName,QualifiedValue val) {
-		if( val==null ) return;
+		if( val==null ) return;    
 		String key = NotificationKey.keyForProperty(blkid,propertyName);
 		log.tracef("%s.sendPropertyNotification: %s (%s)",TAG,key,val.toString());
 		try {
@@ -704,6 +709,18 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		catch(Exception ex) {
 			// Probably no receiver registered. This is to be expected if the designer is not running.
 			log.debugf("%s.sendPropertyNotification: Error transmitting %s (%s)",TAG,key,ex.getMessage());
+		}
+	}
+	@Override
+	public void sendNameChangeNotification(String blkid,String name) {
+		String key = NotificationKey.keyForBlockName(blkid);
+		log.tracef("%s.sendNameChangeNotification: %s (%s)",TAG,key,name);
+		try {
+			sessionManager.sendNotification(ApplicationScope.DESIGNER, BLTProperties.MODULE_ID, key, name);
+		}
+		catch(Exception ex) {
+			// Probably no receiver registered. This is to be expected if the designer is not running.
+			log.debugf("%s.sendPropertyBindingNotification: Error transmitting %s (%s)",TAG,key,ex.getMessage());
 		}
 	}
 	/**
@@ -752,7 +769,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	public void sendStateNotification(long resourceId, String val) {
 		String key = NotificationKey.keyForDiagram(resourceId);
 		try {
-			sessionManager.sendNotification(ApplicationScope.DESIGNER, BLTProperties.MODULE_ID, key, new BasicQualifiedValue(val));
+			sessionManager.sendNotification(ApplicationScope.DESIGNER, BLTProperties.MODULE_ID, key, val);
 		}
 		catch(Exception ex) {
 			// Probably no receiver registered. This is to be expected if the designer is not running.

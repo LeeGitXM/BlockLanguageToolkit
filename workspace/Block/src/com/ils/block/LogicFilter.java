@@ -76,6 +76,9 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 		initialize();
 		buffer = new ConcurrentLinkedQueue<TruthValue>();
 		dog = new Watchdog(getName(),this);
+
+
+	
 	}
 	
 	/**
@@ -103,8 +106,9 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 
 		// Define a single input and output
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.TRUTHVALUE);
-		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.TRUTHVALUE);
+		input.setIsMultiple(false);
 		anchors.add(input);
+		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.TRUTHVALUE);
 		anchors.add(output);
 	}
 	
@@ -123,7 +127,10 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 	public void start() {
 		super.start();
 		reset();
+
 	}
+
+	
 	@Override
 	public void stop() {
 		timer.removeWatchdog(dog);
@@ -329,7 +336,7 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 		prototype.setPaletteIconPath("Block/icons/palette/logic_filter.png");
 		prototype.setPaletteLabel("LogicFilter");
 		prototype.setTooltipText("Monitor the incoming value for change over a specified period");
-		prototype.setTabName(BlockConstants.PALETTE_TAB_ANALYSIS);
+		prototype.setTabName(BlockConstants.PALETTE_TAB_LOGIC);
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setBlockClass(getClass().getCanonicalName());

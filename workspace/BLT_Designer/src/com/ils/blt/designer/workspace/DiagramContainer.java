@@ -30,6 +30,7 @@ public class DiagramContainer extends BlockDesignableContainer {
 		
 	}
 	
+	
 	/**
 	 * In addition to immediately setting the tab name, we set in the model in case the
 	 * component gets re-painted.
@@ -65,6 +66,11 @@ public class DiagramContainer extends BlockDesignableContainer {
 		}
 		// Paint "displayed" properties.
 		for(Block blk:getModel().getBlocks() ) {
+			
+			// EREIAM JH - TODO somehow we need to update properties here
+			// property panel always seems to be in synch, using processBlockView, why is this Wrong?
+			
+			
 			ProcessBlockView pbv = (ProcessBlockView)blk;
 			float xpos = pbv.getLocation().x;
 			float ypos = pbv.getLocation().y;

@@ -22,7 +22,8 @@ public enum BlockStyle
             READOUT,
             ROUND,
             SQUARE,
-            NOTE
+            NOTE,
+            PROPERTY_DISPLAY
             ;
            
  /**

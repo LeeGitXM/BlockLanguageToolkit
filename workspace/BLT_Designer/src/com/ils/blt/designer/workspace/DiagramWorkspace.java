@@ -1,24 +1,30 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved.
+ *   (c) 2014-2020  ILS Automation. All rights reserved.
  */
 package com.ils.blt.designer.workspace;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Frame;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Stroke;
 import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Path2D;
+import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -31,12 +37,19 @@ import java.util.List;
 import java.util.UUID;
 
 import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JMenu;
+import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
+import javax.swing.JRootPane;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -47,29 +60,43 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ils.blt.client.ClientScriptExtensionManager;
+import com.ils.block.Input;
+import com.ils.block.Output;
+import com.ils.block.SinkConnection;
+import com.ils.block.SourceConnection;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.BusinessRules;
 import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.block.BlockConstants;
+import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.connection.ConnectionType;
+import com.ils.blt.common.script.CommonScriptExtensionManager;
 import com.ils.blt.common.script.ScriptConstants;
 import com.ils.blt.common.serializable.SerializableAnchor;
+import com.ils.blt.common.serializable.SerializableApplication;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableDiagram;
+import com.ils.blt.common.serializable.SerializableFamily;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.ResourceUpdateManager;
 import com.ils.blt.designer.config.BlockExplanationViewer;
 import com.ils.blt.designer.config.BlockInternalsViewer;
+import com.ils.blt.designer.config.BlockPropertiesSelector;
 import com.ils.blt.designer.config.ForceValueSettingsDialog;
+import com.ils.blt.designer.editor.BlockEditConstants;
+import com.ils.blt.designer.editor.BlockPropertyEditor;
 import com.ils.blt.designer.editor.PropertyEditorFrame;
 import com.ils.blt.designer.navtree.DiagramTreeNode;
-import com.ils.blt.designer.navtree.GeneralPurposeTreeNode;
 import com.ils.common.GeneralPurposeDataContainer;
 import com.inductiveautomation.ignition.client.designable.DesignableContainer;
+import com.inductiveautomation.ignition.client.images.ImageLoader;
+import com.inductiveautomation.ignition.client.sqltags.ClientTagManager;
+import com.inductiveautomation.ignition.client.sqltags.tree.TagPathTreeNode;
+import com.inductiveautomation.ignition.client.sqltags.tree.TagTreeNode;
 import com.inductiveautomation.ignition.client.util.LocalObjectTransferable;
 import com.inductiveautomation.ignition.client.util.action.BaseAction;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
@@ -80,9 +107,14 @@ import com.inductiveautomation.ignition.common.execution.impl.BasicExecutionEngi
 import com.inductiveautomation.ignition.common.model.ApplicationScope;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.project.ProjectScope;
+import com.inductiveautomation.ignition.common.sqltags.model.Tag;
+import com.inductiveautomation.ignition.common.sqltags.model.TagPath;
+import com.inductiveautomation.ignition.common.sqltags.model.TagProp;
+import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.common.xmlserialization.SerializationException;
+import com.inductiveautomation.ignition.designer.UndoManager;
 import com.inductiveautomation.ignition.designer.blockandconnector.AbstractBlockWorkspace;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockActionHandler;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockComponent;
@@ -96,20 +128,25 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.Connect
 import com.inductiveautomation.ignition.designer.blockandconnector.model.ConnectionPainter;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.impl.ArrowConnectionPainter;
 import com.inductiveautomation.ignition.designer.blockandconnector.routing.EdgeRouter;
+import com.inductiveautomation.ignition.designer.blockandconnector.undo.UndoMoveBlocks;
 import com.inductiveautomation.ignition.designer.designable.DesignPanel;
 import com.inductiveautomation.ignition.designer.designable.DesignableWorkspaceListener;
 import com.inductiveautomation.ignition.designer.gui.IconUtil;
+import com.inductiveautomation.ignition.designer.gui.StatusBar;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.model.EditActionHandler;
 import com.inductiveautomation.ignition.designer.model.ResourceWorkspace;
 import com.inductiveautomation.ignition.designer.model.ResourceWorkspaceFrame;
+import com.inductiveautomation.ignition.designer.model.menu.JMenuMerge;
 import com.inductiveautomation.ignition.designer.model.menu.MenuBarMerge;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractNavTreeNode;
 import com.inductiveautomation.ignition.designer.navtree.model.ProjectBrowserRoot;
+import com.inductiveautomation.ignition.designer.sqltags.tree.dnd.NodeListTransferable;
 import com.jidesoft.action.CommandBar;
 import com.jidesoft.action.DockableBarManager;
 import com.jidesoft.docking.DockContext;
 import com.jidesoft.docking.DockingManager;
+import com.jidesoft.swing.JideButton;
 
 /**
  * A Diagram workspace is a container that occupies the DockManager workspace
@@ -121,24 +158,28 @@ import com.jidesoft.docking.DockingManager;
 public class DiagramWorkspace extends AbstractBlockWorkspace 
 							  implements ResourceWorkspace, DesignableWorkspaceListener,
 							  			ChangeListener                                   {
+	private static final String ALIGN_MENU_TEXT = "Align Blocks";
 	private static final String TAG = "DiagramWorkspace";
 	private static final long serialVersionUID = 4627016159409031941L;
 	private static final DataFlavor BlockDataFlavor = LocalObjectTransferable.flavorForClass(ObservablePropertySet.class);
 	public static final String key = "BlockDiagramWorkspace";
-	public static final String PREFIX = BLTProperties.BLOCK_PREFIX;
+	public static final String PREFIX = BLTProperties.BLOCK_PREFIX; 
 	private final ApplicationRequestHandler handler = new ApplicationRequestHandler();
 	private final DesignerContext context;
 	private final EditActionHandler editActionHandler;
 	private final ExecutionManager executionEngine;
 	private final NodeStatusManager statusManager;
 	private Collection<ResourceWorkspaceFrame> frames;
-	protected SaveAction saveAction = null;  // Save properties of a block
+//	protected SaveAction saveAction = null;  // Save properties of a block
 	private LoggerEx logger = LogUtil.getLogger(getClass().getPackage().getName());
 	private PopupListener rightClickHandler;
+//	private KeyListener keyHandler;
 	private JPopupMenu zoomPopup;
-	
-	protected final ApplicationRequestHandler requestHandler;
-	
+	private JComboBox<String> zoomCombo;
+//	private ProcessBlockPalette tabbedPalette = null;
+	private CommandBar alignBar = null;
+	private ApplicationRequestHandler  requestHandler;
+
 	/**
 	 * Constructor:
 	 */
@@ -151,6 +192,34 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		this.zoomPopup = createZoomPopup();
 		this.rightClickHandler = new PopupListener();
 		this.addMouseListener(rightClickHandler);
+		requestHandler = new ApplicationRequestHandler();
+		 //		this.keyHandler = new KeystrokeListener();
+//		this.addKeyListener(keyHandler);
+
+		// none of this keystroke stuff works
+	    KeyStroke ltA = KeyStroke.getKeyStroke("a");
+	    Action lt_A_Action = new AbstractAction(){
+	      public void actionPerformed(ActionEvent e){
+	    	  logger.errorf("DiagramWorkspace keyReleased A");
+	    	  selectAllBlocks();
+	      }
+	    };
+//	    this.getInputMap().put(ltA, "LT_A");
+	    this.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(ltA, "LT_A"); 
+	    this.getActionMap().put("LT_A", lt_A_Action);
+
+
+	    
+	    KeyStroke altA = KeyStroke.getKeyStroke(KeyEvent.VK_A,java.awt.event.InputEvent.ALT_DOWN_MASK,false);
+	    Action alt_A_Action = new AbstractAction(){
+	      public void actionPerformed(ActionEvent e){
+	    	  selectAllBlocks();
+	      }
+	    };
+	    this.getInputMap().put(altA, "ALT_A");
+//	    this.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(altA, "ALT_A");
+	    this.getActionMap().put("ALT_A", alt_A_Action);
+
 		statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
 		initialize();
 		setBackground(Color.red);
@@ -166,9 +235,9 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		tabbedPalette.setInitSide(DockContext.DOCK_SIDE_NORTH);
 		tabbedPalette.setInitIndex(0);
 		tabbedPalette.setTitle(BundleUtil.get().getString(PREFIX+".Palette.Title"));
-		tabbedPalette.setTabTitle(PREFIX+".Palette.Tab.Title");
+		tabbedPalette.setTabTitle(BundleUtil.get().getString(PREFIX+".Palette.Tab.Title"));
 		tabbedPalette.setSideTitle("SideTitle");
-		tabbedPalette.putClientProperty("menu.text", PREFIX+".Palette.Title");
+		tabbedPalette.putClientProperty("menu.text", BundleUtil.get().getString(PREFIX+".Palette.Title"));
 		
 		frames = new ArrayList<ResourceWorkspaceFrame>();
 		frames.add(tabbedPalette);
@@ -177,15 +246,20 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		pef.setInitMode(DockContext.STATE_FRAMEDOCKED);
 		pef.setInitSide(DockContext.DOCK_SIDE_WEST);
 		pef.setInitIndex(10);
-		pef.putClientProperty("menu.text", "Diagram Property Editor");
+		pef.putClientProperty("menu.text", "Symbolic AI Property Editor");
 		frames.add(pef);
+		
+		StatusBar bar = context.getStatusBar();
+		zoomCombo = createZoomDropDown();
+		bar.addDisplay(zoomCombo);
+		zoomCombo.setVisible(false);
 	}
 
 	@Override
 	public EditActionHandler getEditActionHandler() {
 		return editActionHandler;
 	}
-	
+
 	@Override
 	public Collection<ResourceWorkspaceFrame> getFrames() {
 		return frames;
@@ -213,13 +287,14 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				JPopupMenu menu = new JPopupMenu();
 				
 				ProcessBlockView pbv = (ProcessBlockView)((BlockComponent)selection).getBlock();
-				saveAction = new SaveAction(pbv); 
-				// As long as the block is dirty, we can save it. 
-				// NOTE: There is always a corresponding block in the gateway. One is created when we drop block from the palette.
-				saveAction.setEnabled(pbv.isDirty());
-				menu.add(saveAction);
+//				saveAction = new SaveAction(pbv); 
+//				// As long as the block is dirty, we can save it. 
+//				// NOTE: There is always a corresponding block in the gateway. One is created when we drop block from the palette.
+//				saveAction.setEnabled(pbv.isDirty());
+//				menu.add(saveAction);
 				// NOTE: ctypeEditable gets turned off once a block has been serialized.
-				if( selection instanceof BlockComponent && pbv.isCtypeEditable() ) {
+				if( selection instanceof BlockComponent && pbv.isCtypeEditable() && 
+						!pbv.getClassName().equals(BlockConstants.BLOCK_CLASS_OUTPUT) ) {
 					
 					// Types are: ANY, DATA, TEXT, TRUTH-VALUE
 					// Assume the type from the terminus anchor
@@ -230,7 +305,13 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 						if( anch.getType().equals(AnchorType.Origin) && !anch.getConnectionType().equals(ConnectionType.SIGNAL) ) {
 							break;
 						}
+						// You can change text to anything
+						else if( anch.getType().equals(AnchorType.Terminus) && 
+								(anch.getConnectionType().equals(ConnectionType.ANY)|| anch.getConnectionType().equals(ConnectionType.TEXT)) ) {
+							break;
+						}
 					}
+					
 					if( anch!=null ) {
 						ConnectionType ct = anch.getConnectionType();
 						logger.debugf("%s.getSelectionPopupMenu: Connection type is: %s",TAG,ct.name());
@@ -252,12 +333,12 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 						menu.add(changeTypeMenu);
 					}
 				}
-				if( pbv.getClassName().contains("SinkConnection")) {
+				if( pbv.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK) ) {
 					logger.infof("%s.getSelectionPopupMenu: SINK",TAG);
 					JMenu linkSinkMenu = new JMenu(BundleUtil.get().getString(PREFIX+".FollowConnection.Name"));
 					linkSinkMenu.setToolTipText(BundleUtil.get().getString(PREFIX+".FollowConnection.Desc"));
 					String diagramId = getActiveDiagram().getId().toString();
-					List<SerializableBlockStateDescriptor> descriptors = handler.listSourcesForSink(diagramId, pbv.getName());
+					List<SerializableBlockStateDescriptor> descriptors = handler.listSourcesForSink(diagramId, pbv.getId().toString());
 					for(SerializableBlockStateDescriptor desc:descriptors) {
 						SerializableResourceDescriptor rd = handler.getDiagramForBlock(desc.getIdString());
 						if( rd==null ) continue;
@@ -266,13 +347,13 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 					}
 					menu.add(linkSinkMenu);
 				}
-				else if( pbv.getClassName().contains("SourceConnection") )  {
+				else if( pbv.getClassName().equals(BlockConstants.BLOCK_CLASS_SOURCE) )  {
 					logger.infof("%s.getSelectionPopupMenu: SOURCE",TAG);
 					JMenu linkSourceMenu = new JMenu(BundleUtil.get().getString(PREFIX+".FollowConnection.Name"));
 					linkSourceMenu.setToolTipText(BundleUtil.get().getString(PREFIX+".FollowConnection.Desc"));
 					
 					String diagramId = getActiveDiagram().getId().toString();
-					List<SerializableBlockStateDescriptor> descriptors = handler.listSinksForSource(diagramId, pbv.getName());
+					List<SerializableBlockStateDescriptor> descriptors = handler.listSinksForSource(diagramId, pbv.getId().toString());
 					for(SerializableBlockStateDescriptor desc:descriptors) {
 						SerializableResourceDescriptor rd = handler.getDiagramForBlock(desc.getIdString());
 						if( rd==null ) continue;
@@ -283,9 +364,13 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				}
 				logger.debugf("%s.getSelectionPopupMenu: Selection editor class = %s",TAG,pbv.getEditorClass());
 				// Do not allow editing when the diagram is disabled
-				if( selection instanceof BlockComponent && pbv.getEditorClass() !=null && pbv.getEditorClass().length()>0 &&
+				if(pbv.getEditorClass() !=null && pbv.getEditorClass().length() > 0 &&
 						!getActiveDiagram().getState().equals(DiagramState.DISABLED)) {
 					CustomEditAction cea = new CustomEditAction(this,pbv);
+					menu.add(cea);
+				}
+				if(!getActiveDiagram().getState().equals(DiagramState.DISABLED)) {
+					PropertyDisplayAction cea = new PropertyDisplayAction(getActiveDiagram(),pbv, this);
 					menu.add(cea);
 				}
 				if(pbv.isSignalAnchorDisplayed()) {
@@ -308,8 +393,10 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				menu.addSeparator();
 				PropagateAction ea = new PropagateAction(pbv);
 				menu.add(ea);
-				TriggerUpstreamPropagationAction eaup = new TriggerUpstreamPropagationAction(pbv);
-				menu.add(eaup);
+				if( !pbv.getClassName().equals(BlockConstants.BLOCK_CLASS_INPUT)) {
+					TriggerUpstreamPropagationAction eaup = new TriggerUpstreamPropagationAction(pbv);
+					menu.add(eaup);
+				}
 				ForceAction fa = new ForceAction(getActiveDiagram(),pbv);
 				menu.add(fa);
 				ResetAction ra = new ResetAction(pbv);
@@ -327,6 +414,22 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				menu.add(context.getCopyAction());
 				menu.add(context.getPasteAction());
 				menu.add(context.getDeleteAction());
+				menu.add(new SelectAllBlocksAction(this,getActiveDiagram(),pbv));
+				if  (selections.size() > 1) {
+					AlignLeftAction al = new AlignLeftAction(this,getActiveDiagram(),pbv, selections);
+					menu.add(al);
+					AlignRightAction ar = new AlignRightAction(this,getActiveDiagram(),pbv, selections);
+					menu.add(ar);
+					AlignWidthCenterAction aw = new AlignWidthCenterAction(this,getActiveDiagram(),pbv, selections);
+					menu.add(aw);
+					AlignTopAction at = new AlignTopAction(this,getActiveDiagram(),pbv, selections);
+					menu.add(at);
+					AlignBottomAction ab = new AlignBottomAction(this,getActiveDiagram(),pbv, selections);
+					menu.add(ab);
+					AlignHeightCenterAction ah = new AlignHeightCenterAction(this,getActiveDiagram(),pbv, selections);
+					menu.add(ah);
+				}
+				
 				return menu;
 			}
 			else if( DiagramWorkspace.this.getSelectedContainer().getSelectedConnection()!=null ) {
@@ -360,13 +463,192 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	
 	@Override
 	public MenuBarMerge getMenu() {
-		return null;
+
+    	logger.tracef("EREIAM JH - GetMenu, context: %s",""+getContext());
+    	BundleUtil.get();
+
+    	MenuBarMerge merge = null;     	
+    	if (this.isVisible()) {
+    		if (!menuExists(context.getFrame(),ALIGN_MENU_TEXT)) {
+
+    			JMenuItem la = new JMenuItem(new AbstractAction("Left Align") {
+    				private static final long serialVersionUID = 1L;
+		    		public void actionPerformed(ActionEvent e) {
+		    			alignLeft();
+		    		}
+	        	});
+    			JMenuItem ra = new JMenuItem(new AbstractAction("Right Align") {
+    				private static final long serialVersionUID = 1L;
+		    		public void actionPerformed(ActionEvent e) {
+		    			alignRight();
+		    		}
+	        	});
+    			JMenuItem ha = new JMenuItem(new AbstractAction("Horizontal Center Align") {
+    				private static final long serialVersionUID = 1L;
+		    		public void actionPerformed(ActionEvent e) {
+		    			alignWidthCenter();
+		    		}
+	        	});
+    			JMenuItem ta = new JMenuItem(new AbstractAction("Top Align") {
+    				private static final long serialVersionUID = 1L;
+		    		public void actionPerformed(ActionEvent e) {
+		    			alignTop();
+		    		}
+	        	});
+    			JMenuItem ba = new JMenuItem(new AbstractAction("Bottom Align") {
+    				private static final long serialVersionUID = 1L;
+		    		public void actionPerformed(ActionEvent e) {
+		    			alignBottom();
+		    		}
+	        	});
+    			JMenuItem va = new JMenuItem(new AbstractAction("Vertical Center Align") {
+    				private static final long serialVersionUID = 1L;
+		    		public void actionPerformed(ActionEvent e) {
+		    			alignHeightCenter();
+		    		}
+	        	});
+    			
+    			merge = new MenuBarMerge(BLTProperties.MODULE_ID);  // as suggested in javadocs
+		    	JMenuMerge alignmentMenu = new JMenuMerge("Align Blocks",BLTProperties.BUNDLE_PREFIX+".Menu.AlignBlocks");
+		    	// "alignblocks" needs to be in the resource bundle or else it gets ? added to it.
+		    	alignmentMenu.add(ra);
+		    	alignmentMenu.add(la);
+		    	alignmentMenu.add(ha);
+		    	alignmentMenu.add(ta);
+		    	alignmentMenu.add(ba);
+		    	alignmentMenu.add(va);
+		    	merge.add(alignmentMenu);
+    		}
+    	} else {
+    		removeTopLevelMenu(context.getFrame(),ALIGN_MENU_TEXT);
+    	}
+    	
+    	return merge;
+	}
+	
+	/**
+	 * Post an internals viewer for the block. The default shows
+	 * only name, class and UUID. Blocks may transmit additional
+	 * parameters as is useful. 
+	 */
+	private class PropertyDisplayAction extends BaseAction {
+		private static final long serialVersionUID = 1L;
+		private final ProcessDiagramView diagram;
+		private final ProcessBlockView block;
+		private final DiagramWorkspace workspace;
+		public PropertyDisplayAction(ProcessDiagramView dia,ProcessBlockView blk, DiagramWorkspace wkspc)  {
+			super(PREFIX+".DisplayProperties",IconUtil.getIcon("sun"));
+			this.workspace = wkspc;
+			this.diagram = dia;
+			this.block = blk;
+		}
+		
+		// Display the internals viewer
+		public void actionPerformed(final ActionEvent e) {
+			final JDialog viewer = (JDialog)new BlockPropertiesSelector(context.getFrame(),diagram,block, workspace);
+			
+			Object source = e.getSource();
+			if( source instanceof Component) {
+				viewer.setLocationRelativeTo((Component)source);
+			}
+			viewer.pack();
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					viewer.setVisible(true);
+				}
+			}); 
+
+		}
 	}
 
-	// List of toolbars to add
+
+	// Search the menu tree and remove the selected item
+	private void removeTopLevelMenu(Frame frame,String title) {
+		for(Component c:context.getFrame().getComponents() ) {
+    		if( c instanceof JRootPane ) {
+    			JRootPane root = (JRootPane)c;
+    			JMenuBar bar = root.getJMenuBar();
+    			if( bar!=null ) {
+    				int count = bar.getMenuCount();
+    				int index = 0;
+    				while( index<count) {
+    					JMenu menu = bar.getMenu(index);
+    					if( menu.getName().equalsIgnoreCase(title)) {
+    						bar.remove(menu);
+    						break;
+    					}
+    					index++;
+    				}
+    			}
+    		}
+    	}
+		return;
+	}
+
+	// Search the menu tree to see if the same top level menu has been added already
+	private boolean menuExists(Frame frame,String title) {
+		boolean ret = false;
+		for(Component c:context.getFrame().getComponents() ) {
+    		if( c instanceof JRootPane ) {
+    			JRootPane root = (JRootPane)c;
+    			JMenuBar bar = root.getJMenuBar();
+    			if( bar!=null ) {
+    				int count = bar.getMenuCount();
+    				int index = 0;
+    				while( index<count) {
+    					JMenu menu = bar.getMenu(index);
+    					if( menu.getName().equalsIgnoreCase(title)) {
+    						ret = true;
+    						break;
+    					}
+    					index++;
+    				}
+    			}
+    		}
+    	}
+		
+		return ret;
+	}
+
+
+
+	public JideButton makeAlignButton(String imgName, String toolTip, ActionListener action) {
+		JideButton btn = new JideButton();
+		String iconPath  = "Block/icons/editor/" + imgName;
+		Image img = ImageLoader.getInstance().loadImage(iconPath ,BlockEditConstants.BUTTON_SIZE);
+		if( img !=null) {
+			Icon icon = new ImageIcon(img);
+			btn.setIcon(icon);
+			btn.setToolTipText(toolTip);
+			btn.addActionListener(action);
+		}
+		return btn;
+	}
+	
+
+	// List of toolbars to add - EREIAM JH - This is called when exiting the diagram workspace, but not seemingly when it is entered.  weird
+	//  Nothing seems to show up anyway...
 	@Override
 	public List<CommandBar> getToolbars() {
-		return null;
+		ArrayList<CommandBar> bars = new ArrayList<>();
+		alignBar = new CommandBar();
+		alignBar.setKey("bltAlign");
+
+		ActionListener align = new ActionListener() { public void actionPerformed(ActionEvent e){ alignLeft();	} };
+		alignBar.add(makeAlignButton("align_left.png", "Align blocks by their left edge", align));
+		align = new ActionListener() { public void actionPerformed(ActionEvent e){ alignRight();} };
+		alignBar.add(makeAlignButton("align_right.png", "Align blocks by their right edge", align));
+		align = new ActionListener() { public void actionPerformed(ActionEvent e){ alignTop();} };
+		alignBar.add(makeAlignButton("align_top.png", "Align blocks by their top edge", align));
+		align = new ActionListener() { public void actionPerformed(ActionEvent e){ alignBottom();} };
+		alignBar.add(makeAlignButton("align_bottom.png", "Align blocks by their bottom edge", align));
+		align = new ActionListener() { public void actionPerformed(ActionEvent e){ alignHeightCenter();} };
+		alignBar.add(makeAlignButton("align_horizontal.png", "Align blocks by their horizontal centerpoint", align));
+		align = new ActionListener() { public void actionPerformed(ActionEvent e){ alignWidthCenter();} };
+		alignBar.add(makeAlignButton("align_vertical.png", "Align blocks by their vertical centerpoint", align));
+
+		bars.add(alignBar);
+		return bars;
 	}
 
 
@@ -381,10 +663,25 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	}
 	@Override
 	public JComponent findDropTarget(List<JComponent> itemsUnderDrop,DropTargetDragEvent event) {
-		return this;
+		JComponent ret = this;
+		for (JComponent thingy:itemsUnderDrop) {
+			if (thingy instanceof BlockComponent) {
+				ret = thingy;
+				break;
+			}
+		}
+		return ret;
 	}
+	
+	
 	@Override
 	public boolean handleDrop(Object droppedOn,DropTargetDropEvent event) {
+		if (droppedOn instanceof BlockComponent) {
+			handleBlockDrop(droppedOn, event);
+		}
+		if (droppedOn instanceof DiagramWorkspace) {
+			handleDiagramDrop(droppedOn, event);
+		}
 		if (event.isDataFlavorSupported(BlockDataFlavor)) {
 			try {
 				if( event.getTransferable().getTransferData(BlockDataFlavor) instanceof ProcessBlockView) {
@@ -419,8 +716,154 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		return false;
 	}
 
+
+	// Check to see if this is a tag dropped on the workspace.  Make it an Input block if it's on the left, 
+	// Output on the right half -- unless the tagpath starts with "Connections". Then we make
+	// Sources/Sinks
+	private void handleDiagramDrop(Object droppedOn, DropTargetDropEvent event) {
+		DataFlavor flava = NodeListTransferable.FLAVOR_NODELIST;
+		if (event.isDataFlavorSupported(flava)) {
+			try {
+				Object node = event.getTransferable().getTransferData(flava);
+				if (node instanceof ArrayList && ((ArrayList) node).size() == 1) {
+					ArrayList<?> tagNodeArr = (ArrayList<?>)node;
+					// NOTE: This will fail (properly) if tag type is a dataset
+					if (tagNodeArr.get(0) instanceof TagTreeNode) {  // That's the thing we want!
+						BlockDesignableContainer container = getSelectedContainer();
+						ProcessDiagramView diagram = (ProcessDiagramView)container.getModel();
+						TagTreeNode tnode = (TagTreeNode) tagNodeArr.get(0);
+						int dropx = event.getLocation().x;
+						int thewidth = getActiveDiagram().getDiagramSize().width;
+						nameFromTagTree(tnode);
+
+						if( getSelectedContainer()!=null ) {
+							ProcessBlockView block = null;
+							TagPath tp = tnode.getTagPath();
+							boolean isStandardFolder = BusinessRules.isStandardConnectionsFolder(tp);
+							// Sinks to right,sources to the left
+							if (dropx < thewidth / 2) {
+								if( isStandardFolder ) {
+									SourceConnection source = new SourceConnection();
+									block = new ProcessBlockView(source.getBlockPrototype().getBlockDescriptor());
+									block.setName(nameFromTagTree(tnode));
+								}
+								else {
+									Input input = new Input();
+									block = new ProcessBlockView(input.getBlockPrototype().getBlockDescriptor());
+									block.setName(enforceUniqueName(nameFromTagTree(tnode),diagram));
+								}
+							} 
+							else {
+								if( isStandardFolder ) {
+									SinkConnection sink = new SinkConnection();
+									block = new ProcessBlockView(sink.getBlockPrototype().getBlockDescriptor());
+									block.setName(nameFromTagTree(tnode));
+								}
+								else {
+									Output output = new Output();
+									block = new ProcessBlockView(output.getBlockPrototype().getBlockDescriptor());
+									block.setName(enforceUniqueName(nameFromTagTree(tnode),diagram));
+								}
+							}
+							
+							DesignPanel panel = getSelectedDesignPanel();
+							BlockDesignableContainer bdc = (BlockDesignableContainer) panel.getDesignable();
+							Point dropPoint = SwingUtilities.convertPoint(
+									event.getDropTargetContext().getComponent(),
+									panel.unzoom(event.getLocation()), bdc);
+							this.setCurrentTool(getSelectionTool());   // So the next select on workspace does not result in another block
+
+							if( isInBounds(dropPoint,bdc) ) {
+								block.setLocation(dropPoint);
+								this.getActiveDiagram().addBlock(block);
+								DataType type = null;
+								ClientTagManager tmgr = context.getTagManager();
+								Tag tag = tmgr.getTag(tnode.getTagPath());
+								type = tag.getDataType();
+								Collection<BlockProperty> props = block.getProperties();
+								for (BlockProperty property:props) {
+									if( BlockConstants.BLOCK_PROPERTY_TAG_PATH.equalsIgnoreCase(property.getName())) {
+										property.setBinding(tnode.getTagPath().toStringFull());}
+										block.modifyConnectionForTagChange(property, type);
+								}
+								logger.infof("%s.handleDrop: dropped %s",TAG,block.getClass().getName());
+							}
+							else {
+								logger.infof("%s.handleDrop: drop of %s out-of-bounds",TAG,block.getClass().getName());
+							}
+						}
+					}
+				}
+			} 
+			catch (UnsupportedFlavorException e) {
+				//ignore
+			} 
+			catch (IOException e) {
+				// ignore
+			}
+		}
+
+	}
+
+
+	// Check to see if this is a tag dropped on a block.  Change the tag binding if applicable.
+	// Dropping the tag changes the block name and connection type if not "locked".
+	// For a source/sink, tag must be in "Connections". For Input/Output it must not.
+	// Craig is correct in that there is an amount of ugliness that involves hard-coded block class names
+	// and properties
+	public void handleBlockDrop(Object droppedOn, DropTargetDropEvent event) {
+		try {
+			DataFlavor flava = NodeListTransferable.FLAVOR_NODELIST;
+			if (event.isDataFlavorSupported(flava)) {
+				Object node = event.getTransferable().getTransferData(flava);
+				if (node instanceof ArrayList && ((ArrayList) node).size() == 1) {
+					ArrayList<?> tagNodeArr = (ArrayList<?>)node;
+					if (tagNodeArr.get(0) instanceof TagTreeNode) {  // That's the thing we want!
+						BlockDesignableContainer container = getSelectedContainer();
+						ProcessDiagramView diagram = (ProcessDiagramView)container.getModel();
+						TagTreeNode tnode = (TagTreeNode) tagNodeArr.get(0);
+						logger.infof("%s.handleDrop: tag data: %s",TAG,tnode.getName());
+						TagPath tp = tnode.getTagPath();
+
+						Block targetBlock = ((BlockComponent)droppedOn).getBlock();
+						if(targetBlock instanceof ProcessBlockView) {
+							ProcessBlockView pblock = (ProcessBlockView)targetBlock;
+							BlockProperty prop = pblock.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
+							if( prop==null) return;  // Unless there's a tag path, do nothing
+							
+							DataType tagType = null;
+							ClientTagManager tmgr = context.getTagManager();
+							Tag tag = tmgr.getTag(tnode.getTagPath());
+							tagType = tag.getDataType();
+							Integer tagProp = (Integer)tag.getAttribute(TagProp.ExpressionType).getValue();
+							String connectionMessage = diagram.isValidBindingChange(pblock, prop, tp.toStringFull(), tagType,tagProp);
+							
+							if( connectionMessage==null ) {
+								prop.setBinding(tnode.getTagPath().toStringFull());
+								setSelectedItems((JComponent)null);  // hack to get the property panel to refresh
+								setSelectedItems((JComponent)droppedOn);
+								pblock.setName(nameFromTagTree(tnode));
+								pblock.setCtypeEditable(true);
+								pblock.modifyConnectionForTagChange(prop, tagType);
+								saveOpenDiagram(diagram.getResourceId());
+								diagram.fireStateChanged();
+							} 
+							else {
+								JOptionPane.showMessageDialog(null, connectionMessage, "Warning", JOptionPane.INFORMATION_MESSAGE);
+							}
+						}
+					}
+				}
+			}
+		}
+		catch(Exception ex) {
+			logger.error(String.format("%s.handleDrop: Exceptiona: %s",TAG,ex.getLocalizedMessage()),ex);
+		}
+	}
+
 	@Override
 	public void onActivation() {
+		zoomCombo.setVisible(true);
 		logger.infof("%s: onActivation",TAG);
 		
 	}
@@ -428,9 +871,57 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 
 	@Override
 	public void onDeactivation() {
+		zoomCombo.setVisible(false);
 		logger.infof("%s: onDeactivation",TAG);
 	}
-
+	
+	// Guarantee a unique name for a block that has not yet been added to the diagram.
+	private String enforceUniqueName(String name,ProcessDiagramView diagram) {
+		int count = 0;
+		for(Block block:diagram.getBlocks() ) {
+			if(block instanceof ProcessBlockView) {
+				String bname = ((ProcessBlockView)block).getName();
+				if( bname.startsWith(name+"-") ) {
+					String suffix = bname.substring(name.length()+1);
+					if( suffix==null) count = count+1;  // Name ends in -
+					else {
+						try {
+							int val = Integer.parseInt(suffix);
+							if( val>=count) count = val + 1;
+							else count = count+1;
+						}
+						catch(NumberFormatException nfe) {
+							count = count + 1;
+						}
+					}
+				}
+				// The plain name
+				else if( bname.equalsIgnoreCase(name) ) {
+					count = count+1;
+				}
+			}
+		}
+		if( count>0 ) {
+			name = name +"-"+String.valueOf(count);
+		}
+		return name;
+	}
+	
+	private String nameFromTagTree(TagTreeNode tnode) {
+		String name = tnode.getName();
+		while(tnode.inUDTInstance()) {
+			TagPathTreeNode tptn = tnode.getParent();
+			if( tptn instanceof TagTreeNode) {
+				tnode = (TagTreeNode)tptn;
+				name = tnode.getName();
+			}
+			else {
+				name = tptn.getName();
+				break;
+			}
+		}
+		return name;
+	}
 
 	@Override
 	public void resetFrames(DockingManager dockManager, DockableBarManager barManager) {
@@ -476,20 +967,32 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		JavaType type = mapper.getTypeFactory().constructCollectionType(ArrayList.class, SerializableBlock.class);
 		try {
 			List<SerializableBlock>list = mapper.readValue(json, type);
-			Point offset = CalculatePasteOffset(this.getMousePosition(), list);
+
+			Point offset = calculatePasteOffset(this.getMousePosition(), list);
+			ProcessDiagramView theDiagram = getActiveDiagram();
 			for(SerializableBlock sb:list) {
 				ProcessBlockView pbv = new ProcessBlockView(sb);
-				pbv.createRandomId();
+				
+//				if it's a diagnosis rename with similar and then copy aux
 				if (pbv.isDiagnosis()) {
+//					diagnosis = true;
+//					String oldName = new String(pbv.getName());
 					pbv.createPseudoRandomNameExtension();
-					copyAuxData(pbv, sb.getName());
+					pbv.getAuxiliaryData().getProperties().put("Name", pbv.getName());   // Use as a key when fetching
+					saveAuxDataProduction(pbv, theDiagram.getId().toString());
+				} else {
+					pbv.createPseudoRandomName();
 				}
-				
-				
 				pbv.createRandomId();
 				Point dropLoc = new Point(pbv.getLocation().x+offset.x, pbv.getLocation().y+offset.y);
 				pbv.setLocation(dropLoc);
+				if (pbv.isDiagnosis()) {
+				}
 				
+				
+//				if it's a diagnosis it gets renamed, but it doesn't get the aux data from the original saved.
+//				Should this read in the aux data from the source block and copy it ?
+			
 				results.add(pbv);
 				// Special handling for an encapsulation block - create its sub-workspace
 				if(pbv.isEncapsulation()) {
@@ -537,54 +1040,9 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		return results;
 	}
 
-
-	public void copyAuxData(ProcessBlockView pbv, String oldName) {
-		
-		String prodDb = requestHandler.getProductionDatabase();
-		String isoDb = requestHandler.getIsolationDatabase();
-		ProcessDiagramView diagram = getActiveDiagram();
-		GeneralPurposeDataContainer auxData = new GeneralPurposeDataContainer();
-		auxData.setProperties(new HashMap<String,String>());
-		auxData.setLists(new HashMap<>());
-		auxData.setMapLists(new HashMap<>());
-		auxData.getProperties().put("Name", oldName);   // Use as a key when fetching
-		
-		ClientScriptExtensionManager extensionManager = ClientScriptExtensionManager.getInstance();
-		extensionManager.runScript(context.getScriptManager(), pbv.getClassName(), ScriptConstants.PROPERTY_GET_SCRIPT, 
-				diagram.getId().toString(),auxData,prodDb);
-
-		auxData.getProperties().put("Name", pbv.getName());   // Set new key
-		
-		extensionManager.runScript(context.getScriptManager(), pbv.getClassName(), ScriptConstants.PROPERTY_SET_SCRIPT, 
-				diagram.getId().toString().toString(),auxData,prodDb);
-
-		auxData.setProperties(new HashMap<String,String>());
-		auxData.setLists(new HashMap<>());
-		auxData.setMapLists(new HashMap<>());
-		auxData.getProperties().put("Name", oldName);   // Use as a key when fetching
 	
-		extensionManager.runScript(context.getScriptManager(), pbv.getClassName(), ScriptConstants.PROPERTY_GET_SCRIPT, 
-				diagram.getId().toString(),auxData,isoDb);
 
-		auxData.getProperties().put("Name", pbv.getName());   // Set new key
-
-		extensionManager.runScript(context.getScriptManager(), pbv.getClassName(), ScriptConstants.PROPERTY_SET_SCRIPT, 
-				diagram.getId().toString(),auxData,isoDb);
-		
-		// set it to the right data if not isolated
-		if( diagram.getState().equals(DiagramState.ACTIVE)) { 
-			extensionManager.runScript(context.getScriptManager(), pbv.getClassName(), ScriptConstants.PROPERTY_GET_SCRIPT, 
-					diagram.getId().toString(),auxData,prodDb);
-		}
-		
-		if( auxData.containsData()) {
-			pbv.setAuxiliaryData(auxData);
-		}
-		
-	}
-
-
-	private Point CalculatePasteOffset(Point mousePos, List<SerializableBlock> list) {
+	private Point calculatePasteOffset(Point mousePos, List<SerializableBlock> list) {
 		int leftPos = 100000;  //just initialize high for simplicity
 		int topPos = 100000;
 
@@ -601,7 +1059,89 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		return offset;
 	}
 
+	// Return the upper corner and max size of the selected objects
+	//    Size is handy for centering
+	private Rectangle findTopLeft(Collection<BlockComponent> list) {
+		int leftPos = 100000;  //just initialize high for simplicity
+		int topPos = 100000;
+		int height = 0;
+		int width = 0;
 
+		for(BlockComponent sb:list) {
+//			ProcessBlockView pbv = new ProcessBlockView(sb);
+			if (sb.getLocation().x < leftPos) {
+				leftPos = sb.getLocation().x;
+			}
+			if (sb.getLocation().y < topPos) {
+				topPos = sb.getLocation().y;
+			}
+			if (sb.getHeight() > height) {
+				height = sb.getHeight();
+			}
+			if (sb.getWidth() > width) {
+				width = sb.getWidth();
+			}
+		}
+		Rectangle r = new Rectangle(leftPos, topPos, width, height);
+		return r;
+	}
+
+	private Rectangle findBottomRight(Collection<BlockComponent> list) {
+		int rightPos = 0;  
+		int bottomPos = 0;
+		int height = 0;
+		int width = 0;
+
+		for(BlockComponent sb:list) {
+//			ProcessBlockView pbv = new ProcessBlockView(sb);
+			if (sb.getLocation().x+sb.getWidth() > rightPos) {
+				rightPos = sb.getLocation().x+sb.getWidth();
+			}
+			if (sb.getLocation().y+sb.getHeight() > bottomPos) {
+				bottomPos = sb.getLocation().y+sb.getHeight();
+			}
+			if (sb.getHeight() > height) {
+				height = sb.getHeight();
+			}
+			if (sb.getWidth() > width) {
+				width = sb.getWidth();
+			}
+		}
+		Rectangle r = new Rectangle(rightPos, bottomPos, height, width);
+		return r;
+	}
+	
+	private Collection<BlockComponent> getSelectedBlocks() {
+		Collection<BlockComponent> results = new ArrayList<BlockComponent>();
+		List<JComponent> components = this.getSelectedItems();
+		
+		for (JComponent block:components) {
+			if (block instanceof BlockComponent) {
+				results.add((BlockComponent)block);
+			}
+		}
+		return results;
+	}
+	
+	private void selectAllBlocks() {
+
+	    BlockDesignableContainer container = getSelectedContainer();
+	    Component[] blocks = container.getComponents();
+
+		ArrayList<JComponent> blockList = new ArrayList<>();
+		for( Component block:blocks) {
+			
+			if (block instanceof BlockComponent) {
+				((BlockComponent) block).setSelected(true);
+				blockList.add((BlockComponent)block);
+				this.setSelectedItems(blockList);
+			}
+		}
+
+		SwingUtilities.invokeLater(new WorkspaceRepainter());
+		return;
+	}
+	
 	@Override
 	protected String getTabToolTip(DesignableContainer ttt) {
 		// TODO Auto-generated method stub
@@ -630,10 +1170,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		logger.debugf("%s: open - already open (%s)",TAG,(isOpen(resourceId)?"true":"false"));
 		if(isOpen(resourceId) ) {
 			BlockDesignableContainer tab = (BlockDesignableContainer)findDesignableContainer(resourceId);
-			open(tab);  // Selects?
+			open(tab);  // Brings tab to front
 		}
-		// NOTE: We tried obtaining a lock at this point, but it always seemed to be busy without
-		//       an explicit save on opening.
 		else {
 			ProjectResource res = context.getProject().getResource(resourceId);	
 			String json = new String(res.getData());
@@ -663,12 +1201,17 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				ProcessBlockView pbv = (ProcessBlockView)blk;
 				diagram.initBlockProperties(pbv);
 			}
+			
 			super.open(diagram);
+			saveOpenDiagram(resourceId);
+			// Inform the gateway of the state and let listeners update the UI
+			ApplicationRequestHandler arh = new ApplicationRequestHandler();
+			arh.setDiagramState(diagram.getId().toString(), diagram.getState().name());
+			statusManager.setResourceState(resourceId,diagram.getState(),true);
 			diagram.setDirty(false);  // Newly opened from a serialized resource, should be in-sync.
-
 			// In the probable case that the designer is opened after the diagram has started
 			// running in the gateway, obtain any updates
-			diagram.registerChangeListeners();
+			diagram.refresh();
 			
 			BlockDesignableContainer tab = (BlockDesignableContainer)findDesignableContainer(resourceId);
 			tab.setBackground(diagram.getBackgroundColorForState());
@@ -728,7 +1271,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	}
 	/**
 	 * This is called as a result of a user "Save" selection on
-	 * the main menu. If the diagram indicated by the resouceId
+	 * the main menu. If the diagram indicated by the resourceId
 	 * is open, then save it.
 	 */
 	public void saveOpenDiagram(long resourceId) {
@@ -748,11 +1291,12 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	 */
 	public void saveDiagramResource(BlockDesignableContainer c) {
 		ProcessDiagramView diagram = (ProcessDiagramView)c.getModel();
-		logger.debugf("%s.saveDiagramResource - %s ...",TAG,diagram.getDiagramName());
+		logger.infof("%s.saveDiagramResource - %s ...",TAG,diagram.getDiagramName());
 		diagram.registerChangeListeners();     // The diagram may include new components
-		diagram.setDirty(false);
 		long resid = diagram.getResourceId();
 		executionEngine.executeOnce(new ResourceUpdateManager(this,context.getProject().getResource(resid)));
+		
+		diagram.setDirty(false);
 		c.setBackground(diagram.getBackgroundColorForState());
 		SwingUtilities.invokeLater(new WorkspaceRepainter());
 	}
@@ -764,7 +1308,20 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	private void updateBackgroundForDirty() {
 		BlockDesignableContainer container = getSelectedContainer();
 		if( container!=null ) {
-			ProcessDiagramView view = (ProcessDiagramView)(container.getModel());
+			ProcessDiagramView view = (ProcessDiagramView)(container.getModel());		
+			// update any open property panels
+			for (ResourceWorkspaceFrame frame: frames) {
+				if (frame instanceof PropertyEditorFrame) {
+					BlockPropertyEditor eddy = ((PropertyEditorFrame)frame).getEditor();
+					if (eddy != null) {
+						ProcessBlockView pbv = eddy.getBlock();
+						if (pbv.getClassName().toLowerCase().contains("finaldiagnosis")) {  // horrible hack, but it needs a refresh
+							((PropertyEditorFrame)frame).updateForFinalDiagnosis();
+						}	
+					}
+				}
+			}
+
 			container.setBackground(view.getBackgroundColorForState());
 			SwingUtilities.invokeLater(new WorkspaceRepainter());
 		}
@@ -794,17 +1351,40 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		if( container==null ) logger.infof("%s.containerSelected is null",TAG);
 		else logger.debugf("%s.containerSelected: %s",TAG,container.getName());
 	}
+	public CommandBar getAlignBar() {
+		return alignBar;
+	}
 	@Override
 	public void itemSelectionChanged(List<JComponent> selections) {
-		if( selections!=null && selections.size()==1 ) {
-			JComponent selection = selections.get(0);
-			logger.debugf("%s.itemSelectionChanged: selected a %s",TAG,selection.getClass().getName());
+		boolean enableAlign = false;
+		if( selections!=null ) {
+			if (selections.size()==1 ) {
+				JComponent selection = selections.get(0);
+				logger.debugf("%s.itemSelectionChanged: selected a %s",TAG,selection.getClass().getName());
+			} else {
+				int count = 0;
+				for (JComponent cp:selections) {
+					if (cp instanceof BlockComponent) {
+						count += 1;
+					}
+				}
+				if (count > 1) {
+					enableAlign = true;
+				}
+			}
 		}
-		else {
-			logger.debugf("%s: DiagramActionHandler: deselected",TAG);
-		}
+		updateBlockAlignMenus(enableAlign);
 	}
 	
+	private void updateBlockAlignMenus(boolean enableAlign) {
+//		BLTDesignerHook dh = (BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID);
+//		CommandBar cb = dh.getAlignBar();
+		CommandBar cb = getAlignBar();
+		for (Component cp:cb.getComponents()) {
+			cp.setEnabled(enableAlign);
+		}
+	}
+
 	private boolean isInBounds(Point dropPoint,BlockDesignableContainer bdc) {
 		Rectangle bounds = bdc.getBounds();
 		boolean inBounds = true;
@@ -815,7 +1395,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		logger.infof("%s.handlerDrop: drop x,y = (%d,%d), bounds %d,%d,%d,%d",TAG,dropPoint.x,dropPoint.y,bounds.x,bounds.y,bounds.width,bounds.height );
 		return inBounds;
 	}
-	
+
 	// ============================== Change Listener ================================
 	/**
 	 * If the current diagram changes state, then paint the background accordingly.
@@ -838,34 +1418,42 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		 */
 		@Override
 		public void paintConnection(Graphics2D g, Connection cxn,Path2D route, boolean selected, boolean hover) {
-			BasicAnchorPoint origin = (BasicAnchorPoint)cxn.getOrigin();
-			ConnectionType ctype = origin.getConnectionType();
+			BasicAnchorPoint original = (BasicAnchorPoint)cxn.getOrigin();
+			BasicAnchorPoint terminus = (BasicAnchorPoint)cxn.getTerminus();
+			BasicAnchorPoint dominantAnchor = original;
+			ConnectionType ctype = original.getConnectionType();
+			if( ctype==ConnectionType.ANY ) {  // Use the the other end if it has a more specific data type
+				//  try the other end
+				ctype = terminus.getConnectionType();
+				dominantAnchor = terminus;
+			}
+			
 			super.hoverColor = WorkspaceConstants.CONNECTION_HOVER;
 			super.selectedColor = WorkspaceConstants.CONNECTION_SELECTED;
 			// Signal is different in that it has no fill
 			if( ctype==ConnectionType.SIGNAL ) {    
-				super.stroke = origin.getOutlineStroke();
+				super.stroke = dominantAnchor.getOutlineStroke();
 				super.standardColor=WorkspaceConstants.CONNECTION_FILL_SIGNAL;
 				super.paintConnection(g, cxn, route, selected, hover);
 			}
 			// Text is different in that it has a centerline
 			else if( ctype==ConnectionType.TEXT ) {
-				super.stroke = origin.getOutlineStroke();
-				super.standardColor=origin.getOutlineColor();
+				super.stroke = dominantAnchor.getOutlineStroke();
+				super.standardColor=dominantAnchor.getOutlineColor();
 				super.paintConnection(g, cxn, route, selected, hover);
-				super.stroke = origin.getCoreStroke();
-				super.standardColor=origin.getCoreColor();
+				super.stroke = dominantAnchor.getCoreStroke();
+				super.standardColor=dominantAnchor.getCoreColor();
 				super.paintConnection(g, cxn, route, selected, hover);
 				super.stroke = centerlineStroke;
 				super.standardColor=WorkspaceConstants.CONNECTION_BACKGROUND;
 				super.paintConnection(g, cxn, route, selected, hover);
 			}
 			else {
-				super.stroke = origin.getOutlineStroke();
-				super.standardColor= origin.getOutlineColor();
+				super.stroke = dominantAnchor.getOutlineStroke();
+				super.standardColor= dominantAnchor.getOutlineColor();
 				super.paintConnection(g, cxn, route, selected, hover);
-				super.stroke = origin.getCoreStroke();
-				super.standardColor=origin.getCoreColor();
+				super.stroke = original.getCoreStroke(dominantAnchor.getConnectionType());
+				super.standardColor=original.getCoreColor(dominantAnchor.getConnectionType());
 				super.paintConnection(g, cxn, route, selected, hover);
 			}
 		}
@@ -899,10 +1487,12 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				if( anchor.getDisplay().equalsIgnoreCase(BlockConstants.RECEIVER_PORT_NAME)) continue;
 				anchors.add(block.convertAnchorToSerializable((ProcessAnchorDescriptor)anchor));
 			}
-			handler.updateBlockAnchors(diagram.getId(),block.getId(),anchors);
+			handler.updateBlockAnchors(diagram.getId(),block.getId(),anchors); // update gateway. 
 			diagram.updateConnectionTypes(block,connectionType);
 			// Repaint the workspace
 			SwingUtilities.invokeLater(new WorkspaceRepainter());
+			setDirty();
+			
 		}
 	}
 
@@ -962,6 +1552,108 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			}
 		}
 	}
+
+	public void alignLeft() {
+		Collection<BlockComponent> selections = getSelectedBlocks();
+		Rectangle topLeft = findTopLeft(selections);
+		// Let's make sure we can undo this :-)
+		HashMap<JComponent, Rectangle2D> undoMap = new HashMap<>();
+		for(BlockComponent block:selections) {
+			Point loc = block.getBlock().getLocation();
+			undoMap.put(block,  block.getBounds());
+			block.getBlock().setLocation(new Point(topLeft.x, loc.y));
+		}
+		UndoManager.getInstance().add(new UndoMoveBlocks(undoMap));
+		SwingUtilities.invokeLater(new WorkspaceRepainter());
+
+	}
+
+
+	private void setDirty() {
+		BlockDesignableContainer container = getSelectedContainer();
+		if (container != null) {
+			ProcessDiagramView diagram = (ProcessDiagramView)container.getModel();
+			if (diagram != null) {
+				diagram.setDirty(true);
+			}
+		}
+	}
+	
+	public void alignRight() {
+		Collection<BlockComponent> selections = getSelectedBlocks();
+		Rectangle bottomRight = findBottomRight(selections);
+		// Let's make sure we can undo this :-)
+		HashMap<JComponent, Rectangle2D> undoMap = new HashMap<>();
+		for(BlockComponent block:selections) {
+			Point loc = block.getBlock().getLocation();
+			undoMap.put(block,  block.getBounds());
+			block.getBlock().setLocation(new Point(bottomRight.x-block.getWidth(), loc.y));
+		}
+		UndoManager.getInstance().add(new UndoMoveBlocks(undoMap));
+		SwingUtilities.invokeLater(new WorkspaceRepainter());
+	}
+
+	public void alignWidthCenter() {
+		Collection<BlockComponent> selections = getSelectedBlocks();
+		Rectangle bottomRight = findBottomRight(selections);
+		// Let's make sure we can undo this :-)
+		HashMap<JComponent, Rectangle2D> undoMap = new HashMap<>();
+		// align centered so the lines look good
+		for(BlockComponent block:selections) {
+			Point loc = block.getBlock().getLocation();
+			undoMap.put(block,  block.getBounds());
+			int adjust = (bottomRight.width - block.getWidth()) / 2; 
+			block.getBlock().setLocation(new Point(bottomRight.x-block.getWidth()-adjust, loc.y));
+		}
+		UndoManager.getInstance().add(new UndoMoveBlocks(undoMap));
+		SwingUtilities.invokeLater(new WorkspaceRepainter());
+	}
+
+	public void alignHeightCenter() {
+		Collection<BlockComponent> selections = getSelectedBlocks();
+		Rectangle topLeft = findTopLeft(selections);
+		// Let's make sure we can undo this :-)
+		HashMap<JComponent, Rectangle2D> undoMap = new HashMap<>();
+		for(BlockComponent block:selections) {
+			Point loc = block.getBlock().getLocation();
+			// align centered so the lines look good
+			int adjust = (topLeft.height - block.getHeight()) / 2; 
+			undoMap.put(block,  block.getBounds());
+			block.getBlock().setLocation(new Point(loc.x, topLeft.y + adjust));
+		}
+		UndoManager.getInstance().add(new UndoMoveBlocks(undoMap));
+		SwingUtilities.invokeLater(new WorkspaceRepainter());
+	}
+
+	public void alignTop() {
+		Collection<BlockComponent> selections = getSelectedBlocks();
+		Rectangle topLeft = findTopLeft(selections);
+		// Let's make sure we can undo this :-)
+		HashMap<JComponent, Rectangle2D> undoMap = new HashMap<>();
+		for(BlockComponent block:selections) {
+			Point loc = block.getBlock().getLocation();
+			undoMap.put(block,  block.getBounds());
+			block.getBlock().setLocation(new Point(loc.x, topLeft.y));
+		}
+		UndoManager.getInstance().add(new UndoMoveBlocks(undoMap));
+		SwingUtilities.invokeLater(new WorkspaceRepainter());
+	}
+
+	public void alignBottom() {
+		Collection<BlockComponent> selections = getSelectedBlocks();
+		Rectangle bottomRight = findBottomRight(selections);
+		// Let's make sure we can undo this :-)
+		HashMap<JComponent, Rectangle2D> undoMap = new HashMap<>();
+		for(BlockComponent block:selections) {
+			Point loc = block.getBlock().getLocation();
+			undoMap.put(block,  block.getBounds());
+			block.getBlock().setLocation(new Point(loc.x, bottomRight.y-block.getHeight()));
+		}
+		UndoManager.getInstance().add(new UndoMoveBlocks(undoMap));
+		SwingUtilities.invokeLater(new WorkspaceRepainter());
+	}
+	
+	
 	/**
 	 * Trigger the propagation method of the currently selected block. 
 	 * NOTE: We call it "evaluate", but we really call propagate().
@@ -1061,34 +1753,107 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			}); 
 		}
 	}
+
 	/**
-	 * Configure the block to show the generic signal connection stub.
+	 * Select All blocks.
 	 */
-	private class HideSignalAction extends BaseAction {
+	private class SelectAllBlocksAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
-		private final ProcessBlockView block;
-		private final ProcessDiagramView diagram;
-		private final DiagramWorkspace workspace;
-		public HideSignalAction(DiagramWorkspace wksp,ProcessDiagramView diag,ProcessBlockView blk)  {
-			super(PREFIX+".HideSignal",IconUtil.getIcon("trafficlight_red"));  // preferences
-			this.workspace = wksp;
-			this.diagram = diag;
-			this.block = blk;
+		public SelectAllBlocksAction(DiagramWorkspace wksp,ProcessDiagramView diag,ProcessBlockView blk)  {
+			super(PREFIX+".SelectAllBlocks",null);  // preferences
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			block.setSignalAnchorDisplayed(false);
-			if( !diagram.isDirty()) {
-				BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(diagram.getResourceId());
-				if( tab!=null ) workspace.saveDiagramResource(tab);
-			}
-			block.fireStateChanged();
-			// Repaint to update the stub
-			SwingUtilities.invokeLater(new WorkspaceRepainter());
+			selectAllBlocks();
 		}
 	}
+	
 	/**
-	 * Plce the currently selected block in lock mode.
+	 * Left align selected blocks.
+	 */
+	private class AlignLeftAction extends BaseAction {
+		private static final long serialVersionUID = 1L;
+		public AlignLeftAction(DiagramWorkspace wksp,ProcessDiagramView diag,ProcessBlockView blk, List<JComponent> selections)  {
+			super(PREFIX+".AlignBlocksLeft",null);  // preferences
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			alignLeft();
+		}
+	}
+	
+	/**
+	 * Right align selected blocks.
+	 */
+	private class AlignRightAction extends BaseAction {
+		private static final long serialVersionUID = 1L;
+		public AlignRightAction(DiagramWorkspace wksp,ProcessDiagramView diag,ProcessBlockView blk, List<JComponent> selections)  {
+			super(PREFIX+".AlignBlocksRight",null);  // preferences
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			alignRight();
+		}
+	}
+	
+	/**
+	 * Center Width align selected blocks.
+	 */
+	private class AlignWidthCenterAction extends BaseAction {
+		private static final long serialVersionUID = 1L;
+		public AlignWidthCenterAction(DiagramWorkspace wksp,ProcessDiagramView diag,ProcessBlockView blk, List<JComponent> selections)  {
+			super(PREFIX+".AlignBlocksWidthCenter",null);  // preferences
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			alignWidthCenter();
+		}
+	}
+	
+	/**
+	 * center height align selected blocks.
+	 */
+	private class AlignHeightCenterAction extends BaseAction {
+		private static final long serialVersionUID = 1L;
+		public AlignHeightCenterAction(DiagramWorkspace wksp,ProcessDiagramView diag,ProcessBlockView blk, List<JComponent> selections)  {
+			super(PREFIX+".AlignBlocksHeightCenter",null);  // preferences
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			alignHeightCenter();
+		}
+	}
+	
+	/**
+	 * Top align selected blocks.
+	 */
+	private class AlignTopAction extends BaseAction {
+		private static final long serialVersionUID = 1L;
+		public AlignTopAction(DiagramWorkspace wksp,ProcessDiagramView diag,ProcessBlockView blk, List<JComponent> selections)  {
+			super(PREFIX+".AlignBlocksTop",null);  // preferences
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			alignTop();
+		}
+	}
+	
+	/**
+	 * Bottom align selected blocks.
+	 */
+	private class AlignBottomAction extends BaseAction {
+		private static final long serialVersionUID = 1L;
+		public AlignBottomAction(DiagramWorkspace wksp,ProcessDiagramView diag,ProcessBlockView blk, List<JComponent> selections)  {
+			super(PREFIX+".AlignBlocksBottom",null);  // preferences
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			alignBottom();
+		}
+	}
+	
+	/**
+	 * Place the currently selected block in lock mode.
 	 */
 	private class LockAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
@@ -1227,6 +1992,34 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			return match;
 		}
 	}
+
+	/**
+	 * Configure the block to show the generic signal connection stub.
+	 */
+	private class HideSignalAction extends BaseAction {
+		private static final long serialVersionUID = 1L;
+		private final ProcessBlockView block;
+		private final ProcessDiagramView diagram;
+		private final DiagramWorkspace workspace;
+		public HideSignalAction(DiagramWorkspace wksp,ProcessDiagramView diag,ProcessBlockView blk)  {
+			super(PREFIX+".HideSignal",IconUtil.getIcon("trafficlight_red"));  // preferences
+			this.workspace = wksp;
+			this.diagram = diag;
+			this.block = blk;
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			block.setSignalAnchorDisplayed(false);
+			if( !diagram.isDirty()) {
+				BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(diagram.getResourceId());
+				if( tab!=null ) workspace.saveDiagramResource(tab);
+			}
+			block.fireStateChanged();
+			// Repaint to update the stub
+			SwingUtilities.invokeLater(new WorkspaceRepainter());
+		}
+	}
+
 	/**
 	 * Configure the block to show the generic signal connection stub.
 	 */
@@ -1308,6 +2101,20 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 
 		}
 	}
+
+	private JComboBox<String> createZoomDropDown() {
+        JComboBox<String> combo = new JComboBox<String>();
+        combo.addItem("25%");
+        combo.addItem("50%");
+        combo.addItem("75%");
+        combo.addItem("100%");
+        combo.addItem("200%");
+        combo.setSelectedIndex(3);
+        return combo;
+    }
+ 
+	
+	
 	// ===================================== Right-click for popup on tab =======================================
 	private JPopupMenu createZoomPopup() {
         JPopupMenu popup = new JPopupMenu("Zoom");
@@ -1367,4 +2174,178 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
             }
         }
     }
+    
+    private class KeystrokeListener implements KeyListener {
+
+        @Override
+        public void keyTyped(KeyEvent e) {
+			logger.errorf("DiagramWorkspace keyTyped :%s: Modifiers :%s:",e.getKeyChar(), e.getModifiers());
+			System.out.println("EREIAM J = 1");
+        }
+
+        @Override
+        public void keyPressed(KeyEvent e) {
+			System.out.println("EREIAM J = 2");
+			logger.errorf("DiagramWorkspace keyPressed :%s: Modifiers :%s:",e.getKeyChar(), e.getModifiers());
+            if ((e.getKeyCode() == KeyEvent.VK_A) && ((e.getModifiers() & KeyEvent.CTRL_MASK) != 0)) {
+                selectAllBlocks();
+            }
+        }
+
+        @Override
+        public void keyReleased(KeyEvent e) {
+			System.out.println("EREIAM J = 3");
+			logger.errorf("DiagramWorkspace keyReleased :%s: Modifiers :%s:",e.getKeyChar(), e.getModifiers());
+        }
+    }
+    
+
+	public void copyAuxData(ProcessBlockView pbv, String oldName, String newParentId, String oldParentId) {
+		
+		String prodDb = requestHandler.getProductionDatabase();
+		String isoDb = requestHandler.getIsolationDatabase();
+//		ProcessDiagramView diagram = getActiveDiagram();
+		GeneralPurposeDataContainer auxData = new GeneralPurposeDataContainer();
+		auxData.setProperties(new HashMap<String,String>());
+		auxData.setLists(new HashMap<>());
+		auxData.setMapLists(new HashMap<>());
+		auxData.getProperties().put("Name", oldName);   // Use as a key when fetching
+		
+		CommonScriptExtensionManager extensionManager = CommonScriptExtensionManager.getInstance();
+		extensionManager.runScript(context.getScriptManager(), pbv.getClassName(), ScriptConstants.PROPERTY_GET_SCRIPT, 
+				oldParentId,auxData,prodDb);
+
+		auxData.getProperties().put("Name", pbv.getName());   // Set new key
+		
+		extensionManager.runScript(context.getScriptManager(), pbv.getClassName(), ScriptConstants.PROPERTY_SET_SCRIPT, 
+				pbv.getId().toString(),auxData,prodDb);
+
+		auxData.setProperties(new HashMap<String,String>());
+		auxData.setLists(new HashMap<>());
+		auxData.setMapLists(new HashMap<>());
+		auxData.getProperties().put("Name", oldName);   // Use as a key when fetching
+	
+		extensionManager.runScript(context.getScriptManager(), pbv.getClassName(), ScriptConstants.PROPERTY_GET_SCRIPT, 
+				oldParentId,auxData,isoDb);
+
+		auxData.getProperties().put("Name", pbv.getName());   // Set new key
+
+		extensionManager.runScript(context.getScriptManager(), pbv.getClassName(), ScriptConstants.PROPERTY_SET_SCRIPT, 
+				pbv.getId().toString(),auxData,isoDb);
+		
+		// set it to the right data if not isolated  
+		if( pbv.getState().equals(DiagramState.ACTIVE)) { 
+			extensionManager.runScript(context.getScriptManager(), pbv.getClassName(), ScriptConstants.PROPERTY_GET_SCRIPT, 
+					newParentId,auxData,prodDb);
+		}
+		
+		if( auxData.containsData()) {
+			pbv.setAuxiliaryData(auxData);
+		}
+		
+	}
+
+	public void saveAuxDataProduction(ProcessBlockView pbv, String parentId) {
+		
+		String prodDb = requestHandler.getProductionDatabase();
+		CommonScriptExtensionManager extensionManager = CommonScriptExtensionManager.getInstance();
+		
+		extensionManager.runScript(context.getScriptManager(), pbv.getClassName(), ScriptConstants.PROPERTY_SET_SCRIPT, 
+				parentId,pbv.getAuxiliaryData(),prodDb);
+	}
+
+	public void saveAuxDataSbProduction(SerializableBlock sb, String parentId) {
+		
+		String prodDb = requestHandler.getProductionDatabase();
+		CommonScriptExtensionManager extensionManager = CommonScriptExtensionManager.getInstance();
+		
+		extensionManager.runScript(context.getScriptManager(), sb.getClassName(), ScriptConstants.PROPERTY_SET_SCRIPT, 
+				parentId,sb.getAuxiliaryData(),prodDb);
+	}
+
+	public void copyApplicationAuxData(SerializableApplication sa, String newName, String oldName) {
+		
+		String prodDb = requestHandler.getProductionDatabase();
+		String isoDb = requestHandler.getIsolationDatabase();
+//		ProcessDiagramView diagram = getActiveDiagram();
+		GeneralPurposeDataContainer auxData = new GeneralPurposeDataContainer();
+
+		
+//		So, the big question is how to get the right UUID for the getapplication function to find it.
+		
+
+		auxData.setProperties(new HashMap<String,String>());
+		auxData.setLists(new HashMap<>());
+		auxData.setMapLists(new HashMap<>());
+		auxData.getProperties().put("Name", oldName);   // Use as a key when fetching
+	
+		CommonScriptExtensionManager extensionManager = CommonScriptExtensionManager.getInstance();
+		
+		extensionManager.runScript(context.getScriptManager(), ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.PROPERTY_GET_SCRIPT, 
+				sa.getId().toString(),auxData,isoDb);
+
+		auxData.getProperties().put("Name", newName);   // Set new key
+
+		extensionManager.runScript(context.getScriptManager(), ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.PROPERTY_SET_SCRIPT, 
+				sa.getId().toString(),auxData,isoDb);
+		
+		
+		auxData = new GeneralPurposeDataContainer();
+		
+		auxData.setProperties(new HashMap<String,String>());
+		auxData.setLists(new HashMap<>());
+		auxData.setMapLists(new HashMap<>());
+		auxData.getProperties().put("Name", oldName);   // Use as a key when fetching
+		
+		extensionManager.runScript(context.getScriptManager(), ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.PROPERTY_GET_SCRIPT, 
+				sa.getId().toString(),auxData,prodDb);
+
+		auxData.getProperties().put("Name", newName);   // Set new key
+		
+		extensionManager.runScript(context.getScriptManager(), ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.PROPERTY_SET_SCRIPT, 
+				sa.getId().toString().toString(),auxData,prodDb);
+	}
+
+	public void copyFamilyAuxData(SerializableFamily sf, String newName, String oldName) {
+		
+		String prodDb = requestHandler.getProductionDatabase();
+		String isoDb = requestHandler.getIsolationDatabase();
+//		ProcessDiagramView diagram = getActiveDiagram();
+		GeneralPurposeDataContainer auxData = new GeneralPurposeDataContainer();
+
+
+		
+		CommonScriptExtensionManager extensionManager = CommonScriptExtensionManager.getInstance();
+		auxData.setProperties(new HashMap<String,String>());
+		auxData.setLists(new HashMap<>());
+		auxData.setMapLists(new HashMap<>());
+		auxData.getProperties().put("Name", oldName);   // Use as a key when fetching
+	
+		extensionManager.runScript(context.getScriptManager(), ScriptConstants.FAMILY_CLASS_NAME, ScriptConstants.PROPERTY_GET_SCRIPT, 
+				sf.getId(),auxData,isoDb);
+
+		auxData.getProperties().put("Name", newName);   // Set new key
+
+		extensionManager.runScript(context.getScriptManager(), ScriptConstants.FAMILY_CLASS_NAME, ScriptConstants.PROPERTY_SET_SCRIPT, 
+				sf.getId().toString(),auxData,isoDb);
+		
+		auxData = new GeneralPurposeDataContainer();
+		
+		auxData.setProperties(new HashMap<String,String>());
+		auxData.setLists(new HashMap<>());
+		auxData.setMapLists(new HashMap<>());
+		auxData.getProperties().put("Name", oldName);   // Use as a key when fetching
+		
+		extensionManager.runScript(context.getScriptManager(), ScriptConstants.FAMILY_CLASS_NAME, ScriptConstants.PROPERTY_GET_SCRIPT, 
+				sf.getId().toString(),auxData,prodDb);
+
+		auxData.getProperties().put("Name", newName);   // Set new key
+		
+		extensionManager.runScript(context.getScriptManager(), ScriptConstants.FAMILY_CLASS_NAME, ScriptConstants.PROPERTY_SET_SCRIPT, 
+				sf.getId().toString().toString(),auxData,prodDb);
+
+	}
+
+
+    
 }

@@ -23,7 +23,7 @@ public class BlockDescriptor {
 	private static final String TAG = "BlockDescription";
 	private List<AnchorPrototype> anchors;
 	private int background = Color.WHITE.getRGB();  // Transmit color as an int for serialization.
-	private String blockClass = null;               // Class of the block in the Gateway (xom. ... implies Python)
+	private String blockClass = null;               // Class of the block in the Gateway (ils. ... implies Python)
 	private int    embeddedFontSize = 24;
 	private String embeddedIcon="";       // 32x32 icon to place in block in designer
 	private String embeddedLabel="";      // Label place in block in designer
@@ -40,7 +40,8 @@ public class BlockDescriptor {
 	private int preferredWidth  = 0;
 	private boolean receiveEnabled  = false;       // Whether or not this block can receive signals
 	private BlockStyle style = BlockStyle.SQUARE;
-	private boolean transmitEnabled = false;       // Whether or not this block transmits signals
+	private String badgeChar = null;
+//	private boolean transmitEnabled = false;       // Whether or not this block transmits signals
 	
 	public BlockDescriptor() {
 		anchors = new ArrayList<AnchorPrototype>();
@@ -74,7 +75,10 @@ public class BlockDescriptor {
 	}
 
 	public void addAnchor(AnchorPrototype anchor) { anchors.add(anchor); }
-	public List<AnchorPrototype> getAnchors() { return anchors; }
+	public List<AnchorPrototype> getAnchors() { 
+//		log.error("EREIAM jh - block descriptor get anchors");
+		return anchors; 
+		}
 	public int getBackground() {return background;}
 	public String getBlockClass() { return blockClass; }
 	/**
@@ -95,8 +99,9 @@ public class BlockDescriptor {
 	public boolean isCtypeEditable() {return ctypeEditable;}
 	public boolean isEncapsulation() {return encapsulation;}
 	public boolean isNameDisplayed() {return nameDisplayed;}
+	public String getBadgeChar() {return badgeChar;}
 	public boolean isReceiveEnabled() {return receiveEnabled;}
-	public boolean isTransmitEnabled() {return transmitEnabled;}
+//	public boolean isTransmitEnabled() {return transmitEnabled;}
 	
 	public void setAnchors(List<AnchorPrototype> anchors) { this.anchors = anchors; }
 	public void setBackground(int background) {this.background = background;}
@@ -116,7 +121,8 @@ public class BlockDescriptor {
 	public void setPreferredWidth(int preferredWidth) {this.preferredWidth = preferredWidth;}
 	public void setReceiveEnabled(boolean receiveEnabled) {this.receiveEnabled = receiveEnabled;}
 	public void setStyle(BlockStyle style) { this.style = style; }
-	public void setTransmitEnabled(boolean transmitEnabled) {this.transmitEnabled = transmitEnabled;}
+	public void setBadgeCharacter(String ch) { this.badgeChar = ch; }
+//	public void setTransmitEnabled(boolean transmitEnabled) {this.transmitEnabled = transmitEnabled;}
 
 	/**
 	 * Serialize into a JSON string

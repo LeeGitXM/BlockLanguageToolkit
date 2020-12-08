@@ -110,7 +110,7 @@ public class ModelManager implements ProjectListener  {
 	 * @param res the model resource
 	 */
 	public void analyzeResource(long projectId,ProjectResource res) {
-		
+
 		if( res.getModuleId()!=null && res.getModuleId().equalsIgnoreCase(BLTProperties.MODULE_ID)) {
 			String type = res.getResourceType();
 			
@@ -277,6 +277,7 @@ public class ModelManager implements ProjectListener  {
 	 * @return a list of diagram tree paths. If none found, return null. 
 	 */
 	public synchronized List<SerializableResourceDescriptor> getDiagramDescriptors() {
+		if(DEBUG) log.infof("%s.getDiagramDescriptors", TAG);
 		List<SerializableResourceDescriptor> result = new ArrayList<>();
 		for( Long projectId: root.allProjects() ) {
 			List<ProcessNode> nodes = root.allNodesForProject(projectId);
@@ -294,6 +295,7 @@ public class ModelManager implements ProjectListener  {
 				}
 			}
 		}
+		if(DEBUG) log.infof("%s.getDiagramDescriptors: found %d", TAG,result.size());
 		return result;	
 	}
 	/**
@@ -333,7 +335,7 @@ public class ModelManager implements ProjectListener  {
 			ProcessBlock start = getBlock(diagram,blockId);
 			if( start!=null ) {
 				traverseDownstream(diagram,start,blocks,spanDiagrams);
-				if(spanDiagrams && start.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SINK)) {
+				if(spanDiagrams && start.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SINK)) {
 					followDownstreamConnections(start,blocks);
 				}
 
@@ -361,7 +363,7 @@ public class ModelManager implements ProjectListener  {
 				traverseDownstream(diagram,blk,blocks,spanDiagrams);
 				// Do an exhaustive search for all sink blocks that have the same binding
 				// as the specified block. We cover all diagrams in the system.
-				if( spanDiagrams && blk.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SINK) ) {
+				if( spanDiagrams && blk.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SINK) ) {
 					followDownstreamConnections(blk,blocks);
 				}
 			}
@@ -370,14 +372,14 @@ public class ModelManager implements ProjectListener  {
 
 	
 	private void followDownstreamConnections(ProcessBlock sink,List<ProcessBlock> blocks) {
-		if( sink.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SINK) ) {
+		if( sink.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SINK) ) {
 			BlockProperty prop = sink.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
 			if( prop!=null ) {
 				String tagPath = prop.getBinding();
 				if( tagPath!=null && !tagPath.isEmpty()) {
 					for( ProcessDiagram diag:getDiagrams()) {
 						for(ProcessBlock source:diag.getProcessBlocks()) {
-							if( source.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SOURCE) ) {
+							if( source.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SOURCE) ) {
 								BlockProperty bp = source.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
 								if( bp!=null && tagPath.equals(bp.getBinding())  ) {
 									traverseDownstream(diag,source,blocks,true);
@@ -397,7 +399,7 @@ public class ModelManager implements ProjectListener  {
 			ProcessBlock start = getBlock(diagram,blockId);
 			if( start!=null ) {
 				traverseUpstream(diagram,start,blocks,spanDiagrams);
-				if(spanDiagrams && start.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SOURCE)) {
+				if(spanDiagrams && start.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SOURCE)) {
 					followUpstreamConnections(start,blocks);
 				}
 				int index = 0;
@@ -423,21 +425,21 @@ public class ModelManager implements ProjectListener  {
 				traverseUpstream(diagram,blk,blocks,spanDiagrams);
 				// Do an exhaustive search for all sink blocks that have the same binding
 				// as the specified block. We cover all diagrams in the system.
-				if( spanDiagrams && blk.getClassName()!=null && blk.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SOURCE) ) {
+				if( spanDiagrams && blk.getClassName()!=null && blk.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SOURCE) ) {
 					followUpstreamConnections(blk,blocks);
 				}
 			}
 		}
 	}
 	private void followUpstreamConnections(ProcessBlock source,List<ProcessBlock> blocks) {
-		if( source.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SOURCE) ) {
+		if( source.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SOURCE) ) {
 			BlockProperty prop = source.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
 			if( prop!=null ) {
 				String tagPath = prop.getBinding();
 				if( tagPath!=null && !tagPath.isEmpty()) {
 					for( ProcessDiagram diag:getDiagrams()) {
 						for(ProcessBlock sink:diag.getProcessBlocks()) {
-							if( sink.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SINK) ) {
+							if( sink.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SINK) ) {
 								BlockProperty bp = sink.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
 								if( bp!=null && tagPath.equals(bp.getBinding())  ) {
 									traverseUpstream(diag,sink,blocks,true);
@@ -541,6 +543,7 @@ public class ModelManager implements ProjectListener  {
 			}
 		}
 	}
+
 	/**
 	 * Stop all blocks in diagrams known to this manager. Presumably the controller has 
 	 * been stopped.
@@ -602,7 +605,7 @@ public class ModelManager implements ProjectListener  {
 	@Override
 	public void projectUpdated(Project diff, ProjectVersion vers) { 
 		if( vers!=ProjectVersion.Staging ) return;  // Consider only the "Staging" version
-		log.infof("%s.projectUpdated: %s (%d)  %s",TAG,diff.getName(),diff.getId(),vers.toString());
+		//log.infof("%s.projectUpdated: %s (%d)  %s",TAG,diff.getName(),diff.getId(),vers.toString());
 		long projectId = diff.getId();
 		if( projectId<0 ) return;                   // Ignore global project
 		
@@ -620,10 +623,9 @@ public class ModelManager implements ProjectListener  {
 			List<ProjectResource> resources = diff.getResources();
 			Long pid = new Long(projectId);
 			for( ProjectResource res:resources ) {
-				//if( res.getResourceType().equals(BLTProperties.FOLDER_RESOURCE_TYPE)) continue;
 				log.infof("%s.projectUpdated: add/update resource %d.%d %s (%s) %s %s", TAG,projectId,res.getResourceId(),res.getName(),
 						res.getResourceType(),(diff.isResourceDirty(res)?"dirty":"clean"),(res.isLocked()?"locked":"unlocked"));
-				if(res.isLocked()) res.setLocked(false);
+				//if(res.isLocked()) res.setLocked(false);
 				analyzeResource(pid,res);
 				if( isBLTResource(res.getResourceType()) || res.getResourceType().equalsIgnoreCase("Window") ) countOfInteresting++;
 			}
@@ -724,12 +726,11 @@ public class ModelManager implements ProjectListener  {
 		}
 	}
 	/**
-	 * Add or update a diagram in the model from a ProjectResource.
-	 * There is a one-one correspondence 
+	 * Add or update a diagram in the model from a ProjectResource. The state of the 
+	 * disgram is as it was serialized. There is a one-one correspondence 
 	 * between a model-project and diagram.
 	 * @param projectId the identity of a project
 	 * @param res the project resource containing the diagram
-	 * @param disable if true, change the diagram state to disabled
 	 */
 	private void addModifyDiagramResource(long projectId,ProjectResource res) {
 		log.debugf("%s.addModifyDiagramResource: %s(%d)",TAG,res.getName(),res.getResourceId());
@@ -737,10 +738,10 @@ public class ModelManager implements ProjectListener  {
 
 		if( sd!=null ) {
 			ProcessDiagram diagram = (ProcessDiagram)nodesByUUID.get(sd.getId());
-			if( diagram==null) {
+			if( diagram==null) {   // this is usually run during gateway start up.
 				// Create a new diagram
 				if(DEBUG) log.infof("%s.addModifyDiagramResource: Creating diagram %s(%s) %s", TAG,res.getName(),
-										sd.getId().toString(),sd.getState().name());
+						sd.getId().toString(),sd.getState().name());
 				diagram = new ProcessDiagram(sd,res.getParentUuid(),projectId);
 				diagram.setResourceId(res.getResourceId());
 				diagram.setProjectId(projectId);
@@ -750,6 +751,7 @@ public class ModelManager implements ProjectListener  {
 				nodesByKey.put(key,diagram);
 				addToHierarchy(projectId,diagram);
 				diagram.createBlocks(sd.getBlocks());
+				
 				diagram.updateConnections(sd.getConnections());
 				if(!diagram.getState().equals(sd.getState()) ) {
 					diagram.setState(sd.getState()); 
@@ -802,17 +804,22 @@ public class ModelManager implements ProjectListener  {
 				// Execute "delete" extension function for removed blocks
 				List<ProcessBlock> deletedBlocks = diagram.removeUnusedBlocks(sd.getBlocks());
 				for(ProcessBlock deletedBlock:deletedBlocks) {
+					
+					
 					if( extensionManager.hasKey(deletedBlock.getClassName(),ScriptConstants.NODE_DELETE_SCRIPT)) {
+						GeneralPurposeDataContainer auxData = deletedBlock.getAuxiliaryData();
+//						log.infof("%s.addModifyDiagramResource.  Aux data lists %s    ************************#######################  EREIAM JH ####################",TAG,auxData.getLists());
+//						log.infof("%s.addModifyDiagramResource.  Aux data maplists %s    ************************#######################  EREIAM JH ####################",TAG,auxData.getMapLists());
+//						log.infof("%s.addModifyDiagramResource.  Aux data properties %s    ************************#######################  EREIAM JH ####################",TAG,auxData.getProperties());
 						extensionManager.runScript(context.getProjectManager().getProjectScriptManager(diagram.getProjectId()), 
 							deletedBlock.getClassName(), 
 							ScriptConstants.NODE_DELETE_SCRIPT, deletedBlock.getBlockId().toString());
-						// removed aux data because only blocks seem to work.  others are empty
-//						ScriptConstants.NODE_DELETE_SCRIPT, deletedBlock.getBlockId().toString(), deletedBlock.getAuxiliaryData());
+//							ScriptConstants.NODE_DELETE_SCRIPT, deletedBlock.getBlockId().toString(), auxData);
 					}
 				}
 				diagram.createBlocks(sd.getBlocks());       // Adds blocks that are new in update
 				diagram.updateConnections(sd.getConnections());  // Adds connections that are new in update
-				diagram.updateProperties(sd);
+				diagram.updateProperties(sd);                    // Fixes subscriptions, as necessary
 				diagram.setState(sd.getState());// Handle state change, if any
 			}
 			//	Invoke extension script on diagram save
@@ -836,7 +843,8 @@ public class ModelManager implements ProjectListener  {
 		else {
 			log.warnf("%s.addModifyDiagramResource - Failed to create diagram from resource (%s)",TAG,res.getName());
 		}
-	}
+	}	
+	
 	/**
 	 * Add or update an application in the model from a ProjectResource.
 	 * This is essentially just a tree node.
@@ -1003,7 +1011,7 @@ public class ModelManager implements ProjectListener  {
 	 * @param resourceId root of the resource tree to delete.
 	 */
 	public void deleteResource(long projectId,long resourceId) {
-		log.debugf("%s.deleteResource: %d:%d",TAG,projectId,resourceId);
+		log.infof("%s.deleteResource: %d:%d",TAG,projectId,resourceId);
 		ProjectResourceKey key = new ProjectResourceKey(projectId,resourceId);
 		ProcessNode head = nodesByKey.get(key);
 		if( head!=null ) {
@@ -1019,13 +1027,19 @@ public class ModelManager implements ProjectListener  {
 							controller.removeSubscription(block, prop);
 						}
 						// If this is a final diagnosis, call its delete extension
-						log.tracef("%s.deleteResource, entire diagram, block is a %s",TAG,block.getClassName());
+//						if( block.getClassName().equals("xom.block.finaldiagnosis.FinalDiagnosis")) {
+//						log.infof("%s.deleteResource, entire diagram, block is a %s    ************************#######################  EREIAM JH ####################",TAG,block.getClassName());
 						if( block.getClassName().contains("block.finaldiagnosis.FinalDiagnosis")) {
-							log.tracef("%s.deleteResource, entire diagram, block identified as finaldiagnosis.  Aux data is %s",TAG,block.getAuxiliaryData());
+//							log.infof("%s.deleteResource, entire diagram, block identified as finaldiagnosis.  Aux data is %s    ************************#######################  EREIAM JH ####################",TAG,block.getAuxiliaryData().toString());
+							String uuidStr = block.getBlockId().toString();
 							extensionManager.runScript(context.getProjectManager().getProjectScriptManager(node.getProjectId()), 
-								block.getClassName(), 
-								ScriptConstants.NODE_DELETE_SCRIPT, block.getBlockId().toString());
-//								ScriptConstants.NODE_DELETE_SCRIPT, block.getBlockId().toString(), block.getAuxiliaryData());
+								block.getClassName(), ScriptConstants.NODE_DELETE_SCRIPT, uuidStr); 
+//								block.getClassName(), ScriptConstants.NODE_DELETE_SCRIPT, uuidStr, block.getAuxiliaryData());
+						}
+						// If this is a source connection, delete its associated tag
+						else if(block.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK)) {
+							BlockProperty prop = block.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
+							log.infof("%s.deleteResource:Deleting aa sink",TAG,projectId,resourceId);
 						}
 					}
 				}
@@ -1046,9 +1060,16 @@ public class ModelManager implements ProjectListener  {
 				// Invoke the proper extension function on a delete
 				// NOTE: Need to use keys for class names
 				String classKey = ScriptConstants.DIAGRAM_CLASS_NAME;
-				if( node instanceof ProcessApplication ) classKey = ScriptConstants.APPLICATION_CLASS_NAME;
-				else if( node instanceof ProcessFamily ) classKey = ScriptConstants.FAMILY_CLASS_NAME;
+				if( node instanceof ProcessApplication ) 
+					classKey = ScriptConstants.APPLICATION_CLASS_NAME;
+				else if( node instanceof ProcessFamily ) 
+					classKey = ScriptConstants.FAMILY_CLASS_NAME;
 				
+//				log.infof("%s.deleteResource, node is a %s    ************************#######################  EREIAM JH ####################",TAG,node.getClass());
+				GeneralPurposeDataContainer auxData = node.getAuxiliaryData();
+//				log.infof("%s.deleteResource.  Aux data lists %s    ************************#######################  EREIAM JH ####################",TAG,auxData.getLists());
+//				log.infof("%s.deleteResource.  Aux data maplists %s    ************************#######################  EREIAM JH ####################",TAG,auxData.getMapLists());
+//				log.infof("%s.deleteResource.  Aux data properties %s    ************************#######################  EREIAM JH ####################",TAG,auxData.getProperties());
 				extensionManager.runScript(context.getProjectManager().getProjectScriptManager(node.getProjectId()), classKey,
 						ScriptConstants.NODE_DELETE_SCRIPT, node.getSelf().toString());
 //						ScriptConstants.NODE_DELETE_SCRIPT, node.getSelf().toString(), node.getAuxiliaryData());
@@ -1058,7 +1079,7 @@ public class ModelManager implements ProjectListener  {
 	
 	// Delete all process nodes for a given project.
 	private void deleteProjectResources(long projectId) {
-		log.debugf("%s.deleteProjectResources: proj = %d",TAG,projectId);
+		log.infof("%s.deleteProjectResources: proj = %d",TAG,projectId);
 		List<ProcessNode> nodes = root.allNodesForProject(projectId);
 		for(ProcessNode node:nodes) {
 			deleteResource(projectId,node.getResourceId());
@@ -1110,10 +1131,10 @@ public class ModelManager implements ProjectListener  {
 	 */ 
 	private SerializableDiagram deserializeDiagramResource(long projId,ProjectResource res) {
 		byte[] serializedObj = res.getData();
-		String json = new String(serializedObj);
-		log.debugf("%s.deserializeDiagramResource: json = %s",TAG,json);
 		SerializableDiagram sd = null;
 		try{
+			String json = new String(serializedObj);
+			log.debugf("%s.deserializeDiagramResource: json = %s",TAG,json);
 			ObjectMapper mapper = new ObjectMapper();
 			mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 			mapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL,true);

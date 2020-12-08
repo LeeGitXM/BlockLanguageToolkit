@@ -18,7 +18,7 @@ import java.util.UUID;
 public class FamilyUUIDResetHandler   {
 
 	private final SerializableFamily family;
-	private final Map<UUID,UUID> idLookup;      // Get new UUID from original
+	private final HashMap<UUID,UUID> idLookup;      // Get new UUID from original
 	/**
 	 * Initialize with instances of the classes to be controlled.
 	 * @param sf the serializable family
@@ -32,7 +32,7 @@ public class FamilyUUIDResetHandler   {
 	 * Do it.
 	 * @return true on success
 	 */
-	public boolean convertUUIDs() {
+	public boolean convertUUIDs(boolean goDeep) {
 		boolean success = true;
 		// First the root family
 		UUID original = family.getId();
@@ -42,12 +42,19 @@ public class FamilyUUIDResetHandler   {
 		// Now do the same for all diagrams
 		// - there are no parent references yet
 		// Now all the diagrams
-		for(SerializableDiagram diagram:family.getDiagrams()) {
-			UUIDResetHandler rhandler = new UUIDResetHandler(diagram);
-			rhandler.convertUUIDs();
+		if (goDeep) {
+			for(SerializableDiagram diagram:family.getDiagrams()) {
+				UUIDResetHandler rhandler = new UUIDResetHandler(diagram);
+				rhandler.convertUUIDs();
+				idLookup.putAll(rhandler.getBlockLookup());  // add the new blocks to the conversion table
+			}
 		}
 		
 		return success;
+	}
+
+	public HashMap<UUID,UUID> getIdLookup() {
+		return idLookup;
 	}
 	
 }

@@ -2,10 +2,10 @@
 
 	<import file="${basedir}/BLT_Build/build.xml"/>
 
-	<property name="version.build" value="0" />	
+	<property name="version.build" value="1" />	
 	<!-- Change version.beta value to "" for release builds -->
 	<property name="version.beta" value="-development" />		
-	<property name="BLTModule.version" value="1.6.30.${version.build}" />
+	<property name="BLTModule.version" value="1.1.0.${version.build}" />
 	<property name="BLTModule.name" value="BLT" />
 	<property name="BLTModule.release" value="0.5" />
 	<property name="BLTModule.description" value="Block Language Toolkit" />
@@ -18,8 +18,11 @@
 	<property name="block.jar.name" value="block-definition.jar" />
 	<property name="block.bin.dir" value="${root.dir}/blt/workspace/Block/bin" />
 	<property name="block.src.dir" value="${root.dir}/blt/workspace/Block/src" />
-	<property name="ils.python.src.dir" value="${root.dir}/ils-python/ILS_Python/src" />
-	<property name="xom.python.src.dir" value="${root.dir}/xom-python/XOM_Python/src" />
+	<property name="ils.python.src.dir" value="${root.dir}/ils_python/ILS_Python/src" />
+	
+<!--   THE NEXT LINE IS ONLY NEEDED FOR XOM SAMPLES AND TESTING - CONSIDER HAVING A FLAG TO DISABLE COPY -->	
+<!--	<property name="xom.python.src.dir" value="${root.dir}/xom-python/XOM_Python/src" />  -->
+	
 	<property name="ant.build.javac.source" value="1.8"/>
 	<property name="ant.build.javac.target" value="1.8"/>
 		

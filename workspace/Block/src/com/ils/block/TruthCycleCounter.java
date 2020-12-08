@@ -107,6 +107,7 @@ public class TruthCycleCounter extends AbstractProcessBlock implements ProcessBl
 		// Define an input
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.TRUTHVALUE);
 		input.setHint(PlacementHint.L);
+		input.setIsMultiple(false);
 		anchors.add(input);
 
 		// Define a single output
@@ -179,7 +180,7 @@ public class TruthCycleCounter extends AbstractProcessBlock implements ProcessBl
 		prototype.setPaletteIconPath("Block/icons/palette/PMIDigitalDisplay32.png");
 		prototype.setPaletteLabel("TruthCounter");
 		prototype.setTooltipText("Count the number of times that the trigger value has arrived");
-		prototype.setTabName(BlockConstants.PALETTE_TAB_OBSERVATION);
+		prototype.setTabName(BlockConstants.PALETTE_TAB_TIMERS_COUNTERS);
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setBlockClass(getClass().getCanonicalName());

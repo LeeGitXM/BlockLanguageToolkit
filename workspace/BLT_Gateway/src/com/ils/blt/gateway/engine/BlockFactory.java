@@ -154,10 +154,12 @@ public class BlockFactory  {
 							valueChange=true;
 						}
 					}
+					property.setDisplayed(bp.isDisplayed());
+					property.setShowProperty(bp.isShowProperty());
+					property.setDisplayedBlockUUID(bp.getDisplayedBlockUUID());
 					property.setEditable(bp.isEditable());
 					property.setBinding(bp.getBinding());
 					property.setBindingType(bp.getBindingType());
-					property.setDisplayed(bp.isDisplayed());
 					property.setDisplayOffsetX(bp.getDisplayOffsetX());
 					property.setDisplayOffsetY(bp.getDisplayOffsetY());
 					

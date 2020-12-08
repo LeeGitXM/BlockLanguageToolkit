@@ -18,7 +18,7 @@ Tagset: LimitInput
 10:00:30 8.5
 10:00:40 Assert: limit = False "2 of 5 under limit"
 10:01:00 9.175
-10:01:00 Assert: getState($DIAGRAM,$H2) = FALSE "Test state directly"
-10:02:00 Assert:  getInternalAttribute($DIAGRAM,$H2,"State") = FALSE  "Test internal attribute 'state'"
-10:02:30 Assert:  getInternalBufferSize($DIAGRAM,$H2) > 1 "Test internal buffer size"
-10:02:30 Assert:  getInternalBufferValue($DIAGRAM,$H2,"Value",0) = "0"  "Test internal buffer value"
+10:01:10 Assert: getState($DIAGRAM,$H2) = FALSE "Test state directly"
+10:01:20 Assert:  getInternalAttribute($DIAGRAM,$H2,"State") = FALSE  "Test internal attribute 'state'"
+10:01:30 Assert:  getInternalBufferSize($DIAGRAM,$H2) > 1 "Test internal buffer size"
+10:01:40 Assert:  getInternalBufferValue($DIAGRAM,$H2,"Value",0) = "0"  "Test internal buffer value"

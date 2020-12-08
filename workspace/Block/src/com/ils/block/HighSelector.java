@@ -83,6 +83,7 @@ public class HighSelector extends AbstractProcessBlock implements ProcessBlock {
 
 		// We allow multiple connections on the input
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
+		input.setIsMultiple(true);
 		anchors.add(input);
 		
 		// Define a single output
@@ -100,7 +101,7 @@ public class HighSelector extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void start() {
 		super.start();
-		reconcileQualifiedValueMap(BlockConstants.IN_PORT_NAME,qualifiedValueMap,BLTProperties.UNDEFINED);
+		reconcileQualifiedValueMap(BlockConstants.IN_PORT_NAME,qualifiedValueMap,Double.NaN);
 		log.debugf("%s.start: initialized %d inputs",getName(),qualifiedValueMap.size());
 	}
 	/**
@@ -194,7 +195,6 @@ public class HighSelector extends AbstractProcessBlock implements ProcessBlock {
 		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,qv);
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
-
 	/**
 	 * @return a block-specific description of internal statue
 	 */
@@ -203,15 +203,25 @@ public class HighSelector extends AbstractProcessBlock implements ProcessBlock {
 		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
 		Map<String,String> attributes = descriptor.getAttributes();
 		attributes.put("CurrentMaximum", valueProperty.getValue().toString());
+		for(String key:qualifiedValueMap.keySet()) {
+			QualifiedValue qv = (QualifiedValue)qualifiedValueMap.get(key);
+			if( qv!=null && qv.getValue()!=null) {
+				attributes.put(key, String.valueOf(qv.getValue()));
+			}
+			else {
+				attributes.put(key,"NULL"); 
+			}
+		}
 		return descriptor;
 	}
+
 	/**
 	 * On a save, make sure that our map of connections is proper. 
 	 * We are only concerned with the in port as it allows multiple connections
 	 */
 	@Override
 	public void validateConnections() {
-		reconcileQualifiedValueMap(BlockConstants.IN_PORT_NAME,qualifiedValueMap,BLTProperties.UNDEFINED);
+		reconcileQualifiedValueMap(BlockConstants.IN_PORT_NAME,qualifiedValueMap,Double.NaN);
 	}
 	
 	/**
@@ -221,7 +231,7 @@ public class HighSelector extends AbstractProcessBlock implements ProcessBlock {
 		prototype.setPaletteIconPath("Block/icons/palette/max.png");
 		prototype.setPaletteLabel("HighSelector");
 		prototype.setTooltipText("Determine the maximum value among inputs");
-		prototype.setTabName(BlockConstants.PALETTE_TAB_ANALYSIS);
+		prototype.setTabName(BlockConstants.PALETTE_TAB_STATISTICS);
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setEmbeddedIcon("Block/icons/embedded/max.png");
@@ -241,7 +251,7 @@ public class HighSelector extends AbstractProcessBlock implements ProcessBlock {
 		QualifiedValue result = null;
 		
 		for(QualifiedValue qv:values) {
-			if(qv.getQuality().isGood() && qv.getValue()!=null && !qv.getValue().toString().isEmpty() && !qv.getValue().equals(BLTProperties.UNDEFINED)) {
+			if(qv.getQuality().isGood() && qv.getValue()!=null && !qv.getValue().toString().isEmpty() && !qv.getValue().equals(Double.NaN)) {
 				double val = fcns.coerceToDouble(qv.getValue().toString());
 				if(val>max ) {
 					max = val;

@@ -4,25 +4,25 @@
 Test: Simple Test of a Final Diagnosis
 
 DIAGRAM="app75/family75/finaldiagnosis"
-FINAL_DIAGNOSIS="FDbbbb"
+FINAL_DIAGNOSIS="FD"
+tag: ActionOut      MemoryTags/ActionOut
 
 Show: diagram $DIAGRAM
 
 notification: HiLimitOutput notificationKey.construct($DIAGRAM,"HIGHLIMITOBSERVATION-867","out")
 
 # Define data written to tags in the order: Value Target StdDev MLRGrdFlag SeriesRxGrd CRxGrd PolyPropFmFD
-Tagset: input-tags Tags/T1_PV
-Tagset: input-tags
+Tagset: input-tags MemoryTags/MJKFeed1
 
-Step: Test Low value
-log: [DATE] [TIME] set input less than high limit
+Step: Test Input Less Than High Limit
+#log: [DATE] [TIME] set input less than high limit
 # affirm input at initial values
 09:50:00 4.2
-09:50:30 Assert: HiLimitOutput = FALSE "Hi Limit expecting false - input value of 4.2 entered"
 09:50:30 Assert: getState($DIAGRAM,$FINAL_DIAGNOSIS) = FALSE "state = False"
+09:50:30 Assert: HiLimitOutput = FALSE "Hi Limit expecting false - input value of 4.2 entered"
 
-Step: Test High Value
-log: []DATE] ][TIME] set input greater than high limit
+Step: Test Input Greater Than High Limit
+#log: []DATE] ][TIME] set input greater than high limit
 09:51:00  8.8
 09:51:30 Assert: HiLimitOutput = TRUE "Hi limit expecting true - input value of 8.8 entered"
 

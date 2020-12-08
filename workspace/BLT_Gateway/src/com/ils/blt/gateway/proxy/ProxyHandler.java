@@ -140,7 +140,8 @@ public class ProxyHandler   {
 		}
 	}
 
-	public ProxyBlock createBlockInstance(String className,UUID parentId,UUID blockId,long projectId) {
+	public ProxyBlock createBlockInstance(String classNm,UUID parentId,UUID blockId,long projectId) {
+		String className = removeXomFromClassName(classNm);  // EREIAM JH - temporary fix for existing XOM projects.
 		ProxyBlock block = new ProxyBlock(context,className,parentId,blockId);
 		log.debugf("%s.createBlockInstance --- python proxy for %s, project %d",TAG,className,projectId); 
 		if( createBlockCallback.compileScript() ) {
@@ -176,6 +177,14 @@ public class ProxyHandler   {
 		return block;
 	}
 	
+	private String removeXomFromClassName(String classNm) {
+		String ret = classNm;
+		if (classNm.toLowerCase().startsWith("xom.block.")) {
+			ret = "ils" + classNm.substring(3);
+		}
+		return ret;
+	}
+
 	/**
 	 * Tell the block to do whatever it is supposed to do. The block is the only
 	 * argument passed.
@@ -224,7 +233,7 @@ public class ProxyHandler   {
 						if( obj instanceof Map ) {
 							@SuppressWarnings("unchecked")
 							Map<String,?> tbl = (Map<String,?>)obj;
-							log.debug(TAG+".getBlockProperties property = "+ tbl);  
+							log.debugf(TAG+".getBlockProperties property = "+ tbl);  
 							BlockProperty prop = new BlockProperty();
 							prop.setName(nullCheck(tbl.get(BLTProperties.BLOCK_ATTRIBUTE_NAME),"unnamed"));
 							prop.setBinding(nullCheck(tbl.get(BLTProperties.BLOCK_ATTRIBUTE_BINDING),""));
@@ -353,13 +362,15 @@ public class ProxyHandler   {
 						// as well as the PalettePrototype
 						BlockDescriptor desc = proto.getBlockDescriptor();
 						val = tbl.get(BLTProperties.PALETTE_AUX_DATA);
-						if( val!=null ) desc.setExternallyAugmented(fns.coerceToBoolean(val.toString()));
-						val = tbl.get(BLTProperties.PALETTE_RECEIVE_ENABLED);
-						if( val!=null ) desc.setReceiveEnabled(fns.coerceToBoolean(val.toString()));
-						val = tbl.get(BLTProperties.PALETTE_TRANSMIT_ENABLED);
-						if( val!=null ) desc.setTransmitEnabled(fns.coerceToBoolean(val.toString()));
+						if( val!=null ) 
+							desc.setExternallyAugmented(fns.coerceToBoolean(val.toString()));
+//						val = tbl.get(BLTProperties.PALETTE_RECEIVE_ENABLED);
+//						if( val!=null ) desc.setReceiveEnabled(fns.coerceToBoolean(val.toString()));
+//						val = tbl.get(BLTProperties.PALETTE_TRANSMIT_ENABLED);
+//						if( val!=null ) desc.setTransmitEnabled(fns.coerceToBoolean(val.toString()));
 						val = tbl.get(BLTProperties.PALETTE_VIEW_LABEL);
-						if( val!=null ) desc.setEmbeddedLabel(val.toString());
+						if( val!=null ) 
+							desc.setEmbeddedLabel(val.toString());
 						val = tbl.get(BLTProperties.PALETTE_VIEW_BACKGROUND);
 						if( val!=null ) {
 							int background = 0xffffff; // White
@@ -372,18 +383,24 @@ public class ProxyHandler   {
 							desc.setBackground(background);
 						}
 						val = tbl.get(BLTProperties.PALETTE_VIEW_ICON);
-						if( val!=null ) desc.setEmbeddedIcon(val.toString());
+						if( val!=null ) 
+							desc.setEmbeddedIcon(val.toString());
 						val = tbl.get(BLTProperties.PALETTE_VIEW_BLOCK_ICON);
-						if( val!=null ) desc.setIconPath(val.toString());
+						if( val!=null ) 
+							desc.setIconPath(val.toString());
 						val = tbl.get(BLTProperties.PALETTE_VIEW_FONT_SIZE);
-						if( val!=null ) desc.setEmbeddedFontSize(fns.coerceToInteger(val));
+						if( val!=null ) 
+							desc.setEmbeddedFontSize(fns.coerceToInteger(val));
 						val = tbl.get(BLTProperties.PALETTE_VIEW_HEIGHT);
-						if( val!=null ) desc.setPreferredHeight(fns.coerceToInteger(val));
+						if( val!=null ) 
+							desc.setPreferredHeight(fns.coerceToInteger(val));
 						val = tbl.get(BLTProperties.PALETTE_VIEW_WIDTH);
-						if( val!=null ) desc.setPreferredWidth(fns.coerceToInteger(val));
+						if( val!=null ) 
+							desc.setPreferredWidth(fns.coerceToInteger(val));
 						desc.setBlockClass(nullCheck(tbl.get(BLTProperties.PALETTE_BLOCK_CLASS),"project.block.BasicBlock.BasicBlock"));
 						val = tbl.get(BLTProperties.PALETTE_EDITOR_CLASS);
-						if( val!=null ) desc.setEditorClass(val.toString());
+						if( val!=null ) 
+							desc.setEditorClass(val.toString());
 						val = tbl.get(BLTProperties.PALETTE_BLOCK_STYLE);
 						if( val!=null) {
 							try {
@@ -398,9 +415,11 @@ public class ProxyHandler   {
 						}
 						// Now handle the anchors
 						val = tbl.get(BLTProperties.PALETTE_ANCHOR_IN);
-						if( val!=null ) addAnchorsToDescriptor(desc,val,AnchorDirection.INCOMING);
+						if( val!=null ) 
+							addAnchorsToDescriptor(desc,val,AnchorDirection.INCOMING);
 						val = tbl.get(BLTProperties.PALETTE_ANCHOR_OUT);
-						if( val!=null ) addAnchorsToDescriptor(desc,val,AnchorDirection.OUTGOING);
+						if( val!=null ) 
+							addAnchorsToDescriptor(desc,val,AnchorDirection.OUTGOING);
 						prototypes.add(proto); 
 					}
 				}
@@ -410,7 +429,7 @@ public class ProxyHandler   {
 			}
 		}
 		else {
-			log.infof("%s: getPalettePrototypes: script compilation error (%s)",TAG,getBlockPropertiesCallback.module);
+			log.warnf("%s: getPalettePrototypes: script compilation error (%s)",TAG,getBlockPropertiesCallback.module);
 		}
 		log.infof("%s: getPalettePrototypes returning %d protos from Python",TAG,prototypes.size()); 
 		return prototypes;
@@ -516,12 +535,16 @@ public class ProxyHandler   {
 					Map tbl = (Map<String,?>)t;
 					Object name = tbl.get("name");
 					Object type = tbl.get("type");
+					Object multiple = tbl.get("allowMultiple");
 					if( name!=null && type!=null ) {
 						try {
 							AnchorPrototype ap = new AnchorPrototype();
 							ap.setName(name.toString());
 							ap.setConnectionType(ConnectionType.valueOf(type.toString().toUpperCase()));
 							ap.setAnchorDirection(direction);
+							if( multiple!=null && multiple.toString().equalsIgnoreCase("false")) {
+								ap.setIsMultiple(false);
+							}
 							bd.addAnchor(ap);
 						}
 						catch(IllegalArgumentException iae) {

@@ -93,6 +93,7 @@ public class LowValuePattern extends AbstractProcessBlock implements ProcessBloc
 		// Define an input
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
 		input.setHint(PlacementHint.L);
+		input.setIsMultiple(false);
 		anchors.add(input);
 
 		// Define a single output
@@ -210,7 +211,7 @@ public class LowValuePattern extends AbstractProcessBlock implements ProcessBloc
 		prototype.setPaletteIconPath("Block/icons/palette/low_pattern.png");
 		prototype.setPaletteLabel("LowValPattern");
 		prototype.setTooltipText("Return TRUE if TriggerCount values are below the threshold");
-		prototype.setTabName(BlockConstants.PALETTE_TAB_ANALYSIS);
+		prototype.setTabName(BlockConstants.PALETTE_TAB_OBSERVATION);
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setBlockClass(getClass().getCanonicalName());

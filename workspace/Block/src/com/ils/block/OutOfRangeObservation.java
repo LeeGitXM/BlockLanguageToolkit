@@ -81,6 +81,7 @@ public class OutOfRangeObservation extends AbstractProcessBlock implements Proce
 		
 		// Define a single input
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
+		input.setIsMultiple(false);
 		anchors.add(input);
 		
 		// Define a single output
@@ -101,9 +102,15 @@ public class OutOfRangeObservation extends AbstractProcessBlock implements Proce
 		try {
 			double dbl = Double.parseDouble(val);
 			TruthValue newValue = state;
-			if( dbl <= upperlimit - upperdeadband && dbl >= lowerlimit+lowerdeadband  ) newValue = TruthValue.FALSE;
-			if( dbl > upperlimit || dbl < lowerlimit ) newValue = TruthValue.TRUE;
-			if( !observation.getQuality().isGood()) newValue = TruthValue.UNKNOWN;
+			if( dbl <= upperlimit - upperdeadband && dbl >= lowerlimit+lowerdeadband  ) {
+				newValue = TruthValue.FALSE;
+			}
+			if( dbl > upperlimit || dbl < lowerlimit ) {
+				newValue = TruthValue.TRUE;
+			}
+			if( !observation.getQuality().isGood()) {
+				newValue = TruthValue.UNKNOWN;
+			}
 			if( !newValue.equals(state)) {
 				setState(newValue);
 				lastValue = new BasicQualifiedValue(state,observation.getQuality(),observation.getTimestamp());
@@ -201,6 +208,7 @@ public class OutOfRangeObservation extends AbstractProcessBlock implements Proce
 		prototype.setPaletteLabel("OutOfRange");
 		prototype.setTooltipText("Test incoming value against configured high and low limits and deadbands");
 		prototype.setTabName(BlockConstants.PALETTE_TAB_OBSERVATION);
+		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setBlockClass(getClass().getCanonicalName());
 		desc.setEmbeddedIcon("Block/icons/embedded/out_of_range_limit.png");

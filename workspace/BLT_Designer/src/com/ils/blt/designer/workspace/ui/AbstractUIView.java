@@ -140,9 +140,6 @@ public abstract class AbstractUIView extends JComponent
 		for(ProcessAnchorDescriptor desc:anchs) {
 			
 			
-			log.tracef("EREIAM JH - initAnchorPoints counts(tblr)" + desc.getAnnotation() + " " + desc.getSortOrder() + " " + desc.getConnectionType().name());
-			
-			
 			if( desc.isHidden()) hiddenIndex = index;
 			PlacementHint hint = desc.getHint();
 			if(hint==null) hint = PlacementHint.UNSPECIFIED;
@@ -208,14 +205,14 @@ public abstract class AbstractUIView extends JComponent
 				topIndex++;
 				if(topCount==1) {
 					if(desc.getType().equals(AnchorType.Terminus)) topIndex=1;
-					else topIndex=3;
+					else topIndex=2;
 				}
-				else if(topCount==2 && topIndex==2) topIndex++;
+//				else if(topCount==2 && topIndex==2) topIndex++;
 				BasicAnchorPoint ap = new BasicAnchorPoint(desc.getDisplay(),block,AnchorType.Terminus,
 						desc.getConnectionType(),
 						new Point(inset+(topIndex*interiorWidth)/topSegments,0),
 						new Point(inset+(topIndex*interiorWidth)/topSegments,-SIGNAL_LEADER_LENGTH),
-						new Rectangle((topIndex*interiorWidth)/topSegments,0,2*inset,2*inset),
+						new Rectangle((topIndex*interiorWidth)/topSegments,0,(int)(1.5*inset),(int)(1.5*inset)),
 						desc.isMultiple(),
 						desc.getAnnotation()); 
 				ap.setSide(AnchorSide.TOP);
@@ -293,9 +290,9 @@ public abstract class AbstractUIView extends JComponent
 				}
 				BasicAnchorPoint ap = new BasicAnchorPoint(desc.getDisplay(),block,AnchorType.Origin,
 						desc.getConnectionType(),
-						new Point(sz.width,inset+useIndex*interiorHeight/rightSegments-1),
-						new Point(sz.width+LEADER_LENGTH,inset+useIndex*interiorHeight/rightSegments-1),
-						new Rectangle(sz.width-2*inset,useIndex*interiorHeight/rightSegments,2*inset,2*inset-1),
+						new Point(sz.width,inset+useIndex*interiorHeight/rightSegments),
+						new Point(sz.width+LEADER_LENGTH,inset+useIndex*interiorHeight/rightSegments),
+						new Rectangle(sz.width-2*inset,useIndex*interiorHeight/rightSegments,2*inset,2*inset),
 						desc.isMultiple(),
 						desc.getAnnotation());
 				getAnchorPoints().add(ap);
@@ -347,7 +344,9 @@ public abstract class AbstractUIView extends JComponent
 		hiddenIndex = -1;     // Unless set, nothing is hidden
 		// Create counts for each side. There are both defaults and placement hints.
 		for(ProcessAnchorDescriptor desc:block.getAnchors()) {
-			if( desc.isHidden()) hiddenIndex = index;
+			if( desc.isHidden()) {
+				hiddenIndex = index;
+			}
 			index++;
 		}
 		log.debugf("%s.stateChanged %s ...hidden = %d",TAG,getBlock().getName(),hiddenIndex);
@@ -366,6 +365,9 @@ public abstract class AbstractUIView extends JComponent
 		g.translate(xoffset,yoffset);
 		// Loop through the anchor points and draw squares for ports
 		// We assume that the anchor points are in the same order as the anchor descriptions
+		//*** *assume*   AND THERE'S THE RUB.  They aren't coming back in the same order, so see below.
+		//**   So, for now assume that if anything is marked hidden, it's the signal connection
+		//     If you want to make this more robust ass ordering or a unique ID of some sort.
 		int index = 0;
 		for( AnchorPoint ap:anchorPoints) {
 			BasicAnchorPoint bap = (BasicAnchorPoint)ap;
@@ -374,9 +376,16 @@ public abstract class AbstractUIView extends JComponent
 			int anchorLength= INSET+BORDER_WIDTH;       // Draw edge to the boundary
 			Point loc = bap.getAnchor();                // Center of the anchor point
 			// Paint the rectangle
-			if( bap.getConnectionType()==ConnectionType.DATA) g.setColor(getBackground());
-			else if( index==hiddenIndex)                      g.setColor(getBackground());
-			else     g.setColor(fillColorForConnectionType(bap.getConnectionType()));
+			if( bap.getConnectionType()==ConnectionType.DATA) {
+				g.setColor(getBackground());
+//			} else if( index==hiddenIndex) {
+				// OK, this seems really bad, but since the only connection capable of being hidden
+				// is the signal connection, we can assume we should hide it.
+			} else if( hiddenIndex >= 0 && bap.getConnectionType()==ConnectionType.SIGNAL) {
+				g.setColor(getBackground());
+			} else {
+				g.setColor(fillColorForConnectionType(bap.getConnectionType()));
+			}
 			//log.infof("%s.drawAnchors index %d (hide %d)",TAG,index,hiddenIndex);
 			int x = 0;
 			int y = 0;
@@ -407,6 +416,8 @@ public abstract class AbstractUIView extends JComponent
 					g.drawLine(x,y+1, x+anchorLength+1, y+1);     
 					g.drawLine(x,y+anchorWidth, x+anchorLength, y+anchorWidth);
 				}
+			} else {
+				
 			}
 			
 			// Finally draw the annotation, if defined
@@ -454,19 +465,19 @@ public abstract class AbstractUIView extends JComponent
 	protected void drawBadges(Graphics2D g) {
 		Dimension sz = getPreferredSize();
 
-		// Receive
-		if(block.isReceiveEnabled()) {
-			// x,y,width,height
-			Rectangle bounds = new Rectangle((sz.width-2*INSET)/4-INSET,0,BADGE_WIDTH,BADGE_HEIGHT);
-			String path = "Block/icons/badges/receiver.png";
-			paintBadge(g,path,bounds);
-		}
-		// Transmit
-		if(block.isTransmitEnabled()) {
-			Rectangle bounds = new Rectangle(3*(sz.width-2*INSET)/4,0,BADGE_WIDTH,BADGE_HEIGHT);
-			String path = "Block/icons/badges/transmitter.png";
-			paintBadge(g,path,bounds);
-		}
+//		// Receive
+//		if(block.isReceiveEnabled()) {
+//			// x,y,width,height
+//			Rectangle bounds = new Rectangle((sz.width-2*INSET)/4-INSET,0,BADGE_WIDTH,BADGE_HEIGHT);
+//			String path = "Block/icons/badges/receiver.png";
+//			paintBadge(g,path,bounds);
+//		}
+//		// Transmit
+//		if(block.isTransmitEnabled()) {
+//			Rectangle bounds = new Rectangle(3*(sz.width-2*INSET)/4,0,BADGE_WIDTH,BADGE_HEIGHT);
+//			String path = "Block/icons/badges/transmitter.png";
+//			paintBadge(g,path,bounds);
+//		}
 		// Locked
 		if(block.isLocked()) {
 			Rectangle bounds = new Rectangle(3*(sz.width-2*INSET)/4,3*(sz.height-2*INSET)/4,BADGE_WIDTH,BADGE_HEIGHT);

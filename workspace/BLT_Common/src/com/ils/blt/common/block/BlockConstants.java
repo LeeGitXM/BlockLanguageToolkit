@@ -1,5 +1,5 @@
 /**
- *   (c) 2013-2017  ILS Automation. All rights reserved.
+ *   (c) 2013-2020  ILS Automation. All rights reserved.
  */
 package com.ils.blt.common.block;
 
@@ -25,42 +25,45 @@ public interface BlockConstants   {
 	public static final String SIGNAL_PORT_NAME    = "signal";   // Signal (every block has one)
 		
 	// These are block property names that used in multiple block definitions
-	public static final String BLOCK_PROPERTY_ACTIVITY_BUFFER_SIZE = "ActivityBufferSize";
-	public static final String BLOCK_PROPERTY_CLEAR_ON_RESET = "ClearOnReset";
-	public static final String BLOCK_PROPERTY_COMMAND       = "Command";
-	public static final String BLOCK_PROPERTY_DEADBAND      = "Deadband";
-	public static final String BLOCK_PROPERTY_DISTRIBUTION  = "Distribution";
-	public static final String BLOCK_PROPERTY_EXPIRATION_TIME = "ExpirationTime";  // System time ~ msecs
-	public static final String BLOCK_PROPERTY_FILL_REQUIRED = "FillRequired";
-	public static final String BLOCK_PROPERTY_FORMAT        = "Format";
-	public static final String BLOCK_PROPERTY_HEIGHT        = "Height";
-	public static final String BLOCK_PROPERTY_HYSTERESIS    = "Hysteresis";
-	public static final String BLOCK_PROPERTY_HOLD_INTERVAL = "HoldInterval";
-	public static final String BLOCK_PROPERTY_INHIBIT_INTERVAL = "InhibitInterval";  // Inhibit period ~ sec
-	public static final String BLOCK_PROPERTY_INITIAL_VALUE = "InitialValue";
-	public static final String BLOCK_PROPERTY_INSTANCE      = "Instance"; 
-	public static final String BLOCK_PROPERTY_INTERVAL      = "Interval";
-	public static final String BLOCK_PROPERTY_LABEL         = "Label";
-	public static final String BLOCK_PROPERTY_LIMIT         = "Limit";
-	public static final String BLOCK_PROPERTY_LIMIT_TYPE    = "LimitType";
-	public static final String BLOCK_PROPERTY_MEAN          = "Mean";
-	public static final String BLOCK_PROPERTY_OFFSET        = "Offset";
-	public static final String BLOCK_PROPERTY_PROPERTY      = "Property";            // Property name
-	public static final String BLOCK_PROPERTY_SAMPLE_SIZE   = "SampleSize";
-	public static final String BLOCK_PROPERTY_SCOPE         = "Scope";	
-	public static final String BLOCK_PROPERTY_SCAN_INTERVAL    = "ScanInterval";     // Compute interval ~ sec
-	public static final String BLOCK_PROPERTY_SCALE_FACTOR     = "ScaleFactor";	
-	public static final String BLOCK_PROPERTY_STANDARD_DEVIATION = "StandardDeviation";
-	public static final String BLOCK_PROPERTY_NAME_VALUES     = "Name:Values";     // List of name:value pairs
-	public static final String BLOCK_PROPERTY_SYNC_INTERVAL    = "SyncInterval";     // Time to coalesce inputs ~ sec
-	public static final String BLOCK_PROPERTY_TAG_PATH         = "TagPath";
-	public static final String BLOCK_PROPERTY_TEXT             = "Text";
-	public final static String BLOCK_PROPERTY_THRESHOLD    	   = "Threshold";
-	public static final String BLOCK_PROPERTY_TIME_WINDOW      = "TimeWindow";
-	public static final String BLOCK_PROPERTY_TRIGGER          = "Trigger";
-	public static final String BLOCK_PROPERTY_TRIGGER_COUNT    = "TriggerCount";
-	public static final String BLOCK_PROPERTY_VALUE = "Value";                       // Current value
-	public static final String BLOCK_PROPERTY_WIDTH = "Width";
+	public static final String BLOCK_PROPERTY_ACTIVITY_BUFFER_SIZE 	= "ActivityBufferSize";
+	public static final String BLOCK_PROPERTY_BACKGROUND_COLOR     	= "BackgoundColor";
+	public static final String BLOCK_PROPERTY_CLEAR_ON_RESET       	= "ClearOnReset";
+	public static final String BLOCK_PROPERTY_COMMAND              	= "Command";
+	public static final String BLOCK_PROPERTY_DEADBAND             	= "Deadband";
+	public static final String BLOCK_PROPERTY_DISTRIBUTION  		= "Distribution";
+	public static final String BLOCK_PROPERTY_EXPIRATION_TIME 		= "ExpirationTime";  // System time ~ msecs
+	public static final String BLOCK_PROPERTY_FILL_REQUIRED 		= "FillRequired";
+	public static final String BLOCK_PROPERTY_FORMAT        		= "Format";
+	public static final String BLOCK_PROPERTY_HEIGHT        		= "Height";
+	public static final String BLOCK_PROPERTY_PREFIX        		= "Prefix";
+	public static final String BLOCK_PROPERTY_SUFFIX        		= "Suffix";
+	public static final String BLOCK_PROPERTY_HYSTERESIS    		= "Hysteresis";
+	public static final String BLOCK_PROPERTY_INHIBIT_INTERVAL 		= "InhibitInterval";  // Inhibit period ~ sec
+	public static final String BLOCK_PROPERTY_INITIAL_VALUE 		= "InitialValue";
+	public static final String BLOCK_PROPERTY_INSTANCE      		= "Instance"; 
+	public static final String BLOCK_PROPERTY_INTERVAL      		= "Interval";
+	public static final String BLOCK_PROPERTY_LABEL         		= "Label";
+	public static final String BLOCK_PROPERTY_LIMIT         		= "Limit";
+	public static final String BLOCK_PROPERTY_LIMIT_TYPE    		= "LimitType";
+	public static final String BLOCK_PROPERTY_MEAN          		= "Mean";
+	public static final String BLOCK_PROPERTY_OFFSET        		= "Offset";
+	public static final String BLOCK_PROPERTY_PROPERTY      		= "Property";            // Property name
+	public static final String BLOCK_PROPERTY_SAMPLE_SIZE   		= "SampleSize";
+	public static final String BLOCK_PROPERTY_SCOPE         		= "Scope";	
+	public static final String BLOCK_PROPERTY_SCAN_INTERVAL    		= "ScanInterval";     // Compute interval ~ sec
+	public static final String BLOCK_PROPERTY_SCALE_FACTOR     		= "ScaleFactor";	
+	public static final String BLOCK_PROPERTY_STANDARD_DEVIATION 	= "StandardDeviation";
+	public static final String BLOCK_PROPERTY_STATISTICS_FUNCTION 	= "Function";
+	public static final String BLOCK_PROPERTY_NAME_VALUES     		= "Name:Values";     // List of name:value pairs
+	public static final String BLOCK_PROPERTY_SYNC_INTERVAL    		= "SyncInterval";     // Time to coalesce inputs ~ sec
+	public static final String BLOCK_PROPERTY_TAG_PATH         		= "TagPath";
+	public static final String BLOCK_PROPERTY_TEXT             		= "Text";
+	public final static String BLOCK_PROPERTY_THRESHOLD    	   		= "Threshold";
+	public static final String BLOCK_PROPERTY_TIME_WINDOW      		= "TimeWindow";   // time window in minutes
+	public static final String BLOCK_PROPERTY_TRIGGER          		= "Trigger";
+	public static final String BLOCK_PROPERTY_TRIGGER_COUNT    		= "TriggerCount";
+	public static final String BLOCK_PROPERTY_VALUE 				= "Value";                       // Current value
+	public static final String BLOCK_PROPERTY_WIDTH 				= "Width";
 	
 	
 	// These are valid block data types
@@ -72,22 +75,34 @@ public interface BlockConstants   {
 	public static final String PORT_NAME                = "name";
 	public static final String PORT_TYPE                = "type";   // datatype for a port
 	
+	// These are block classes with special Handling
+	public static final String BLOCK_CLASS_INPUT     	= "com.ils.block.Input"; 
+	public static final String BLOCK_CLASS_OUTPUT     	= "com.ils.block.Output"; 
+	public static final String BLOCK_CLASS_SINK     	= "com.ils.block.SinkConnection"; 
+	public static final String BLOCK_CLASS_SOURCE     	= "com.ils.block.SourceConnection"; 
+	
+	// Special folder to contain binding tags for Source/Sink blocks
+	public static final String SOURCE_SINK_TAG_FOLDER                  = "DiagnosticToolkit/Connections"; 
+	
 	// These are standard connection property names
 	public static final String CONNECTION_PROPERTY_DOWNSTREAM_PORT     = "downstream"; 
 	public static final String CONNECTION_PROPERTY_QUALITY             = "quality";
 	public static final String CONNECTION_PROPERTY_UPSTREAM_PORT       = "upstream"; 
 	public static final String CONNECTION_PROPERTY_VALUE               = "value"; 
+
 	
 	// These are standard palette tab names
 	public static final String PALETTE_TAB_ARITHMETIC         = "Arithmetic";
 	public static final String PALETTE_TAB_ANALYSIS           = "Analysis";
 	public static final String PALETTE_TAB_CONNECTIVITY       = "Connectivity";
 	public static final String PALETTE_TAB_CONTROL            = "Control";
+	public static final String PALETTE_TAB_CONCLUSION         = "Conclusion";
 	public static final String PALETTE_TAB_INFERENCE          = "Inference";
 	public static final String PALETTE_TAB_LOGIC              = "Logic";
 	public static final String PALETTE_TAB_OBSERVATION        = "Observation";
 	public static final String PALETTE_TAB_STATISTICS         = "Statistics";
-	public static final String PALETTE_TAB_MISC         = "Misc";
+	public static final String PALETTE_TAB_TIMERS_COUNTERS    = "Timers & Counters";
+	public static final String PALETTE_TAB_MISC               = "Misc";
 	
 	// Default attribute offsets
 	public static final int DEFAULT_ATTRIBUTE_OFFSET_X     = 30;
@@ -108,7 +123,5 @@ public interface BlockConstants   {
 	public static final String COMMAND_LOCK                 	= "LOCK";
 	public static final String COMMAND_RESET                   	= "RESET";
 	public static final String COMMAND_START                   	= "START";
-	public static final String COMMAND_UNLOCK                 	= "UNLOCK";
-	
-	
+	public static final String COMMAND_UNLOCK                 	= "UNLOCK";	
 }

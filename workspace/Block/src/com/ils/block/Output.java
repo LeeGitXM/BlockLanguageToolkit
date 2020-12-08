@@ -7,6 +7,7 @@ import java.awt.Color;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
+import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.ProcessBlock;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
@@ -96,6 +97,9 @@ public class Output extends AbstractProcessBlock implements ProcessBlock {
 		}
 	}
 	
+	@Override 
+	public String getClassName() {return BlockConstants.BLOCK_CLASS_OUTPUT;}
+	
 	/**
 	 * Add properties that are new for this class.
 	 * Populate them with default values.
@@ -112,7 +116,8 @@ public class Output extends AbstractProcessBlock implements ProcessBlock {
 		setProperty(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
 		
 		// Define a single input
-		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
+		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.ANY);
+		input.setIsMultiple(false);
 		anchors.add(input);
 	}
 	
@@ -142,10 +147,13 @@ public class Output extends AbstractProcessBlock implements ProcessBlock {
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setBlockClass(getClass().getCanonicalName());
 		desc.setStyle(BlockStyle.ARROW);
-		desc.setPreferredHeight(45);
+		desc.setPreferredHeight(46);
 		desc.setPreferredWidth(60);
-		desc.setBackground(new Color(125,110,230).getRGB());   // Purple
+		desc.setBackground(Color.cyan.getRGB());
 		desc.setCtypeEditable(true);
+		desc.setNameDisplayed(true);
+		desc.setNameOffsetX(25);
+		desc.setNameOffsetY(45);
 	}
 
 }

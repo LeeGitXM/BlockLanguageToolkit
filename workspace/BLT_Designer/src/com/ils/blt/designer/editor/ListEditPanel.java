@@ -27,6 +27,7 @@ import javax.swing.table.DefaultTableModel;
 
 import net.miginfocom.swing.MigLayout;
 
+import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
 
@@ -85,8 +86,8 @@ public class ListEditPanel extends BasicEditPanel {
 					String list = BlockProperty.assembleList(model);
 					log.infof("%s.OK action: assembled list, %s = %s",TAG,property.getName(),list);
 					property.setValue(list);
-					editor.handlePropertyChange(property);   // Immediately update the running diagram
-					updatePanelForProperty(BlockEditConstants.HOME_PANEL,property);
+					editor.saveDiagramClean();   // Immediately update the running diagram
+					editor.updatePanelForProperty(BlockEditConstants.HOME_PANEL,property);
 				}
 				else {
 					log.warnf("%s.OK action: property is NULL, no action taken",TAG);

@@ -93,6 +93,7 @@ public class HighValuePattern extends AbstractProcessBlock implements ProcessBlo
 		// Define an input
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
 		input.setHint(PlacementHint.L);
+		input.setIsMultiple(false);
 		anchors.add(input);
 
 		// Define a single output
@@ -210,7 +211,7 @@ public class HighValuePattern extends AbstractProcessBlock implements ProcessBlo
 		prototype.setPaletteIconPath("Block/icons/palette/high_pattern.png");
 		prototype.setPaletteLabel("HighValPattern");
 		prototype.setTooltipText("Return TRUE if TriggerCount values are above the threshold");
-		prototype.setTabName(BlockConstants.PALETTE_TAB_ANALYSIS);
+		prototype.setTabName(BlockConstants.PALETTE_TAB_OBSERVATION);
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setBlockClass(getClass().getCanonicalName());

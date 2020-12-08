@@ -25,7 +25,7 @@ import com.inductiveautomation.ignition.gateway.model.GatewayContext;
  */
 public class ProxyBlock extends AbstractProcessBlock  {
 	private static final String TAG = "ProxyBlock";
-	private final String className;
+	private String className;
 	private PyObject pythonBlock = null;
 	private final ProxyHandler delegate = ProxyHandler.getInstance();
 	private final PythonRequestHandler requestHandler;
@@ -54,7 +54,16 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	}
 	
 	@Override
-	public String getClassName() { return className; }
+	public String getClassName() {
+		log.debugf("%s.getClassName: className is %s",TAG,className);
+		String ret = new String(className);  // changing className causes a deadlock
+		if (ret.toLowerCase().startsWith("xom.block.")) {
+			ret = "ils" + className.substring(3);
+		}
+
+//		ret = removeXomFromClassname(ret);
+		return ret; 
+	}
 	
 	/**
 	 * @return the Python object for which this class is a proxy
@@ -169,6 +178,28 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	public synchronized void evaluate() { 
 		delegate.evaluate(context.getProjectManager().getProjectScriptManager(getProjectId()),getPythonBlock()); 
 	}
+	
+	/**
+	 * Start the block. 
+	 * This is a handy place to do updates.
+	 */
+	@Override
+	public synchronized void start() {
+	}
+
+	/**
+	 * 
+	 * Removed references to this because it causes a deadlock
+	 * 
+	 */
+	public synchronized String removeXomFromClassname(String ret) {
+		// This first section updates old blocks that start with "xom.block" to "ils.block" since that code was moved.
+		if (ret.toLowerCase().startsWith("xom.block.")) {
+			ret = "ils" + className.substring(3);
+		}
+		return ret;
+	}
+	
 	/**
 	 * Reset the block. Resetting  python block may change the diagram alert
 	 * status.

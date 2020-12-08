@@ -6,10 +6,12 @@ package com.ils.blt.common;
 
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
+import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 
 
 /**
@@ -41,7 +43,20 @@ public class ApplicationScriptFunctions   {
 	public static void clearWatermark(String diagramId) {
 		handler.clearWatermark(diagramId);
 	}
-
+	/**
+	 * Create a SQLTag memory tag given its path and data type. The path must contain the
+	 * provider name in brackets.
+	 */
+	public static void createTag(DataType type,String path) {
+		handler.createTag(type, path);
+	}
+	/**
+	 * Delete a SQLTag given its path. The path must contain the
+	 * provider name in brackets.
+	 */
+	public static void deleteTag(String path) {
+		handler.deleteTag(path);
+	}
 	/**
 	 * @param uuid id of the application
 	 * @return the application name
@@ -125,14 +140,15 @@ public class ApplicationScriptFunctions   {
 	public static DiagramState getDiagramState(String diagramId)  {
 		return handler.getDiagramState(diagramId);
 	}
-	public static String getFamilyName(String uuid) {
-		return handler.getFamilyName(uuid);
-	}
 	/**
 	 * @return an explanation for the state of a block.
 	 */
 	public static String getExplanation(String diagramId,String blockId) {
 		return handler.getExplanation(diagramId,blockId);
+	}
+
+	public static String getFamilyName(String uuid) {
+		return handler.getFamilyName(uuid);
 	}
 	/**
 	 * @return the the internal state of a block.
@@ -266,7 +282,13 @@ public class ApplicationScriptFunctions   {
 	public static List<SerializableBlockStateDescriptor> listBlocksInDiagram(String diagramId) {
 		return handler.listBlocksInDiagram(diagramId);
 	}
-	
+	/**
+	 * @param className fully qualified class name of blocks to be listed
+	 * @return a list of state descriptors for blocks that are of the specified class.
+	 */
+	public static List<SerializableBlockStateDescriptor> listBlocksOfClass(String className) {
+		return handler.listBlocksOfClass(className);
+	}
 	/**
 	 * Query a diagram in the gateway for list of its blocks that are upstream
 	 * of the specified block. 
@@ -343,23 +365,23 @@ public class ApplicationScriptFunctions   {
 	 * Query the gateway for list of its sink blocks associated with the
 	 * specified source. The blocks that are returned are not constrained
 	 * to be part of the same diagram, family or application.
-	 * @param diagramId id of the enclosing diagram, a String
-	 * @param blockName name of the source block, a String 
+	 * @param diagramId of the parent diagram
+	 * @param blockId Id of the source block
 	 * @return a list of blocks logically connected to the source.
 	 */
-	public static List<SerializableBlockStateDescriptor> listSinksForSource(String diagramId,String blockName) {
-		return handler.listSinksForSource(diagramId,blockName);
+	public static List<SerializableBlockStateDescriptor> listSinksForSource(String diagramId,String blockId) {
+		return handler.listSinksForSource(diagramId,blockId);
 	}
 	/**
 	 * Query the gateway for list of its source blocks associated with the
-	 * specified sink. The blocks that are returned all belong to the same
-	 * application as the sink.
-	 * @param diagramId id of the enclosing diagram, a String
-	 * @param blockName name of the sink block, a String 
+	 * specified sink. The blocks that are returned are not constrained
+	 * to be part of the same diagram, family or application.
+	 * @param diagramId of the parent diagram
+	 * @param blockId Id of the sink block 
 	 * @return a list of blocks logically connected to the sink.
 	 */
-	public static List<SerializableBlockStateDescriptor> listSourcesForSink(String diagramId,String blockName) {
-		return handler.listSourcesForSink(diagramId,blockName);
+	public static List<SerializableBlockStateDescriptor> listSourcesForSink(String diagramId,String blockId) {
+		return handler.listSourcesForSink(diagramId,blockId);
 	}
 	/** 
 	 * @param diagramId of the parent diagram
@@ -405,6 +427,21 @@ public class ApplicationScriptFunctions   {
 	public static List queryControllerResources() {
 		List<SerializableResourceDescriptor> result = handler.listResourceNodes();
 		return result;
+	}
+	/** Update a single property for a block 
+	 * @param duuid diagram unique Id
+	 * @param buuid block unique Id
+	 * @param name the new name
+	 */
+	public static void renameBlock(String duuid,String buuid,String name ) {
+		handler.renameBlock(duuid, buuid, name);
+	}
+	/**
+	 * Rename a SQLTag given its path and new name. The path must contain the
+	 * provider name in brackets.
+	 */
+	public static void renameTag(String name,String path) {
+		handler.renameTag(name,path);
 	}
 	/**
 	 * Execute reset() on the specified block
@@ -489,6 +526,18 @@ public class ApplicationScriptFunctions   {
 	public static void setBlockState(String diagramId,String bname,String value ) {
 		handler.setBlockState(diagramId, bname, value);
 	}
+	/** Change the binding on a block property in such a way that the block and UI
+	 * are notified of the change.
+	 *  
+	 * @param diagramId diagram's unique Id as a String
+	 * @param blockId Id of the block as a String
+	 * @param pname the changed property
+	 * @param value the new binding of the property. The value must be a legal tag path 
+	 */
+	public static void setBlockPropertyBinding(String diagramId,String blockId,String pname,String value ) {
+		handler.setBlockPropertyBinding(diagramId, blockId, pname, value);
+	}
+	
 	/** Change the value of a block property in such a way that the block and UI
 	 * are notified of the change.
 	 *  

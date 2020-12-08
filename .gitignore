@@ -1,5 +1,4 @@
 .metadata
-bin/
 doc/
 lib/
 logs/
@@ -13,3 +12,10 @@ temp_modl/
 .recommenders/
 .version
 **/*.class
+.project
+.classpath
+.pydevproject
+*.srctrlbm
+*.srctrldb
+*.srctrlprj
+

@@ -57,7 +57,10 @@ public class UIFactory {
 				ui= new SquareUIView(block);   // Default
 				break;
 			case NOTE:
-				ui= new NoteUIView(block);   // Default
+				ui= new NoteUIView(block);   
+				break;
+			case PROPERTY_DISPLAY:
+				ui= new PropertyDisplayUIView(block);   
 				break;
 			default:
 				log.warnf("%s: getUI: Unrecognized style (%s)",TAG,style.toString());

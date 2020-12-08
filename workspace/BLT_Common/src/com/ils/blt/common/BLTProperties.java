@@ -22,6 +22,7 @@ public interface BLTProperties   {
 	public final static String APPLICATION_RESOURCE_TYPE   = "blt.application";
 	public final static String DIAGRAM_RESOURCE_TYPE       = "blt.diagram";
 	public final static String FAMILY_RESOURCE_TYPE        = "blt.family";
+//	public final static String FAMILY_FOLDER_TYPE          = "blt.familyFolder";
 	public final static String FOLDER_RESOURCE_TYPE        = "__folder";
 	
 	public final static String DIAGRAM_SCRIPT_PACKAGE      = "system.ils.blt.diagram";
@@ -70,14 +71,9 @@ public interface BLTProperties   {
 	public static final String BLOCK_ATTRIBUTE_DATA_TYPE  = "type";
 	public static final String BLOCK_ATTRIBUTE_VALUE      = "value";
 	
-	// Class names for some specific blocks
-	public static final String CLASS_NAME_INPUT      = "com.ils.Input";
-	public static final String CLASS_NAME_SINK       = "com.ils.SinkConnection";
-	public static final String CLASS_NAME_SOURCE     = "com.ils.SourceConnection";
-	
 	// Arguments for Color constructor are: R G B
 	public static final Color DIAGRAM_ACTIVE_BACKGROUND          = new Color(0.9f,0.9f,0.9f);    // Light gray
-	public static final Color DIAGRAM_ISOLATED_BACKGROUND     = new Color(0.46f,0.67f,0.9f);  // light blue
+	public static final Color DIAGRAM_ISOLATED_BACKGROUND        = new Color(188,207,235);       // Light blue
 	public static final Color DIAGRAM_DIRTY_BACKGROUND           = new Color(0.94f,0.92f,0.5f);  // mustard
 	public static final Color DIAGRAM_DISABLED_BACKGROUND        = new Color(0.6f,0.6f,0.6f);    // Dark gray
 	
@@ -93,8 +89,8 @@ public interface BLTProperties   {
 	public static final String PALETTE_NAME_DISPLAYED    = "nameDisplayed";
 	public static final String PALETTE_NAME_OFFSET_X     = "nameOffsetX";
 	public static final String PALETTE_NAME_OFFSET_Y     = "nameOffsetY";
-	public static final String PALETTE_RECEIVE_ENABLED   = "receiveEnabled";
-	public static final String PALETTE_TRANSMIT_ENABLED   = "transmitEnabled";
+//	public static final String PALETTE_RECEIVE_ENABLED   = "receiveEnabled";
+//	public static final String PALETTE_TRANSMIT_ENABLED   = "transmitEnabled";
 	public static final String PALETTE_TOOLTIP     = "tooltip";
 	public static final String PALETTE_TAB_NAME    = "tabName";
 	public static final String PALETTE_VIEW_BACKGROUND = "viewBackgroundColor";   // RGB as an int

@@ -54,6 +54,7 @@ public class Junction extends AbstractProcessBlock implements ProcessBlock {
 		// Define an input
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
 		input.setHint(PlacementHint.L);
+		input.setIsMultiple(false);
 		anchors.add(input);
 
 		// Define a single output
@@ -102,8 +103,8 @@ public class Junction extends AbstractProcessBlock implements ProcessBlock {
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setBlockClass(getClass().getCanonicalName());
 		desc.setStyle(BlockStyle.JUNCTION);
-		desc.setPreferredHeight(32);
-		desc.setPreferredWidth(32);
+		desc.setPreferredHeight(40);
+		desc.setPreferredWidth(40);
 		desc.setBackground(BlockConstants.BLOCK_BACKGROUND_LIGHT_GRAY);
 		desc.setCtypeEditable(true);
 	}
