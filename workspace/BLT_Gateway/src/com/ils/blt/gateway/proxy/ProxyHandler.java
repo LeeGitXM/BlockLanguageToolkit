@@ -50,7 +50,7 @@ import com.inductiveautomation.ignition.gateway.model.GatewayContext;
  *  synchronized to insure that the script arguments are correctly grouped. 
  */
 public class ProxyHandler   {
-	private final static String TAG = "ProxyHandler";
+	private final static String CLSS = "ProxyHandler";
 	private final LoggerEx log;
 	private GatewayContext context = null;
 	private final PythonToJava toJavaTranslator;
@@ -125,7 +125,7 @@ public class ProxyHandler   {
 		if(block==null || stub==null || value==null || value.getValue()==null ) return;
 		String qualityName = BLTProperties.QUALITY_GOOD;
 		if(!value.getQuality().isGood() ) qualityName = value.getQuality().getName();
-		log.debugf("%s.acceptValue --- %s %s (%s) on %s",TAG,block.toString(),value.getValue().toString(),qualityName,stub); 
+		log.debugf("%s.acceptValue --- %s %s (%s) on %s",CLSS,block.toString(),value.getValue().toString(),qualityName,stub); 
 		if( acceptValueCallback.compileScript() ) {
 			// There are 4 values to be specified - block,port,value,quality.
 			synchronized(acceptValueCallback) {
@@ -143,7 +143,7 @@ public class ProxyHandler   {
 	public ProxyBlock createBlockInstance(String classNm,UUID parentId,UUID blockId,long projectId) {
 		String className = removeXomFromClassName(classNm);  // EREIAM JH - temporary fix for existing XOM projects.
 		ProxyBlock block = new ProxyBlock(context,className,parentId,blockId);
-		log.debugf("%s.createBlockInstance --- python proxy for %s, project %d",TAG,className,projectId); 
+		log.debugf("%s.createBlockInstance --- python proxy for %s, project %d",CLSS,className,projectId); 
 		if( createBlockCallback.compileScript() ) {
 			synchronized(createBlockCallback) {
 				PyDictionary pyDictionary = new PyDictionary();  // Empty
@@ -152,7 +152,7 @@ public class ProxyHandler   {
 				createBlockCallback.setLocalVariable(1,new PyString(parentId.toString()));
 				createBlockCallback.setLocalVariable(2,new PyString(blockId.toString()));
 				createBlockCallback.setLocalVariable(3,pyDictionary);
-				log.debugf("%s.createBlockInstance --- executing create script for %s",TAG,className); 
+				log.debugf("%s.createBlockInstance --- executing create script for %s",CLSS,className); 
 				createBlockCallback.execute(context.getProjectManager().getProjectScriptManager(projectId));
 
 				// Contents of list are Hashtable<String,?>
@@ -165,13 +165,13 @@ public class ProxyHandler   {
 					}
 				}
 				else {
-					log.warnf("%s.createBlockInstance: Failed to create instance of %s",TAG,className);
+					log.warnf("%s.createBlockInstance: Failed to create instance of %s",CLSS,className);
 					block = null;
 				}
 			}
 		}
 		else {
-			log.warnf("%s.createBlockInstance --- failed to compile create script %s",TAG,className);
+			log.warnf("%s.createBlockInstance --- failed to compile create script %s",CLSS,className);
 		}
 
 		return block;
@@ -193,7 +193,7 @@ public class ProxyHandler   {
 	 * @param block the saved Py block
 	 */
 	public void evaluate(ScriptManager mgr,PyObject block) {
-		log.debugf("%s.evaluate --- %s",TAG,block.toString());
+		log.debugf("%s.evaluate --- %s",CLSS,block.toString());
 		if( evaluateCallback.compileScript() ) {
 			evaluateCallback.initializeLocalsMap(mgr);
 			evaluateCallback.setLocalVariable(0,block);
@@ -212,7 +212,7 @@ public class ProxyHandler   {
 	 */
 	public  BlockProperty[] getBlockProperties(ScriptManager mgr,PyObject block) {
 		BlockProperty[] properties = null;
-		log.debugf("%s.getBlockProperties ... ",TAG);
+		log.debugf("%s.getBlockProperties ... ",CLSS);
 		if( getBlockPropertiesCallback.compileScript() ) {
 			Object val = null;
 			UtilityFunctions fns = new UtilityFunctions();
@@ -222,7 +222,7 @@ public class ProxyHandler   {
 				getBlockPropertiesCallback.setLocalVariable(0,block);
 				getBlockPropertiesCallback.setLocalVariable(1,pyList);
 				getBlockPropertiesCallback.execute(mgr);
-				log.debug(TAG+".getBlockProperties returned "+ pyList);   // Should now be updated
+				log.debug(CLSS+".getBlockProperties returned "+ pyList);   // Should now be updated
 				// Contents of list are Map<String,?>
 				List<?> list = toJavaTranslator.pyListToArrayList(pyList);
 
@@ -233,7 +233,7 @@ public class ProxyHandler   {
 						if( obj instanceof Map ) {
 							@SuppressWarnings("unchecked")
 							Map<String,?> tbl = (Map<String,?>)obj;
-							log.debugf(TAG+".getBlockProperties property = "+ tbl);  
+							log.debugf(CLSS+".getBlockProperties property = "+ tbl);  
 							BlockProperty prop = new BlockProperty();
 							prop.setName(nullCheck(tbl.get(BLTProperties.BLOCK_ATTRIBUTE_NAME),"unnamed"));
 							prop.setBinding(nullCheck(tbl.get(BLTProperties.BLOCK_ATTRIBUTE_BINDING),""));
@@ -243,10 +243,10 @@ public class ProxyHandler   {
 									prop.setBindingType(BindingType.valueOf(val.toString().toUpperCase()));
 								}
 								catch(IllegalArgumentException iae ) {
-									log.warnf("%s.getBlockProperties: Illegal binding type (%s) (%s)" , TAG,val,iae.getMessage());
+									log.warnf("%s.getBlockProperties: Illegal binding type (%s) (%s)" , CLSS,val,iae.getMessage());
 								}
 								catch(Exception ex ) {
-									log.warnf("%s.getBlockProperties: Illegal binding type (%s) (%s)" , TAG,val,ex.getMessage());
+									log.warnf("%s.getBlockProperties: Illegal binding type (%s) (%s)" , CLSS,val,ex.getMessage());
 								}
 							}
 							val = tbl.get(BLTProperties.BLOCK_ATTRIBUTE_EDITABLE);
@@ -257,10 +257,10 @@ public class ProxyHandler   {
 									prop.setType(PropertyType.valueOf(val.toString().toUpperCase()));
 								}
 								catch(IllegalArgumentException iae ) {
-									log.warnf("%s.getBlockProperties: Illegal data type (%s) (%s)" , TAG,val,iae.getMessage());
+									log.warnf("%s.getBlockProperties: Illegal data type (%s) (%s)" , CLSS,val,iae.getMessage());
 								}
 								catch(Exception ex ) {
-									log.warnf("%s.getBlockProperties: Illegal data type (%s) (%s)" , TAG,val,ex.getMessage());
+									log.warnf("%s.getBlockProperties: Illegal data type (%s) (%s)" , CLSS,val,ex.getMessage());
 								}
 							}
 							val = tbl.get(BLTProperties.BLOCK_ATTRIBUTE_VALUE);
@@ -272,7 +272,7 @@ public class ProxyHandler   {
 
 					}
 					catch( Exception ex ) {
-						log.warnf("%s.getBlockProperties: Exception processing prototype (%s)" , TAG,ex.getMessage());
+						log.warnf("%s.getBlockProperties: Exception processing prototype (%s)" , CLSS,ex.getMessage());
 					}
 					index++;
 				}
@@ -280,7 +280,7 @@ public class ProxyHandler   {
 		}
 		else {
 			// Callback does not compile ...
-			log.warnf("%s.getBlockProperties ... Error compiling script",TAG);
+			log.warnf("%s.getBlockProperties ... Error compiling script",CLSS);
 			properties = new BlockProperty[0];
 		}
 
@@ -297,7 +297,7 @@ public class ProxyHandler   {
 	 */
 	public TruthValue getBlockState(ScriptManager mgr,PyObject block) {
 		TruthValue state = TruthValue.UNSET;
-		log.debugf("%s.getBlockState ... ",TAG);
+		log.debugf("%s.getBlockState ... ",CLSS);
 		if( getBlockStateCallback.compileScript() ) {
 			synchronized(getBlockStateCallback) {
 				PyList pyList = new PyList();  // Empty
@@ -305,7 +305,7 @@ public class ProxyHandler   {
 				getBlockStateCallback.setLocalVariable(0,block);
 				getBlockStateCallback.setLocalVariable(1,pyList);
 				getBlockStateCallback.execute(mgr);
-				log.debug(TAG+".getBlockState returned "+ pyList);   // Should now be updated
+				log.debug(CLSS+".getBlockState returned "+ pyList);   // Should now be updated
 				// Contents of list are Hashtable<String,?>
 				// We're looking for a single string entry in the list
 				List<?> list = toJavaTranslator.pyListToArrayList(pyList);
@@ -315,7 +315,7 @@ public class ProxyHandler   {
 						state = TruthValue.valueOf(obj.toString().toUpperCase());	
 					}
 					catch( Exception ex ) {
-						log.warnf("%s.getBlockState: Exception converting %s into a state (%s)" , TAG,obj.toString(),ex.getMessage());	
+						log.warnf("%s.getBlockState: Exception converting %s into a state (%s)" , CLSS,obj.toString(),ex.getMessage());	
 						state = TruthValue.UNKNOWN;
 					}
 				}
@@ -333,7 +333,7 @@ public class ProxyHandler   {
 	 */
 	public List<PalettePrototype> getPalettePrototypes() {
 		List<PalettePrototype> prototypes = new ArrayList<PalettePrototype>();
-		log.debugf("%s.getPalettePrototypes (python) ... ",TAG);
+		log.debugf("%s.getPalettePrototypes (python) ... ",CLSS);
 		if( getBlockPrototypesCallback.compileScript())  {
 			Object val = null;
 			UtilityFunctions fns = new UtilityFunctions();
@@ -342,7 +342,7 @@ public class ProxyHandler   {
 			getBlockPrototypesCallback.initializeLocalsMap(context.getScriptManager());
 			getBlockPrototypesCallback.setLocalVariable(0,pyList);
 			getBlockPrototypesCallback.execute(context.getScriptManager());
-			log.debug(TAG+".getPalettePrototypes: returned "+ pyList);   // Should now be updated
+			log.trace(CLSS+".getPalettePrototypes: returned "+ pyList);   // Should now be updated
 			// Contents of list are Hashtable<String,?>
 			list = toJavaTranslator.pyListToArrayList(pyList);
 
@@ -351,12 +351,13 @@ public class ProxyHandler   {
 					if( obj instanceof Map ) {   // Note: Both Hashtable and HashMap implement Map
 						@SuppressWarnings("unchecked")
 						Map<String,?> tbl = (Map<String,?>)obj;
-						log.debug(TAG+".getPalettePrototypes first table "+ tbl);  
+						 
 						PalettePrototype proto = new PalettePrototype();
 						proto.setPaletteIconPath(nullCheck(tbl.get(BLTProperties.PALETTE_ICON_PATH),"Block/icons/embedded/transmitter.png"));
 						proto.setPaletteLabel(nullCheck(tbl.get(BLTProperties.PALETTE_LABEL),"From Python"));
 						proto.setTooltipText(nullCheck(tbl.get(BLTProperties.PALETTE_TOOLTIP),""));
 						proto.setTabName(nullCheck(tbl.get(BLTProperties.PALETTE_TAB_NAME),BlockConstants.PALETTE_TAB_CONTROL));
+						log.debugf("%s.getPalettePrototypes from python %s on %s ",CLSS,proto.getPaletteLabel(),proto.getTabName()); 
 						
 						// The table that we get from Python contains attributes for the BlockDescriptor
 						// as well as the PalettePrototype
@@ -364,10 +365,7 @@ public class ProxyHandler   {
 						val = tbl.get(BLTProperties.PALETTE_AUX_DATA);
 						if( val!=null ) 
 							desc.setExternallyAugmented(fns.coerceToBoolean(val.toString()));
-//						val = tbl.get(BLTProperties.PALETTE_RECEIVE_ENABLED);
-//						if( val!=null ) desc.setReceiveEnabled(fns.coerceToBoolean(val.toString()));
-//						val = tbl.get(BLTProperties.PALETTE_TRANSMIT_ENABLED);
-//						if( val!=null ) desc.setTransmitEnabled(fns.coerceToBoolean(val.toString()));
+						
 						val = tbl.get(BLTProperties.PALETTE_VIEW_LABEL);
 						if( val!=null ) 
 							desc.setEmbeddedLabel(val.toString());
@@ -378,7 +376,7 @@ public class ProxyHandler   {
 								background = Long.decode(val.toString()).intValue();
 							}
 							catch(NumberFormatException nfe) {
-								log.infof("%s.getPalettePrototypes: Illegal background specification: %s (%s) ",TAG,val.toString(),nfe.getLocalizedMessage());  
+								log.infof("%s.getPalettePrototypes: Illegal background specification: %s (%s) ",CLSS,val.toString(),nfe.getLocalizedMessage());  
 							}
 							desc.setBackground(background);
 						}
@@ -407,10 +405,10 @@ public class ProxyHandler   {
 								desc.setStyle(BlockStyle.valueOf(val.toString().toUpperCase()));
 							}
 							catch(IllegalArgumentException iae ) {
-								log.warnf("%s.getPalettePrototypes: Illegal block style parameter (%s) (%s)" , TAG,val,iae.getMessage());
+								log.warnf("%s.getPalettePrototypes: Illegal block style parameter (%s) (%s)" , CLSS,val,iae.getMessage());
 							}
 							catch(Exception ex ) {
-								log.warnf("%s.getPalettePrototypes: Illegal block style (%s) (%s)" , TAG,val,ex.getMessage());
+								log.warnf("%s.getPalettePrototypes: Illegal block style (%s) (%s)" , CLSS,val,ex.getMessage());
 							}
 						}
 						// Now handle the anchors
@@ -424,14 +422,14 @@ public class ProxyHandler   {
 					}
 				}
 				catch( Exception ex ) {
-					log.warnf("%s: getPalettePrototypes: Exception processing prototype (%s)" ,TAG,ex.getMessage());
+					log.warnf("%s: getPalettePrototypes: Exception processing prototype (%s)" ,CLSS,ex.getMessage());
 				}
 			}
 		}
 		else {
-			log.warnf("%s: getPalettePrototypes: script compilation error (%s)",TAG,getBlockPropertiesCallback.module);
+			log.warnf("%s: getPalettePrototypes: script compilation error (%s)",CLSS,getBlockPropertiesCallback.module);
 		}
-		log.infof("%s: getPalettePrototypes returning %d protos from Python",TAG,prototypes.size()); 
+		log.infof("%s: getPalettePrototypes returning %d protos from Python",CLSS,prototypes.size()); 
 		return prototypes;
 	}
 	/**
@@ -442,7 +440,7 @@ public class ProxyHandler   {
 	 * @param block the saved Py block
 	 */
 	public void notifyOfStatus(ScriptManager mgr,PyObject block) {
-		log.debugf("%s.notifyOfStatus --- %s",TAG,block.toString());
+		log.debugf("%s.notifyOfStatus --- %s",CLSS,block.toString());
 		if( notifyOfStatusCallback.compileScript() ) {
 			notifyOfStatusCallback.initializeLocalsMap(mgr);
 			notifyOfStatusCallback.setLocalVariable(0,block);
@@ -456,7 +454,7 @@ public class ProxyHandler   {
 	 * @param block the saved Py block
 	 */
 	public void propagate(ScriptManager mgr,PyObject block) {
-		log.debugf("%s.propagate --- %s",TAG,block.toString());
+		log.debugf("%s.propagate --- %s",CLSS,block.toString());
 		if( propagateCallback.compileScript() ) {
 			propagateCallback.initializeLocalsMap(mgr);
 			propagateCallback.setLocalVariable(0,block);
@@ -472,7 +470,7 @@ public class ProxyHandler   {
 	 * @param block the saved Py block
 	 */
 	public void reset(ScriptManager mgr,PyObject block) {
-		log.debugf("%s.reset --- %s",TAG,block.toString());
+		log.debugf("%s.reset --- %s",CLSS,block.toString());
 		if( resetCallback.compileScript() ) {
 			resetCallback.initializeLocalsMap(mgr);
 			resetCallback.setLocalVariable(0,block);
@@ -481,11 +479,11 @@ public class ProxyHandler   {
 	}
 	public void setBlockProperty(ScriptManager mgr,ProxyBlock block,BlockProperty prop) {
 		if( block==null || prop==null ) return;
-		log.debugf("%s.setBlockProperty --- %s:%s",TAG,block.getClass(),prop.getName()); 
+		log.debugf("%s.setBlockProperty --- %s:%s",CLSS,block.getClass(),prop.getName()); 
 		if( setBlockPropertyCallback.compileScript() ) {
 			// Convert the property object into a table to send to Python.
 			if( prop.getName()==null ) {
-				log.errorf("%s.setBlockProperty: Property name cannot be null",TAG); 
+				log.errorf("%s.setBlockProperty: Property name cannot be null",CLSS); 
 				return;
 			}
 			Map<String,Object> tbl = new HashMap<String,Object>();  
@@ -508,7 +506,7 @@ public class ProxyHandler   {
 	
 	public synchronized void setBlockState(ScriptManager mgr,ProxyBlock block,TruthValue newState) {
 		if( block==null || newState==null ) return;
-		log.debugf("%s.setBlockState --- %s:%s",TAG,block.getClass(),newState.name()); 
+		log.debugf("%s.setBlockState --- %s:%s",CLSS,block.getClass(),newState.name()); 
 		if( setBlockStateCallback.compileScript() ) {
 			synchronized(setBlockStateCallback) {
 				setBlockStateCallback.initializeLocalsMap(mgr);
@@ -528,7 +526,7 @@ public class ProxyHandler   {
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private void addAnchorsToDescriptor(BlockDescriptor bd,Object l,AnchorDirection direction) {
-		log.debugf(TAG+": addAnchorsToPrototype "+l);
+		log.debugf(CLSS+": addAnchorsToPrototype "+l);
 		if( l instanceof List ) {
 			for( Object t: (List)l ) {
 				if( t instanceof Map ) {
@@ -548,7 +546,7 @@ public class ProxyHandler   {
 							bd.addAnchor(ap);
 						}
 						catch(IllegalArgumentException iae) {
-							log.warnf("%s: addAnchorsToPrototype: Illegal connection type %s (%s)",TAG,type,iae.getMessage());
+							log.warnf("%s: addAnchorsToPrototype: Illegal connection type %s (%s)",CLSS,type,iae.getMessage());
 						}
 					}		
 				}
@@ -561,7 +559,7 @@ public class ProxyHandler   {
 	 * @return either the object converted to a string, or, if null, the default
 	 */
 	private String nullCheck(Object obj,String def) {
-		log.trace(TAG+": nullCheck "+obj);
+		log.trace(CLSS+": nullCheck "+obj);
 		if( obj!=null ) return obj.toString();
 		else return def;
 	}

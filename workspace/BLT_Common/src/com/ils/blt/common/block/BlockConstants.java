@@ -91,7 +91,7 @@ public interface BlockConstants   {
 	public static final String CONNECTION_PROPERTY_VALUE               = "value"; 
 
 	
-	// These are standard palette tab names
+	// These are standard palette tab names - do not use names with embedded spaces
 	public static final String PALETTE_TAB_ARITHMETIC         = "Arithmetic";
 	public static final String PALETTE_TAB_ANALYSIS           = "Analysis";
 	public static final String PALETTE_TAB_CONNECTIVITY       = "Connectivity";
@@ -99,9 +99,10 @@ public interface BlockConstants   {
 	public static final String PALETTE_TAB_CONCLUSION         = "Conclusion";
 	public static final String PALETTE_TAB_INFERENCE          = "Inference";
 	public static final String PALETTE_TAB_LOGIC              = "Logic";
+	public static final String PALETTE_TAB_NONE               = "";     // These blocks will not be displayed
 	public static final String PALETTE_TAB_OBSERVATION        = "Observation";
 	public static final String PALETTE_TAB_STATISTICS         = "Statistics";
-	public static final String PALETTE_TAB_TIMERS_COUNTERS    = "Timers & Counters";
+	public static final String PALETTE_TAB_TIMERS_COUNTERS    = "Counters";
 	public static final String PALETTE_TAB_MISC               = "Misc";
 	
 	// Default attribute offsets

@@ -145,14 +145,15 @@ public class PropertySetter extends AbstractProcessBlock implements ProcessBlock
 	}
 	
 	/**
-	 * Augment the palette prototype for this block class.
+	 * Augment the palette prototype for this block class. We create the prototype, so that the 
+	 * block gets defined, but put it on a blank tab that will never be displayed.
 	 */
 	private void initializePrototype() {
 
-//		prototype.setPaletteIconPath("Block/icons/palette/property_edit.png");
-//		prototype.setPaletteLabel("SetProperty");
-//		prototype.setTooltipText("Transmit a signal to set properties of the downstream block");
-//		prototype.setTabName(BlockConstants.PALETTE_TAB_CONTROL);
+		prototype.setPaletteIconPath("Block/icons/palette/property_edit.png");
+		prototype.setPaletteLabel("PropertySetter");
+		prototype.setTooltipText("Transmit a signal to set properties of the downstream block");
+		prototype.setTabName(BlockConstants.PALETTE_TAB_NONE);
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setEmbeddedIcon("Block/icons/embedded/edit.png");
