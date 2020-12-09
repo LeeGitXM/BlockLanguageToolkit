@@ -301,6 +301,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 				Object obj = cls.newInstance();
 				if( obj instanceof ProcessBlock ) {
 					PalettePrototype bp = ((ProcessBlock)obj).getBlockPrototype();
+					log.tracef("%s.getBlockPrototypes: Adding %s on %s",TAG,bp.getPaletteLabel(),bp.getTabName());
 					results.add(bp);
 				}
 				else {
@@ -324,6 +325,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		try {
 			List<PalettePrototype> prototypes = phandler.getPalettePrototypes();
 			for( PalettePrototype pp:prototypes) {
+				log.tracef("%s.getBlockPrototypes: Adding python %s on %s",TAG,pp.getPaletteLabel(),pp.getTabName());
 				results.add(pp);
 			}
 		}

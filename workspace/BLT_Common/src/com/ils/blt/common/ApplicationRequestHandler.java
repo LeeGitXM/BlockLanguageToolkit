@@ -194,7 +194,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	@SuppressWarnings("unchecked")
 	@Override
 	public List<PalettePrototype> getBlockPrototypes() {
-		log.tracef("%s.getBlockPrototypes ...",TAG);
+		log.infof("%s.getBlockPrototypes ...",TAG);
 		List<PalettePrototype> result = new ArrayList<PalettePrototype>();
 		List<String> jsonList = new ArrayList<String>();
 		try {

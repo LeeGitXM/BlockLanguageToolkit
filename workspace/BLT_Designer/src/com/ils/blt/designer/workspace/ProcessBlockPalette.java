@@ -25,6 +25,7 @@ import javax.swing.SwingConstants;
 
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
@@ -75,6 +76,7 @@ public class ProcessBlockPalette extends DockableFrame implements ResourceWorksp
 			JComponent component = new PaletteEntry(proto).getComponent();
 			JPanel panel = null;
 			String tabName = proto.getTabName();
+			if( tabName.equalsIgnoreCase(BlockConstants.PALETTE_TAB_NONE)) continue;  // Do not display this block prototype
 			int tabIndex = tabbedPane.indexOfTab(tabName);
 			if( tabIndex < 0 ) {    // Prototype references a new tab
 				panel = new JPanel();
