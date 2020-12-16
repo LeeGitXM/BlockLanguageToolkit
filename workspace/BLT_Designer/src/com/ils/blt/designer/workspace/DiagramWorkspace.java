@@ -6,6 +6,7 @@ package com.ils.blt.designer.workspace;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Desktop;
 import java.awt.Frame;
 import java.awt.Graphics2D;
 import java.awt.Image;
@@ -28,6 +29,8 @@ import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -399,6 +402,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				}
 				ForceAction fa = new ForceAction(getActiveDiagram(),pbv);
 				menu.add(fa);
+				HelpAction ha = new HelpAction(getActiveDiagram(),pbv);
+				menu.add(ha);
 				ResetAction ra = new ResetAction(pbv);
 				menu.add(ra);
 				if(pbv.isLocked()) {
@@ -1751,6 +1756,38 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 					viewer.setVisible(true);
 				}
 			}); 
+		}
+	}
+	/**
+	 * Display context-sensitive help in a browser window 
+	 */
+	private class HelpAction extends BaseAction {
+		private static final long serialVersionUID = 1L;
+		private final ProcessDiagramView diagram;
+		private final ProcessBlockView block;
+		public HelpAction(ProcessDiagramView diag,ProcessBlockView blk)  {
+			super(PREFIX+".Help");
+			this.diagram = diag;
+			this.block = blk;
+		}
+		
+		// Display a browser pointing to the help text for the block
+		public void actionPerformed(final ActionEvent e) {
+			Desktop desktop=Desktop.getDesktop();
+
+			String address = BLTProperties.ROOT_HELP_PATH + block.getClassName();
+			logger.infof("%s.HelpAction: Address is: %s",TAG,address); 
+			try {
+
+				URI url = new URI(address);
+				desktop.browse(url);
+			}
+			catch(URISyntaxException use) {
+				logger.infof("%s.HelpAction: Illegal URI: %s (%s)",TAG,address,use.getLocalizedMessage()); 
+			}
+			catch(IOException ioe) {
+				logger.infof("%s.HelpAction: Exception posting browser (%s)",TAG,ioe.getLocalizedMessage()); 
+			}
 		}
 	}
 

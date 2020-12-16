@@ -237,11 +237,13 @@
 		<copy file="${basedir}/../../external/lib/ils-common.jar" todir="${basedir}/BLT_Build/temp_modl/" />
 		<copy file="${jar.dir}/${block.jar.name}" todir="${basedir}/BLT_Build/temp_modl/" />
 
-		<!-- Copy license file and javadoc into the bundle -->
+		<!-- Copy license file, help and javadoc into the bundle -->
 		<mkdir dir="${basedir}/BLT_Build/doc" />
+		<mkdir dir="${basedir}/BLT_Build/res" />
 		<copy file="${basedir}/BLT_Build/license.html" todir="${basedir}/BLT_Build/temp_modl/" />
 		<copy todir="${basedir}/BLT_Build/temp_modl/doc">
 		    <fileset dir="${basedir}/BLT_Build/doc"/>
+			<fileset dir="${basedir}/../doc"/>
 		</copy>
 		
 		<!-- Echo the version into .version in the bundle and to be saved -->
