@@ -238,12 +238,16 @@
 		<copy file="${jar.dir}/${block.jar.name}" todir="${basedir}/BLT_Build/temp_modl/" />
 
 		<!-- Copy license file, help and javadoc into the bundle -->
-		<mkdir dir="${basedir}/BLT_Build/doc" />
+		<mkdir dir="${basedir}/BLT_Build/doc/SymbolicAiUsersGuide.fld" />
 		<mkdir dir="${basedir}/BLT_Build/res" />
 		<copy file="${basedir}/BLT_Build/license.html" todir="${basedir}/BLT_Build/temp_modl/" />
 		<copy todir="${basedir}/BLT_Build/temp_modl/doc">
 		    <fileset dir="${basedir}/BLT_Build/doc"/>
-			<fileset dir="${basedir}/../doc"/>
+			<fileset file="${svn.repo}/EMChemicals/Diagnostic Toolkit/Documentation/User's Guide/SymbolicAiUsersGuide.html"/>
+			<fileset dir="${svn.repo}/EMChemicals/Diagnostic Toolkit/Documentation/User's Guide/SymbolicAiUsersGuide.fld"/>
+		</copy>
+		<copy todir="${basedir}/BLT_Build/temp_modl/doc/SymbolicAiUsersGuide.fld">
+			<fileset dir="${svn.repo}/EMChemicals/Diagnostic Toolkit/Documentation/User's Guide/SymbolicAiUsersGuide.fld"/>
 		</copy>
 		
 		<!-- Echo the version into .version in the bundle and to be saved -->
