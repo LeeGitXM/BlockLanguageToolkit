@@ -238,16 +238,15 @@
 		<copy file="${jar.dir}/${block.jar.name}" todir="${basedir}/BLT_Build/temp_modl/" />
 
 		<!-- Copy license file, help and javadoc into the bundle -->
-		<mkdir dir="${basedir}/BLT_Build/doc/SymbolicAiUsersGuide.fld" />
+		<mkdir dir="${basedir}/BLT_Build/doc/SymbolicAiUsersGuide_filtered_files" />
 		<mkdir dir="${basedir}/BLT_Build/res" />
 		<copy file="${basedir}/BLT_Build/license.html" todir="${basedir}/BLT_Build/temp_modl/" />
 		<copy todir="${basedir}/BLT_Build/temp_modl/doc">
 		    <fileset dir="${basedir}/BLT_Build/doc"/>
-			<fileset file="${svn.repo}/EMChemicals/Diagnostic Toolkit/Documentation/User's Guide/SymbolicAiUsersGuide.html"/>
-			<fileset dir="${svn.repo}/EMChemicals/Diagnostic Toolkit/Documentation/User's Guide/SymbolicAiUsersGuide.fld"/>
+			<fileset file="${svn.repo}/EMChemicals/Diagnostic Toolkit/Documentation/User's Guide/SymbolicAiUsersGuide_filtered.html"/>
 		</copy>
-		<copy todir="${basedir}/BLT_Build/temp_modl/doc/SymbolicAiUsersGuide.fld">
-			<fileset dir="${svn.repo}/EMChemicals/Diagnostic Toolkit/Documentation/User's Guide/SymbolicAiUsersGuide.fld"/>
+		<copy todir="${basedir}/BLT_Build/temp_modl/doc/SymbolicAiUsersGuide_filtered_files">
+			<fileset dir="${svn.repo}/EMChemicals/Diagnostic Toolkit/Documentation/User's Guide/SymbolicAiUsersGuide_filtered_files"/>
 		</copy>
 		
 		<!-- Echo the version into .version in the bundle and to be saved -->

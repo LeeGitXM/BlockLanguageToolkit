@@ -212,9 +212,9 @@ public class ProcessBlockPalette extends DockableFrame implements ResourceWorksp
 	}
 	
 	private class HelpPopup extends JPopupMenu {
+		private static final long serialVersionUID = 2810769771021508005L;
 		private final JMenuItem helpMenu;
 		public HelpPopup(PalettePrototype proto) {
-			log.infof("%s.HelpPopup: created for %s",TAG,proto.getPaletteLabel() );
 	        helpMenu = new JMenuItem("Help");
 	        add(helpMenu);
 		}
