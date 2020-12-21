@@ -34,7 +34,7 @@ public interface BLTProperties   {
 	public static final String ROOT_FOLDER_NAME = "ROOT";
 	public static final long ROOT_PARENT_ID = 0;    // For the status manager
 	public static final long ROOT_RESOURCE_ID = -1;
-	public final static String ROOT_HELP_PATH = "http://localhost:8088/main/system/moduledocs/block/SymbolicAiUsersGuide_filtered.html#";
+	public final static String ROOT_HELP_PATH = "system/moduledocs/block/SymbolicAiUsersGuide_filtered.html";
 	
 	// This is the common prefix under which bundle files are identified/registered
 	public static final String BUNDLE_PREFIX = "blt";

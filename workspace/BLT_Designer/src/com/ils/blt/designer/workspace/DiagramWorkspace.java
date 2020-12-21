@@ -96,6 +96,7 @@ import com.ils.blt.designer.editor.PropertyEditorFrame;
 import com.ils.blt.designer.navtree.DiagramTreeNode;
 import com.ils.common.GeneralPurposeDataContainer;
 import com.inductiveautomation.ignition.client.designable.DesignableContainer;
+import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.client.sqltags.ClientTagManager;
 import com.inductiveautomation.ignition.client.sqltags.tree.TagPathTreeNode;
@@ -107,6 +108,7 @@ import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.config.ObservablePropertySet;
 import com.inductiveautomation.ignition.common.execution.ExecutionManager;
 import com.inductiveautomation.ignition.common.execution.impl.BasicExecutionEngine;
+import com.inductiveautomation.ignition.common.gateway.HttpURL;
 import com.inductiveautomation.ignition.common.model.ApplicationScope;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.project.ProjectScope;
@@ -179,7 +181,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 //	private KeyListener keyHandler;
 	private JPopupMenu zoomPopup;
 	private JComboBox<String> zoomCombo;
-//	private ProcessBlockPalette tabbedPalette = null;
 	private CommandBar alignBar = null;
 	private ApplicationRequestHandler  requestHandler;
 
@@ -1774,8 +1775,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		// Display a browser pointing to the help text for the block
 		public void actionPerformed(final ActionEvent e) {
 			Desktop desktop=Desktop.getDesktop();
-
-			String address = BLTProperties.ROOT_HELP_PATH + block.getClassName();
+			String hostname = handler.getGatewayHostname();
+			String address = String.format("http:/%s:8088/main/%s#%s",hostname,BLTProperties.ROOT_HELP_PATH,block.getClassName());
 			logger.infof("%s.HelpAction: Address is: %s",TAG,address); 
 			try {
 

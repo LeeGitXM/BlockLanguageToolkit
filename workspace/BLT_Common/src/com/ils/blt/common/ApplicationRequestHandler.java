@@ -355,6 +355,22 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		}
 		return result;
 	}
+	/**
+	 * @return an explanation for the state of a block.
+	 */
+	@Override
+	public String getExplanation(String diagramId,String blockId) {
+		String reason="";
+
+		try {
+			reason = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "getExplanation",diagramId,blockId);
+		}
+		catch(Exception ex) {
+			log.infof("%s.getExplanation: Exception (%s)",TAG,ex.getMessage());
+		};
+		return reason;
+	}
 	@Override
 	public String getFamilyName(String uuid) {
 		String name = "NULL UUID";
@@ -371,20 +387,19 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		return name;
 	}
 	/**
-	 * @return an explanation for the state of a block.
+	 * @return the hostname of the gateway
 	 */
-	@Override
-	public String getExplanation(String diagramId,String blockId) {
-		String reason="";
+	public String getGatewayHostname() {
+		String hostname="";
 
 		try {
-			reason = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "getExplanation",diagramId,blockId);
+			hostname = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "getHostname");
 		}
 		catch(Exception ex) {
-			log.infof("%s.getExplanation: Exception (%s)",TAG,ex.getMessage());
+			log.infof("%s.getGatewayHostname: Exception (%s)",TAG,ex.getMessage());
 		};
-		return reason;
+		return hostname;
 	}
 	/**
 	 * @param diagramId identifier of the diagram owning the block, a String
