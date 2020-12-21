@@ -29,8 +29,6 @@ import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -100,6 +98,7 @@ import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.client.sqltags.ClientTagManager;
 import com.inductiveautomation.ignition.client.sqltags.tree.TagPathTreeNode;
 import com.inductiveautomation.ignition.client.sqltags.tree.TagTreeNode;
+import com.inductiveautomation.ignition.client.util.BrowserLauncher;
 import com.inductiveautomation.ignition.client.util.LocalObjectTransferable;
 import com.inductiveautomation.ignition.client.util.action.BaseAction;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
@@ -166,7 +165,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	private static final long serialVersionUID = 4627016159409031941L;
 	private static final DataFlavor BlockDataFlavor = LocalObjectTransferable.flavorForClass(ObservablePropertySet.class);
 	public static final String key = "BlockDiagramWorkspace";
-	private static String OS = System.getProperty("os.name").toLowerCase();
 	public static final String PREFIX = BLTProperties.BLOCK_PREFIX; 
 	private final ApplicationRequestHandler handler = new ApplicationRequestHandler();
 	private final DesignerContext context;
@@ -1770,25 +1768,16 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			this.block = blk;
 		}
 		
-		// Display a browser pointing to the help text for the block
+		// Display a browser pointing to the help text for the block.
+		// Somehow IA got their python to work on Windows. Our attempts kept getting the #xxx stripped off.
+		// Thus we use the script instead of desktop.browse.
 		public void actionPerformed(final ActionEvent e) {
 			Desktop desktop=Desktop.getDesktop();
 			String hostname = handler.getGatewayHostname();
 			String address = String.format("http:/%s:8088/main/%s#%s",hostname,BLTProperties.ROOT_HELP_PATH,block.getClassName());
 			try {
-				if( OS.indexOf("win")>=0) {
-					logger.infof("%s.HelpAction: Windows address is: %s",CLSS,address);
-					//Runtime.getRuntime().exec(new String[] {"explorer.exe",address} );
-					Runtime.getRuntime().exec(new String[] {"C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",address} );
-				}
-				else {
-					URI url = new URI(address);
-					logger.infof("%s.HelpAction: URI is: %s",CLSS,url.toASCIIString());
-					desktop.browse(url);
-				}
-			}
-			catch(URISyntaxException use) {
-				logger.infof("%s.HelpAction: Illegal URI: %s (%s)",CLSS,address,use.getLocalizedMessage()); 
+				logger.infof("%s.HelpAction: url is: %s",CLSS,address);
+				BrowserLauncher.openURL(address);
 			}
 			catch(IOException ioe) {
 				logger.infof("%s.HelpAction: Exception posting browser (%s)",CLSS,ioe.getLocalizedMessage()); 
