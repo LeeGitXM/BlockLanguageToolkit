@@ -19,8 +19,10 @@
 	<property name="block.bin.dir" value="${root.dir}/blt/workspace/Block/bin" />
 	<property name="block.src.dir" value="${root.dir}/blt/workspace/Block/src" />
 	<property name="ils.python.src.dir" value="${root.dir}/ils-python/ILS_Python/src" />
+	
 	<!--   THE NEXT LINE IS ONLY NEEDED FOR XOM SAMPLES AND TESTING - CONSIDER HAVING A FLAG TO DISABLE COPY -->	
 	<!--	<property name="xom.python.src.dir" value="${root.dir}/xom-python/XOM_Python/src" />  -->
+	
 	<property name="ant.build.javac.source" value="1.8"/>
 	<property name="ant.build.javac.target" value="1.8"/>
 		
@@ -236,11 +238,17 @@
 		<copy file="${jar.dir}/${block.jar.name}" todir="${basedir}/BLT_Build/temp_modl/" />
 
 		<!-- Copy license file and javadoc into the bundle -->
-		<mkdir dir="${basedir}/BLT_Build/doc" />
+		<mkdir dir="${basedir}/BLT_Build/doc/SymbolicAiUsersGuide_filtered_files" />
+		<mkdir dir="${basedir}/BLT_Build/res" />
 		<copy file="${basedir}/BLT_Build/license.html" todir="${basedir}/BLT_Build/temp_modl/" />
 		<copy todir="${basedir}/BLT_Build/temp_modl/doc">
-		    <fileset dir="${basedir}/BLT_Build/doc"/>
+			<fileset dir="${basedir}/BLT_Build/doc"/>
+			<fileset file="${svn.repo}/EMChemicals/Diagnostic Toolkit/Documentation/User's Guide/SymbolicAiUsersGuide_filtered.html"/>
 		</copy>
+		<copy todir="${basedir}/BLT_Build/temp_modl/doc/SymbolicAiUsersGuide_filtered_files">
+			<fileset dir="${svn.repo}/EMChemicals/Diagnostic Toolkit/Documentation/User's Guide/SymbolicAiUsersGuide_filtered_files"/>
+		</copy>
+		
 		<!-- Echo the version into .version in the bundle and to be saved -->
 		<echo message="${BLTModule.name}-${BLTModule.version}" file="${basedir}/BLT_Build/temp_modl/.version" append="false"/>
 		<echo message="${BLTModule.name}-${BLTModule.version}:${BLTModule.release}" file="${basedir}/BLT_Build/.version" append="false"/>
@@ -255,7 +263,6 @@
 			<param name="moduleout"  value="${basedir}/BLT_Build/modules/${BLTModule.name}-module-signed.modl"/>
 		</antcall>
 	</target>
-	
 	<!-- Install jar files that are necessary for Python scripts -->
 	<target name="python.jars" >
 		<echo message="Copying jar files from ${basedir}/BLT_Build/temp_modl" />
@@ -330,7 +337,27 @@
 				<include name="block-definition.jar" />
 			</fileset>
 		</copy>
-
+		
+		<!-- Copy test extension functions -->
+		<mkdir dir="${demo.py.lib}/ils/blt/extensions" />
+		<copy todir="${demo.py.lib}/ils/blt/extensions">
+			<fileset dir="${root.dir}/blt/extensions/test">
+				<include name="*.py" />
+			</fileset>
+		</copy>
+		<mkdir dir="${dev.py.lib}/ils/blt/extensions" />
+		<copy todir="${dev.py.lib}/ils/blt/extensions">
+			<fileset dir="${root.dir}/blt/extensions/test">
+				<include name="*.py" />
+			</fileset>
+		</copy>
+		<mkdir dir="${test.py.lib}/ils/blt/extensions" />
+		<copy todir="${test.py.lib}/ils/blt/extensions">
+			<fileset dir="${root.dir}/blt/extensions/test">
+				<include name="*.py" />
+			</fileset>
+		</copy>
+		
 	</target>
 
 	<!-- Installs BLT module in local Ignition gateway. Note that the gateway must be running for this to succeed. -->
