@@ -1778,7 +1778,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			try {
 				if( OS.indexOf("win")>=0) {
 					logger.infof("%s.HelpAction: Windows address is: %s",CLSS,address);
-					Runtime.getRuntime().exec(new String[] {"explorer.exe",address} );
+					//Runtime.getRuntime().exec(new String[] {"explorer.exe",address} );
+					Runtime.getRuntime().exec(new String[] {"C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",address} );
 				}
 				else {
 					URI url = new URI(address);
