@@ -148,7 +148,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 //		blockDescriptor.setTransmitEnabled(isTransmitter());
 		
 		// Currently this refers to a path in /images of the BLT_Designer source area.
-		prototype.setPaletteIconPath("unknown.png");
+		prototype.setPaletteIconPath("Block/icons/palette/unknown.png");
 	}
 	
 	/**

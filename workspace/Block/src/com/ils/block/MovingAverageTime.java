@@ -34,6 +34,8 @@ import com.inductiveautomation.ignition.common.model.values.Quality;
 
 /**
  * This class computes an average of the input over a time interval.
+ * 
+ *  This class is deprecated in favor of "StatisticsSample".
  */
 @ExecutableBlock
 public class MovingAverageTime extends AbstractProcessBlock implements ProcessBlock {
@@ -261,7 +263,7 @@ public class MovingAverageTime extends AbstractProcessBlock implements ProcessBl
 		prototype.setPaletteIconPath("Block/icons/palette/moving_average.png");
 		prototype.setPaletteLabel("Average(t)");
 		prototype.setTooltipText("Compute the moving average of the input and place results on output");
-		prototype.setTabName(BlockConstants.PALETTE_TAB_STATISTICS);
+		prototype.setTabName(BlockConstants.PALETTE_TAB_NONE);
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setBlockClass(getClass().getCanonicalName());

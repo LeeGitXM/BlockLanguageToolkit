@@ -1,5 +1,5 @@
 /**
- *   (c) 2014 ILS Automation. All rights reserved.
+ *   (c) 2014-2020 ILS Automation. All rights reserved.
  *  
  */
 package com.ils.blt.common;
@@ -19,6 +19,7 @@ public interface BLTProperties   {
 	/** This is the name of the jar file containing block class definitions */
 	public final static String BLOCK_JAR_NAME = "block-definition";
 	
+	
 	public final static String APPLICATION_RESOURCE_TYPE   = "blt.application";
 	public final static String DIAGRAM_RESOURCE_TYPE       = "blt.diagram";
 	public final static String FAMILY_RESOURCE_TYPE        = "blt.family";
@@ -33,6 +34,7 @@ public interface BLTProperties   {
 	public static final String ROOT_FOLDER_NAME = "ROOT";
 	public static final long ROOT_PARENT_ID = 0;    // For the status manager
 	public static final long ROOT_RESOURCE_ID = -1;
+	public final static String ROOT_HELP_PATH = "system/moduledocs/block/SymbolicAiUsersGuide_filtered.html";
 	
 	// This is the common prefix under which bundle files are identified/registered
 	public static final String BUNDLE_PREFIX = "blt";

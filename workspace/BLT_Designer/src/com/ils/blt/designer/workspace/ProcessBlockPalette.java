@@ -12,16 +12,21 @@ import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
 import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
@@ -85,7 +90,21 @@ public class ProcessBlockPalette extends DockableFrame implements ResourceWorksp
 			else {
 				panel = (JPanel)tabbedPane.getComponentAt(tabIndex);
 			}
-			if(component!=null) panel.add(component);
+			if(component!=null) {
+				panel.add(component);
+				HelpPopup popup = new HelpPopup(proto);
+				component.setComponentPopupMenu(popup);
+				component.addMouseListener(new MouseAdapter() {
+				    @Override
+				    public void mousePressed(MouseEvent e) {
+				      super.mousePressed(e);
+				      // Left button will deselect text after selectAll, so only for right click
+				      if (SwingUtilities.isRightMouseButton(e)) {
+				    	  popup.show(e.getComponent(), e.getX(), e.getY());
+				      }
+				    }
+				  });
+			}
 		}
 
 		setContentPane(tabbedPane);
@@ -103,6 +122,7 @@ public class ProcessBlockPalette extends DockableFrame implements ResourceWorksp
 		return true;
 	}
 	
+
 
 	private class PaletteEntry extends AbstractAction {
 		private static final long serialVersionUID = 6689395234849746852L;
@@ -188,6 +208,15 @@ public class ProcessBlockPalette extends DockableFrame implements ResourceWorksp
 				dropPoint.y>bounds.y+bounds.height   )  inBounds = false;
 			log.infof("%s.InsertBlockTool: drop x,y = (%d,%d), bounds %d,%d,%d,%d",TAG,dropPoint.x,dropPoint.y,bounds.x,bounds.y,bounds.width,bounds.height );
 			return inBounds;
+		}
+	}
+	
+	private class HelpPopup extends JPopupMenu {
+		private static final long serialVersionUID = 2810769771021508005L;
+		private final JMenuItem helpMenu;
+		public HelpPopup(PalettePrototype proto) {
+	        helpMenu = new JMenuItem("Help");
+	        add(helpMenu);
 		}
 	}
 }

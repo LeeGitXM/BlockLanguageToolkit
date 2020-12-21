@@ -4,6 +4,8 @@
 package com.ils.blt.gateway;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -250,15 +252,28 @@ public class GatewayRpcDispatcher   {
 	public String getDiagramState(String diagramId) {
 		return requestHandler.getDiagramState(diagramId).name();
 	}
-	
-	public String getFamilyName(String uuid) {
-		return requestHandler.getFamilyName(uuid);
-	}
 	/**
 	 * @return an explanation for the state of a block.
 	 */
 	public String getExplanation(String diagramId,String blockId) {
 		return requestHandler.getExplanation(diagramId,blockId);
+	}
+	public String getFamilyName(String uuid) {
+		return requestHandler.getFamilyName(uuid);
+	}
+	/**
+	 * @return the hostname for the gateway
+	 */
+	public String getHostname() {
+		String hostname = "localhost"; 
+		try {
+			InetAddress host = InetAddress.getLocalHost();
+			hostname = host.getHostName();
+		} 
+		catch (UnknownHostException ex) {
+			log.warnf("%s: getHostname: unknown host exception (%s)",TAG,ex.getLocalizedMessage());
+		}
+		return hostname;
 	}
 	/**
 	 * Query a block for its internal state. This allows a read-only display in the

@@ -28,7 +28,9 @@ import com.inductiveautomation.ignition.common.model.values.Quality;
 
 /**
  * This class accumulates an average value of all points that have arrived at the block's 
- * input during its lifetime. All points are given the same weight.
+ * input during its lifetime. All points are given the same weight. 
+ * 
+ * This class is deprecated in favor of "Statistics".
  */
 @ExecutableBlock
 public class MovingAverage extends AbstractProcessBlock implements ProcessBlock {
@@ -165,7 +167,7 @@ public class MovingAverage extends AbstractProcessBlock implements ProcessBlock 
 		prototype.setPaletteIconPath("Block/icons/palette/moving_average.png");
 		prototype.setPaletteLabel("Average");
 		prototype.setTooltipText("Compute the moving average of the input and place results on output");
-		prototype.setTabName(BlockConstants.PALETTE_TAB_STATISTICS);
+		prototype.setTabName(BlockConstants.PALETTE_TAB_NONE);
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setBlockClass(getClass().getCanonicalName());
