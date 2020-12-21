@@ -1781,6 +1781,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			try {
 
 				URI url = new URI(address);
+				logger.infof("%s.HelpAction: URI is: %s",TAG,url.toASCIIString());
 				desktop.browse(url);
 			}
 			catch(URISyntaxException use) {
