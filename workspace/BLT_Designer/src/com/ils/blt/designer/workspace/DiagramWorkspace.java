@@ -93,12 +93,12 @@ import com.ils.blt.designer.editor.BlockPropertyEditor;
 import com.ils.blt.designer.editor.PropertyEditorFrame;
 import com.ils.blt.designer.navtree.DiagramTreeNode;
 import com.ils.common.GeneralPurposeDataContainer;
+import com.inductiveautomation.factorypmi.application.script.builtin.ClientNetUtilities;
 import com.inductiveautomation.ignition.client.designable.DesignableContainer;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.client.sqltags.ClientTagManager;
 import com.inductiveautomation.ignition.client.sqltags.tree.TagPathTreeNode;
 import com.inductiveautomation.ignition.client.sqltags.tree.TagTreeNode;
-import com.inductiveautomation.ignition.client.util.BrowserLauncher;
 import com.inductiveautomation.ignition.client.util.LocalObjectTransferable;
 import com.inductiveautomation.ignition.client.util.action.BaseAction;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
@@ -1777,7 +1777,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			String address = String.format("http:/%s:8088/main/%s#%s",hostname,BLTProperties.ROOT_HELP_PATH,block.getClassName());
 			try {
 				logger.infof("%s.HelpAction: url is: %s",CLSS,address);
-				BrowserLauncher.openURL(address);
+				ClientNetUtilities.openURL(address);
 			}
 			catch(IOException ioe) {
 				logger.infof("%s.HelpAction: Exception posting browser (%s)",CLSS,ioe.getLocalizedMessage()); 
