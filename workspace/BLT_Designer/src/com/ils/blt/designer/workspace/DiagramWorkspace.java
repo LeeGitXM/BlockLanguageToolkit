@@ -29,6 +29,8 @@ import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -93,7 +95,6 @@ import com.ils.blt.designer.editor.BlockPropertyEditor;
 import com.ils.blt.designer.editor.PropertyEditorFrame;
 import com.ils.blt.designer.navtree.DiagramTreeNode;
 import com.ils.common.GeneralPurposeDataContainer;
-import com.inductiveautomation.factorypmi.application.script.builtin.ClientNetUtilities;
 import com.inductiveautomation.ignition.client.designable.DesignableContainer;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.client.sqltags.ClientTagManager;
@@ -165,6 +166,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	private static final long serialVersionUID = 4627016159409031941L;
 	private static final DataFlavor BlockDataFlavor = LocalObjectTransferable.flavorForClass(ObservablePropertySet.class);
 	public static final String key = "BlockDiagramWorkspace";
+	private static String OS = System.getProperty("os.name").toLowerCase();
 	public static final String PREFIX = BLTProperties.BLOCK_PREFIX; 
 	private final ApplicationRequestHandler handler = new ApplicationRequestHandler();
 	private final DesignerContext context;
@@ -1776,8 +1778,19 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			String hostname = handler.getGatewayHostname();
 			String address = String.format("http:/%s:8088/main/%s#%s",hostname,BLTProperties.ROOT_HELP_PATH,block.getClassName());
 			try {
-				logger.infof("%s.HelpAction: url is: %s",CLSS,address);
-				ClientNetUtilities.openURL(address);
+				if( OS.indexOf("win")>=0) {
+					logger.infof("%s.HelpAction: Windows address is: %s",CLSS,address);
+					new ProcessBuilder().command("cmd.exe", "/c", "start", "\"\"", "\"" + address + "\"")
+                    .start();
+				}
+				else {
+					URI url = new URI(address);
+					logger.infof("%s.HelpAction: URI is: %s",CLSS,url.toASCIIString());
+					desktop.browse(url);
+				}
+			}
+			catch(URISyntaxException use) {
+				logger.infof("%s.HelpAction: illegal syntax in %s (%s)",CLSS,address,use.getLocalizedMessage()); 
 			}
 			catch(IOException ioe) {
 				logger.infof("%s.HelpAction: Exception posting browser (%s)",CLSS,ioe.getLocalizedMessage()); 
