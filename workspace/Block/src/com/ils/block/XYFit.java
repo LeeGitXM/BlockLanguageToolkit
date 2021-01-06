@@ -3,6 +3,7 @@
  */
 package com.ils.block;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -23,6 +24,7 @@ import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.PlacementHint;
 import com.ils.blt.common.block.PropertyType;
+import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
@@ -31,8 +33,11 @@ import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.common.FixedSizeQueue;
 import com.ils.common.watchdog.TestAwareQualifiedValue;
+import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
+import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
+import com.inductiveautomation.ignition.common.model.values.Quality;
 
 /**
  * Compute the best fit line over a recent history of data points. The incoming
@@ -40,33 +45,39 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
  */
 @ExecutableBlock
 public class XYFit extends AbstractProcessBlock implements ProcessBlock {
+	private final String TAG = "xyFit";
 	private final static String BLOCK_PROPERTY_SCALE_FACTOR = "ScaleFactor";
 	private final static int MIN_SAMPLE_SIZE = 2;
-	private final static String CORRELATION_PORT_NAME = "correlation";
+	private final static String Y_INTERCEPT_PORT_NAME = "yIntercept";
 	private final static String SLOPE_PORT_NAME = "slope";
 	private final static String X_PORT_NAME = "x";
 	private final static String Y_PORT_NAME = "y";
-
+	private double synchInterval = 0.5; // 1/2 sec synchronization by default
 	
 	private boolean clearOnReset = true;
 	private boolean fillRequired = true;
 	double[] coefficients = null;
 	private int n = 0;
-	private final FixedSizeQueue<QualifiedValue> queue;
+	protected QualifiedValue x = null;
+	protected QualifiedValue y = null;
+	private final FixedSizeQueue<QualifiedValue> xQueue;
+	private final FixedSizeQueue<QualifiedValue> yQueue;
 	private int sampleSize = 2;
 	private double scaleFactor = 1.0;
 	private BlockProperty valueProperty = null;
+	protected final Watchdog dog;
 
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
 	 */
 	public XYFit() {
-		queue = new FixedSizeQueue<QualifiedValue>(sampleSize);
+		dog = new Watchdog(TAG,this);
+		log.infof("Creating a value queue with %d elements", sampleSize);
+		xQueue = new FixedSizeQueue<QualifiedValue>(sampleSize);
+		yQueue = new FixedSizeQueue<QualifiedValue>(sampleSize);
 		initialize();
 		initializePrototype();
 	}
-	
-	
 	
 	/**
 	 * Constructor. 
@@ -77,7 +88,10 @@ public class XYFit extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	public XYFit(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
-		queue = new FixedSizeQueue<QualifiedValue>(sampleSize);
+		dog = new Watchdog(TAG,this);
+		log.infof("Creating (2) a value queue with %d elements", sampleSize);
+		xQueue = new FixedSizeQueue<QualifiedValue>(sampleSize);
+		yQueue = new FixedSizeQueue<QualifiedValue>(sampleSize);
 		initialize();
 	}
 	
@@ -85,7 +99,8 @@ public class XYFit extends AbstractProcessBlock implements ProcessBlock {
 	public void reset() {
 		super.reset();
 		if( clearOnReset ) {
-			queue.clear();
+			xQueue.clear();
+			yQueue.clear();
 			valueProperty.setValue(new Double(Double.NaN));
 		}
 	}
@@ -94,17 +109,23 @@ public class XYFit extends AbstractProcessBlock implements ProcessBlock {
 	 * Define the synchronization property and ports.
 	 */
 	private void initialize() {	
-		setName("LinearFit");
+		setName("XYFit");
 
 		BlockProperty clearProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET,Boolean.TRUE,PropertyType.BOOLEAN,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET, clearProperty);
+		
 		BlockProperty fillProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_FILL_REQUIRED,Boolean.TRUE,PropertyType.BOOLEAN,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_FILL_REQUIRED, fillProperty);
 		
+		BlockProperty synch = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL,new Double(synchInterval),PropertyType.TIME_SECONDS,true);
+		setProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL, synch);
+		
 		BlockProperty sampleSizeProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SAMPLE_SIZE,new Integer(sampleSize),PropertyType.INTEGER,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_SAMPLE_SIZE, sampleSizeProperty);
+		
 		BlockProperty sfProperty = new BlockProperty(BLOCK_PROPERTY_SCALE_FACTOR,new Double(scaleFactor),PropertyType.DOUBLE,true);
 		setProperty(BLOCK_PROPERTY_SCALE_FACTOR, sfProperty);
+		
 		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,new Double(Double.NaN),PropertyType.DOUBLE,false);
 		valueProperty.setBindingType(BindingType.ENGINE);
 		setProperty(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
@@ -123,26 +144,28 @@ public class XYFit extends AbstractProcessBlock implements ProcessBlock {
 		input.setAnnotation("Y");
 		anchors.add(input);
 
-		// Define the main output
+		// There are three outputs.  The main one is the predicted y value.
+		// Then there is M and b, from the equation of a line, y = Mx+b
 		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.DATA);
-		output.setHint(PlacementHint.R);
+		output.setHint(PlacementHint.RT);
 		anchors.add(output);
 		
 		AnchorPrototype slopePort = new AnchorPrototype(SLOPE_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.DATA);
-		slopePort = new AnchorPrototype(SLOPE_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.DATA);
-		slopePort.setHint(PlacementHint.B);
-		slopePort.setAnnotation("S");
+		slopePort.setHint(PlacementHint.R);
+		slopePort.setAnnotation("M");
 		anchors.add(slopePort);
 		
-		AnchorPrototype correlationPort = new AnchorPrototype(CORRELATION_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.DATA);
-		correlationPort = new AnchorPrototype(SLOPE_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.DATA);
-		correlationPort.setHint(PlacementHint.B);
-		correlationPort.setAnnotation("R");
-		anchors.add(correlationPort);
+		AnchorPrototype yInerceptPort = new AnchorPrototype(Y_INTERCEPT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.DATA);
+		yInerceptPort.setHint(PlacementHint.RB);
+		yInerceptPort.setAnnotation("B");
+		anchors.add(yInerceptPort);
 	}
 	
 
 	/**
+	 * We are notified that a new value has appeared on one of our input anchors
+	 * For now we simply record the change in the map and start the watchdog.
+	 * 
 	 * A new value has arrived. Add it to the queue and compute statistics, if appropriate.
 	 * @param vcn incoming new value.
 	 */
@@ -150,48 +173,99 @@ public class XYFit extends AbstractProcessBlock implements ProcessBlock {
 	public synchronized void acceptValue(IncomingNotification vcn) {
 		super.acceptValue(vcn);
 		
-			QualifiedValue qv = vcn.getValue();
-			log.debugf("%s.acceptValue: Received %s",getName(),qv.getValue().toString());
-			if( qv.getQuality().isGood() ) {
-				queue.add(qv);
-				if( queue.size() >= sampleSize || (!fillRequired && queue.size()>=MIN_SAMPLE_SIZE)  ) {
-					computeFit();     // Updates valueProperty
-					// Give it a new timestamp
-					lastValue = new BasicQualifiedValue(valueProperty.getValue(),qv.getQuality(),qv.getTimestamp());
-					if( !isLocked() ) {
-						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
-						controller.acceptCompletionNotification(nvn);
-						notifyOfStatus(lastValue);
-						
-						// Propagate the slope scaled
-						qv = new BasicQualifiedValue(new Double(coefficients[1]*scaleFactor),qv.getQuality(),qv.getTimestamp());
-						nvn = new OutgoingNotification(this,SLOPE_PORT_NAME,qv);
-						controller.acceptCompletionNotification(nvn);
-					}	
+		log.infof("Accepting a value, the sample size is %d", sampleSize);
+		QualifiedValue qv = vcn.getValue();
+		if( vcn.getConnection().getDownstreamPortName().equalsIgnoreCase(X_PORT_NAME)) {
+			if( qv!=null && qv.getValue()!=null ) {
+				x = qv;
+			}
+			else {
+				x = null;
+			}
+		}
+		else if (vcn.getConnection().getDownstreamPortName().equalsIgnoreCase(Y_PORT_NAME)) {
+			if( qv!=null && qv.getValue()!=null && qv.getQuality().isGood()) {
+				y = qv;
+			}
+			else {
+				y = null;
+			}
+		}
+		log.infof("Synch Interval: %f", synchInterval);
+		dog.setSecondsDelay(synchInterval);
+		timer.updateWatchdog(dog);  // pet dog
+	}
+	
+	/**
+	 * The coalescing time has expired. Place the current state on the output,
+	 */
+	@Override
+	public void evaluate() {
+		if( !isLocked() ) {
+			log.infof("In evaluate()");
+			state = TruthValue.UNKNOWN;
+			QualifiedValue currentValue = null;
+			if( x==null ) {
+				currentValue = new TestAwareQualifiedValue(timer,state,new BasicQuality("'x' is unset",Quality.Level.Bad));
+			}
+			else if( y==null ) {
+				currentValue = new TestAwareQualifiedValue(timer,state,new BasicQuality("'y' is unset",Quality.Level.Bad));
+			}
+			else if( !x.getQuality().isGood()) {
+				currentValue = new TestAwareQualifiedValue(timer,state,x.getQuality());
+			}
+			else if( !y.getQuality().isGood()) {
+				currentValue = new TestAwareQualifiedValue(timer,state,y.getQuality());
+			}
+			double xx = Double.NaN;
+			double yy = Double.NaN;
+			if( currentValue == null ) {
+				try {
+					xx = Double.parseDouble(x.getValue().toString());
+					try {
+						yy = Double.parseDouble(y.getValue().toString());
+					}
+					catch(NumberFormatException nfe) {
+						currentValue = new TestAwareQualifiedValue(timer,TruthValue.UNKNOWN,new BasicQuality("'y' is not a valid double",Quality.Level.Bad));	
+					}
+				}
+				catch(NumberFormatException nfe) {
+					currentValue = new TestAwareQualifiedValue(timer,TruthValue.UNKNOWN,new BasicQuality("'x' is not a valid double",Quality.Level.Bad));
+				}
+			}
+			
+			if( currentValue==null ) {     // Success!
+				if( x.getQuality().isGood() && y.getQuality().isGood() ) {
+					xQueue.add(x);
+					yQueue.add(y);
+					computeFit();
+				}
+				else {
+					Quality q = x.getQuality();
+					if( q.isGood()) 
+						q = y.getQuality();
+					lastValue = new TestAwareQualifiedValue(timer,state,q);
+					log.debugf("%s.evaluate: UNKNOWN x=%s, y=%s",getName(),x.toString(),y.toString());
 				}
 			}
 			else {
-				// Post bad value on output, clear queue
-				lastValue = new BasicQualifiedValue(new Double(Double.NaN),qv.getQuality(),qv.getTimestamp());
-				if( !isLocked() ) {
-					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
-					controller.acceptCompletionNotification(nvn);
-					notifyOfStatus(lastValue);
-					
-					// The slope is also bad. Re-use lastValue.
-					coefficients = null;
-					nvn = new OutgoingNotification(this,SLOPE_PORT_NAME,lastValue);
-					controller.acceptCompletionNotification(nvn);
-				}
-				queue.clear();
+				lastValue = currentValue;
 			}
+			/*  TODO - this should be done by compute fit
+			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
+			controller.acceptCompletionNotification(nvn);
+			notifyOfStatus(lastValue);
+			*/
+		}
 	}
 	
 	/**
 	 * @return a block-specific description of internal statue
+	 * This runs in the gateway in response to a request from Designer to View Internal State
 	 */
 	@Override
 	public SerializableBlockStateDescriptor getInternalStatus() {
+		log.tracef("In getInternalStatus()");
 		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
 		Map<String,String> attributes = descriptor.getAttributes();
 		attributes.put("BestFit", String.valueOf(valueProperty.getValue()));
@@ -201,15 +275,21 @@ public class XYFit extends AbstractProcessBlock implements ProcessBlock {
 			attributes.put("Slope", String.valueOf(coefficients[1]));
 		}
 		List<Map<String,String>> descBuffer = descriptor.getBuffer();
-		Iterator<QualifiedValue> walker = queue.iterator();
-		while( walker.hasNext() ) {
+		
+		log.tracef("Formatting the history buffer...");
+		n = 0;
+		while (n < xQueue.size()){
+			log.tracef("Adding a point...");
 			Map<String,String> qvMap = new HashMap<>();
-			QualifiedValue qv = walker.next();
-			qvMap.put("Value", qv.getValue().toString());
-			qvMap.put("Quality", qv.getQuality().toString());
-			qvMap.put("Timestamp", qv.getTimestamp().toString());
+			qvMap.put("X Value", xQueue.get(n).getValue().toString());
+			qvMap.put("X Timestamp", xQueue.get(n).getTimestamp().toString());
+			qvMap.put("Y Value", yQueue.get(n).getValue().toString());
+			qvMap.put("Y Timestamp", yQueue.get(n).getTimestamp().toString());
 			descBuffer.add(qvMap);
+			n++;
 		}
+		log.tracef("...made the history buffer!");
+		
 		return descriptor;
 	}
 	/**
@@ -247,7 +327,15 @@ public class XYFit extends AbstractProcessBlock implements ProcessBlock {
 			catch(NumberFormatException nfe) {
 				log.warnf("%s: propertyChange Unable to convert fill flag to a boolean (%s)",getName(),nfe.getLocalizedMessage());
 			}
-		}		
+		}
+		else if(propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL)) {
+			try {
+				synchInterval = Double.parseDouble(event.getNewValue().toString());
+			}
+			catch(NumberFormatException nfe) {
+				log.warnf("%s: propertyChange Unable to convert synch interval to a double (%s)",getName(),nfe.getLocalizedMessage());
+			}
+		}
 		else if(propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_SAMPLE_SIZE) ) {
 			// Trigger an evaluation
 			try {
@@ -255,7 +343,8 @@ public class XYFit extends AbstractProcessBlock implements ProcessBlock {
 				if( val>0 ) {
 					sampleSize = val;
 					if( sampleSize< MIN_SAMPLE_SIZE ) sampleSize = MIN_SAMPLE_SIZE;
-					queue.setBufferSize(sampleSize);
+					xQueue.setBufferSize(sampleSize);
+					yQueue.setBufferSize(sampleSize);
 					// Even if locked, we update the current state
 					valueProperty.setValue(Double.NaN);
 					controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,
@@ -275,6 +364,7 @@ public class XYFit extends AbstractProcessBlock implements ProcessBlock {
 			}
 		}
 	}
+	
 	/**
 	 * Send status update notification for our last latest state.
 	 */
@@ -284,6 +374,7 @@ public class XYFit extends AbstractProcessBlock implements ProcessBlock {
 		updateStateForNewValue(qv);
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
+	
 	/**
 	 * Augment the palette prototype for this block class.
 	 */
@@ -309,26 +400,67 @@ public class XYFit extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	private void computeFit() {
 		final WeightedObservedPoints obs = new WeightedObservedPoints();
+		QualifiedValue x_qv = null;
+		QualifiedValue y_qv = null;
+		QualifiedValue qv = null;
+		log.infof("%s.computeFit(), samples in queue = %d, computing...", getName(), xQueue.size());
+		
+		if (xQueue.size() != yQueue.size()){
+			// TODO Do something drastic here, probs reinitialize everything!
+			log.errorf("%s.computeFit() detected different sized x and y arrays",getName());
+			return;
+		}
+		
+		if (fillRequired && xQueue.size() < sampleSize) {
+			log.warnf("%s.computeFit(), skipping evaluation because the buffer must be full.  The buffer size is %d and there are %d samples..", getName(), sampleSize, xQueue.size());
+			return;
+		}
 		
 		n = 0;
-		for(QualifiedValue qv:queue) {
-			n++;
-			double val = Double.NaN;
+		double xVal = Double.NaN;
+		double yVal = Double.NaN;
+		
+		while (n < xQueue.size()){
+
 			try {
-				val = Double.parseDouble(qv.getValue().toString());
+				xVal = Double.parseDouble(xQueue.get(n).getValue().toString());
+				yVal = Double.parseDouble(yQueue.get(n).getValue().toString());
+				
+				x_qv = xQueue.get(n);
+				y_qv = yQueue.get(n);
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s.computeRateOfChange detected not-a-number in queue (%s), ignored",getName(),nfe.getLocalizedMessage());
 				continue;
 			}
-			obs.add(n,val);
+			obs.add(xVal, yVal);
+			n++;
 		}
 		// Instantiate a linear fitter
 		final PolynomialCurveFitter fitter = PolynomialCurveFitter.create(1);
+		
 		// Retrieve fitted parameters (coefficients of the polynomial function).
 		coefficients = fitter.fit(obs.toList());
 		log.infof("%s.computeFit: Coefficients are: %s %s",getName(),String.valueOf(coefficients[0]),String.valueOf(coefficients[1]));
+		
 		// Value = mx + b
-		valueProperty.setValue(coefficients[1]*n+coefficients[0]);
+		yVal = coefficients[1] * xVal + coefficients[0];
+		valueProperty.setValue(yVal);
+		
+		// Propagate the calculated y value
+		qv = new BasicQualifiedValue(yVal, x_qv.getQuality(), x_qv.getTimestamp());
+		OutgoingNotification nvn = new OutgoingNotification(this, BlockConstants.OUT_PORT_NAME, qv);
+		controller.acceptCompletionNotification(nvn);
+		notifyOfStatus(lastValue);
+		
+		// Propagate the slope scaled
+		qv = new BasicQualifiedValue(new Double(coefficients[1]*scaleFactor), x_qv.getQuality(), x_qv.getTimestamp());
+		nvn = new OutgoingNotification(this, SLOPE_PORT_NAME, qv);
+		controller.acceptCompletionNotification(nvn);
+		
+		// Propagate the y-intercept
+		qv = new BasicQualifiedValue(new Double(coefficients[0]), x_qv.getQuality(), x_qv.getTimestamp());
+		nvn = new OutgoingNotification(this, Y_INTERCEPT_PORT_NAME, qv);
+		controller.acceptCompletionNotification(nvn);
 	}
 }
