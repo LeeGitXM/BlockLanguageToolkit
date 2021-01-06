@@ -30,8 +30,8 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
  */
 @ExecutableBlock
 public class Readout extends AbstractProcessBlock implements ProcessBlock {
-	private String format = "%s";
-	protected PropertyType type = PropertyType.STRING;
+	private String format = "%4.4f";
+	protected PropertyType type = PropertyType.DOUBLE;
 	protected BlockProperty valueProperty = null;
 	
 	/**
@@ -52,6 +52,7 @@ public class Readout extends AbstractProcessBlock implements ProcessBlock {
 	public Readout(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
 		initialize();
+		log.tracef("Initializing a readout named %s", getName());
 	}
 	/**
 	 * On a reset, clear the display.
@@ -85,12 +86,12 @@ public class Readout extends AbstractProcessBlock implements ProcessBlock {
 		setProperty(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
 		
 		// Define a single input 
-		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.ANY);
+		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
 		input.setIsMultiple(false);
 		anchors.add(input);
 
 		// Define a single output
-		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.ANY);
+		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.DATA);
 		anchors.add(output);
 	}
 	/**
@@ -145,12 +146,13 @@ public class Readout extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	@Override
 	public void acceptValue(IncomingNotification incoming) {
+		log.tracef("Processing a value for a readout named %s", getName());
 		super.acceptValue(incoming);
 		if( type.equals(PropertyType.BOOLEAN) || type.equals(PropertyType.DOUBLE) ||
 				type.equals(PropertyType.INTEGER) || type.equals(PropertyType.STRING)     ) {
-			lastValue = incoming.getValue();
+			lastValue = incoming.getValue();	
 			if( lastValue!=null && lastValue.getValue()!=null ) {
-				if( !isLocked()  ) {
+				if( !isLocked()  ) {		
 					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 					controller.acceptCompletionNotification(nvn);
 					// Convert the value according to the data type specified by the format.
@@ -158,15 +160,19 @@ public class Readout extends AbstractProcessBlock implements ProcessBlock {
 					if( lastValue.getValue().toString().length()>0) {
 						try {
 							if( type==PropertyType.DOUBLE) {
+								log.tracef("...formatting a double for %s...", getName());
 								value = String.format(format, fcns.coerceToDouble(lastValue.getValue()));
 							}
 							else if( type==PropertyType.INTEGER) {
+								log.tracef("...formatting an integer for %s...", getName());
 								value = String.format(format, fcns.coerceToInteger(lastValue.getValue()));
 							}
 							else if(lastValue.getValue() instanceof Date) {
+								log.tracef("...formatting a date for %s...", getName());
 								value = dateFormatter.format(lastValue.getValue());
 							}
 							else {
+								log.tracef("...formatting a value of an unknown type for %s...", getName());
 								value = String.format(format,fcns.coerceToString(lastValue.getValue()));
 							}
 						}
@@ -182,6 +188,7 @@ public class Readout extends AbstractProcessBlock implements ProcessBlock {
 				}
 			}
 		}
+		log.tracef("...done processing a value for a readout named %s", getName());
 	}
 	
 
