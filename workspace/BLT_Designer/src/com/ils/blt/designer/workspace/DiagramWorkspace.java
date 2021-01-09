@@ -1779,8 +1779,9 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			String address = String.format("http:/%s:8088/main/%s#%s",hostname,BLTProperties.ROOT_HELP_PATH,block.getClassName());
 			try {
 				if( OS.indexOf("win")>=0) {
-					logger.infof("%s.HelpAction: Windows address is: %s",CLSS,address);
-					new ProcessBuilder().command("cmd.exe", "/c", "start", "\"\"", "\"" + address + "\"")
+					String browserPath = requestHandler.getWindowsBrowserPath();
+					logger.infof("%s.HelpAction: Windows command: %s %s",CLSS,browserPath,address);
+					new ProcessBuilder().command(browserPath, "/c", "start", "\"\"", "\"" + address + "\"")
                     .start();
 				}
 				else {

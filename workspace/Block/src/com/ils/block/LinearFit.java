@@ -36,7 +36,7 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
  * Compute the best fit line over a recent history of data points. The x-axis
- * is the point count.
+ * is the point count. 
  */
 @ExecutableBlock
 public class LinearFit extends AbstractProcessBlock implements ProcessBlock {

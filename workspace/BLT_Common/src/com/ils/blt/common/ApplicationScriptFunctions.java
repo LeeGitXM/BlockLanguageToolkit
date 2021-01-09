@@ -6,7 +6,6 @@ package com.ils.blt.common;
 
 import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 
 import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
@@ -218,6 +217,14 @@ public class ApplicationScriptFunctions   {
 	 */
 	public static String getToolkitProperty(String propertyName) {
 		return handler.getToolkitProperty(propertyName);
+	}
+	/**
+	 * Retrieve the configured browser path from the ORM database HelpRecord. This is used for 
+	 * context-sensitive help.
+	 * @return the configured browser path (for Windows)
+	 */
+	public static String getWindowsBrowserPath() {
+		return handler.getWindowsBrowserPath();
 	}
 	/**
 	 * @return the alert state of the specified diagram;

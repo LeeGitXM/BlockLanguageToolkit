@@ -1,5 +1,5 @@
 /**
- *   (c) 2014-2020  ILS Automation. All rights reserved.
+ *   (c) 2014-2021  ILS Automation. All rights reserved.
  *  
  */
 package com.ils.blt.common;
@@ -521,6 +521,23 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		return result;
 	}
 	/**
+	 * Retrieve the configured browser path from the ORM database HelpRecord. This is used for 
+	 * context-sensitive help.
+	 * @return the configured browser path (for Windows)
+	 */
+	public String getWindowsBrowserPath() {
+		String result = null;
+		try {
+			result = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "getWindowsBrowserPath");
+			log.tracef("%s.getWindowsBrowserPath ... %s",TAG,result);
+		}
+		catch(Exception ge) {
+			log.infof("%s.getWindowsBrowserPath: GatewayException (%s:%s)",TAG,ge.getClass().getName(),ge.getMessage());
+		}
+		return result;
+	}
+	/**
 	 * Acquire a value from the SQLite database table associated with the toolkit. A
 	 * empty string is returned if the string is not found, null if an exception is thrown.
 	 * @param propertyName name of the property for which a value is to be returned
@@ -532,7 +549,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		try {
 			result = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 					BLTProperties.MODULE_ID, "getToolkitProperty",propertyName);
-			log.tracef("%s.getToolkitProperty ... %s = %s",TAG,propertyName,result.toString());
+			log.tracef("%s.getToolkitProperty ... %s = %s",TAG,propertyName,result);
 		}
 		catch(Exception ge) {
 			log.infof("%s.getToolkitProperty: GatewayException (%s:%s)",TAG,ge.getClass().getName(),ge.getMessage());
