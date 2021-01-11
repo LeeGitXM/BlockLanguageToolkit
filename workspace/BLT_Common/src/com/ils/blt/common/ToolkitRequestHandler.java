@@ -1,5 +1,5 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved.
+ *   (c) 2014-2021  ILS Automation. All rights reserved.
  *  
  */
 package com.ils.blt.common;
@@ -206,6 +206,12 @@ public interface ToolkitRequestHandler  {
 	 * @return the value of the specified property.
 	 */
 	public String getToolkitProperty(String propertyName) ;
+	/**
+	 * Retrieve the configured browser path from the ORM database HelpRecord. This is used for 
+	 * context-sensitive help.
+	 * @return the configured browser path (for Windows)
+	 */
+	public String getWindowsBrowserPath();
 	/**
 	 * @param projectId id of the project, a Long
 	 * @param resourceId the diagram expressed as a resource

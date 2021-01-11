@@ -44,6 +44,7 @@ import com.ils.blt.gateway.engine.ProcessNode;
 import com.ils.blt.gateway.proxy.ProxyHandler;
 import com.ils.blt.gateway.tag.TagHandler;
 import com.ils.common.ClassList;
+import com.ils.common.help.HelpRecord;
 import com.ils.common.persistence.ToolkitProperties;
 import com.ils.common.persistence.ToolkitRecordHandler;
 import com.ils.common.watchdog.AcceleratedWatchdogTimer;
@@ -57,6 +58,8 @@ import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.gateway.datasource.Datasource;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
+
+import simpleorm.dataset.SQuery;
 
 /**
  *  This handler provides is a common class for handling requests for block properties and control
@@ -644,6 +647,19 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	@Override
 	public String getToolkitProperty(String propertyName) {
 		return toolkitRecordHandler.getToolkitProperty(propertyName);
+	}
+	
+	/**
+	 * Retrieve the configured browser path from the ORM database HelpRecord
+	 * @return the configured browser path (for Windows)
+	 */
+	@Override
+	public String getWindowsBrowserPath() {
+		String path = null;
+		SQuery<HelpRecord> query = new SQuery<HelpRecord>(HelpRecord.META).eq(HelpRecord.Id,0L);
+		HelpRecord rec = this.context.getPersistenceInterface().queryOne(query);
+		if(rec!=null ) path = rec.getWindowsBrowserPath();
+		return path;
 	}
 	@Override
 	public boolean isControllerRunning() {
