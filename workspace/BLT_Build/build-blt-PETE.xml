@@ -2,10 +2,13 @@
 
 	<import file="${basedir}/BLT_Build/build.xml"/>
 
-	<property name="version.build" value="3" />	
+	<property name="version.major" value="2" />	
+	<property name="version.minor" value="0" />	
+	<property name="version.release" value="3" />	
+	<property name="version.build" value="${DSTAMP}" />	
 	<!-- Change version.beta value to "" for release builds -->
 	<property name="version.beta" value="-development" />		
-	<property name="BLTModule.version" value="2.0.00.${version.build}" />
+	<property name="BLTModule.version" value="${version.major}.${version.minor}.${version.release}.${version.build}" />
 	<property name="BLTModule.name" value="BLT" />
 	<property name="BLTModule.release" value="0.5" />
 	<property name="BLTModule.description" value="Block Language Toolkit" />

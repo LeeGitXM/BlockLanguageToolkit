@@ -76,6 +76,7 @@ public class BlockInternalsViewer extends JDialog {
 		setModal(false);
 		setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
         this.log = LogUtil.getLogger(getClass().getPackage().getName());
+        log.infof("Creating a BlockInternalsViewer");
 		this.setPreferredSize(new Dimension(DIALOG_WIDTH,DIALOG_HEIGHT));
 		initialize();
 		queryBlock();
@@ -237,9 +238,10 @@ public class BlockInternalsViewer extends JDialog {
 	/**
 	 * Create a panel for displaying some internal buffer of a block.  Usually this
 	 * is some kind of a history. E.g.. the time-stamped entries in a time-average block.
-	 * The first table in the list is used derive the column names.
+	 * The first record in the list is used derive the column names.
 	 */
 	private JPanel createHistoryBufferPanel()  {
+		log.tracef("Creating the history panel");
 		JPanel outerPanel = new JPanel();
 		table = new JTable();
 		Map<String,String> prototype = buffer.get(0);
@@ -249,6 +251,7 @@ public class BlockInternalsViewer extends JDialog {
 		outerPanel.setLayout(new MigLayout("ins 2,fillx,filly","",""));
 		DefaultTableModel dataModel = new DefaultTableModel(columnNames,0); 
 		for( Map<String,String> entity:buffer) {
+			log.tracef("...adding a history observation...");
 			String[] row = entity.values().toArray(new String[nColumns]);
 			dataModel.addRow(row);
 		}

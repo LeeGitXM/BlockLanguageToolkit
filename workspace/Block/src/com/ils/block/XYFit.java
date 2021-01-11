@@ -411,7 +411,7 @@ public class XYFit extends AbstractProcessBlock implements ProcessBlock {
 			return;
 		}
 		
-		if (fillRequired && xQueue.size() < sampleSize) {
+		if (fillRequired && xQueue.size() < sampleSize && xQueue.size() < MIN_SAMPLE_SIZE) {
 			log.warnf("%s.computeFit(), skipping evaluation because the buffer must be full.  The buffer size is %d and there are %d samples..", getName(), sampleSize, xQueue.size());
 			return;
 		}

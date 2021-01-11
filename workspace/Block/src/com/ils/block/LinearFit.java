@@ -3,6 +3,7 @@
  */
 package com.ils.block;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -42,6 +43,7 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 public class LinearFit extends AbstractProcessBlock implements ProcessBlock {
 	private final static String BLOCK_PROPERTY_SCALE_FACTOR = "ScaleFactor";
 	private final static int MIN_SAMPLE_SIZE = 2;
+	private final static String Y_INTERCEPT_PORT_NAME = "yIntercept";
 	private final static String SLOPE_PORT_NAME = "slope";
 
 	
@@ -112,16 +114,21 @@ public class LinearFit extends AbstractProcessBlock implements ProcessBlock {
 		input.setIsMultiple(false);
 		anchors.add(input);
 
-		// Define a two outputs
+		// There are three outputs.  The main one is the predicted y value.
+		// Then there is M and b, from the equation of a line, y = Mx+b
 		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.DATA);
-		output.setHint(PlacementHint.R);
+		output.setHint(PlacementHint.RT);
 		anchors.add(output);
 		
 		AnchorPrototype slopePort = new AnchorPrototype(SLOPE_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.DATA);
-		slopePort = new AnchorPrototype(SLOPE_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.DATA);
-		slopePort.setHint(PlacementHint.B);
-		slopePort.setAnnotation("S");
+		slopePort.setHint(PlacementHint.R);
+		slopePort.setAnnotation("M");
 		anchors.add(slopePort);
+		
+		AnchorPrototype yInerceptPort = new AnchorPrototype(Y_INTERCEPT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.DATA);
+		yInerceptPort.setHint(PlacementHint.RB);
+		yInerceptPort.setAnnotation("B");
+		anchors.add(yInerceptPort);
 	}
 	
 
@@ -132,42 +139,32 @@ public class LinearFit extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public synchronized void acceptValue(IncomingNotification vcn) {
 		super.acceptValue(vcn);
+		log.infof("Accepting a new value...");
 		
-			QualifiedValue qv = vcn.getValue();
-			log.debugf("%s.acceptValue: Received %s",getName(),qv.getValue().toString());
-			if( qv.getQuality().isGood() ) {
-				queue.add(qv);
-				if( queue.size() >= sampleSize || (!fillRequired && queue.size()>=MIN_SAMPLE_SIZE)  ) {
-					computeFit();     // Updates valueProperty
-					// Give it a new timestamp
-					lastValue = new BasicQualifiedValue(valueProperty.getValue(),qv.getQuality(),qv.getTimestamp());
-					if( !isLocked() ) {
-						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
-						controller.acceptCompletionNotification(nvn);
-						notifyOfStatus(lastValue);
-						
-						// Propagate the slope scaled
-						qv = new BasicQualifiedValue(new Double(coefficients[1]*scaleFactor),qv.getQuality(),qv.getTimestamp());
-						nvn = new OutgoingNotification(this,SLOPE_PORT_NAME,qv);
-						controller.acceptCompletionNotification(nvn);
-					}	
-				}
+		QualifiedValue qv = vcn.getValue();
+		log.debugf("%s.acceptValue: Received %s",getName(),qv.getValue().toString());
+		if( qv.getQuality().isGood() ) {
+			queue.add(qv);
+			if( queue.size() >= sampleSize || (!fillRequired && queue.size()>=MIN_SAMPLE_SIZE)  ) {
+				computeFit();     // Updates valueProperty
 			}
-			else {
-				// Post bad value on output, clear queue
-				lastValue = new BasicQualifiedValue(new Double(Double.NaN),qv.getQuality(),qv.getTimestamp());
-				if( !isLocked() ) {
-					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
-					controller.acceptCompletionNotification(nvn);
-					notifyOfStatus(lastValue);
-					
-					// The slope is also bad. Re-use lastValue.
-					coefficients = null;
-					nvn = new OutgoingNotification(this,SLOPE_PORT_NAME,lastValue);
-					controller.acceptCompletionNotification(nvn);
-				}
-				queue.clear();
+		}
+		else {
+			// Post bad value on output, clear queue
+			lastValue = new BasicQualifiedValue(new Double(Double.NaN),qv.getQuality(),qv.getTimestamp());
+			if( !isLocked() ) {
+				//TODO take a closer look at this!
+				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
+				controller.acceptCompletionNotification(nvn);
+				notifyOfStatus(lastValue);
+				
+				// The slope is also bad. Re-use lastValue.
+				coefficients = null;
+				nvn = new OutgoingNotification(this,SLOPE_PORT_NAME,lastValue);
+				controller.acceptCompletionNotification(nvn);
 			}
+			queue.clear();
+		}
 	}
 	
 	/**
@@ -287,31 +284,67 @@ public class LinearFit extends AbstractProcessBlock implements ProcessBlock {
 	
 	/**
 	 * Compute a linear or cubic fit. Updates valueProperty with the best fit for the
-	 * last data point. Also sets the slope.  The x value is simply the current point
-	 * count.
+	 * last data point. Also sets the slope and y-intercept.  The x value is the number 
+	 * of seconds from the first point (the first point is 0).
 	 */
 	private void computeFit() {
 		final WeightedObservedPoints obs = new WeightedObservedPoints();
-		
+		QualifiedValue qv = null;
+		QualifiedValue qvNew = null;
+		Double xVal = null;
+		Double yVal = null;
+		Date baseDate = null;
+		Date theDate = null;
+		log.infof("Computing fit...");
 		n = 0;
-		for(QualifiedValue qv:queue) {
-			n++;
-			double val = Double.NaN;
+		while (n < queue.size()){
+			qv = queue.get(n);
 			try {
-				val = Double.parseDouble(qv.getValue().toString());
+				yVal = Double.parseDouble(qv.getValue().toString());
+				if (n == 0){
+					xVal = 0.0;
+					baseDate = qv.getTimestamp();
+				}
+				else{
+					theDate = qv.getTimestamp();
+					xVal = (double) (theDate.getTime()/1000 - baseDate.getTime()/1000);
+				}
+					
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s.computeRateOfChange detected not-a-number in queue (%s), ignored",getName(),nfe.getLocalizedMessage());
 				continue;
 			}
-			obs.add(n,val);
+			log.infof("Adding (%f, %f)", xVal, yVal);
+			obs.add(xVal, yVal);
+			n++;
 		}
+		
 		// Instantiate a linear fitter
 		final PolynomialCurveFitter fitter = PolynomialCurveFitter.create(1);
+		
 		// Retrieve fitted parameters (coefficients of the polynomial function).
 		coefficients = fitter.fit(obs.toList());
 		log.infof("%s.computeFit: Coefficients are: %s %s",getName(),String.valueOf(coefficients[0]),String.valueOf(coefficients[1]));
+		
 		// Value = mx + b
-		valueProperty.setValue(coefficients[1]*n+coefficients[0]);
+		yVal = coefficients[1] * xVal + coefficients[0];
+		valueProperty.setValue(yVal);
+		
+		// Propagate the calculated y value
+		qvNew = new BasicQualifiedValue(yVal, qv.getQuality(), qv.getTimestamp());
+		OutgoingNotification nvn = new OutgoingNotification(this, BlockConstants.OUT_PORT_NAME, qvNew);
+		controller.acceptCompletionNotification(nvn);
+		notifyOfStatus(lastValue);
+		
+		// Propagate the slope scaled
+		qvNew = new BasicQualifiedValue(new Double(coefficients[1]*scaleFactor), qv.getQuality(), qv.getTimestamp());
+		nvn = new OutgoingNotification(this, SLOPE_PORT_NAME, qvNew);
+		controller.acceptCompletionNotification(nvn);
+		
+		// Propagate the y-intercept
+		qvNew = new BasicQualifiedValue(new Double(coefficients[0]), qv.getQuality(), qv.getTimestamp());
+		nvn = new OutgoingNotification(this, Y_INTERCEPT_PORT_NAME, qvNew);
+		controller.acceptCompletionNotification(nvn);
 	}
 }
