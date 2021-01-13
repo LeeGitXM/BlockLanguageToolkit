@@ -23,10 +23,13 @@ import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
+import com.ils.common.help.HelpRecord;
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
+
+import simpleorm.dataset.SQuery;
 
 
 /**
@@ -307,6 +310,12 @@ public class GatewayRpcDispatcher   {
 	}
 	public String getToolkitProperty(String propertyName) {
 		return requestHandler.getToolkitProperty(propertyName);
+	}
+	/**
+	 * @return the configured browser path (for Windows) from the ORM database HelpRecord 
+	 */
+	public String getWindowsBrowserPath() {
+		return requestHandler.getWindowsBrowserPath();
 	}
 
     public Boolean isAlerting(Long projectId,Long resourceId) {

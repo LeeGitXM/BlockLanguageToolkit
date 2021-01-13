@@ -1780,6 +1780,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			try {
 				if( OS.indexOf("win")>=0) {
 					String browserPath = requestHandler.getWindowsBrowserPath();
+					if( browserPath==null ) browserPath = "PATH_NOT_FOUND_IN_ORM";
 					logger.infof("%s.HelpAction: Windows command: %s %s",CLSS,browserPath,address);
 					new ProcessBuilder().command(browserPath, "/c", "start", "\"\"", "\"" + address + "\"")
                     .start();
