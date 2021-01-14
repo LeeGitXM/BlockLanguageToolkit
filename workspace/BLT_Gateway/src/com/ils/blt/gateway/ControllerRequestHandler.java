@@ -44,7 +44,7 @@ import com.ils.blt.gateway.engine.ProcessNode;
 import com.ils.blt.gateway.proxy.ProxyHandler;
 import com.ils.blt.gateway.tag.TagHandler;
 import com.ils.common.ClassList;
-import com.ils.common.help.HelpRecord;
+import com.ils.common.help.HelpRecordProxy;
 import com.ils.common.persistence.ToolkitProperties;
 import com.ils.common.persistence.ToolkitRecordHandler;
 import com.ils.common.watchdog.AcceleratedWatchdogTimer;
@@ -656,8 +656,8 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	@Override
 	public String getWindowsBrowserPath() {
 		String path = null;
-		SQuery<HelpRecord> query = new SQuery<HelpRecord>(HelpRecord.META).eq(HelpRecord.Id,0L);
-		HelpRecord rec = this.context.getPersistenceInterface().queryOne(query);
+		SQuery<HelpRecordProxy> query = new SQuery<HelpRecordProxy>(HelpRecordProxy.META).eq(HelpRecordProxy.Id,0L);
+		HelpRecordProxy rec = this.context.getPersistenceInterface().queryOne(query);
 		if(rec!=null ) path = rec.getWindowsBrowserPath();
 		return path;
 	}
