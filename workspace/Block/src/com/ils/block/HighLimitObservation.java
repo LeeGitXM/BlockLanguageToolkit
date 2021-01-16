@@ -97,26 +97,7 @@ public class HighLimitObservation extends AbstractProcessBlock implements Proces
 		
 		if( port.equalsIgnoreCase(BlockConstants.IN_PORT_NAME) ) {
 			observation = vcn.getValue();
-			String val = observation.getValue().toString();
-			try {
-				double dbl = Double.parseDouble(val);
-				TruthValue newValue = state;
-				if( dbl >= limit   ) newValue = TruthValue.TRUE;
-				if( dbl < limit - deadband ) newValue = TruthValue.FALSE;
-				if( !observation.getQuality().isGood()) newValue = TruthValue.UNKNOWN;
-				if( !newValue.equals(state)) {
-					setState(newValue);
-					lastValue = new BasicQualifiedValue(state,observation.getQuality(),observation.getTimestamp());
-					if( !isLocked() ) {
-						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
-						controller.acceptCompletionNotification(nvn);
-						notifyOfStatus(lastValue);
-					}
-				}
-			}
-			catch(NumberFormatException nfe) {
-				log.warnf("%s: setValue Unable to convert incoming value (%s) to a double (%s)",TAG,val,nfe.getLocalizedMessage());
-			}
+			evaluate();
 		}
 	}
 	/**
@@ -148,7 +129,31 @@ public class HighLimitObservation extends AbstractProcessBlock implements Proces
 		if( observation!=null ) attributes.put("LastObservation", observation.getValue().toString());
 		return descriptor;
 	}
-	
+	@Override
+	public void evaluate() {
+		if( observation!=null ) {
+			String val = observation.getValue().toString();
+			try {
+				double dbl = Double.parseDouble(val);
+				TruthValue newValue = state;
+				if( dbl >= limit   ) newValue = TruthValue.TRUE;
+				if( dbl < limit - deadband ) newValue = TruthValue.FALSE;
+				if( !observation.getQuality().isGood()) newValue = TruthValue.UNKNOWN;
+				if( !newValue.equals(state)) {
+					setState(newValue);
+					lastValue = new BasicQualifiedValue(state,observation.getQuality(),observation.getTimestamp());
+					if( !isLocked() ) {
+						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
+						controller.acceptCompletionNotification(nvn);
+						notifyOfStatus(lastValue);
+					}
+				}
+			}
+			catch(NumberFormatException nfe) {
+				log.warnf("%s: setValue Unable to convert incoming value (%s) to a double (%s)",TAG,val,nfe.getLocalizedMessage());
+			}
+		}
+	}
 	/**
 	 * Send status update notification for our last latest state.
 	 */
@@ -180,6 +185,7 @@ public class HighLimitObservation extends AbstractProcessBlock implements Proces
 		else if(propertyName.equals(BlockConstants.BLOCK_PROPERTY_LIMIT)) {
 			try {
 				limit = Double.parseDouble(event.getNewValue().toString());
+				evaluate();
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s: propertyChange Unable to convert limit to a double (%s)",TAG,nfe.getLocalizedMessage());
