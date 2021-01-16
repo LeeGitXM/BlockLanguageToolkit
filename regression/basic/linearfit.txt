@@ -1,0 +1,31 @@
+#
+# Test the Linear Fit block.
+#
+DIAGRAM="app75/family75/linearfit"
+tag: In MemoryTags/LinearFitIn
+tag: SlopeOut MemoryTags/LinearFitSlope
+tag: YOut MemoryTags/LinearFitYIntercept
+tagset: FitInput MemoryTags/LinearFitIn
+
+Tagset: FitInput
+Show: diagram $DIAGRAM
+
+# Note the InputBlock will re-transmit its value after a RESET.
+# Make use of this.
+2000/01/01 09:59:30 0.0
+resetDiagram ($DIAGRAM)
+
+# Block are configured to require 5 data points
+Test: Linear Fit
+Step: Basic Test 
+
+2000/01/01 10:00:00  4.0
+2000/01/01 10:00:05  5.0
+2000/01/01 10:00:10  7.0
+2000/01/01 10:00:15 10.0
+2000/01/01 10:00:20 15.0
+
+# After 10 entries we have no trend.
+2000/01/01 10:01:05 Assert: SlopeOut = 1.518  "Calculated Slope"
+2000/01/01 10:01:10 Assert: YOut = 0.305  "Calculated Y-Intercept"
+

@@ -542,6 +542,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 			Signal sig = sn.getSignal();
 			recordActivity(Activity.ACTIVITY_RECEIVE,sig.getCommand());
 			if( sig.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_CONFIGURE) ) {
+				log.infof("%s - %s - %s", sig.getCommand(), sig.getArgument(), sig.getPayload());
 				String propertyName = sig.getArgument();
 				BlockProperty bp = getProperty(propertyName);
 				if( bp!=null ) {
@@ -549,6 +550,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 					BlockPropertyChangeEvent event = new BlockPropertyChangeEvent(getBlockId().toString(), propertyName, bp.getValue(), sig.getPayload());
 					propertyChange(event);
 					QualifiedValue qv = new TestAwareQualifiedValue(timer,bp.getValue());  // Value now event payload.
+					log.infof("qv = %s", qv.getValue().toString());
 					controller.sendPropertyNotification(getBlockId().toString(),bp.getName(), qv);
 				}
 			}

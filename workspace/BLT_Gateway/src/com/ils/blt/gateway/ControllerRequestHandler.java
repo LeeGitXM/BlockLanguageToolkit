@@ -656,6 +656,11 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	@Override
 	public String getWindowsBrowserPath() {
 		String path = null;
+		log.infof("***** In getWindowsBrowserPath, getting path to browser from ORM ****");
+		/*
+		path = "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe";
+		return path;
+		*/
 		SQuery<HelpRecordProxy> query = new SQuery<HelpRecordProxy>(HelpRecordProxy.META).eq(HelpRecordProxy.Id,0L);
 		HelpRecordProxy rec = this.context.getPersistenceInterface().queryOne(query);
 		if(rec!=null ) path = rec.getWindowsBrowserPath();
