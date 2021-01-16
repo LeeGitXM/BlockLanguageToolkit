@@ -265,7 +265,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 */
 	@Override
 	public BlockProperty getProperty(String nam) {
-		return propertyMap.get(nam);
+		return propertyMap.get(nam.toUpperCase());
 	}
 	
 	@Override
@@ -342,7 +342,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	@Override
 	public Date getTimeOfLastStateChange() { return this.stateChangeTimestamp; }
 	
-	protected void setProperty(String nam,BlockProperty prop) { propertyMap.put(nam, prop); }
+	protected void setProperty(String nam,BlockProperty prop) { propertyMap.put(nam.toUpperCase(), prop); }
 	
 	@Override
 	public void setAnchors(List<AnchorPrototype> protos) {
