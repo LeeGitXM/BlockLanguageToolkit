@@ -134,17 +134,19 @@ public class LowLimitSampleCount extends AbstractProcessBlock implements Process
 	}
 	@Override
 	public void evaluate() {
-		TruthValue result = checkPassConditions(state);
-		if( queue.size()<sampleSize && fillRequired && result.equals(TruthValue.FALSE) ) result = TruthValue.UNKNOWN;
-		// Give it a new timestamp
-		lastValue = new BasicQualifiedValue(result,observation.getQuality(),observation.getTimestamp());
-		if( !isLocked() ) {
-			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
-			controller.acceptCompletionNotification(nvn);
-			notifyOfStatus(lastValue);
+		if( observation!=null ) {
+			TruthValue result = checkPassConditions(state);
+			if( queue.size()<sampleSize && fillRequired && result.equals(TruthValue.FALSE) ) result = TruthValue.UNKNOWN;
+			// Give it a new timestamp
+			lastValue = new BasicQualifiedValue(result,observation.getQuality(),observation.getTimestamp());
+			if( !isLocked() ) {
+				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
+				controller.acceptCompletionNotification(nvn);
+				notifyOfStatus(lastValue);
+			}
+			// Even if locked, we update the current state
+			state = result;
 		}
-		// Even if locked, we update the current state
-		state = result;
 	}
 	/**
 	 * Send status update notification for our last latest state.

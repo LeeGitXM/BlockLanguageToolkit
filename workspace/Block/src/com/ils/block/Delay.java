@@ -206,7 +206,7 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 		if(buffer.isEmpty()) return;     // Could happen on race between clearing buffer and removing watch-dog on a reset.
 								
 		TimestampedData data = buffer.peek();
-		
+		if(data==null) return;
 		if (dog.getExpiration() <= System.nanoTime()/1000000) {
 			if( !isLocked() ) {
 				log.debugf("%s.evaluate: %s",getName(),data.qualValue.getValue().toString());

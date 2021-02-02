@@ -255,6 +255,7 @@ public class LowLimit extends AbstractProcessBlock implements ProcessBlock {
 		QualifiedValue result = new BasicQualifiedValue(new Double(min));
 		
 		for(QualifiedValue qv:values) {
+			if( qv==null ) continue;
 			if(qv.getQuality().isGood() && qv.getValue()!=null && !qv.getValue().toString().isEmpty() && !qv.getValue().equals(Double.NaN)) {
 				double val = fcns.coerceToDouble(qv.getValue().toString());
 				if(val<min ) {

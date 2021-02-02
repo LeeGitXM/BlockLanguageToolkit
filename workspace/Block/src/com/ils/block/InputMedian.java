@@ -181,6 +181,7 @@ public class InputMedian extends AbstractProcessBlock implements ProcessBlock {
 		int count = 0;
 		result = 0.;
 		for(QualifiedValue qval:values) {
+			if( qval==null) continue;
 			if( qval.getQuality().isGood() ) {
 				result = result+ fcns.coerceToDouble(qval.getValue());
 				count++;
