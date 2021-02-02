@@ -99,33 +99,39 @@ public class RangeObservation extends AbstractProcessBlock implements ProcessBlo
 		super.acceptValue(vcn);
 		
 		observation = vcn.getValue();
-		String val = observation.getValue().toString();
-		try {
-			double dbl = Double.parseDouble(val);
-			TruthValue newValue = state;
-			if( dbl <= upperlimit - upperdeadband && dbl >= lowerlimit + lowerdeadband  ) {
-				newValue = TruthValue.TRUE;
-			}
-			if( dbl > upperlimit || dbl < lowerlimit ) {
-				newValue = TruthValue.FALSE;
-			}
-			if( !observation.getQuality().isGood()) {
-				newValue = TruthValue.UNKNOWN;
-			}
-			if( !newValue.equals(state)) {
-				setState(newValue);
-				lastValue = new BasicQualifiedValue(state,observation.getQuality(),observation.getTimestamp());
-				if( !isLocked() ) {
-					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
-					controller.acceptCompletionNotification(nvn);
-					notifyOfStatus(lastValue);
+		evaluate();
+	}
+	
+	@Override
+	public void evaluate() {
+		if( observation!=null ) {
+			String val = observation.getValue().toString();
+			try {
+				double dbl = Double.parseDouble(val);
+				TruthValue newValue = state;
+				if( dbl <= upperlimit - upperdeadband && dbl >= lowerlimit + lowerdeadband  ) {
+					newValue = TruthValue.TRUE;
+				}
+				if( dbl > upperlimit || dbl < lowerlimit ) {
+					newValue = TruthValue.FALSE;
+				}
+				if( !observation.getQuality().isGood()) {
+					newValue = TruthValue.UNKNOWN;
+				}
+				if( !newValue.equals(state)) {
+					setState(newValue);
+					lastValue = new BasicQualifiedValue(state,observation.getQuality(),observation.getTimestamp());
+					if( !isLocked() ) {
+						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
+						controller.acceptCompletionNotification(nvn);
+						notifyOfStatus(lastValue);
+					}
 				}
 			}
+			catch(NumberFormatException nfe) {
+				log.warnf("%s: setValue Unable to convert incoming value (%s) to a double (%s)",TAG,val,nfe.getLocalizedMessage());
+			}	
 		}
-		catch(NumberFormatException nfe) {
-			log.warnf("%s: setValue Unable to convert incoming value (%s) to a double (%s)",TAG,val,nfe.getLocalizedMessage());
-		}
-
 	}
 	/**
 	 * The explanation for this block just reports the observation status
@@ -155,6 +161,7 @@ public class RangeObservation extends AbstractProcessBlock implements ProcessBlo
 		if(propertyName.equals(BLOCK_PROPERTY_LOWER_DEADBAND)) {
 			try {
 				lowerdeadband = Double.parseDouble(event.getNewValue().toString());
+				evaluate();
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s: propertyChange Unable to convert lower deadband to a double (%s)",TAG,nfe.getLocalizedMessage());
@@ -163,6 +170,7 @@ public class RangeObservation extends AbstractProcessBlock implements ProcessBlo
 		else if(propertyName.equals(BLOCK_PROPERTY_UPPER_DEADBAND)) {
 			try {
 				upperdeadband = Double.parseDouble(event.getNewValue().toString());
+				evaluate();
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s: propertyChange Unable to convert upper deadband to a double (%s)",TAG,nfe.getLocalizedMessage());
@@ -171,6 +179,7 @@ public class RangeObservation extends AbstractProcessBlock implements ProcessBlo
 		else if(propertyName.equals(BLOCK_PROPERTY_LOWER_LIMIT)) {
 			try {
 				lowerlimit = Double.parseDouble(event.getNewValue().toString());
+				evaluate();
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s: propertyChange Unable to convert lower limit to a double (%s)",TAG,nfe.getLocalizedMessage());
@@ -179,6 +188,7 @@ public class RangeObservation extends AbstractProcessBlock implements ProcessBlo
 		else if(propertyName.equals(BLOCK_PROPERTY_UPPER_LIMIT)) {
 			try {
 				upperlimit = Double.parseDouble(event.getNewValue().toString());
+				evaluate();
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s: propertyChange Unable to convert upper limit to a double (%s)",TAG,nfe.getLocalizedMessage());

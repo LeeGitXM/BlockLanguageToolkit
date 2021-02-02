@@ -103,31 +103,33 @@ public class OutOfRangeObservation extends AbstractProcessBlock implements Proce
 	
 	@Override
 	public void evaluate() {
-		String val = observation.getValue().toString();
-		try {
-			double dbl = Double.parseDouble(val);
-			TruthValue newValue = state;
-			if( dbl <= upperlimit - upperdeadband && dbl >= lowerlimit+lowerdeadband  ) {
-				newValue = TruthValue.FALSE;
-			}
-			if( dbl > upperlimit || dbl < lowerlimit ) {
-				newValue = TruthValue.TRUE;
-			}
-			if( !observation.getQuality().isGood()) {
-				newValue = TruthValue.UNKNOWN;
-			}
-			if( !newValue.equals(state)) {
-				setState(newValue);
-				lastValue = new BasicQualifiedValue(state,observation.getQuality(),observation.getTimestamp());
-				if( !isLocked() ) {
-					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
-					controller.acceptCompletionNotification(nvn);
-					notifyOfStatus(lastValue);
+		if( observation!=null ) {
+			String val = observation.getValue().toString();
+			try {
+				double dbl = Double.parseDouble(val);
+				TruthValue newValue = state;
+				if( dbl <= upperlimit - upperdeadband && dbl >= lowerlimit+lowerdeadband  ) {
+					newValue = TruthValue.FALSE;
+				}
+				if( dbl > upperlimit || dbl < lowerlimit ) {
+					newValue = TruthValue.TRUE;
+				}
+				if( !observation.getQuality().isGood()) {
+					newValue = TruthValue.UNKNOWN;
+				}
+				if( !newValue.equals(state)) {
+					setState(newValue);
+					lastValue = new BasicQualifiedValue(state,observation.getQuality(),observation.getTimestamp());
+					if( !isLocked() ) {
+						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
+						controller.acceptCompletionNotification(nvn);
+						notifyOfStatus(lastValue);
+					}
 				}
 			}
-		}
-		catch(NumberFormatException nfe) {
-			log.warnf("%s: setValue Unable to convert incoming value (%s) to a double (%s)",TAG,val,nfe.getLocalizedMessage());
+			catch(NumberFormatException nfe) {
+				log.warnf("%s: setValue Unable to convert incoming value (%s) to a double (%s)",TAG,val,nfe.getLocalizedMessage());
+			}
 		}
 	}
 	/**
