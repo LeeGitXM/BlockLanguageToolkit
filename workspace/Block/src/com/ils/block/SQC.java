@@ -378,6 +378,7 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 		else if(propertyName.equalsIgnoreCase(BLOCK_PROPERTY_SQC_LIMIT)) {
 			try {
 				limit = Double.parseDouble(event.getNewValue().toString());
+				evaluate();
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s: propertyChange Unable to convert target value to a double (%s)",getName(),nfe.getLocalizedMessage());
@@ -386,6 +387,7 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 		else if(propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_LIMIT_TYPE)) {
 			String type = event.getNewValue().toString().toUpperCase();
 			limitType = LimitType.valueOf(type);
+			evaluate();
 		}
 		else if(propertyName.equalsIgnoreCase(BLOCK_PROPERTY_TEST_LABEL)) {
 			;   // Default handling is sufficient

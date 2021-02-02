@@ -95,6 +95,11 @@ public class EqualityObservation extends AbstractProcessBlock implements Process
 		super.acceptValue(vcn);
 	
 		observation = vcn.getValue();
+		evaluate();
+	}
+	
+	@Override
+	public void evaluate() {
 		String val = observation.getValue().toString();
 		try {
 			double dbl = Double.parseDouble(val);
@@ -159,6 +164,7 @@ public class EqualityObservation extends AbstractProcessBlock implements Process
 			try {
 				deadband = Double.parseDouble(event.getNewValue().toString());
 				if( deadband<0.0) deadband = -deadband;
+				evaluate();
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s: propertyChange Unable to convert deadband to a double (%s)",TAG,nfe.getLocalizedMessage());
@@ -167,6 +173,7 @@ public class EqualityObservation extends AbstractProcessBlock implements Process
 		else if(propertyName.equals(BLOCK_PROPERTY_NOMINAL)) {
 			try {
 				nominal = Double.parseDouble(event.getNewValue().toString());
+				evaluate();
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s: propertyChange Unable to convert target to a double (%s)",TAG,nfe.getLocalizedMessage());

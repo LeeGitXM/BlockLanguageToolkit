@@ -400,6 +400,7 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 		else if(propertyName.equalsIgnoreCase(BLOCK_PROPERTY_RELATIVE_TO_TARGET)) {
 			try {
 				relativeToTarget = Boolean.parseBoolean(event.getNewValue().toString());
+				evaluate();
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s: propertyChange Unable to convert relative to target flag to a boolean (%s)",getName(),nfe.getLocalizedMessage());
@@ -408,6 +409,7 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 		else if(propertyName.equalsIgnoreCase(BLOCK_PROPERTY_STANDARD_DEVIATION_MULTIPLIER)) {
 			try {
 				multiplier = Double.parseDouble(event.getNewValue().toString());
+				evaluate();
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s: propertyChange Unable to convert multiplier value to a double (%s)",getName(),nfe.getLocalizedMessage());
@@ -419,11 +421,13 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 		else if(propertyName.equalsIgnoreCase(BLOCK_PROPERTY_TREND_DIRECTION)) {
 			String type = event.getNewValue().toString().toUpperCase();
 			trendDirection = TrendDirection.valueOf(type);
+			evaluate();
 		}
 		else if(propertyName.equalsIgnoreCase(BLOCK_PROPERTY_TREND_COUNT_THRESHOLD)) {
 			try {
 				countThreshold = Integer.parseInt(event.getNewValue().toString());
 				if( countThreshold<2 ) countThreshold = 2;
+				evaluate();
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s: propertyChange Unable to convert number of count thresholdto an integer (%s)",getName(),nfe.getLocalizedMessage());
@@ -433,6 +437,7 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 			try {
 				pointsRequired = Integer.parseInt(event.getNewValue().toString());
 				if( pointsRequired<2 ) pointsRequired = 2;
+				evaluate();
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s: propertyChange Unable to convert number of points required to an integer (%s)",getName(),nfe.getLocalizedMessage());

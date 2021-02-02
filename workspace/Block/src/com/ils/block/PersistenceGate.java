@@ -194,7 +194,8 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 				
 				if (eval == null || eval.isEmpty()) {
 					trigger = TruthValue.UNSET;
-				} else {
+				} 
+				else {
 					trigger = TruthValue.valueOf(eval);
 				}
 			} catch(IllegalArgumentException nfe) {

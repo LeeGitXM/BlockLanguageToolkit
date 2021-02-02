@@ -221,6 +221,7 @@ public class InRangeTimeWindow extends AbstractProcessBlock implements ProcessBl
 		if(propertyName.equals(BLOCK_PROPERTY_LOWER_LIMIT)) {
 			try {
 				lowerLimit = Double.parseDouble(event.getNewValue().toString());
+				evaluate();
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s: propertyChange Unable to convert lower limit to a double (%s)",getName(),nfe.getLocalizedMessage());
@@ -229,6 +230,7 @@ public class InRangeTimeWindow extends AbstractProcessBlock implements ProcessBl
 		else if(propertyName.equals(BLOCK_PROPERTY_UPPER_LIMIT)) {
 			try {
 				upperLimit = Double.parseDouble(event.getNewValue().toString());
+				evaluate();
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s: propertyChange Unable to convert upper limit to a double (%s)",getName(),nfe.getLocalizedMessage());
@@ -237,6 +239,7 @@ public class InRangeTimeWindow extends AbstractProcessBlock implements ProcessBl
 		else if( propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_DEADBAND)) {
 			try {
 				deadband = Double.parseDouble(event.getNewValue().toString());
+				evaluate();
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s.propertyChange: Unable to convert deadband to a double (%s)",getName(),nfe.getLocalizedMessage());
@@ -244,10 +247,12 @@ public class InRangeTimeWindow extends AbstractProcessBlock implements ProcessBl
 		}
 		else if(propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_FILL_REQUIRED)) {
 			fillRequired = fcns.coerceToBoolean(event.getNewValue().toString());
+			evaluate();
 		}
 		else if( propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_HYSTERESIS)) {
 			try {
 				hysteresis = HysteresisType.valueOf(event.getNewValue().toString().toUpperCase());
+				evaluate();
 			}
 			catch(IllegalArgumentException iae) {
 				log.warnf("%s.propertyChange: Unable to convert hysteresis (%s)",getName(),iae.getLocalizedMessage());
@@ -257,6 +262,7 @@ public class InRangeTimeWindow extends AbstractProcessBlock implements ProcessBl
 			// Trigger an evaluation
 			try {
 				triggerCount = Integer.parseInt(event.getNewValue().toString());
+				evaluate();
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s: propertyChange Unable to convert trigger count to an integer (%s)",getName(),nfe.getLocalizedMessage());
@@ -280,6 +286,7 @@ public class InRangeTimeWindow extends AbstractProcessBlock implements ProcessBl
 			try {
 				timeWindow = Double.parseDouble(event.getNewValue().toString());
 				if( timeWindow<=0.0) timeWindow = scanInterval;
+				
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s.propertyChange: Unable to convert scan interval to a double (%s)",getName(),nfe.getLocalizedMessage());

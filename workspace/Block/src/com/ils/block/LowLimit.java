@@ -1,5 +1,5 @@
 /**
- *   (c) 2017-2019  ILS Automation. All rights reserved. 
+ *   (c) 2017-2021  ILS Automation. All rights reserved. 
  */
 package com.ils.block;
 
@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
-import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.ProcessBlock;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
@@ -173,6 +172,7 @@ public class LowLimit extends AbstractProcessBlock implements ProcessBlock {
 		if(propertyName.equals(BlockConstants.BLOCK_PROPERTY_LIMIT)) {
 			try {
 				limit = Double.parseDouble(event.getNewValue().toString());
+				evaluate();
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s: propertyChange Unable to convert limit to a double (%s)",getName(),nfe.getLocalizedMessage());

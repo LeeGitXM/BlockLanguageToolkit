@@ -1,5 +1,5 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved. 
+ *   (c) 2014-2021  ILS Automation. All rights reserved. 
  */
 package com.ils.block;
 
@@ -77,7 +77,6 @@ public class OutOfRangeObservation extends AbstractProcessBlock implements Proce
 		setProperty(BLOCK_PROPERTY_LOWER_DEADBAND, bp);
 		bp = new BlockProperty(BLOCK_PROPERTY_UPPER_DEADBAND,new Double(upperdeadband),PropertyType.DOUBLE,true);
 		setProperty(BLOCK_PROPERTY_UPPER_DEADBAND, bp);
-
 		
 		// Define a single input
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
@@ -98,6 +97,12 @@ public class OutOfRangeObservation extends AbstractProcessBlock implements Proce
 		super.acceptValue(vcn);
 		
 		observation = vcn.getValue();
+		evaluate();
+		
+	}
+	
+	@Override
+	public void evaluate() {
 		String val = observation.getValue().toString();
 		try {
 			double dbl = Double.parseDouble(val);
@@ -166,6 +171,7 @@ public class OutOfRangeObservation extends AbstractProcessBlock implements Proce
 		if(propertyName.equals(BLOCK_PROPERTY_LOWER_DEADBAND)) {
 			try {
 				lowerdeadband = Double.parseDouble(event.getNewValue().toString());
+				evaluate();
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s: propertyChange Unable to convert lower deadband to a double (%s)",TAG,nfe.getLocalizedMessage());
@@ -174,6 +180,7 @@ public class OutOfRangeObservation extends AbstractProcessBlock implements Proce
 		else if(propertyName.equals(BLOCK_PROPERTY_UPPER_DEADBAND)) {
 			try {
 				upperdeadband = Double.parseDouble(event.getNewValue().toString());
+				evaluate();
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s: propertyChange Unable to convert upper deadband to a double (%s)",TAG,nfe.getLocalizedMessage());
@@ -182,6 +189,7 @@ public class OutOfRangeObservation extends AbstractProcessBlock implements Proce
 		else if(propertyName.equals(BLOCK_PROPERTY_LOWER_LIMIT)) {
 			try {
 				lowerlimit = Double.parseDouble(event.getNewValue().toString());
+				evaluate();
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s: propertyChange Unable to convert lower limit to a double (%s)",TAG,nfe.getLocalizedMessage());
@@ -190,12 +198,12 @@ public class OutOfRangeObservation extends AbstractProcessBlock implements Proce
 		else if(propertyName.equals(BLOCK_PROPERTY_UPPER_LIMIT)) {
 			try {
 				upperlimit = Double.parseDouble(event.getNewValue().toString());
+				evaluate();
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s: propertyChange Unable to convert upper limit to a double (%s)",TAG,nfe.getLocalizedMessage());
 			}
 		}
-		
 	}
 	
 	

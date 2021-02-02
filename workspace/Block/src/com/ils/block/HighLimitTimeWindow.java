@@ -220,6 +220,7 @@ public class HighLimitTimeWindow extends AbstractProcessBlock implements Process
 		if(propertyName.equals(BlockConstants.BLOCK_PROPERTY_LIMIT)) {
 			try {
 				limit = Double.parseDouble(event.getNewValue().toString());
+				evaluate();
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s: propertyChange Unable to convert limit to a double (%s)",getName(),nfe.getLocalizedMessage());
@@ -228,6 +229,7 @@ public class HighLimitTimeWindow extends AbstractProcessBlock implements Process
 		else if( propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_DEADBAND)) {
 			try {
 				deadband = Double.parseDouble(event.getNewValue().toString());
+				evaluate();
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s.propertyChange: Unable to convert deadband to a double (%s)",getName(),nfe.getLocalizedMessage());
@@ -235,10 +237,12 @@ public class HighLimitTimeWindow extends AbstractProcessBlock implements Process
 		}
 		else if(propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_FILL_REQUIRED)) {
 			fillRequired = fcns.coerceToBoolean(event.getNewValue().toString());
+			evaluate();
 		}
 		else if( propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_HYSTERESIS)) {
 			try {
 				hysteresis = HysteresisType.valueOf(event.getNewValue().toString().toUpperCase());
+				evaluate();
 			}
 			catch(IllegalArgumentException iae) {
 				log.warnf("%s.propertyChange: Unable to convert hysteresis (%s)",getName(),iae.getLocalizedMessage());
@@ -247,6 +251,7 @@ public class HighLimitTimeWindow extends AbstractProcessBlock implements Process
 		else if(propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_TRIGGER_COUNT) ) {
 			try {
 				triggerCount = Integer.parseInt(event.getNewValue().toString());
+				evaluate();
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s: propertyChange Unable to convert trigger count to an integer (%s)",getName(),nfe.getLocalizedMessage());
@@ -270,6 +275,7 @@ public class HighLimitTimeWindow extends AbstractProcessBlock implements Process
 			try {
 				timeWindow = Double.parseDouble(event.getNewValue().toString());
 				if( timeWindow<=0.0) timeWindow = scanInterval;
+				evaluate();
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s.propertyChange: Unable to convert scan interval to a double (%s)",getName(),nfe.getLocalizedMessage());

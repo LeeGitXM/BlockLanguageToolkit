@@ -45,6 +45,7 @@ public class LowLimitSampleCount extends AbstractProcessBlock implements Process
 	private HysteresisType hysteresis = HysteresisType.NEVER;
 	private int sampleSize = DEFAULT_BUFFER_SIZE;
 	private boolean fillRequired = true;
+	private QualifiedValue observation = null;
 	private int triggerCount = 0;
 	
 	/**
@@ -113,26 +114,16 @@ public class LowLimitSampleCount extends AbstractProcessBlock implements Process
 		super.acceptValue(vcn);
 		String port = vcn.getConnection().getDownstreamPortName();
 		if( port.equals(BlockConstants.IN_PORT_NAME) ) {
-			QualifiedValue qv = vcn.getValue();
-			log.debugf("%s.acceptValue: Received %s",TAG,qv.getValue().toString());
-			if( qv.getQuality().isGood() ) {
-				queue.add(qv);
-				TruthValue result = checkPassConditions(state);
-				if( queue.size()<sampleSize && fillRequired && result.equals(TruthValue.FALSE) ) result = TruthValue.UNKNOWN;
-				// Give it a new timestamp
-				lastValue = new BasicQualifiedValue(result,qv.getQuality(),qv.getTimestamp());
-				if( !isLocked() ) {
-					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
-					controller.acceptCompletionNotification(nvn);
-					notifyOfStatus(lastValue);
-				}
-				// Even if locked, we update the current state
-				state = result;
+			observation = vcn.getValue();
+			log.debugf("%s.acceptValue: Received %s",TAG,observation.getValue().toString());
+			if( observation.getQuality().isGood() ) {
+				queue.add(observation);
+				evaluate();
 			}
 			else {
 				// Post bad value on output, clear queue
 				if( !isLocked() ) {
-					lastValue = new BasicQualifiedValue(new Double(Double.NaN),qv.getQuality(),qv.getTimestamp());
+					lastValue = new BasicQualifiedValue(new Double(Double.NaN),observation.getQuality(),observation.getTimestamp());
 					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 					controller.acceptCompletionNotification(nvn);
 					notifyOfStatus(lastValue);
@@ -140,6 +131,20 @@ public class LowLimitSampleCount extends AbstractProcessBlock implements Process
 				queue.clear();
 			}
 		}
+	}
+	@Override
+	public void evaluate() {
+		TruthValue result = checkPassConditions(state);
+		if( queue.size()<sampleSize && fillRequired && result.equals(TruthValue.FALSE) ) result = TruthValue.UNKNOWN;
+		// Give it a new timestamp
+		lastValue = new BasicQualifiedValue(result,observation.getQuality(),observation.getTimestamp());
+		if( !isLocked() ) {
+			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
+			controller.acceptCompletionNotification(nvn);
+			notifyOfStatus(lastValue);
+		}
+		// Even if locked, we update the current state
+		state = result;
 	}
 	/**
 	 * Send status update notification for our last latest state.
@@ -181,6 +186,7 @@ public class LowLimitSampleCount extends AbstractProcessBlock implements Process
 		if(propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_LIMIT)) {
 			try {
 				limit = Double.parseDouble(event.getNewValue().toString());
+				evaluate();
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s: propertyChange Unable to convert limit to a double (%s)",TAG,nfe.getLocalizedMessage());
@@ -189,6 +195,7 @@ public class LowLimitSampleCount extends AbstractProcessBlock implements Process
 		else if( propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_DEADBAND)) {
 			try {
 				deadband = Double.parseDouble(event.getNewValue().toString());
+				evaluate();
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s.propertyChange: Unable to convert deadband to a double (%s)",TAG,nfe.getLocalizedMessage());
@@ -196,10 +203,12 @@ public class LowLimitSampleCount extends AbstractProcessBlock implements Process
 		}
 		else if(propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_FILL_REQUIRED)) {
 			fillRequired = fcns.coerceToBoolean(event.getNewValue().toString());
+			evaluate();
 		}
 		else if( propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_HYSTERESIS)) {
 			try {
 				hysteresis = HysteresisType.valueOf(event.getNewValue().toString().toUpperCase());
+				evaluate();
 			}
 			catch(IllegalArgumentException iae) {
 				log.warnf("%s.propertyChange: Unable to convert hysteresis (%s)",TAG,iae.getLocalizedMessage());
@@ -222,6 +231,7 @@ public class LowLimitSampleCount extends AbstractProcessBlock implements Process
 			// Trigger an evaluation
 			try {
 				triggerCount = Integer.parseInt(event.getNewValue().toString());
+				evaluate();
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s: propertyChange Unable to convert trigger count to an integer (%s)",TAG,nfe.getLocalizedMessage());

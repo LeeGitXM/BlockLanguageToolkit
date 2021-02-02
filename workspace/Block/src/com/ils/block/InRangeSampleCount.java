@@ -121,17 +121,7 @@ public class InRangeSampleCount extends AbstractProcessBlock implements ProcessB
 			log.debugf("%s.acceptValue: Received %s",TAG,qv.getValue().toString());
 			if( qv.getQuality().isGood() ) {
 				queue.add(qv);
-				TruthValue result = checkPassConditions(state);
-				if( queue.size()<sampleSize && fillRequired && result.equals(TruthValue.FALSE) ) result = TruthValue.UNKNOWN;
-				if( !isLocked() ) {
-					// Give it a new timestamp
-					lastValue = new TestAwareQualifiedValue(timer,result);
-					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
-					controller.acceptCompletionNotification(nvn);
-					notifyOfStatus(lastValue);
-				}
-				// Even if locked, we update the current state
-				state = result;
+				evaluate();
 			}
 			else {
 				// Post bad value on output, clear queue
@@ -146,6 +136,21 @@ public class InRangeSampleCount extends AbstractProcessBlock implements ProcessB
 			}
 		}
 	}
+	@Override
+	public void evaluate() {
+		TruthValue result = checkPassConditions(state);
+		if( queue.size()<sampleSize && fillRequired && result.equals(TruthValue.FALSE) ) result = TruthValue.UNKNOWN;
+		if( !isLocked() ) {
+			// Give it a new timestamp
+			lastValue = new TestAwareQualifiedValue(timer,result);
+			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
+			controller.acceptCompletionNotification(nvn);
+			notifyOfStatus(lastValue);
+		}
+		// Even if locked, we update the current state
+		state = result;
+	}
+	
 	/**
 	 * Send status update notification for our last latest state.
 	 */
@@ -186,6 +191,7 @@ public class InRangeSampleCount extends AbstractProcessBlock implements ProcessB
 		if(propertyName.equalsIgnoreCase(BLOCK_PROPERTY_LOWER_LIMIT)) {
 			try {
 				lowerLimit = Double.parseDouble(event.getNewValue().toString());
+				evaluate();
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s: propertyChange Unable to convert lower limit to a double (%s)",TAG,nfe.getLocalizedMessage());
@@ -194,6 +200,7 @@ public class InRangeSampleCount extends AbstractProcessBlock implements ProcessB
 		else if(propertyName.equalsIgnoreCase(BLOCK_PROPERTY_UPPER_LIMIT)) {
 			try {
 				upperLimit = Double.parseDouble(event.getNewValue().toString());
+				evaluate();
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s: propertyChange Unable to convert upper limit to a double (%s)",TAG,nfe.getLocalizedMessage());
@@ -202,6 +209,7 @@ public class InRangeSampleCount extends AbstractProcessBlock implements ProcessB
 		else if( propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_DEADBAND)) {
 			try {
 				deadband = Double.parseDouble(event.getNewValue().toString());
+				evaluate();
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s.propertyChange: Unable to convert deadband to a double (%s)",TAG,nfe.getLocalizedMessage());
@@ -209,10 +217,12 @@ public class InRangeSampleCount extends AbstractProcessBlock implements ProcessB
 		}
 		else if(propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_FILL_REQUIRED)) {
 			fillRequired = fcns.coerceToBoolean(event.getNewValue().toString());
+			evaluate();
 		}
 		else if( propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_HYSTERESIS)) {
 			try {
 				hysteresis = HysteresisType.valueOf(event.getNewValue().toString().toUpperCase());
+				evaluate();
 			}
 			catch(IllegalArgumentException iae) {
 				log.warnf("%s.propertyChange: Unable to convert hysteresis (%s)",TAG,iae.getLocalizedMessage());
@@ -235,6 +245,7 @@ public class InRangeSampleCount extends AbstractProcessBlock implements ProcessB
 			// Trigger an evaluation
 			try {
 				triggerCount = Integer.parseInt(event.getNewValue().toString());
+				evaluate();
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s: propertyChange Unable to convert trigger count to an integer (%s)",TAG,nfe.getLocalizedMessage());

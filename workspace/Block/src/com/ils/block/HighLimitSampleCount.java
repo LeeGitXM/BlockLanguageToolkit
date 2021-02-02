@@ -1,5 +1,5 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved. 
+ *   (c) 2014-2021  ILS Automation. All rights reserved. 
  */
 package com.ils.block;
 
@@ -121,7 +121,7 @@ public class HighLimitSampleCount extends AbstractProcessBlock implements Proces
 				TruthValue result = TruthValue.UNKNOWN;
 				synchronized(this) {
 					queue.add(qv);
-					result = checkPassConditions(state); 
+					evaluate(); 
 				}
 				if( queue.size()<sampleSize && fillRequired && result.equals(TruthValue.FALSE) ) result = TruthValue.UNKNOWN;
 				//log.infof("%s.acceptValue: Calculated %s (%d of %d) hyst=%s",TAG,result.name(),queue.size(),sampleSize,hysteresis.name());
@@ -147,6 +147,22 @@ public class HighLimitSampleCount extends AbstractProcessBlock implements Proces
 				queue.clear();
 			}
 		}
+	}
+	
+	@Override
+	public void evaluate() {
+		TruthValue result = checkPassConditions(state); 
+		if( queue.size()<sampleSize && fillRequired && result.equals(TruthValue.FALSE) ) result = TruthValue.UNKNOWN;
+		//log.infof("%s.acceptValue: Calculated %s (%d of %d) hyst=%s",TAG,result.name(),queue.size(),sampleSize,hysteresis.name());
+		// Give it a new timestamp
+		lastValue = new TestAwareQualifiedValue(timer,result);
+		if( !isLocked() ) {
+			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
+			controller.acceptCompletionNotification(nvn);
+			notifyOfStatus(lastValue);
+		}
+		// Even if locked, we update the current state
+		state = result;
 	}
 	/**
 	 * Send status update notification for our last latest state.
@@ -188,6 +204,7 @@ public class HighLimitSampleCount extends AbstractProcessBlock implements Proces
 		if(propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_LIMIT)) {
 			try {
 				limit = Double.parseDouble(event.getNewValue().toString());
+				evaluate();
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s: propertyChange Unable to convert limit to a double (%s)",getName(),nfe.getLocalizedMessage());
@@ -196,6 +213,7 @@ public class HighLimitSampleCount extends AbstractProcessBlock implements Proces
 		else if( propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_DEADBAND)) {
 			try {
 				deadband = Double.parseDouble(event.getNewValue().toString());
+				evaluate();
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s.propertyChange: Unable to convert deadband to a double (%s)",getName(),nfe.getLocalizedMessage());
@@ -203,6 +221,7 @@ public class HighLimitSampleCount extends AbstractProcessBlock implements Proces
 		}
 		else if(propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_FILL_REQUIRED)) {
 			fillRequired = fcns.coerceToBoolean(event.getNewValue().toString());
+			evaluate();
 		}
 		else if( propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_HYSTERESIS)) {
 			try {
@@ -229,6 +248,7 @@ public class HighLimitSampleCount extends AbstractProcessBlock implements Proces
 			// Trigger an evaluation
 			try {
 				triggerCount = Integer.parseInt(event.getNewValue().toString());
+				evaluate();
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s: propertyChange Unable to convert trigger count to an integer (%s)",getName(),nfe.getLocalizedMessage());

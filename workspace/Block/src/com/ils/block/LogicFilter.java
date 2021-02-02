@@ -1,5 +1,5 @@
 /**
- *   (c) 2014,2017  ILS Automation. All rights reserved. 
+ *   (c) 2014-2021  ILS Automation. All rights reserved. 
  */
 package com.ils.block;
 
@@ -247,6 +247,7 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 		if( propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_DEADBAND)) {
 			try {
 				deadband = Double.parseDouble(event.getNewValue().toString());
+				evaluate();
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s.propertyChange: Unable to convert deadband to a double (%s)",TAG,nfe.getLocalizedMessage());
@@ -255,6 +256,7 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 		else if( propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_HYSTERESIS)) {
 			try {
 				hysteresis = HysteresisType.valueOf(event.getNewValue().toString().toUpperCase());
+				evaluate();
 			}
 			catch(IllegalArgumentException iae) {
 				log.warnf("%s.propertyChange: Unable to convert hysteresis (%s)",TAG,iae.getLocalizedMessage());
@@ -284,6 +286,7 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 				limit = Double.parseDouble(event.getNewValue().toString());
 				if( limit<0. ) limit = 0.0;
 				if( limit>1.0) limit = 1.0; 
+				evaluate();
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s.propertyChange: Unable to convert limit to a double (%s)",TAG,nfe.getLocalizedMessage());

@@ -262,6 +262,7 @@ public class StatisticsTime extends AbstractProcessBlock implements ProcessBlock
 			try {
 				timeWindow = Double.parseDouble(event.getNewValue().toString());
 				if( timeWindow<=0.0) timeWindow = scanInterval;
+				evaluate();
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s.propertyChange: Unable to convert scan interval to a double (%s)",getName(),nfe.getLocalizedMessage());
