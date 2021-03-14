@@ -307,7 +307,7 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 					qv = new TestAwareQualifiedValue(timer,projection);
 					notification = new OutgoingNotification(this,PORT_PROJECTION,qv);
 					controller.acceptCompletionNotification(notification);
-					// Write the auxilliary values to block parameters
+					// Write the auxiliary values to block parameters
 					controller.sendPropertyNotification(getBlockId().toString(),BLOCK_PROPERTY_SLOPE,
 							new TestAwareQualifiedValue(timer,new Double(slope)));
 					controller.sendPropertyNotification(getBlockId().toString(),BLOCK_PROPERTY_STDDEV,

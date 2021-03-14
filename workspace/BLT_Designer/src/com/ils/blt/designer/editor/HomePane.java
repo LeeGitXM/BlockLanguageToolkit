@@ -1,4 +1,4 @@
-package com.ils.blt.designer.config;
+package com.ils.blt.designer.editor;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -24,12 +24,13 @@ import javax.swing.SwingConstants;
 import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.UtilityFunctions;
 import com.ils.common.GeneralPurposeDataContainer;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
+import com.ils.common.log.ILSLogger;
+import com.ils.common.log.LogMaker;
 
 import net.miginfocom.swing.MigLayout;
 
-public class HomePane extends JPanel implements ApplicationConfigurationController.EditorPane {
-	private final ApplicationConfigurationController controller;
+public class HomePane extends JPanel  {
+	private final ApplicationPropertyEditor editor;
 	private final GeneralPurposeDataContainer model;
 	private static final long serialVersionUID = 2882399376824334427L;
 	
@@ -43,32 +44,29 @@ public class HomePane extends JPanel implements ApplicationConfigurationControll
 	private final JComboBox<String> queueComboBox = new JComboBox<String>();
 	private final JComboBox<String> groupRampMethodComboBox = new JComboBox<String>();
 	private final JComboBox<String> unitComboBox = new JComboBox<String>();
-	protected final JRadioButton isolationButton;
-	protected final JRadioButton productionButton;
 	final JCheckBox managedCheckBox = new JCheckBox();
-	protected final ButtonGroup databaseGroup;
 	
 	private static Icon nextIcon = new ImageIcon(HomePane.class.getResource("/images/arrow_right_green.png"));
 	final JButton nextButton = new JButton("Outputs", nextIcon);
 	final JButton cancelButton = new JButton("Cancel");
 	final JButton okButton = new JButton("OK");
 	private final UtilityFunctions fcns = new UtilityFunctions();
-	protected final LoggerEx log;
+	protected final ILSLogger log;
 
 	// Don't add an Apply button because then I need to manage getting the id's of any quant outputs they create 
 	// back from the extension manager.
 	
 
-	public HomePane(ApplicationConfigurationController controller) {
+	public HomePane(ApplicationPropertyEditor editor) {
 		super(new BorderLayout());
-		this.controller = controller;
-		this.model = controller.getModel();
-		this.log = controller.log;
+		this.editor = editor;
+		this.model = editor.getModel();
+		this.log = LogMaker.getLogger(this);
 		
 		log.infof("In the HomePane constructor");
 		
-		okButton.setPreferredSize(ApplicationConfigurationConstants.BUTTON_SIZE);
-		cancelButton.setPreferredSize(ApplicationConfigurationConstants.BUTTON_SIZE);
+		okButton.setPreferredSize(ApplicationEditConstants.BUTTON_SIZE);
+		cancelButton.setPreferredSize(ApplicationEditConstants.BUTTON_SIZE);
 
 		// Add a couple of panels to the main panel
 		buttonPanel = new JPanel(new FlowLayout());
@@ -80,7 +78,7 @@ public class HomePane extends JPanel implements ApplicationConfigurationControll
 		// Add components to the main panel
 		mainPanel.add(new JLabel("Name:"),"align right");
 		nameField.setText(model.getProperties().get("Name"));
-		nameField.setPreferredSize(ApplicationConfigurationConstants.COMBO_SIZE);
+		nameField.setPreferredSize(ApplicationEditConstants.COMBO_SIZE);
 		nameField.setEditable(false);
 		nameField.setToolTipText("The name can only be changed from the project tree.");
 		mainPanel.add(nameField,"span,wrap");
@@ -119,7 +117,7 @@ public class HomePane extends JPanel implements ApplicationConfigurationControll
 		else if( queueComboBox.getItemCount()>0) {
 			queueComboBox.setSelectedIndex(0);
 		}
-		queueComboBox.setPreferredSize(ApplicationConfigurationConstants.COMBO_SIZE);
+		queueComboBox.setPreferredSize(ApplicationEditConstants.COMBO_SIZE);
 		mainPanel.add(queueComboBox, "wrap");
 
 		// Set up the Group Ramp Method Combo Box
@@ -137,7 +135,7 @@ public class HomePane extends JPanel implements ApplicationConfigurationControll
 		else if( groupRampMethodComboBox.getItemCount()>0) {
 			groupRampMethodComboBox.setSelectedIndex(0);
 		}
-		groupRampMethodComboBox.setPreferredSize(ApplicationConfigurationConstants.COMBO_SIZE);
+		groupRampMethodComboBox.setPreferredSize(ApplicationEditConstants.COMBO_SIZE);
 		mainPanel.add(groupRampMethodComboBox, "wrap");
 		
 		// Set up the Unit Combo Box
@@ -155,22 +153,8 @@ public class HomePane extends JPanel implements ApplicationConfigurationControll
 		else if( unitComboBox.getItemCount()>0) {
 			unitComboBox.setSelectedIndex(0);
 		}
-		unitComboBox.setPreferredSize(ApplicationConfigurationConstants.COMBO_SIZE);
+		unitComboBox.setPreferredSize(ApplicationEditConstants.COMBO_SIZE);
 		mainPanel.add(unitComboBox, "wrap");
-
-		// Add the Production - Isolation Radio Buttons
-		productionButton = new JRadioButton("Production");
-		productionButton.setActionCommand("production");
-		mainPanel.add(productionButton, "cell 1 10,split");
-		isolationButton = new JRadioButton("Isolation");
-		mainPanel.add(isolationButton, "cell 1 10");     // Share the cell
-		isolationButton.setActionCommand("isolation");
-		databaseGroup = new ButtonGroup();
-		databaseGroup.add(productionButton);
-		databaseGroup.add(isolationButton);
-		DiagramState state = controller.getNode().getState();
-		if( state.equals(DiagramState.ACTIVE)) productionButton.setSelected(true);
-		else isolationButton.setSelected(true);
 		
 		mainPanel.add(nextButton,"cell 1 13,right");
 		nextButton.setHorizontalTextPosition(SwingConstants.LEFT);
@@ -193,13 +177,6 @@ public class HomePane extends JPanel implements ApplicationConfigurationControll
 
 	protected void doOk() {
 		save();
-		if( databaseGroup.getSelection().getActionCommand().equals("isolation") ) {
-			controller.getNode().setState(DiagramState.ISOLATED);
-		}
-		else {
-			controller.getNode().setState(DiagramState.ACTIVE);
-		}
-		controller.doOK();
 	}
 	
 	protected void doApply() {
@@ -217,16 +194,13 @@ public class HomePane extends JPanel implements ApplicationConfigurationControll
 	}
 
 	protected void doCancel() {
-		controller.doCancel();
 	}
 
 	protected void doNext() {
-		controller.slideTo(ApplicationConfigurationConstants.OUTPUTS);
+		editor.setSelectedPane(ApplicationEditConstants.OUTPUTS);
 	}
-
-	@Override
 	public void activate() {
-		controller.slideTo(ApplicationConfigurationConstants.HOME);
+		editor.setSelectedPane(ApplicationEditConstants.HOME);
 	}
 
 }

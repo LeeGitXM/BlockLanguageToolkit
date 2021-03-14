@@ -20,11 +20,11 @@ import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
+import com.ils.common.log.ILSLogger;
+import com.ils.common.log.LogMaker;
 import com.ils.common.persistence.ToolkitProperties;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
-import com.inductiveautomation.ignition.common.util.LogUtil;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
 
 
 /**
@@ -37,14 +37,14 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  */
 public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	private final static String TAG = "ApplicationRequestHandler";
-	private final LoggerEx log;
+	private final ILSLogger log;
 
 	/**
 	 * Constructor adds common attributes that are needed to generate unique keys to identify
 	 * blocks and connectors.
 	 */
 	public ApplicationRequestHandler()  {
-		log = LogUtil.getLogger(getClass().getPackage().getName());
+		log = LogMaker.getLogger(this);
 	}
 
 	@Override
@@ -508,6 +508,28 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 			log.infof("%s.getPropertyValue: GatewayException (%s)",TAG,ge.getMessage());
 		}
 		return result;
+	}
+	/**
+	 * Find the parent application or diagram of the entity referenced by
+	 * the supplied id. Test the state and return the name of the appropriate
+	 * tag provider.  
+	 * @param uuid identifier of an application or diagram
+	 * @return database name
+	 */
+	@Override
+	public String getProviderForUUID(String uuid) {
+		String provider = "NONE";
+		if( uuid!=null) {
+			log.infof("%s.getProviderForUUID... %s",TAG,uuid);
+			try {
+				provider = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+						BLTProperties.MODULE_ID, "getProviderForUUID",uuid);
+			}
+			catch(Exception ex) {
+				log.infof("%s.getProviderForUUID: Exception (%s)",TAG,ex.getMessage());
+			};
+		}
+		return provider;
 	}
 	public Date getTimeOfLastBlockStateChange(String diagramId, String blockName) {
 		Date result = null;

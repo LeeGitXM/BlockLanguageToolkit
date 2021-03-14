@@ -1,7 +1,7 @@
 /**
- *   (c) 2015  ILS Automation. All rights reserved.
+ *   (c) 2021  ILS Automation. All rights reserved.
  */
-package com.ils.blt.designer.config;
+package com.ils.blt.designer.editor;
 
 import java.awt.Dimension;
 
@@ -11,7 +11,7 @@ import java.awt.Dimension;
  *  These constants refer to the order of individual panes
  *  in the block editor's sliding pane.
  */
-public interface ApplicationConfigurationConstants   {
+public interface ApplicationEditConstants   {
 	// Indices for the sub-panes. We add them in this order ...
 	public static final int HOME = 0;
 	public static final int OUTPUTS = 1;
@@ -21,9 +21,8 @@ public interface ApplicationConfigurationConstants   {
 	// Some universal sizes
 	public static final Dimension BUTTON_SIZE  = new Dimension(80,36);
 	public static final Dimension COMBO_SIZE  = new Dimension(300,24);
+	public static final Dimension DESCRIPTION_AREA_SIZE  = new Dimension(280,160);
 	public static final Dimension EDIT_BUTTON_SIZE  = new Dimension(60,36);
-	
-	public static int DIALOG_HEIGHT = 500;
-	public static int DIALOG_WIDTH = 440;
+	public static final Dimension NUMBER_BOX_SIZE  = new Dimension(50,24);
 	
 }

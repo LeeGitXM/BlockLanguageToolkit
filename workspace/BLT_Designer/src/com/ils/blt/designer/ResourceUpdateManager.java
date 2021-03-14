@@ -6,6 +6,7 @@ package com.ils.blt.designer;
 import java.util.concurrent.locks.ReentrantLock;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
@@ -42,11 +43,13 @@ public class ResourceUpdateManager implements Runnable {
 	private final ProjectResource res;
 	private final DiagramWorkspace workspace;
 	private final ThreadCounter counter = ThreadCounter.getInstance();
+	private final ApplicationRequestHandler requestHandler;
 	
 	public ResourceUpdateManager(DiagramWorkspace wksp,ProjectResource pr) {
 		this.workspace = wksp;
 		this.res = pr;
 		this.counter.incrementCount();
+		this.requestHandler = new ApplicationRequestHandler();
 	}
 	
 	/**
@@ -123,7 +126,7 @@ public class ResourceUpdateManager implements Runnable {
 				log.warnf("%s.run: Exception saving project resource %d (%s)",CLSS,res.getResourceId(),ge.getMessage());
 			}
 
-			((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler().triggerStatusNotifications();
+			requestHandler.triggerStatusNotifications();
 			sharedLock.unlock();
 			log.infof("%s.run: complete",CLSS);
 		}

@@ -14,8 +14,6 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.WindowConstants;
 
-import com.ils.blt.common.script.CommonScriptExtensionManager;
-import com.ils.blt.common.script.ScriptConstants;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
@@ -25,6 +23,7 @@ import net.miginfocom.swing.MigLayout;
 
 /**
  * Display a dialog to configure the outputs available for an SQC Diagnosis.
+ * The new auxiliary data is not written to the database until the diagram is saved.
  */
 public class SQCDiagnosisConfiguration  extends ConfigurationDialog  {
 
@@ -35,7 +34,6 @@ public class SQCDiagnosisConfiguration  extends ConfigurationDialog  {
 	private final ProcessDiagramView diagram;
 	private final ProcessBlockView block;
 	protected JTextField sQCLabelField;
-	private final CommonScriptExtensionManager extensionManager = CommonScriptExtensionManager.getInstance();
 	private static final String TAG = "SQCDiagnosisConfiguration";
 	
 	public SQCDiagnosisConfiguration(DiagramWorkspace wksp,ProcessDiagramView diag,ProcessBlockView view) {
@@ -62,7 +60,7 @@ public class SQCDiagnosisConfiguration  extends ConfigurationDialog  {
 		retrieveAuxiliaryData();
 		JPanel mainPanel = createMainPanel();
 		contentPanel.add(mainPanel,BorderLayout.CENTER);
-		setOKActions();
+		setOKAction();
 	}
 
 	private JPanel createMainPanel() {
@@ -89,9 +87,6 @@ public class SQCDiagnosisConfiguration  extends ConfigurationDialog  {
 		panel.setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));
 
 		
-		
-		
-		
 		Map<String,String> properties = model.getProperties();
 		
 		
@@ -110,9 +105,6 @@ public class SQCDiagnosisConfiguration  extends ConfigurationDialog  {
 		if( method==null) method="";
 		sQCLabelField = createTextField("SQCDiagnosis.Label.Desc",method);
 		panel.add(sQCLabelField,"spanx 3,growx,wrap");
-
-
-		
 		
 		return panel;
 	}
@@ -127,48 +119,17 @@ public class SQCDiagnosisConfiguration  extends ConfigurationDialog  {
 		model.setLists(new HashMap<>());
 		model.setMapLists(new HashMap<>());
 		model.getProperties().put("Name", block.getName());   // Use as a key when fetching
-		try {
-			String db = requestHandler.getDatabaseForUUID(diagram.getId().toString());
-			extensionManager.runScript(context.getScriptManager(),block.getClassName(), ScriptConstants.PROPERTY_GET_SCRIPT, 
-					diagram.getId().toString(),model,db);
-		}
-		catch( Exception ex ) {
-			log.errorf(TAG+".retrieveAuxiliaryData: Exception ("+ex.getMessage()+")",ex); // Throw stack trace
-		}
+		block.setAuxiliaryData(model);
 	}
 	
 	
-	private void setOKActions() {
+	private void setOKAction() {
 		// The button panel is already added by the base class.
 		okButton.setText(rb.getString("SQCDiagnosisEditor.Save"));
 		okButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				save();
 				dispose();
 			}
 		});
 	}
-	
-	// Copy the SQC auxiliary data back into the database
-	private void save(){
-		model.getProperties().put("SQCDiagnosisLabel",sQCLabelField.getText());
-		
-		// Save values back to the database
-		try {
-			String db = requestHandler.getDatabaseForUUID(diagram.getId().toString());
-			extensionManager.runScript(context.getScriptManager(),block.getClassName(), ScriptConstants.PROPERTY_SET_SCRIPT, 
-					diagram.getId().toString(),model,db);
-			// Replace the aux data structure in our serializable application
-			// NOTE: The Nav tree node that calls the dialog saves the application resource.
-			block.setAuxiliaryData(model);
-			block.setDirty(true);
-		}
-		catch( Exception ex ) {
-			log.errorf(TAG+".save: Exception ("+ex.getMessage()+")",ex); // Throw stack trace
-		}
-	}
-
-	
-	
-	
 }

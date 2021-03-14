@@ -22,12 +22,15 @@ import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 import javax.swing.border.EtchedBorder;
 
+import com.ils.blt.designer.editor.ApplicationEditConstants;
+import com.ils.blt.designer.editor.ApplicationPropertyEditor;
+import com.ils.blt.designer.editor.OutputEditorPane;
 import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.SortedListModel;
 
 
-public class OutputsPane extends JPanel implements ApplicationConfigurationController.EditorPane {
-	private final ApplicationConfigurationController controller;
+public class OutputsPane extends JPanel  {
+	private final ApplicationPropertyEditor editor;
 	private final GeneralPurposeDataContainer model;
 	private SortedListModel<String> outputListModel;
 	private Integer newOutputId = -1;
@@ -49,13 +52,13 @@ public class OutputsPane extends JPanel implements ApplicationConfigurationContr
 
 	private Data recipeData;
 */	
-	public OutputsPane(ApplicationConfigurationController controller,OutputEditorPane editor) {
+	public OutputsPane(ApplicationPropertyEditor editor,OutputEditorPane oep) {
 		super(new BorderLayout(20, 30));
 		System.out.println("In Outputs pane constructor");
-		this.controller = controller;
-		this.model = controller.getModel();
-		this.outputEditor = editor;
-		this.outputListModel = controller.getOutputListModel();
+		this.editor = editor;
+		this.model = editor.getModel();
+		this.outputEditor = oep;
+		this.outputListModel = editor.getOutputListModel();
 		
 		JLabel label = new JLabel("Outputs");
 		label.setHorizontalAlignment(SwingConstants.CENTER);
@@ -75,21 +78,21 @@ public class OutputsPane extends JPanel implements ApplicationConfigurationContr
 		add(buttonPanel,BorderLayout.EAST);
 		
 		addButton.setAlignmentX(RIGHT_ALIGNMENT);
-		addButton.setPreferredSize(ApplicationConfigurationConstants.EDIT_BUTTON_SIZE);
+		addButton.setPreferredSize(ApplicationEditConstants.EDIT_BUTTON_SIZE);
 		buttonPanel.add(addButton);
 		addButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {doAdd();}
 		});
 		
 		deleteButton.setAlignmentX(RIGHT_ALIGNMENT);
-		deleteButton.setPreferredSize(ApplicationConfigurationConstants.EDIT_BUTTON_SIZE);
+		deleteButton.setPreferredSize(ApplicationEditConstants.EDIT_BUTTON_SIZE);
 		buttonPanel.add(deleteButton);
 		deleteButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {doDelete();}
 		});
 		
 		editButton.setAlignmentX(RIGHT_ALIGNMENT);
-		editButton.setPreferredSize(ApplicationConfigurationConstants.EDIT_BUTTON_SIZE);
+		editButton.setPreferredSize(ApplicationEditConstants.EDIT_BUTTON_SIZE);
 		buttonPanel.add(editButton);
 		editButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {doEdit();}
@@ -99,7 +102,7 @@ public class OutputsPane extends JPanel implements ApplicationConfigurationContr
 		JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		add(bottomPanel,BorderLayout.SOUTH);
 		bottomPanel.add(previousButton);
-		previousButton.setPreferredSize(ApplicationConfigurationConstants.BUTTON_SIZE);
+		previousButton.setPreferredSize(ApplicationEditConstants.BUTTON_SIZE);
 		previousButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {doPrevious();}
 		});
@@ -139,7 +142,7 @@ public class OutputsPane extends JPanel implements ApplicationConfigurationContr
 			System.out.println("Looking at an Output" + outputMap);
 			// Get the output editor and call method that puts the output into the fields
 			outputEditor.updateFields(outputMap);
-			controller.slideTo(ApplicationConfigurationConstants.EDITOR);
+			editor.setSelectedPane(ApplicationEditConstants.EDITOR);
 		}
 	}
 
@@ -162,7 +165,7 @@ public class OutputsPane extends JPanel implements ApplicationConfigurationContr
 				}
 			}
 		}
-		controller.refreshOutputs();
+		editor.refreshOutputs();
 	}
 
 	protected void doAdd() {	
@@ -172,17 +175,16 @@ public class OutputsPane extends JPanel implements ApplicationConfigurationContr
 			System.out.println("Looking at an Output" + outputMap);
 			// Get the output editor and call method that puts the output into the fields
 			outputEditor.updateFields(outputMap);
-			controller.slideTo(ApplicationConfigurationConstants.EDITOR);
+			editor.setSelectedPane(ApplicationEditConstants.EDITOR);
 		}
 	}
 
 	protected void doPrevious() {
-		controller.slideTo(ApplicationConfigurationConstants.HOME);		
+		editor.setSelectedPane(ApplicationEditConstants.HOME);		
 	}
 
-	@Override
 	public void activate() {
-		controller.slideTo(ApplicationConfigurationConstants.EDITOR);
+		editor.setSelectedPane(ApplicationEditConstants.EDITOR);
 	}
 
 	// Create a new outputMap, which corresponds to a QuantOutput, with default values

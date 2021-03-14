@@ -11,10 +11,10 @@ import org.python.core.PyCode;
 import org.python.core.PyObject;
 import org.python.core.PyStringMap;
 
+import com.ils.common.log.ILSLogger;
+import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.common.script.JythonExecException;
 import com.inductiveautomation.ignition.common.script.ScriptManager;
-import com.inductiveautomation.ignition.common.util.LogUtil;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
 
 
 /**
@@ -35,9 +35,8 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  */
 public class Script {
 	private final static String CLSS = "Script";
-	private final LoggerEx log;
+	private final ILSLogger log;
 	private PyCode code;
-	private final String entry; 
 	private String module = "";
 	private String pythonPackage;
 	private String[] localVariables;      // Derived from comma-separated
@@ -49,17 +48,15 @@ public class Script {
 	 * @param ep nominal entry point into script (unused)
 	 * @param args the script arguments
 	 */
-	public Script(String ep,String args) {
-		this.log = LogUtil.getLogger(getClass().getPackage().getName());
-		this.entry = ep;
-		this.pythonPackage = ""; 
-		this.module = "";
+	public Script(String pythonPath,String args) {
+		this.log = LogMaker.getLogger(this);
+		setModulePath(pythonPath);
 		this.localVariables = args.split(",");
 		this.localVariableList=args;
 		this.code = null;
 	}
 	
-	public void resetModulePath(String pythonPath) { 
+	public void setModulePath(String pythonPath) { 
 		if( pythonPath!=null && pythonPath.length()>0 ) {
 			this.module = moduleNameFromPath(pythonPath);
 			this.pythonPackage = packageNameFromPath(pythonPath);
@@ -129,7 +126,7 @@ public class Script {
 	public void setLocalVariable(int index,PyObject value) {
 		if( localsMap == null ) throw new IllegalArgumentException("Locals map must be initialized before variables can be added.");
 		if( localVariables.length<=index ) throw new IllegalArgumentException(
-										String.format("%s.setLocalVariable %d, but defined list is: %s",entry,index,localVariableList));
+				String.format("%s.setLocalVariable %d, but defined list is: %s",module,index,localVariableList));
 
 		localsMap.__setitem__(localVariables[index],value);
 		log.debugf("%s.setLocalVariable: %s to %s",CLSS,localVariables[index],value.toString());

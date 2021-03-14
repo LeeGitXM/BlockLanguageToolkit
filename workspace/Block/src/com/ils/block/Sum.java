@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
-import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.ProcessBlock;
 import com.ils.blt.common.block.Activity;
 import com.ils.blt.common.block.AnchorDirection;

@@ -1,5 +1,5 @@
 /**
- *   (c) 2013-2020  ILS Automation. All rights reserved. 
+ *   (c) 2013-2021  ILS Automation. All rights reserved. 
  */
 package com.ils.block;
 
@@ -39,13 +39,13 @@ import com.ils.blt.common.notification.SignalNotification;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.common.FixedSizeQueue;
 import com.ils.common.GeneralPurposeDataContainer;
+import com.ils.common.log.ILSLogger;
+import com.ils.common.log.LogMaker;
 import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.ils.common.watchdog.WatchdogObserver;
 import com.ils.common.watchdog.WatchdogTimer;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
-import com.inductiveautomation.ignition.common.util.LogUtil;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
 
 
 /**
@@ -56,7 +56,7 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  * as the signal to group a particular subclass into the list of 
  * available executable block types.
  * 
- * PLEASE NOTE --  BUILD & INSTALL - These are not transmitted via the module to the gateway, you need the full installer or copy jars dircetly
+ * PLEASE NOTE --  BUILD & INSTALL - These are not transmitted via the module to the gateway, you need the full installer or copy jars directly
  * 
  */
 public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropertyChangeListener, WatchdogObserver {
@@ -82,7 +82,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	protected Date stateChangeTimestamp = null;
 	protected WatchdogTimer timer = null;
 
-	protected LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
+	protected ILSLogger log = LogMaker.getLogger(this);
 	/** Properties are a dictionary of attributes keyed by property name */
 	protected final Map<String,BlockProperty> propertyMap;
 	/** Describe ports/stubs where connections join the block */
@@ -185,7 +185,13 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	public List<AnchorPrototype>getAnchors() { 
 		return anchors; 
 		}
+	@Override
 	public GeneralPurposeDataContainer getAuxiliaryData() {return auxiliaryData;}
+	@Override
+	public void onDelete() {}
+	@Override 
+	public void onSave() {}
+	@Override
 	public void setAuxiliaryData(GeneralPurposeDataContainer auxiliaryData) {this.auxiliaryData = auxiliaryData;}
 	@Override
 	public PalettePrototype getBlockPrototype() {return prototype; }

@@ -302,6 +302,16 @@ public class GatewayRpcDispatcher   {
 	public Object getPropertyValue(String diagramId,String blockId,String propertyName) {
 		return requestHandler.getPropertyValue(diagramId, blockId, propertyName);
 	}
+	/**
+	 * Find the parent application or diagram of the entity referenced by
+	 * the supplied id. Test the state and return the name of the appropriate
+	 * provider.  
+	 * @param uuid id of the subject node as a String
+	 * @return provider name
+	 */
+	public String getProviderForUUID(String uuid) {
+		return requestHandler.getProviderForUUID(uuid);
+	}
 	public Date getTimeOfLastBlockStateChange(String diagramId, String blockName) {
 		return requestHandler.getTimeOfLastBlockStateChange(diagramId,blockName);
 	}

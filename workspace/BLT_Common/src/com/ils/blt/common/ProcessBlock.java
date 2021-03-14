@@ -198,6 +198,17 @@ public interface ProcessBlock extends BlockPropertyChangeListener {
 	 */
 	public void notifyOfStatus();
 	/**
+	 * Called immediately before the block is deleted.
+	 * This method allows the block to clean up any 
+	 * extension data associated with it.
+	 */
+	public void onDelete();
+	/**
+	 * Called immediately before a block is saved. This method
+	 * allows the block to save any auxiliary data it may posses.
+	 */
+	public void onSave();
+	/**
 	 * Artificially place the current block state on its
 	 * outputs. This method is never called in the normal
 	 * course of block operation.

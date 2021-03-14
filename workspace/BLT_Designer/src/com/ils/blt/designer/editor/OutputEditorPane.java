@@ -1,4 +1,4 @@
-package com.ils.blt.designer.config;
+package com.ils.blt.designer.editor;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -23,20 +23,20 @@ import javax.swing.SwingConstants;
 
 import com.ils.blt.common.UtilityFunctions;
 import com.ils.common.GeneralPurposeDataContainer;
-import com.inductiveautomation.ignition.common.util.LogUtil;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
+import com.ils.common.log.ILSLogger;
+import com.ils.common.log.LogMaker;
 
 import net.miginfocom.swing.MigLayout;
 
 
-public class OutputEditorPane extends JPanel implements ApplicationConfigurationController.EditorPane {
+public class OutputEditorPane extends JPanel {
 	private static final long serialVersionUID = -5387165467458025431L;
 	private final static String CLSS = "OutputEditorPane";
 	private static final Insets insets = new Insets(0,0,0,0);
-	private final ApplicationConfigurationController controller;
+	private final ApplicationPropertyEditor editor;
 	private final GeneralPurposeDataContainer model;
 	private Map<String,String> outputMap;
-	private final LoggerEx log;
+	private final ILSLogger log;
 	final JTextField nameField = new JTextField();
 	final JTextField tagField = new JTextField();
 	final JFormattedTextField mostNegativeIncrementField = new JFormattedTextField(NumberFormat.getInstance());
@@ -57,11 +57,11 @@ public class OutputEditorPane extends JPanel implements ApplicationConfiguration
 	protected static final Dimension NUMERIC_FIELD_SIZE  = new Dimension(100,24);
 	
 	// The constructor
-	public OutputEditorPane(ApplicationConfigurationController controller) {
+	public OutputEditorPane(ApplicationPropertyEditor editor) {
 		super(new BorderLayout(20, 30));
-		this.controller = controller;
-		this.log = LogUtil.getLogger(getClass().getPackage().getName());
-		this.model = controller.getModel();
+		this.editor = editor;
+		this.log = LogMaker.getLogger(this);
+		this.model = editor.getModel();
 				
 		JPanel mainPanel = new JPanel(new MigLayout("", "[right]"));
 
@@ -94,7 +94,7 @@ public class OutputEditorPane extends JPanel implements ApplicationConfiguration
 			}
 		}
 		feedbackMethodComboBox.setToolTipText("The technique used to combine multiple recommendations for the this output!");
-		feedbackMethodComboBox.setPreferredSize(ApplicationConfigurationConstants.COMBO_SIZE);
+		feedbackMethodComboBox.setPreferredSize(ApplicationEditConstants.COMBO_SIZE);
 		mainPanel.add(feedbackMethodComboBox, "span, growx, wrap");
 		
 		mainPanel.add(new JLabel("Incremental Output:"), "gap 10");
@@ -144,13 +144,13 @@ public class OutputEditorPane extends JPanel implements ApplicationConfiguration
 		JPanel bottomPanel = new JPanel(new MigLayout("","[25%, left][50%, center][25%]",""));
 		add(bottomPanel, BorderLayout.SOUTH);
 		bottomPanel.add(previousButton);
-		previousButton.setPreferredSize(ApplicationConfigurationConstants.BUTTON_SIZE);
+		previousButton.setPreferredSize(ApplicationEditConstants.BUTTON_SIZE);
 		previousButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {doPrevious();}
 		});
 
 		bottomPanel.add(cancelButton);
-		cancelButton.setPreferredSize(ApplicationConfigurationConstants.BUTTON_SIZE);
+		cancelButton.setPreferredSize(ApplicationEditConstants.BUTTON_SIZE);
 		cancelButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {doCancel();}
 		});
@@ -175,6 +175,8 @@ public class OutputEditorPane extends JPanel implements ApplicationConfiguration
 		setpointHighLimitField.setValue(dbl);
 		feedbackMethodComboBox.setSelectedItem((String) outputMap.get("FeedbackMethod"));
 	}
+	
+	public JTextField getTagField() { return this.tagField; }
 
 	// The user pressed the OK button so save everything (I don't keep track of what, if anything, was 
 	// changed so assume they change everything.
@@ -193,23 +195,23 @@ public class OutputEditorPane extends JPanel implements ApplicationConfiguration
 
 		log.infof("%s.doPrevious: Saving values %s\n ",CLSS,outputMap.toString());
 		
-		controller.refreshOutputs();
+		editor.refreshOutputs();
 
 		// Slide back to the Outputs pane
-		controller.slideTo(ApplicationConfigurationConstants.OUTPUTS);	
+		editor.setSelectedPane(ApplicationEditConstants.OUTPUTS);	
 	}
 
 	protected void doCancel() {
-		controller.slideTo(ApplicationConfigurationConstants.OUTPUTS);	
+		editor.setSelectedPane(ApplicationEditConstants.OUTPUTS);	
 	}
 	
 	protected void doTagSelector() {
-		controller.slideTo(ApplicationConfigurationConstants.TAGSELECTOR);	
+		editor.setSelectedPane(ApplicationEditConstants.TAGSELECTOR);	
 	}
 
-	@Override
+
 	public void activate() {
-		controller.slideTo(ApplicationConfigurationConstants.EDITOR);
+		editor.setSelectedPane(ApplicationEditConstants.EDITOR);
 	}
 
 }

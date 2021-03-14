@@ -1,5 +1,5 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved.
+ *   (c) 2014-2021  ILS Automation. All rights reserved.
  */
 package com.ils.blt.designer.editor;
 
@@ -24,8 +24,7 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
  * This is the controller for the frame that contains various sliding panels
  * used for editing various block attributes.    
  */
-
-public class BlockPropertyEditor extends SlidingPane   {
+public class BlockPropertyEditor extends AbstractPropertyEditor   {
 	private static final long serialVersionUID = 8971626415423709616L;
 
 	private final DesignerContext context;

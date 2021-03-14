@@ -77,7 +77,6 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	private static ControllerRequestHandler instance = null;
 	private final BlockExecutionController controller = BlockExecutionController.getInstance();
 	private final PythonRequestHandler pyHandler;
-	private final GatewayScriptExtensionManager sem = GatewayScriptExtensionManager.getInstance();
 	private ToolkitRecordHandler toolkitRecordHandler;
 	private final UtilityFunctions fcns;
 	private TagHandler tagHandler; 
@@ -416,7 +415,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			}
 		}
 		catch(IllegalArgumentException iae) {
-			log.warnf("%s.getApplication: %s is an illegal UUID (%s)",TAG,nodeId,iae.getMessage());
+			log.warnf("%s.getDatabaseForUUID: %s is an illegal UUID (%s)",TAG,nodeId,iae.getMessage());
 		}
 		return db;
 	}
@@ -616,6 +615,47 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		}
 		return val;
 
+	}
+	/**
+	 * Find the parent application or diagram of the entity referenced by
+	 * the supplied id. Test the state and return the name of the appropriate
+	 * provider.  
+	 * @param nodeId identifier for node
+	 * @return database name
+	 */
+	public String getProviderForUUID(String nodeId) {
+		// Search up the tree for a parent diagram or application. Determine the
+		// state. Unless we find a diagram, we don't return any connection name.
+		String provider = "NONE";
+		DiagramState ds = DiagramState.DISABLED;
+		try {
+			UUID uuid = UUID.fromString(nodeId);
+			
+			ProcessNode node = controller.getProcessNode(uuid);
+			while( node!=null ) {
+				if( node instanceof ProcessDiagram ) {
+					ds = ((ProcessDiagram)node).getState();
+					//log.debugf("%s.getApplication, found application = %s ",TAG,app.getName());
+					break;
+				}
+				else if( node instanceof ProcessApplication ) {
+					ds = ((ProcessApplication)node).getState();
+					//log.debugf("%s.getApplication, found application = %s ",TAG,app.getName());
+					break;
+				}
+				node = controller.getProcessNode(node.getParent());
+			}
+			if(ds.equals(DiagramState.ACTIVE)) {
+				provider = getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER);
+			}
+			else if(ds.equals(DiagramState.ISOLATED)) {
+				provider = getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER);
+			}
+		}
+		catch(IllegalArgumentException iae) {
+			log.warnf("%s.getProviderForUUID: %s is an illegal UUID (%s)",TAG,nodeId,iae.getMessage());
+		}
+		return provider;
 	}
 	/**
 	 * @param diagramId string representation of the diagram's unique id
@@ -1528,15 +1568,11 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 
 
 	/**
-	 * We have two types of properties of interest here. The first set is found in ScriptConstants
-	 * and represents scripts used for external Python interfaces to Application/Family.
-	 * The second category represents database and tag interfaces for production and isolation
-	 * modes.
+	 * Set properties in the ORM database.
 	 */
 	@Override
 	public void setToolkitProperty(String propertyName, String value) {
 		toolkitRecordHandler.setToolkitProperty(propertyName, value);
-		sem.setModulePath(propertyName, value);  // Does nothing for properties not part of Python external interface 
 		controller.clearCache();                 // Force retrieval production/isolation constants from HSQLdb on next access.
 	}
 

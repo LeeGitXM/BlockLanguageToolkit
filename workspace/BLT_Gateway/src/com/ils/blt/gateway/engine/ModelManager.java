@@ -1,5 +1,5 @@
 /**
- *   (c) 2014-2018  ILS Automation. All rights reserved. 
+ *   (c) 2014-2021 ILS Automation. All rights reserved. 
  */
 package com.ils.blt.gateway.engine;
 
@@ -19,14 +19,16 @@ import com.ils.blt.common.ProcessBlock;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.connection.Connection;
+import com.ils.blt.common.script.Script;
 import com.ils.blt.common.script.ScriptConstants;
+import com.ils.blt.common.script.ScriptExtensionManager;
 import com.ils.blt.common.serializable.SerializableApplication;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.SerializableFamily;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
-import com.ils.blt.gateway.GatewayScriptExtensionManager;
-import com.ils.common.GeneralPurposeDataContainer;
+import com.ils.common.persistence.ToolkitProperties;
+import com.ils.common.persistence.ToolkitRecordHandler;
 import com.inductiveautomation.ignition.common.model.ApplicationScope;
 import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
@@ -63,7 +65,8 @@ public class ModelManager implements ProjectListener  {
 	private final Map<UUID,ProcessNode> orphansByUUID;
 	private final Map<UUID,ProcessNode> nodesByUUID;
 	private final BlockExecutionController controller = BlockExecutionController.getInstance();
-	private final GatewayScriptExtensionManager extensionManager = GatewayScriptExtensionManager.getInstance();
+	private final ScriptExtensionManager extensionManager = ScriptExtensionManager.getInstance();
+	private ToolkitRecordHandler toolkitHandler;
 	
 	/**
 	 * Initially we query the gateway context to discover what resources exists. After that
@@ -75,6 +78,7 @@ public class ModelManager implements ProjectListener  {
 	public ModelManager(GatewayContext ctx) { 
 		this.context = ctx;
 		this.log = LogUtil.getLogger(getClass().getPackage().getName());
+		this.toolkitHandler = new ToolkitRecordHandler(context);
 		
 		nodesByKey = new HashMap<>();
 		orphansByUUID = new HashMap<UUID,ProcessNode>();
@@ -716,9 +720,18 @@ public class ModelManager implements ProjectListener  {
 			}
 			// Invoke extension script on application save
 			if( node!=null ) {
+				String provider = (application.getState().equals(DiagramState.ACTIVE) ? 
+							toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER):
+							toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER));
+				Script script = extensionManager.createExtensionScript(ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.SAVE_OPERATION, provider);
 				extensionManager.runScript(context.getProjectManager().getProjectScriptManager(node.getProjectId()), 
-						ScriptConstants.APPLICATION_CLASS_NAME, 
-						ScriptConstants.NODE_SAVE_SCRIPT, node.getSelf().toString(),node.getAuxiliaryData());
+						script, node.getSelf().toString(),node.getAuxiliaryData());
+				script = extensionManager.createExtensionScript(ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.SET_AUX_OPERATION, provider);
+				String db = (application.getState().equals(DiagramState.ACTIVE) ? 
+						toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_DATABASE):
+						toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_DATABASE));
+				extensionManager.runScript(context.getScriptManager(), script, node.getSelf().toString(),node.getAuxiliaryData(),db);
+				application.setAuxiliaryData(node.getAuxiliaryData());
 			}
 		}
 		else {
@@ -804,18 +817,7 @@ public class ModelManager implements ProjectListener  {
 				// Execute "delete" extension function for removed blocks
 				List<ProcessBlock> deletedBlocks = diagram.removeUnusedBlocks(sd.getBlocks());
 				for(ProcessBlock deletedBlock:deletedBlocks) {
-					
-					
-					if( extensionManager.hasKey(deletedBlock.getClassName(),ScriptConstants.NODE_DELETE_SCRIPT)) {
-						GeneralPurposeDataContainer auxData = deletedBlock.getAuxiliaryData();
-//						log.infof("%s.addModifyDiagramResource.  Aux data lists %s    ************************#######################  EREIAM JH ####################",TAG,auxData.getLists());
-//						log.infof("%s.addModifyDiagramResource.  Aux data maplists %s    ************************#######################  EREIAM JH ####################",TAG,auxData.getMapLists());
-//						log.infof("%s.addModifyDiagramResource.  Aux data properties %s    ************************#######################  EREIAM JH ####################",TAG,auxData.getProperties());
-						extensionManager.runScript(context.getProjectManager().getProjectScriptManager(diagram.getProjectId()), 
-							deletedBlock.getClassName(), 
-							ScriptConstants.NODE_DELETE_SCRIPT, deletedBlock.getBlockId().toString());
-//							ScriptConstants.NODE_DELETE_SCRIPT, deletedBlock.getBlockId().toString(), auxData);
-					}
+					deletedBlock.onDelete();
 				}
 				diagram.createBlocks(sd.getBlocks());       // Adds blocks that are new in update
 				diagram.updateConnections(sd.getConnections());  // Adds connections that are new in update
@@ -824,19 +826,15 @@ public class ModelManager implements ProjectListener  {
 			}
 			//	Invoke extension script on diagram save
 			if( diagram!=null )  {
+				String provider = (diagram.getState().equals(DiagramState.ACTIVE) ? 
+						toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER):
+						toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER));
+				Script script = extensionManager.createExtensionScript(ScriptConstants.DIAGRAM_CLASS_NAME, ScriptConstants.SAVE_OPERATION, provider);
 				extensionManager.runScript(context.getProjectManager().getProjectScriptManager(diagram.getProjectId()), 
-						ScriptConstants.DIAGRAM_CLASS_NAME, 
-						ScriptConstants.NODE_SAVE_SCRIPT, diagram.getSelf().toString(),diagram.getAuxiliaryData());
-				
+					script, diagram.getSelf().toString(),diagram.getAuxiliaryData());
+
 				for(ProcessBlock block:diagram.getProcessBlocks()) {
-					// If this is a final diagnosis, call its save extension
-					// Force the auxiliary data to be non-null. This may be true for some existing blocks.
-					if( extensionManager.hasKey(block.getClassName(),ScriptConstants.NODE_SAVE_SCRIPT) ) {
-						if(block.getAuxiliaryData() ==null ) block.setAuxiliaryData(new GeneralPurposeDataContainer());
-						extensionManager.runScript(context.getProjectManager().getProjectScriptManager(diagram.getProjectId()), 
-							block.getClassName(), 
-							ScriptConstants.NODE_SAVE_SCRIPT, block.getBlockId().toString(),block.getAuxiliaryData());
-					}
+					block.onSave();
 				}
 			}
 		}
@@ -900,9 +898,18 @@ public class ModelManager implements ProjectListener  {
 			}
 			// Invoke extension script on family save
 			if( node!=null ) {
+				String provider = (family.getState().equals(DiagramState.ACTIVE) ? 
+							toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER):
+							toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER));
+				Script script = extensionManager.createExtensionScript(ScriptConstants.FAMILY_CLASS_NAME, ScriptConstants.SAVE_OPERATION, provider);
 				extensionManager.runScript(context.getProjectManager().getProjectScriptManager(node.getProjectId()), 
-						ScriptConstants.FAMILY_CLASS_NAME, 
-						ScriptConstants.NODE_SAVE_SCRIPT, node.getSelf().toString(),node.getAuxiliaryData());
+						script, node.getSelf().toString(),node.getAuxiliaryData());
+				script = extensionManager.createExtensionScript(ScriptConstants.FAMILY_CLASS_NAME, ScriptConstants.SET_AUX_OPERATION, provider);
+				String db = (family.getState().equals(DiagramState.ACTIVE) ? 
+						toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_DATABASE):
+						toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_DATABASE));
+				extensionManager.runScript(context.getScriptManager(), script, node.getSelf().toString(),node.getAuxiliaryData(),db);
+				family.setAuxiliaryData(node.getAuxiliaryData());
 			}
 		}
 		else {
@@ -1014,30 +1021,24 @@ public class ModelManager implements ProjectListener  {
 		log.infof("%s.deleteResource: %d:%d",TAG,projectId,resourceId);
 		ProjectResourceKey key = new ProjectResourceKey(projectId,resourceId);
 		ProcessNode head = nodesByKey.get(key);
+		DiagramState nodeState = DiagramState.ACTIVE;
 		if( head!=null ) {
 			List<ProcessNode> nodesToDelete = new ArrayList<>();
 			head.collectDescendants(nodesToDelete);  // "head" is in the list
 			for(ProcessNode node:nodesToDelete ) {
 				if( node instanceof ProcessDiagram ) {
 					ProcessDiagram diagram = (ProcessDiagram)node;
+					nodeState = diagram.getState();
 
 					for(ProcessBlock block:diagram.getProcessBlocks()) {
 						block.stop();
 						for(BlockProperty prop:block.getProperties()) {
 							controller.removeSubscription(block, prop);
 						}
-						// If this is a final diagnosis, call its delete extension
-//						if( block.getClassName().equals("xom.block.finaldiagnosis.FinalDiagnosis")) {
-//						log.infof("%s.deleteResource, entire diagram, block is a %s    ************************#######################  EREIAM JH ####################",TAG,block.getClassName());
-						if( block.getClassName().contains("block.finaldiagnosis.FinalDiagnosis")) {
-//							log.infof("%s.deleteResource, entire diagram, block identified as finaldiagnosis.  Aux data is %s    ************************#######################  EREIAM JH ####################",TAG,block.getAuxiliaryData().toString());
-							String uuidStr = block.getBlockId().toString();
-							extensionManager.runScript(context.getProjectManager().getProjectScriptManager(node.getProjectId()), 
-								block.getClassName(), ScriptConstants.NODE_DELETE_SCRIPT, uuidStr); 
-//								block.getClassName(), ScriptConstants.NODE_DELETE_SCRIPT, uuidStr, block.getAuxiliaryData());
-						}
+						block.onDelete();
+
 						// If this is a source connection, delete its associated tag
-						else if(block.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK)) {
+						if(block.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK)) {
 							BlockProperty prop = block.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
 							log.infof("%s.deleteResource:Deleting aa sink",TAG,projectId,resourceId);
 						}
@@ -1060,19 +1061,24 @@ public class ModelManager implements ProjectListener  {
 				// Invoke the proper extension function on a delete
 				// NOTE: Need to use keys for class names
 				String classKey = ScriptConstants.DIAGRAM_CLASS_NAME;
-				if( node instanceof ProcessApplication ) 
+				if( node instanceof ProcessApplication ) {
 					classKey = ScriptConstants.APPLICATION_CLASS_NAME;
-				else if( node instanceof ProcessFamily ) 
+					nodeState = ((ProcessApplication)node).getState();
+				}
+				else if( node instanceof ProcessFamily ) {
 					classKey = ScriptConstants.FAMILY_CLASS_NAME;
-				
-//				log.infof("%s.deleteResource, node is a %s    ************************#######################  EREIAM JH ####################",TAG,node.getClass());
-				GeneralPurposeDataContainer auxData = node.getAuxiliaryData();
-//				log.infof("%s.deleteResource.  Aux data lists %s    ************************#######################  EREIAM JH ####################",TAG,auxData.getLists());
-//				log.infof("%s.deleteResource.  Aux data maplists %s    ************************#######################  EREIAM JH ####################",TAG,auxData.getMapLists());
-//				log.infof("%s.deleteResource.  Aux data properties %s    ************************#######################  EREIAM JH ####################",TAG,auxData.getProperties());
-				extensionManager.runScript(context.getProjectManager().getProjectScriptManager(node.getProjectId()), classKey,
-						ScriptConstants.NODE_DELETE_SCRIPT, node.getSelf().toString());
-//						ScriptConstants.NODE_DELETE_SCRIPT, node.getSelf().toString(), node.getAuxiliaryData());
+					nodeState = ((ProcessFamily)node).getState();
+				}
+							
+				// Invoke extension script for the delete
+				if( node!=null ) {
+					String provider = (nodeState.equals(DiagramState.ACTIVE) ? 
+								toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER):
+								toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER));
+					Script script = extensionManager.createExtensionScript(classKey, ScriptConstants.DELETE_OPERATION, provider);
+					extensionManager.runScript(context.getProjectManager().getProjectScriptManager(node.getProjectId()), 
+							script, node.getSelf().toString(),node.getAuxiliaryData());
+				}
 			}
 		}
 	}

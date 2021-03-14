@@ -1,5 +1,5 @@
 /**
- *   (c) 2014-2017  ILS Automation. All rights reserved.
+ *   (c) 2014-2021  ILS Automation. All rights reserved.
  *  
  */
 package com.ils.blt.gateway.proxy;
@@ -29,6 +29,7 @@ import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
+import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.JavaToPython;
 import com.ils.common.PythonToJava;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
@@ -59,15 +60,20 @@ public class ProxyHandler   {
 	// These are the instances of specific callback functions
 	private final Callback acceptValueCallback;
 	private final Callback createBlockCallback;
+	private final Callback getAuxiliaryDataCallback;
 	private final Callback evaluateCallback;
 	private final Callback getBlockPropertiesCallback;
 	private final Callback getBlockStateCallback;
 	private final Callback getBlockPrototypesCallback;
 	private final Callback notifyOfStatusCallback;
+	private final Callback onDeleteCallback;
+	private final Callback onSaveCallback;
 	private final Callback propagateCallback;
 	private final Callback resetCallback;
+	private final Callback setAuxiliaryDataCallback;
 	private final Callback setBlockPropertyCallback;
 	private final Callback setBlockStateCallback;
+	private final Callback setNameCallback;
 
 	/**
 	 * Initialize with instances of the classes to be controlled.
@@ -80,14 +86,19 @@ public class ProxyHandler   {
 		acceptValueCallback = new AcceptValue();
 		createBlockCallback = new CreateBlock();
 		evaluateCallback = new Evaluate();
+		getAuxiliaryDataCallback = new GetAuxiliaryData();
 		getBlockPropertiesCallback = new GetBlockProperties();
 		getBlockStateCallback = new GetBlockState();
 		getBlockPrototypesCallback = new GetBlockPrototypes();
 		notifyOfStatusCallback = new NotifyOfStatus();
+		onDeleteCallback = new OnDelete();
+		onSaveCallback = new OnSave();
 		propagateCallback = new Propagate();
 		resetCallback = new Reset();
+		setAuxiliaryDataCallback = new SetAuxiliaryData();
 		setBlockPropertyCallback = new SetBlockProperty();
 		setBlockStateCallback = new SetBlockState();
+		setNameCallback = new SetName();
 	}
 
 	/**
@@ -140,6 +151,7 @@ public class ProxyHandler   {
 		}
 	}
 
+	
 	public ProxyBlock createBlockInstance(String classNm,UUID parentId,UUID blockId,long projectId) {
 		String className = removeXomFromClassName(classNm);  // EREIAM JH - temporary fix for existing XOM projects.
 		ProxyBlock block = new ProxyBlock(context,className,parentId,blockId);
@@ -200,8 +212,26 @@ public class ProxyHandler   {
 			evaluateCallback.execute(mgr);
 		}
 	}
+	public GeneralPurposeDataContainer getAuxiliaryData(ScriptManager mgr,PyObject block) {
+		GeneralPurposeDataContainer container = new GeneralPurposeDataContainer();
+		log.debugf("%s.getBlockState ... ",CLSS);
+		if( getAuxiliaryDataCallback.compileScript() ) {
+			synchronized(getAuxiliaryDataCallback) {
+				PyList pylist = new PyList();  // Empty
+				getAuxiliaryDataCallback.initializeLocalsMap(mgr);
+				getAuxiliaryDataCallback.setLocalVariable(0,block);
+				getAuxiliaryDataCallback.setLocalVariable(1,pylist);
+				getAuxiliaryDataCallback.execute(mgr);
+				log.debug(CLSS+".getAuxiliaryData returned "+ pylist);   // Should now be updated
+				// Contents of list are Hashtable<String,?>
+				// We're looking for a single string entry in the list
+				toJavaTranslator.updateDataContainerFromPython(container, pylist);
+			}
+		}
 
-	
+		return container;
+	}
+
 	/**
 	 * Query a Python block to obtain a list of its properties. The block is expected
 	 * to exist.
@@ -447,6 +477,26 @@ public class ProxyHandler   {
 			notifyOfStatusCallback.execute(mgr);
 		}
 	}
+	public void onDelete(ScriptManager mgr,PyObject block) {
+		if( block==null ) return;
+		if( onDeleteCallback.compileScript() ) {
+			synchronized(onDeleteCallback) {
+				onDeleteCallback.initializeLocalsMap(mgr);
+				onDeleteCallback.setLocalVariable(0,block);
+				onDeleteCallback.execute(mgr);
+			}
+		}
+	}
+	public void onSave(ScriptManager mgr,PyObject block) {
+		if( block==null ) return;
+		if( onSaveCallback.compileScript() ) {
+			synchronized(onSaveCallback) {
+				onSaveCallback.initializeLocalsMap(mgr);
+				onSaveCallback.setLocalVariable(0,block);
+				onSaveCallback.execute(mgr);
+			}
+		}
+	}
 	/**
 	 * Tell the block to propagate its last state and/or value as appropriate.
 	 *
@@ -475,6 +525,29 @@ public class ProxyHandler   {
 			resetCallback.initializeLocalsMap(mgr);
 			resetCallback.setLocalVariable(0,block);
 			resetCallback.execute(mgr);
+		}
+	}
+	public void setAuxiliaryData(ScriptManager mgr,PyObject block,GeneralPurposeDataContainer container ) {
+		if( block==null ) return;
+		if( setAuxiliaryDataCallback.compileScript() ) {
+			synchronized(setAuxiliaryDataCallback) {
+				setAuxiliaryDataCallback.initializeLocalsMap(mgr);
+				setAuxiliaryDataCallback.setLocalVariable(0,block);
+				setAuxiliaryDataCallback.setLocalVariable(1,toPythonTranslator.objectToPy(container));
+				setAuxiliaryDataCallback.execute(mgr);
+			}
+		}
+	}
+	
+	public void setName(ScriptManager mgr,PyObject block,String name ){
+		if( block==null || name!=null ) return;
+		if( setNameCallback.compileScript() ) {
+			synchronized(setNameCallback) {
+				setNameCallback.initializeLocalsMap(mgr);
+				setNameCallback.setLocalVariable(0,block);
+				setNameCallback.setLocalVariable(1,new PyString(name));
+				setNameCallback.execute(mgr);
+			}
 		}
 	}
 	public void setBlockProperty(ScriptManager mgr,ProxyBlock block,BlockProperty prop) {

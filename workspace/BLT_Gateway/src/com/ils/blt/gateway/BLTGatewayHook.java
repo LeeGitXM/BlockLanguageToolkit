@@ -1,23 +1,23 @@
 /**
- *   (c) 2014-2015  ILS Automation. All rights reserved. 
+ *   (c) 2014-2021  ILS Automation. All rights reserved. 
  */
 package com.ils.blt.gateway;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
-import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 
 import com.ils.blt.common.BLTProperties;
-import com.ils.blt.common.script.AbstractScriptExtensionManager;
+import com.ils.blt.common.script.ScriptExtensionManager;
 import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.blt.gateway.engine.ModelManager;
 import com.ils.blt.gateway.persistence.ToolkitRecordListener;
 import com.ils.blt.gateway.proxy.ProxyHandler;
 import com.ils.blt.gateway.wicket.ToolkitStatusPanel;
+import com.ils.common.log.ILSLogger;
+import com.ils.common.log.LogMaker;
 import com.ils.common.persistence.ToolkitRecord;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.licensing.LicenseState;
@@ -25,8 +25,6 @@ import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.project.ProjectVersion;
 import com.inductiveautomation.ignition.common.script.ScriptManager;
-import com.inductiveautomation.ignition.common.util.LogUtil;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.gateway.clientcomm.ClientReqSession;
 import com.inductiveautomation.ignition.gateway.model.AbstractGatewayModuleHook;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
@@ -49,7 +47,7 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	private final String prefix = "BLT";
 	private transient GatewayRpcDispatcher dispatcher = null;
 	private transient ModelManager mmgr = null;
-	private final LoggerEx log;
+	private final ILSLogger log;
 	private ToolkitRecord record = null;
 	private final ControllerRequestHandler requestHandler;
 	private ToolkitRecordListener recordListener;
@@ -60,10 +58,8 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	}
 	
 	public BLTGatewayHook() {
-		log = LogUtil.getLogger(getClass().getPackage().getName());
-		log.setToStringStyle(ToStringStyle.SIMPLE_STYLE);
+		log = LogMaker.getLogger(this);
 		log.info(TAG+"Initializing BLT Gateway hook");
-		log.setToStringStyle(ToStringStyle.SIMPLE_STYLE);
 		BundleUtil.get().addBundle(prefix, getClass(), BUNDLE_NAME);
 		requestHandler = ControllerRequestHandler.getInstance();
 	}
@@ -85,6 +81,8 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 		dispatcher = new GatewayRpcDispatcher(context);
 		recordListener = new ToolkitRecordListener(context);
 		
+		// Set context in the ScriptManager instance
+		ScriptExtensionManager.getInstance().setContext(context);
 		// Register the ToolkitRecord making sure that the table exists
 		try {
 			context.getSchemaUpdater().updatePersistentRecords(ToolkitRecord.META);
@@ -101,18 +99,6 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 		BlockExecutionController controller = BlockExecutionController.getInstance();
 	    mmgr = new ModelManager(context);
 	    controller.setDelegate(mmgr);
-	    // Initialize all the script modules from parameters stored in the ORM
-	    GatewayScriptExtensionManager sem = GatewayScriptExtensionManager.getInstance();
-	    for( String flavor: sem.getFlavors() ) {
-	    	for(String clss: sem.getClassNames() ) {
-	    		String key = AbstractScriptExtensionManager.makeKey(clss, flavor);
-		    	String pythonPath = requestHandler.getToolkitProperty(key);
-		    	if( pythonPath!=null ) {
-		    		sem.setModulePath(key, pythonPath);
-		    		sem.addScript(clss,flavor, pythonPath);
-		    	}
-		    }
-	    }
 	    
 	    // Load existing projects - skip the global project and any that are disabled.
 	    List<Project> projects = context.getProjectManager().getProjectsFull(ProjectVersion.Staging);

@@ -1,5 +1,5 @@
 /**
- *   (c) 2015-2018  ILS Automation. All rights reserved.
+ *   (c) 2015-2021  ILS Automation. All rights reserved.
  */
 package com.ils.blt.designer.editor;
 
@@ -14,7 +14,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -32,18 +31,15 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
 import com.ils.blt.common.ApplicationRequestHandler;
+import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.block.ActiveState;
-import com.ils.blt.common.script.CommonScriptExtensionManager;
-import com.ils.blt.common.script.ScriptConstants;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.ui.DualListBox;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
-import com.inductiveautomation.ignition.common.util.LogUtil;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
 import net.miginfocom.swing.MigLayout;
@@ -51,6 +47,8 @@ import net.miginfocom.swing.MigLayout;
 /**
  * Display a dialog to configure the outputs available for a Final Diagnosis.
  * The constants contained herein are defined in designer.properties  (as defined in ConfigurationDialog*)
+ * This dialog allows for the display and editing of auxiliary data in the proxy block. There is no extension
+ * function interaction until the block is saved as part of a diagram-save.
  */
 public class FinalDiagnosisPanel extends BasicEditPanel implements ActionListener,FocusListener, PropertyChangeListener {
 	private static final long serialVersionUID = 7211480530910862375L;
@@ -59,7 +57,6 @@ public class FinalDiagnosisPanel extends BasicEditPanel implements ActionListene
 	private final int DIALOG_WIDTH = 300;
 	private final ProcessDiagramView diagram;
 	private final ProcessBlockView block;
-	private final CommonScriptExtensionManager extensionManager = CommonScriptExtensionManager.getInstance();
 	private JPanel mainPanel = null;
 	private final GeneralPurposeDataContainer model;           // Data container operated on by panels
 	protected DualListBox dual;
@@ -80,7 +77,6 @@ public class FinalDiagnosisPanel extends BasicEditPanel implements ActionListene
 	protected static final Dimension TEXT_RECOMMENDATION_AREA_SIZE  = new Dimension(280,300);
 	protected static final Dimension COMMENT_AREA_SIZE  = new Dimension(280,300);
 	private final CorePropertyPanel corePanel;
-
 	
 
 	// from configuration dialog
@@ -93,24 +89,18 @@ public class FinalDiagnosisPanel extends BasicEditPanel implements ActionListene
 	protected static final Dimension NUMBER_BOX_SIZE  = new Dimension(50,24);
 	protected final ApplicationRequestHandler requestHandler;
 	private final UtilityFunctions fcns = new UtilityFunctions();
-//	protected JPanel contentPanel = null;
-	protected JPanel buttonPanel = null;
-//	protected JButton okButton = null;
 	protected JTextField nameField;
-	protected boolean cancelled = false;
-
 
 	
-//	Now figure out how to get this to refresh when the diagram state (active/disabled) changes
+	//	Now figure out how to get this to refresh when the diagram state (active/disabled) changes
 	public FinalDiagnosisPanel(DesignerContext context,BlockPropertyEditor editor,ProcessBlockView blk, DiagramWorkspace wrkspc) {
 		super(editor);
 		this.block = blk;
-		this.model = new GeneralPurposeDataContainer();
+		this.model = blk.getAuxiliaryData();
 		this.rb = ResourceBundle.getBundle("com.ils.blt.designer.designer");  // designer.properties
 		this.requestHandler = new ApplicationRequestHandler();
 		this.context = context;
         this.diagram = wrkspc.getActiveDiagram();
-
 		this.corePanel = new CorePropertyPanel(block);
 
 		this.setPreferredSize(new Dimension(DIALOG_WIDTH,DIALOG_HEIGHT));
@@ -121,32 +111,23 @@ public class FinalDiagnosisPanel extends BasicEditPanel implements ActionListene
 	/**
 	 * The super class takes care of making a central tabbed pane --- but
 	 * we don't want it. Simply put our mainPanel as the content pane.
-	 * Here we add the tabs ...
+	 * Here we add the tabs ... there are no buttons
 	 * 1) Core attributes
 	 * 2) Python hook definitions.
 	 */
 	private void initialize() {
-//		buttonPanel = new JPanel();
-//		contentPanel = new JPanel(new BorderLayout());
-//		this.setLayout(new BorderLayout());
-//		okButton = new JButton("OK");
-//		okButton.setPreferredSize(BUTTON_SIZE);
-//		buttonPanel.add(okButton,"");
-//		this.add(buttonPanel,BorderLayout.SOUTH);
-//		setContentPane(contentPanel);
-
 		setLayout(new MigLayout("top,flowy,ins 2,gapy 0:10:15","","[top]0[]"));
 		add(corePanel,"grow,push");
-        
+   
 
-		boolean goodData = retrieveAuxiliaryData();
-		if (goodData) {
+		if(diagram.getState().equals(DiagramState.ACTIVE) ||
+		   diagram.getState().equals(DiagramState.ISOLATED) ) {
 			mainPanel = createMainPanel();
-		} else {
+		} 
+		else {
 			mainPanel = createMainPanelNoData();
 		}
-		add(mainPanel,"grow,push");
-//		setOKActions();
+		add(mainPanel,"grow,push");;
 	}
 	
 	private JPanel createMainPanel() {	
@@ -191,46 +172,6 @@ public class FinalDiagnosisPanel extends BasicEditPanel implements ActionListene
 	}
 	
 	/**
-	 * Read the database and fill the model
-	 */
-	private boolean retrieveAuxiliaryData() {
-		boolean ret = true;
-		// Fetch properties of the diagnosis associated with the database and not serialized.
-		// Fetch from the database and store in the model
-		model.setProperties(new HashMap<String,String>());
-		model.setLists(new HashMap<>());
-		model.setMapLists(new HashMap<>());
-		model.getProperties().put("Name", block.getName());   // Use as a key when fetching
-		
-		try {
-			String db = requestHandler.getDatabaseForUUID(diagram.getId().toString());
-			if (db != null && !db.equalsIgnoreCase("NONE")) {
-				extensionManager.runScript(context.getScriptManager(),block.getClassName(), ScriptConstants.PROPERTY_GET_SCRIPT, 
-						diagram.getId().toString(),model,db);
-			} else {
-				model.getProperties().put("Comment", "Configuration data is not editable when diagram is disabled or database is unavailable.");
-				ret = false;
-			}
-		}
-		catch( Exception ex ) {
-			log.errorf(TAG+".retrieveAuxiliaryData: Exception ("+ex.getMessage()+")",ex); // Throw stack trace
-			ret = false;
-		}
-		return ret;
-	}
-	
-//	private void setOKActions() {
-//		// The button panel is already added by the base class.
-//		okButton.setText(rb.getString("FinalDiagnosisEditor.Save"));
-//		okButton.addActionListener(new ActionListener() {
-//			public void actionPerformed(ActionEvent e) {
-//				save();
-////				dispose();
-//			}
-//		});
-//	}
-	
-	/**
 	 * This panel holds the "simple" attributes of the block
 	 * @return
 	 */
@@ -241,10 +182,8 @@ public class FinalDiagnosisPanel extends BasicEditPanel implements ActionListene
 	private JPanel createPropertiesPanel() {
 		Map<String,String> properties = model.getProperties();
 		JPanel panel = new JPanel();
-//		final String columnConstraints = "para[][][][]";
 		final String columnConstraints = "para[][]";
 		final String layoutConstraints = "ins 2,gapy 1,gapx 5,fillx,filly";
-//		final String rowConstraints = "para [][][][growprio 100,48:72:96][growprio 100,48:72:96][growprio 100,48:72:96][][][][][][]";
 		final String rowConstraints = "para [][][][][][][][][][][][]";
 		panel.setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));
 
@@ -400,23 +339,6 @@ public class FinalDiagnosisPanel extends BasicEditPanel implements ActionListene
 		
 		List<String> inUseList = dual.getDestinations();
 		model.getLists().put("OutputsInUse",inUseList);
-		
-		// Save values back to the database
-		try {
-			
-			// EREIAM JH - TODo - look for duplicate names first.
-			
-			String db = requestHandler.getDatabaseForUUID(diagram.getId().toString());
-			extensionManager.runScript(context.getScriptManager(),block.getClassName(), ScriptConstants.PROPERTY_SET_SCRIPT, 
-					diagram.getId().toString(),model,db);
-			// Replace the aux data structure in our serializable application
-			// NOTE: The Nav tree node that calls the dialog saves the application resource.
-			block.setAuxiliaryData(model);
-			block.setDirty(true);
-		}
-		catch( Exception ex ) {
-			log.errorf(TAG+".save: Exception ("+ex.getMessage()+")",ex); // Throw stack trace
-		}
 	}
 	
 	
@@ -531,17 +453,12 @@ public class FinalDiagnosisPanel extends BasicEditPanel implements ActionListene
 		}
 		return btn;
 	}
-
 	@Override
 	public void focusGained(FocusEvent arg0) {
-	//	save();
-		
 	}
-
 	@Override
 	public void focusLost(FocusEvent arg0) {
 		save();
-		
 	}
 
 	@Override

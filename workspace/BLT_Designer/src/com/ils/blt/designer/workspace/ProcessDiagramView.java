@@ -1,5 +1,5 @@
 /**
- *   (c) 2014-2020  ILS Automation. All rights reserved.
+ *   (c) 2014-2021  ILS Automation. All rights reserved.
  */
 package com.ils.blt.designer.workspace;
 
@@ -30,7 +30,6 @@ import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableConnection;
 import com.ils.blt.common.serializable.SerializableDiagram;
-import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.NotificationHandler;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQuality;
@@ -81,7 +80,6 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	 */
 	public ProcessDiagramView (long resid,SerializableDiagram diagram, DesignerContext context) {
 		this(resid,diagram.getId(),diagram.getName());
-		this.appRequestHandler= ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler();
 		this.state = diagram.getState();
 		this.watermark = diagram.getWatermark();
 		this.context = context;
@@ -150,7 +148,6 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		this.id = uuid;
 		this.resourceId = resId;
 		this.name = nam;
-		log.debugf("%s.ProcessDiagramView: %s CONSTRUCTOR",TAG,name);
 	}
 	
 	/** Get the current block property values from the Gateway. 

@@ -194,6 +194,14 @@ public interface ToolkitRequestHandler  {
 	 */
 	public Object getPropertyValue(String diagramId,String blockId,String propertyName) ;
 	/**
+	 * Find the parent application or diagram of the entity referenced by
+	 * the supplied id. Test the state and return the name of the appropriate
+	 * tag provider.  
+	 * @param uuid the uniqueId (string) of any node in the nav tree.
+	 * @return tag provider name
+	 */
+	public String getProviderForUUID(String uuid);
+	/**
 	 * @param diagramId string representation of the diagram's unique id
 	 * @param blockName name of the block within the diagram
 	 * @return the time at which the block last changed its state

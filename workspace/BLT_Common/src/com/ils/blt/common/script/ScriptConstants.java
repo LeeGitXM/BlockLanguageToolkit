@@ -6,7 +6,8 @@ package com.ils.blt.common.script;
 
 
 /**
- *  These are constants dealing with the scripting extensions
+ * These are constants dealing with the scripting extensions.
+ *  
  */
 public interface ScriptConstants   {
 	// The applications and families exist in the NavTree and are not really 
@@ -14,18 +15,24 @@ public interface ScriptConstants   {
 	public final static String APPLICATION_CLASS_NAME  = "com.ils.application";
 	public final static String FAMILY_CLASS_NAME       = "com.ils.family";
 	public final static String DIAGRAM_CLASS_NAME      = "com.ils.diagram";
-	// There are these scripts for each class with extensions. 
-	public final static String NODE_DELETE_SCRIPT      = "node-delete-script";
-	public final static String NODE_RENAME_SCRIPT      = "node-rename-script";
-	public final static String NODE_SAVE_SCRIPT        = "node-save-script";
-	public final static String PROPERTY_GET_SCRIPT     = "property-get-script";
-	public final static String PROPERTY_SET_SCRIPT     = "property-set-script";
-
-	// These are the keys for individual sub-dictionaries
-	public final static String ARGS_KEY   = "arglist";
-	public final static String ENTRY_KEY  = "entry";
-	public final static String SCRIPT_KEY = "script";
 	
-	// These are standard names of properties
-	public static final String PROPERTY_NAME        = "Name";
+	// These are the UDT paths 
+	public final static String APPLICATION_TAG_PATH  = "Configuration/DiagnosticToolkit/Application";
+	public final static String FAMILY_TAG_PATH       = "Configuration/DiagnosticToolkit/Family";
+	public final static String DIAGRAM_TAG_PATH      = "Configuration/DiagnosticToolkit/Diagram";
+	
+	// These are tag-paths within the UDT for each method type
+	public final static String DELETE_OPERATION      = "Delete";
+	public final static String GET_AUX_OPERATION     = "GetAux";
+	public final static String RENAME_OPERATION      = "Rename";
+	public final static String SAVE_OPERATION        = "Save";
+	public final static String SET_AUX_OPERATION     = "SetAux";
+	
+	// The arguments are fixed for each type of script
+	public final static String DELETE_SCRIPT_ARGS      = "uuid";
+	public final static String GET_AUX_SCRIPT_ARGS     = "uuid,properties,db";
+	public final static String RENAME_SCRIPT_ARGS      = "uuid,oldName,newName";
+	public final static String SAVE_SCRIPT_ARGS        = "uuid";
+	public final static String SET_AUX_SCRIPT_ARGS     = "uuid,properties,db";
+
 }

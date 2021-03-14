@@ -1,0 +1,19 @@
+<Tags locale="en_US">
+   <Tag name="Configuration" path="" type="Folder"/>
+   <Tag name="DiagnosticToolkit" path="Configuration" type="Folder"/>
+   <Tag name="ApplicationExtensions" path="Configuration/DiagnosticToolkit" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">2</Property>
+      <Property name="UDTParentType">ExtensionDefinition</Property>
+   </Tag>
+   <Tag name="DiagramExtensions" path="Configuration/DiagnosticToolkit" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">2</Property>
+      <Property name="UDTParentType">ExtensionDefinition</Property>
+   </Tag>
+   <Tag name="FamilyExtensions" path="Configuration/DiagnosticToolkit" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">2</Property>
+      <Property name="UDTParentType">ExtensionDefinition</Property>
+   </Tag>
+</Tags>

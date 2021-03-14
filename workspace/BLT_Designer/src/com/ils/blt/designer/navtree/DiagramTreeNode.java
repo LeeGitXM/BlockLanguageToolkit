@@ -36,7 +36,6 @@ import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
-import com.ils.blt.designer.AuxiliaryDataRestoreManager;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.NotificationHandler;
@@ -93,7 +92,6 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	protected final ImageIcon closedDisabledIcon;
 	protected final ImageIcon openRestrictedIcon;
 	protected final ImageIcon closedRestrictedIcon;
-//	private CutAction cutDiagramAction = null;
 	private CopyAction copyDiagramAction = null;
 
 	/**
@@ -375,19 +373,15 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 
 		public void actionPerformed(ActionEvent e) {
            final Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-
            ProjectResource res = parentNode.getProjectResource();
-           if (parentNode instanceof GeneralPurposeTreeNode) {
-        	   executionEngine.executeOnce(new AuxiliaryDataRestoreManager(workspace,(GeneralPurposeTreeNode)parentNode));
-           }
-           
            String data = ""+res.getResourceId();
            Transferable t =  new StringSelection(GeneralPurposeTreeNode.BLT_COPY_OPERATION + data);
 				   
 		   if (t != null) {
 			   try { 
 				   clipboard.setContents(t, null); 
-			   } catch (Exception ex) {
+			   } 
+			   catch (Exception ex) {
 				   ErrorUtil.showError(String.format("actionPerformed: Unhandled Exception (%s)",ex.getMessage()), "Copy Diagram");
 			   }
 		   }
@@ -540,10 +534,6 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
     							}
 
     							if( output.canWrite() ) {
-    								// restore auxiliary data so it gets included in the export.  
-    								//  The parent of a diagram has to be a GeneralPurposeTreeNode.
-    								executionEngine.executeOnce(new AuxiliaryDataRestoreManager(workspace, (GeneralPurposeTreeNode)node.getParent()));
-    		    					
     								ProjectResource res = context.getProject().getResource(resourceId);
     								if( res!=null ) {
 
@@ -773,7 +763,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 			// from the diagram view. This method handles re-paint of the background.
 			ProcessDiagramView view = (ProcessDiagramView)tab.getModel();
 			log.info("Diagram: "+view.getDiagramName()+" ("+view.getId().toString()+")");
-			ApplicationRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler();
+			ApplicationRequestHandler handler = new ApplicationRequestHandler();
 			try {
 				List <SerializableBlockStateDescriptor> descriptors = handler.listBlocksInDiagram(view.getId().toString());
 				for( SerializableBlockStateDescriptor descriptor : descriptors ) {

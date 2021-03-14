@@ -75,7 +75,7 @@ public class ProcessBlockPalette extends DockableFrame implements ResourceWorksp
 		
 		// Query the Gateway for a list of blocks to display
 		JTabbedPane tabbedPane = new JTabbedPane();
-		ApplicationRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler();
+		ApplicationRequestHandler handler = new ApplicationRequestHandler();
 		List<PalettePrototype> prototypes = handler.getBlockPrototypes();
 		for( PalettePrototype proto:prototypes) {
 			JComponent component = new PaletteEntry(proto).getComponent();

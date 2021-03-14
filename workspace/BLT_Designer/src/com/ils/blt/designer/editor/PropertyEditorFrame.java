@@ -1,5 +1,5 @@
 /**
- *   (c) 2013-2014  ILS Automation. All rights reserved.
+ *   (c) 2013-2021  ILS Automation. All rights reserved.
  */
 package com.ils.blt.designer.editor;
 
@@ -13,8 +13,8 @@ import javax.swing.JScrollPane;
 
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
-import com.inductiveautomation.ignition.common.util.LogUtil;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
+import com.ils.common.log.ILSLogger;
+import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockComponent;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignableContainer;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Connection;
@@ -26,19 +26,19 @@ import com.jidesoft.docking.DockableFrame;
 
 /**
  * A PropertyEditorFrame is a DockableFrame in the JIDE workspace (lower left) meant
- * to hold an editor for properties of the selected block or connection. 
+ * to hold an editor for properties of the selected block, connection or NavTree node. 
  */
 @SuppressWarnings("serial")
 public class PropertyEditorFrame extends DockableFrame implements ResourceWorkspaceFrame{
-	private static final String TAG = "PropertyEditorFrame";
+	private static final String CLSS = "PropertyEditorFrame";
 	public static final String DOCKING_KEY = "ProcessDiagramEditorFrame";
 	public static final String TITLE = "Symbolic AI Property Editor";
 	public static final String SHORT_TITLE = "Properties";
 	private final DesignerContext context;
 	private final DiagramWorkspace workspace;
 	private final JPanel contentPanel;
-	private BlockPropertyEditor editor = null;
-	private LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
+	private AbstractPropertyEditor editor = null;
+	private ILSLogger log = LogMaker.getLogger(getClass().getPackage().getName());
 	
 	/**
 	 * Constructor 
@@ -46,7 +46,7 @@ public class PropertyEditorFrame extends DockableFrame implements ResourceWorksp
 	public PropertyEditorFrame(DesignerContext ctx,DiagramWorkspace workspace) {
 		super(DOCKING_KEY, IconUtil.getRootIcon("delay_block_16.png"));  // Pinned icon
 		this.context = ctx;
-		log.debugf("%s.PropertyEditorFrame: CONSTRUCTOR ...",TAG);
+		log.infof("%s.PropertyEditorFrame: CONSTRUCTOR ...",CLSS);
 		this.workspace = workspace;
 		workspace.addDesignableWorkspaceListener(new DiagramWorkspaceListener());
 		contentPanel = new JPanel(new BorderLayout());
@@ -78,27 +78,35 @@ public class PropertyEditorFrame extends DockableFrame implements ResourceWorksp
 		return true;
 	}
 	
-	public BlockPropertyEditor getEditor() {
+	public AbstractPropertyEditor getEditor() {
 		return editor;
 	}
 
-	public void updateForFinalDiagnosis() {
+	// A selection was made in the NavTree that we want to edit
+	public void setEditor(AbstractPropertyEditor eddy) {
 		if( editor!=null ) editor.shutdown();
-		editor = new BlockPropertyEditor(context,workspace,editor.getBlock());
-		contentPanel.removeAll();
+		this.editor = eddy;
+	}
+	
+	public void refreshBlockEditor() {
+		if( editor!=null && editor instanceof BlockPropertyEditor) {
+			editor.shutdown();
+			editor =  new BlockPropertyEditor(context,workspace,((BlockPropertyEditor)editor).getBlock());
+		}
+
 		//Create a scroll pane
 	    JScrollPane scrollPane = new JScrollPane(editor);
 		contentPanel.add(scrollPane,BorderLayout.CENTER);
 		validate();
 	}
-
+	
 
 	private class DiagramWorkspaceListener extends DesignableWorkspaceAdapter {
 		@Override
 		public void itemSelectionChanged(List<JComponent> selections) {
 			if( selections!=null && selections.size()==1 ) {
 				JComponent selection = selections.get(0);
-				log.debugf("%s: DiagramWorkspaceListener: selected a %s",TAG,selection.getClass().getName());
+				log.infof("%s: DiagramWorkspaceListener: selected a %s",CLSS,selection.getClass().getName());
 				if( selection instanceof BlockComponent ) {
 					BlockComponent bc = ( BlockComponent)selection;
 					ProcessBlockView blk = (ProcessBlockView)bc.getBlock();
@@ -118,9 +126,9 @@ public class PropertyEditorFrame extends DockableFrame implements ResourceWorksp
 					if( cxn!=null && cxn.getOrigin()!=null && cxn.getTerminus()!= null ) {
 						// The block is a ProcessBlockView.
 						// The origin is a BasicAnchorPoint (extends AnchorPoint).
-						log.debugf("%s: DiagramWorkspaceListener: connection origin is a %s",TAG,cxn.getOrigin().getClass().getName());
-						log.debugf("%s: DiagramWorkspaceListener: connection id is a %s",TAG,cxn.getOrigin().getId().getClass().getName());
-						log.debugf("%s: DiagramWorkspaceListener: connection block is a %s",TAG,cxn.getOrigin().getBlock().getClass().getName());
+						log.debugf("%s: DiagramWorkspaceListener: connection origin is a %s",CLSS,cxn.getOrigin().getClass().getName());
+						log.debugf("%s: DiagramWorkspaceListener: connection id is a %s",CLSS,cxn.getOrigin().getId().getClass().getName());
+						log.debugf("%s: DiagramWorkspaceListener: connection block is a %s",CLSS,cxn.getOrigin().getBlock().getClass().getName());
 						ConnectionPropertyEditor editr = new ConnectionPropertyEditor(context,cxn);
 						contentPanel.removeAll();
 						//Create a scroll pane

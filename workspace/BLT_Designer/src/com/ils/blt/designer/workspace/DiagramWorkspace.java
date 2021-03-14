@@ -74,14 +74,10 @@ import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.connection.ConnectionType;
-import com.ils.blt.common.script.CommonScriptExtensionManager;
-import com.ils.blt.common.script.ScriptConstants;
 import com.ils.blt.common.serializable.SerializableAnchor;
-import com.ils.blt.common.serializable.SerializableApplication;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableDiagram;
-import com.ils.blt.common.serializable.SerializableFamily;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.NodeStatusManager;
@@ -94,7 +90,8 @@ import com.ils.blt.designer.editor.BlockEditConstants;
 import com.ils.blt.designer.editor.BlockPropertyEditor;
 import com.ils.blt.designer.editor.PropertyEditorFrame;
 import com.ils.blt.designer.navtree.DiagramTreeNode;
-import com.ils.common.GeneralPurposeDataContainer;
+import com.ils.common.log.ILSLogger;
+import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.client.designable.DesignableContainer;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.client.sqltags.ClientTagManager;
@@ -114,8 +111,6 @@ import com.inductiveautomation.ignition.common.sqltags.model.Tag;
 import com.inductiveautomation.ignition.common.sqltags.model.TagPath;
 import com.inductiveautomation.ignition.common.sqltags.model.TagProp;
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
-import com.inductiveautomation.ignition.common.util.LogUtil;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.common.xmlserialization.SerializationException;
 import com.inductiveautomation.ignition.designer.UndoManager;
 import com.inductiveautomation.ignition.designer.blockandconnector.AbstractBlockWorkspace;
@@ -174,8 +169,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	private final ExecutionManager executionEngine;
 	private final NodeStatusManager statusManager;
 	private Collection<ResourceWorkspaceFrame> frames;
-	private LoggerEx logger = LogUtil.getLogger(getClass().getPackage().getName());
-	
+	private ILSLogger logger = LogMaker.getLogger(this);
+	private final PropertyEditorFrame propertyEditorFrame;
 	private PopupListener rightClickHandler;
 	private JPopupMenu zoomPopup;
 	private JComboBox<String> zoomCombo;
@@ -194,6 +189,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		this.zoomPopup = createZoomPopup();
 		this.rightClickHandler = new PopupListener();
 		this.addMouseListener(rightClickHandler);
+		this.propertyEditorFrame = new PropertyEditorFrame(context,this);
 		requestHandler = new ApplicationRequestHandler();
 		 //		this.keyHandler = new KeystrokeListener();
 //		this.addKeyListener(keyHandler);
@@ -244,12 +240,11 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		frames = new ArrayList<ResourceWorkspaceFrame>();
 		frames.add(tabbedPalette);
 		
-		PropertyEditorFrame pef = new PropertyEditorFrame(context, this);
-		pef.setInitMode(DockContext.STATE_FRAMEDOCKED);
-		pef.setInitSide(DockContext.DOCK_SIDE_WEST);
-		pef.setInitIndex(10);
-		pef.putClientProperty("menu.text", "Symbolic AI Property Editor");
-		frames.add(pef);
+		propertyEditorFrame.setInitMode(DockContext.STATE_FRAMEDOCKED);
+		propertyEditorFrame.setInitSide(DockContext.DOCK_SIDE_WEST);
+		propertyEditorFrame.setInitIndex(10);
+		propertyEditorFrame.putClientProperty("menu.text", "Symbolic AI Property Editor");
+		frames.add(propertyEditorFrame);
 		
 		StatusBar bar = context.getStatusBar();
 		zoomCombo = createZoomDropDown();
@@ -275,7 +270,10 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	public String getKey() {
 		return key;
 	}
-
+	/**
+	 * @return the dockable frame that supports property editing.
+	 */
+	public PropertyEditorFrame getPropertyEditorFrame() { return this.propertyEditorFrame; }
 	/**
 	 * For popup menu
 	 */
@@ -983,8 +981,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 //					String oldName = new String(pbv.getName());
 					pbv.createPseudoRandomNameExtension();
 					pbv.getAuxiliaryData().getProperties().put("Name", pbv.getName());   // Use as a key when fetching
-					saveAuxDataProduction(pbv, theDiagram.getId().toString());
-				} else {
+				} 
+				else {
 					pbv.createPseudoRandomName();
 				}
 				pbv.createRandomId();
@@ -1313,19 +1311,9 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		BlockDesignableContainer container = getSelectedContainer();
 		if( container!=null ) {
 			ProcessDiagramView view = (ProcessDiagramView)(container.getModel());		
-			// update any open property panels
-			for (ResourceWorkspaceFrame frame: frames) {
-				if (frame instanceof PropertyEditorFrame) {
-					BlockPropertyEditor eddy = ((PropertyEditorFrame)frame).getEditor();
-					if (eddy != null) {
-						ProcessBlockView pbv = eddy.getBlock();
-						if (pbv.getClassName().toLowerCase().contains("finaldiagnosis")) {  // horrible hack, but it needs a refresh
-							((PropertyEditorFrame)frame).updateForFinalDiagnosis();
-						}	
-					}
-				}
-			}
-
+			// update any open property panels\
+			propertyEditorFrame.refreshBlockEditor();
+			
 			container.setBackground(view.getBackgroundColorForState());
 			SwingUtilities.invokeLater(new WorkspaceRepainter());
 		}
@@ -1334,7 +1322,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	// =========================== DesignableWorkspaceListener ===========================
 	@Override
 	public void containerClosed(DesignableContainer c) {
-		logger.debugf("%s.containerClosed: %s",CLSS,c.getName());
+		logger.infof("%s.containerClosed: %s",CLSS,c.getName());
 		BlockDesignableContainer container = (BlockDesignableContainer)c;
 		ProcessDiagramView view = (ProcessDiagramView)(container.getModel());
 		view.removeChangeListener(this);
@@ -1345,7 +1333,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	 */
 	@Override
 	public void containerOpened(DesignableContainer c) {
-		logger.debugf("%s.containerOpened: %s",CLSS,c.getName());
+		logger.infof("%s.containerOpened: %s",CLSS,c.getName());
 		BlockDesignableContainer container = (BlockDesignableContainer)c;
 		ProcessDiagramView view = (ProcessDiagramView)(container.getModel());
 		view.addChangeListener(this);
@@ -1353,7 +1341,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	@Override
 	public void containerSelected(DesignableContainer container) {
 		if( container==null ) logger.infof("%s.containerSelected is null",CLSS);
-		else logger.debugf("%s.containerSelected: %s",CLSS,container.getName());
+		else logger.infof("%s.containerSelected: %s",CLSS,container.getName());
 	}
 	public CommandBar getAlignBar() {
 		return alignBar;
@@ -1364,8 +1352,9 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		if( selections!=null ) {
 			if (selections.size()==1 ) {
 				JComponent selection = selections.get(0);
-				logger.debugf("%s.itemSelectionChanged: selected a %s",CLSS,selection.getClass().getName());
-			} else {
+				logger.infof("%s.itemSelectionChanged: selected a %s",CLSS,selection.getClass().getCanonicalName());
+			} 
+			else {
 				int count = 0;
 				for (JComponent cp:selections) {
 					if (cp instanceof BlockComponent) {
@@ -1382,7 +1371,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	
 	private void updateBlockAlignMenus(boolean enableAlign) {
 //		BLTDesignerHook dh = (BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID);
-//		CommandBar cb = dh.getAlignBar();
 		CommandBar cb = getAlignBar();
 		for (Component cp:cb.getComponents()) {
 			cp.setEnabled(enableAlign);
@@ -2243,154 +2231,5 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			logger.errorf("DiagramWorkspace keyReleased :%s: Modifiers :%s:",e.getKeyChar(), e.getModifiers());
         }
     }
-    
-
-	public void copyAuxData(ProcessBlockView pbv, String oldName, String newParentId, String oldParentId) {
-		
-		String prodDb = requestHandler.getProductionDatabase();
-		String isoDb = requestHandler.getIsolationDatabase();
-//		ProcessDiagramView diagram = getActiveDiagram();
-		GeneralPurposeDataContainer auxData = new GeneralPurposeDataContainer();
-		auxData.setProperties(new HashMap<String,String>());
-		auxData.setLists(new HashMap<>());
-		auxData.setMapLists(new HashMap<>());
-		auxData.getProperties().put("Name", oldName);   // Use as a key when fetching
-		
-		CommonScriptExtensionManager extensionManager = CommonScriptExtensionManager.getInstance();
-		extensionManager.runScript(context.getScriptManager(), pbv.getClassName(), ScriptConstants.PROPERTY_GET_SCRIPT, 
-				oldParentId,auxData,prodDb);
-
-		auxData.getProperties().put("Name", pbv.getName());   // Set new key
-		
-		extensionManager.runScript(context.getScriptManager(), pbv.getClassName(), ScriptConstants.PROPERTY_SET_SCRIPT, 
-				pbv.getId().toString(),auxData,prodDb);
-
-		auxData.setProperties(new HashMap<String,String>());
-		auxData.setLists(new HashMap<>());
-		auxData.setMapLists(new HashMap<>());
-		auxData.getProperties().put("Name", oldName);   // Use as a key when fetching
-	
-		extensionManager.runScript(context.getScriptManager(), pbv.getClassName(), ScriptConstants.PROPERTY_GET_SCRIPT, 
-				oldParentId,auxData,isoDb);
-
-		auxData.getProperties().put("Name", pbv.getName());   // Set new key
-
-		extensionManager.runScript(context.getScriptManager(), pbv.getClassName(), ScriptConstants.PROPERTY_SET_SCRIPT, 
-				pbv.getId().toString(),auxData,isoDb);
-		
-		// set it to the right data if not isolated  
-		if( pbv.getState().equals(DiagramState.ACTIVE)) { 
-			extensionManager.runScript(context.getScriptManager(), pbv.getClassName(), ScriptConstants.PROPERTY_GET_SCRIPT, 
-					newParentId,auxData,prodDb);
-		}
-		
-		if( auxData.containsData()) {
-			pbv.setAuxiliaryData(auxData);
-		}
-		
-	}
-
-	public void saveAuxDataProduction(ProcessBlockView pbv, String parentId) {
-		
-		String prodDb = requestHandler.getProductionDatabase();
-		CommonScriptExtensionManager extensionManager = CommonScriptExtensionManager.getInstance();
-		
-		extensionManager.runScript(context.getScriptManager(), pbv.getClassName(), ScriptConstants.PROPERTY_SET_SCRIPT, 
-				parentId,pbv.getAuxiliaryData(),prodDb);
-	}
-
-	public void saveAuxDataSbProduction(SerializableBlock sb, String parentId) {
-		
-		String prodDb = requestHandler.getProductionDatabase();
-		CommonScriptExtensionManager extensionManager = CommonScriptExtensionManager.getInstance();
-		
-		extensionManager.runScript(context.getScriptManager(), sb.getClassName(), ScriptConstants.PROPERTY_SET_SCRIPT, 
-				parentId,sb.getAuxiliaryData(),prodDb);
-	}
-
-	public void copyApplicationAuxData(SerializableApplication sa, String newName, String oldName) {
-		
-		String prodDb = requestHandler.getProductionDatabase();
-		String isoDb = requestHandler.getIsolationDatabase();
-//		ProcessDiagramView diagram = getActiveDiagram();
-		GeneralPurposeDataContainer auxData = new GeneralPurposeDataContainer();
-
-		
-//		So, the big question is how to get the right UUID for the getapplication function to find it.
-		
-
-		auxData.setProperties(new HashMap<String,String>());
-		auxData.setLists(new HashMap<>());
-		auxData.setMapLists(new HashMap<>());
-		auxData.getProperties().put("Name", oldName);   // Use as a key when fetching
-	
-		CommonScriptExtensionManager extensionManager = CommonScriptExtensionManager.getInstance();
-		
-		extensionManager.runScript(context.getScriptManager(), ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.PROPERTY_GET_SCRIPT, 
-				sa.getId().toString(),auxData,isoDb);
-
-		auxData.getProperties().put("Name", newName);   // Set new key
-
-		extensionManager.runScript(context.getScriptManager(), ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.PROPERTY_SET_SCRIPT, 
-				sa.getId().toString(),auxData,isoDb);
-		
-		
-		auxData = new GeneralPurposeDataContainer();
-		
-		auxData.setProperties(new HashMap<String,String>());
-		auxData.setLists(new HashMap<>());
-		auxData.setMapLists(new HashMap<>());
-		auxData.getProperties().put("Name", oldName);   // Use as a key when fetching
-		
-		extensionManager.runScript(context.getScriptManager(), ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.PROPERTY_GET_SCRIPT, 
-				sa.getId().toString(),auxData,prodDb);
-
-		auxData.getProperties().put("Name", newName);   // Set new key
-		
-		extensionManager.runScript(context.getScriptManager(), ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.PROPERTY_SET_SCRIPT, 
-				sa.getId().toString().toString(),auxData,prodDb);
-	}
-
-	public void copyFamilyAuxData(SerializableFamily sf, String newName, String oldName) {
-		
-		String prodDb = requestHandler.getProductionDatabase();
-		String isoDb = requestHandler.getIsolationDatabase();
-//		ProcessDiagramView diagram = getActiveDiagram();
-		GeneralPurposeDataContainer auxData = new GeneralPurposeDataContainer();
-
-
-		
-		CommonScriptExtensionManager extensionManager = CommonScriptExtensionManager.getInstance();
-		auxData.setProperties(new HashMap<String,String>());
-		auxData.setLists(new HashMap<>());
-		auxData.setMapLists(new HashMap<>());
-		auxData.getProperties().put("Name", oldName);   // Use as a key when fetching
-	
-		extensionManager.runScript(context.getScriptManager(), ScriptConstants.FAMILY_CLASS_NAME, ScriptConstants.PROPERTY_GET_SCRIPT, 
-				sf.getId(),auxData,isoDb);
-
-		auxData.getProperties().put("Name", newName);   // Set new key
-
-		extensionManager.runScript(context.getScriptManager(), ScriptConstants.FAMILY_CLASS_NAME, ScriptConstants.PROPERTY_SET_SCRIPT, 
-				sf.getId().toString(),auxData,isoDb);
-		
-		auxData = new GeneralPurposeDataContainer();
-		
-		auxData.setProperties(new HashMap<String,String>());
-		auxData.setLists(new HashMap<>());
-		auxData.setMapLists(new HashMap<>());
-		auxData.getProperties().put("Name", oldName);   // Use as a key when fetching
-		
-		extensionManager.runScript(context.getScriptManager(), ScriptConstants.FAMILY_CLASS_NAME, ScriptConstants.PROPERTY_GET_SCRIPT, 
-				sf.getId().toString(),auxData,prodDb);
-
-		auxData.getProperties().put("Name", newName);   // Set new key
-		
-		extensionManager.runScript(context.getScriptManager(), ScriptConstants.FAMILY_CLASS_NAME, ScriptConstants.PROPERTY_SET_SCRIPT, 
-				sf.getId().toString().toString(),auxData,prodDb);
-
-	}
-
-
-    
+   
 }

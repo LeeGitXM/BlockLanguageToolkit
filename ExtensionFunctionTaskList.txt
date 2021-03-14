@@ -1,0 +1,16 @@
+
+Extension Functions
+
+BLOCKS
+1) There are already get/set auxiliary data functions as part of block interface, but have not been extended to Python.
+   Extend them.
+2) Add methods onSave and onDelete to block interface and extend to Python.
+3) There is already a setName() method on a block. No need for a rename(). Extend to Python.
+4) Modify FinalDiagnosis.py to call previous get/setAux, save, delete python modules directly.
+5) Convert all code in BLT that calls block extension srcipts, to simply call methods on blocks.
+
+NODES in NavTree (Applications, Families, Diagrams)
+1) Create UDT with subtags: save, delete, rename, setAux, getAux. These are all Strings containing python module paths. Argument lists are assumed.
+2) Create UDT instances in Configuration/DiagnosticToolkit for both production and isolation for: Application, Family, Diagram.
+3) Go through BLT and replace all references to SQLite "Toolkit" entries with these tag references to obtain script names.
+4) Convert extension manager to look at tag values instead of SQLite.

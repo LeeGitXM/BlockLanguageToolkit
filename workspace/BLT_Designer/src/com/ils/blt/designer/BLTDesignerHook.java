@@ -1,5 +1,5 @@
 /**
- *   (c) 2013-2014  ILS Automation. All rights reserved.
+ *   (c) 2013-2021 ILS Automation. All rights reserved.
  */
 package com.ils.blt.designer;
 
@@ -10,7 +10,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.io.IOException;
 import java.util.Enumeration;
-import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -20,7 +19,6 @@ import javax.swing.JMenuItem;
 import javax.swing.JRootPane;
 import javax.swing.SwingUtilities;
 
-import org.apache.commons.lang3.builder.ToStringStyle;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -28,8 +26,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.ApplicationScriptFunctions;
 import com.ils.blt.common.BLTProperties;
-import com.ils.blt.common.script.AbstractScriptExtensionManager;
-import com.ils.blt.common.script.CommonScriptExtensionManager;
+import com.ils.blt.common.script.ScriptExtensionManager;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.designer.navtree.GeneralPurposeTreeNode;
 import com.ils.blt.designer.search.BLTSearchProvider;
@@ -39,6 +36,8 @@ import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.ils.blt.designer.workspace.WorkspaceRepainter;
 import com.ils.common.component.DiagramViewer;
 import com.ils.common.component.recmap.RecommendationMap;
+import com.ils.common.log.ILSLogger;
+import com.ils.common.log.LogMaker;
 import com.inductiveautomation.factorypmi.designer.palette.model.DefaultPaletteItemGroup;
 import com.inductiveautomation.ignition.client.util.action.StateChangeAction;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
@@ -47,8 +46,6 @@ import com.inductiveautomation.ignition.common.licensing.LicenseState;
 import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.script.ScriptManager;
-import com.inductiveautomation.ignition.common.util.LogUtil;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
 import com.inductiveautomation.ignition.designer.gui.IconUtil;
 import com.inductiveautomation.ignition.designer.model.AbstractDesignerModuleHook;
@@ -62,7 +59,6 @@ import com.inductiveautomation.vision.api.designer.VisionDesignerInterface;
 import com.inductiveautomation.vision.api.designer.palette.JavaBeanPaletteItem;
 import com.inductiveautomation.vision.api.designer.palette.Palette;
 import com.inductiveautomation.vision.api.designer.palette.PaletteItemGroup;
-import com.jidesoft.action.CommandBar;
 import com.jidesoft.docking.DockingManager;
 
 public class BLTDesignerHook extends AbstractDesignerModuleHook  {
@@ -75,7 +71,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 
 	private GeneralPurposeTreeNode rootNode = null;
 	private DesignerContext context = null;
-	private final LoggerEx log;
+	private final ILSLogger log;
 	private DiagramWorkspace workspace = null;
 	private ApplicationRequestHandler appRequestHandler = null;
 	private NodeStatusManager nodeStatusManager = null;
@@ -89,8 +85,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	}
 	
 	public BLTDesignerHook() {
-		log = LogUtil.getLogger(getClass().getPackage().getName());
-		log.setToStringStyle(ToStringStyle.SIMPLE_STYLE);
+		log = LogMaker.getLogger(this);
 	}
 	
 	
@@ -99,110 +94,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		super.initializeScriptManager(mgr);
 		mgr.addScriptModule(BLTProperties.DIAGRAM_SCRIPT_PACKAGE,ApplicationScriptFunctions.class);
 	}
-	
-	// Insert toolbar items 
-    @Override
-    public List<CommandBar> getModuleToolbars() {
-    	return null;
-//		ArrayList<CommandBar> bars = new ArrayList<>();
-//		alignBar = new CommandBar();
-//		alignBar.setKey("bltAlign");
-//
-//		
-//		JideButton btn = new JideButton();
-//		String ICON_PATH  = "Block/icons/editor/align_left.png";
-//		Image img = ImageLoader.getInstance().loadImage(ICON_PATH ,BlockEditConstants.BUTTON_SIZE);
-//		if( img !=null) {
-//			Icon icon = new ImageIcon(img);
-//			btn.setIcon(icon);
-//			btn.setToolTipText("This does a thing");
-//			btn.addActionListener(new ActionListener() {
-//				public void actionPerformed(ActionEvent e){
-//					workspace.alignLeft();
-//				}
-//			});
-//		}
-//		alignBar.add(btn);
-//		
-//		btn = new JideButton();
-//		ICON_PATH  = "Block/icons/editor/align_right.png";
-//		img = ImageLoader.getInstance().loadImage(ICON_PATH ,BlockEditConstants.BUTTON_SIZE);
-//		if( img !=null) {
-//			Icon icon = new ImageIcon(img);
-//			btn.setIcon(icon);
-//			btn.setToolTipText("This does a thing");
-//			btn.addActionListener(new ActionListener() {
-//				public void actionPerformed(ActionEvent e){
-//					workspace.alignRight();
-//				}
-//			});
-//		}
-//		alignBar.add(btn);
-//
-//		btn = new JideButton();
-//		ICON_PATH  = "Block/icons/editor/align_top.png";
-//		img = ImageLoader.getInstance().loadImage(ICON_PATH ,BlockEditConstants.BUTTON_SIZE);
-//		if( img !=null) {
-//			Icon icon = new ImageIcon(img);
-//			btn.setIcon(icon);
-//			btn.setToolTipText("This does a thing");
-//			btn.addActionListener(new ActionListener() {
-//				public void actionPerformed(ActionEvent e){
-//					workspace.alignTop();
-//				}
-//			});
-//		}
-//		alignBar.add(btn);
-//		
-//		btn = new JideButton();
-//		ICON_PATH  = "Block/icons/editor/align_bottom.png";
-//		img = ImageLoader.getInstance().loadImage(ICON_PATH ,BlockEditConstants.BUTTON_SIZE);
-//		if( img !=null) {
-//			Icon icon = new ImageIcon(img);
-//			btn.setIcon(icon);
-//			btn.setToolTipText("This does a thing");
-//			btn.addActionListener(new ActionListener() {
-//				public void actionPerformed(ActionEvent e){
-//					workspace.alignBottom();
-//				}
-//			});
-//		}
-//		alignBar.add(btn);
-//
-//		btn = new JideButton();
-//		ICON_PATH  = "Block/icons/editor/align_horizontal.png";
-//		img = ImageLoader.getInstance().loadImage(ICON_PATH ,BlockEditConstants.BUTTON_SIZE);
-//		if( img !=null) {
-//			Icon icon = new ImageIcon(img);
-//			btn.setIcon(icon);
-//			btn.setToolTipText("This does a thing");
-//			btn.addActionListener(new ActionListener() {
-//				public void actionPerformed(ActionEvent e){
-//					workspace.alignHeightCenter();
-//				}
-//			});
-//		}
-//		alignBar.add(btn);
-//
-//		btn = new JideButton();
-//		ICON_PATH  = "Block/icons/editor/align_vertical.png";
-//		img = ImageLoader.getInstance().loadImage(ICON_PATH ,BlockEditConstants.BUTTON_SIZE);
-//		if( img !=null) {
-//			Icon icon = new ImageIcon(img);
-//			btn.setIcon(icon);
-//			btn.setToolTipText("This does a thing");
-//			btn.addActionListener(new ActionListener() {
-//				public void actionPerformed(ActionEvent e){
-//					workspace.alignWidthCenter();
-//				}
-//			});
-//		}
-//		alignBar.add(btn);
-//
-//		bars.add(alignBar);
-//		return bars;
-//    	
-    }
+
 
 	// Insert a menu to allow control of database and tag provider.
     @Override
@@ -253,8 +145,6 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		this.context = ctx;
 		appRequestHandler = new ApplicationRequestHandler();
 		nodeStatusManager = new NodeStatusManager(context,appRequestHandler);
-		AuxiliaryDataRestoreManager.setContext(ctx);
-		AuxiliaryDataSaveManager.setContext(ctx);
 		ResourceCreateManager.setContext(ctx);
 		ResourceDeleteManager.setContext(ctx);
 		ResourceUpdateManager.setContext(ctx);
@@ -302,20 +192,8 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 			catch(Exception ie ) {
 				log.warnf("%s: Error creating vision palette entries (%s)",TAG,ie.getMessage());
 			}
-			
-		    // Initialize all the script modules from parameters stored in the ORM.
-			// We use all combinations of classes/flavors.
-		    CommonScriptExtensionManager sem = CommonScriptExtensionManager.getInstance();
-		    for( String flavor: sem.getFlavors() ) {
-		    	for(String clss: sem.getClassNames() ) {
-		    		String key = AbstractScriptExtensionManager.makeKey(clss, flavor);
-			    	String pythonPath = appRequestHandler.getToolkitProperty(key);
-			    	if( pythonPath!=null ) {
-			    		sem.setModulePath(key, pythonPath);
-			    		sem.addScript(clss,flavor, pythonPath);
-			    	}
-			    }
-		    }
+			// Make sure extension script manager knows about context
+			ScriptExtensionManager.getInstance().setContext(context);
 		}
 		
 		// Setup the diagram workspace
@@ -382,7 +260,6 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	}
 
 	public boolean attachDiagrams() { return diagramsAttached; }
-	public ApplicationRequestHandler getApplicationRequestHandler() { return appRequestHandler; }
 	@Override
 	public String getResourceCategoryKey(Project project,ProjectResource resource) {
 		// There is only one resource category that we are exporting
@@ -500,12 +377,6 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		}
 		return ret;
 	}
-		
-//	public Block findDiagnosisBlockByName(ProcessDiagramView diagram, String name) {
-//		Block ret = null;
-//		
-//		return ret;
-//	}
 
 	public String scanForDiagnosisNameConflicts(ProcessDiagramView diagram, String name) {
 		String ret = "";
@@ -549,7 +420,8 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 				}
 			
 			}
-		} else {
+		} 
+		else {
 			Enumeration<AbstractResourceNavTreeNode> enumer = theNode.children();
 			while(enumer.hasMoreElements()) {
 				AbstractResourceNavTreeNode aNode = enumer.nextElement();

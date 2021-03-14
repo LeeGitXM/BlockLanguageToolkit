@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="blockdef.makejar" default="all" basedir=".">
 	<property name="jar.dir" value="${basedir}/../../../external/lib" />
-	<property name="sdk.dir" value="${basedir}/../../../ignition-77/lib" />
+	<property name="sdk.dir" value="${basedir}/../../../ignition-79/lib" />
 	<property name="jar.name" value="block-definition.jar" />
 	<property name="build.dir" value="bin" />
 	<property name="src.dir" value="src" />
@@ -32,7 +32,7 @@
 	<!-- Compile the library -->
 	<target name="build" description="Compile the source">
 		<mkdir dir="${build.dir}"/>
-		<javac destdir="${build.dir}" source="1.6" target="1.6" debug="true" debuglevel="lines,vars,source">
+		<javac destdir="${build.dir}" source="1.8" target="1.8" debug="true" debuglevel="lines,vars,source">
 		     <src path="${src.dir}"/>
 		     <classpath refid="blk-classpath"/>
 		</javac>

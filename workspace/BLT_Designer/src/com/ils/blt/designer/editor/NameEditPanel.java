@@ -1,5 +1,5 @@
 /**
- *   (c) 2014-2020  ILS Automation. All rights reserved.
+ *   (c) 2014-2021  ILS Automation. All rights reserved.
  */
 package com.ils.blt.designer.editor;
 
@@ -21,8 +21,6 @@ import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.BusinessRules;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
-import com.ils.blt.common.script.CommonScriptExtensionManager;
-import com.ils.blt.common.script.ScriptConstants;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.designer.BLTDesignerHook;
@@ -38,7 +36,8 @@ import net.miginfocom.swing.MigLayout;
 /**
  * Display a panel to edit the name of a block and its 
  * attribute display.  This is one of the sliding panels
- * in the block editor.   
+ * in the block editor.  The rename extension functions are
+ * not called until the block is saved as part of a diagram save.
  */
 
 public class NameEditPanel extends BasicEditPanel {
@@ -106,17 +105,6 @@ public class NameEditPanel extends BasicEditPanel {
 							
 						}
 					}
-					CommonScriptExtensionManager sem = CommonScriptExtensionManager.getInstance();
-					if( sem.getClassNames().contains(block.getClassName()) ) {
-						try {
-							sem.runScript(context.getScriptManager(),block.getClassName(), ScriptConstants.NODE_RENAME_SCRIPT, 
-									editor.getDiagram().getId().toString(),block.getName(),nameField.getText());     // Old name, new name
-						}
-						catch( Exception ex ) {
-							log.errorf("NameEditPanel.constructor: Exception ("+ex.getMessage()+")",ex); // Throw stack trace
-						}
-					}
-
 					block.setName(nameField.getText());
 					editor.updateCorePanel(BlockEditConstants.HOME_PANEL,block);
 					if( block.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK) ) {

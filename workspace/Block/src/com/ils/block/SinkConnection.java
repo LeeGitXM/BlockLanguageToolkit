@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
-import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.ProcessBlock;
 import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockConstants;

@@ -1,0 +1,26 @@
+<Tags locale="en_US">
+   <Tag name="ExtensionDefinition" path="_types_" type="UDT_DEF">
+      <Property name="Value"/>
+      <Property name="DataType">2</Property>
+      <Tag name="Delete" path="" type="DB">
+         <Property name="Value"></Property>
+         <Property name="DataType">7</Property>
+      </Tag>
+      <Tag name="GetAux" path="" type="DB">
+         <Property name="Value"></Property>
+         <Property name="DataType">7</Property>
+      </Tag>
+      <Tag name="Rename" path="" type="DB">
+         <Property name="Value"></Property>
+         <Property name="DataType">7</Property>
+      </Tag>
+      <Tag name="Save" path="" type="DB">
+         <Property name="Value"></Property>
+         <Property name="DataType">7</Property>
+      </Tag>
+      <Tag name="SetAux" path="" type="DB">
+         <Property name="Value"/>
+         <Property name="DataType">7</Property>
+      </Tag>
+   </Tag>
+</Tags>

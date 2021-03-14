@@ -14,6 +14,7 @@ import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.gateway.PythonRequestHandler;
+import com.ils.common.GeneralPurposeDataContainer;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 
 
@@ -178,6 +179,15 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	public synchronized void evaluate() { 
 		delegate.evaluate(context.getProjectManager().getProjectScriptManager(getProjectId()),getPythonBlock()); 
 	}
+	/**
+	 * Return the custom internal data owned by the block.
+	 */
+	@Override
+	public synchronized GeneralPurposeDataContainer getAuxiliaryData() { 
+		GeneralPurposeDataContainer container = delegate.getAuxiliaryData(context.getProjectManager().getProjectScriptManager(getProjectId()),getPythonBlock()); 
+		requestHandler.postAlertingStatus(this);
+		return container;
+	}
 	
 	/**
 	 * Start the block. 
@@ -201,6 +211,22 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	}
 	
 	/**
+	 * Perform whatever is necessary prior to deleting the block.
+	 */
+	@Override
+	public synchronized void onDelete() { 
+		delegate.onDelete(context.getProjectManager().getProjectScriptManager(getProjectId()),getPythonBlock()); 
+		requestHandler.postAlertingStatus(this);
+	}
+	/**
+	 * Perform whatever is necessary prior to creating or saving the block.
+	 */
+	@Override
+	public synchronized void onSave() { 
+		delegate.onSave(context.getProjectManager().getProjectScriptManager(getProjectId()),getPythonBlock()); 
+		requestHandler.postAlertingStatus(this);
+	}
+	/**
 	 * Reset the block. Resetting  python block may change the diagram alert
 	 * status.
 	 */
@@ -209,5 +235,21 @@ public class ProxyBlock extends AbstractProcessBlock  {
 		delegate.reset(context.getProjectManager().getProjectScriptManager(getProjectId()),getPythonBlock()); 
 		requestHandler.postAlertingStatus(this);
 		recordActivity(Activity.ACTIVITY_RESET,"");
+	}
+	/**
+	 * In form the block of its custom auxiliary data.
+	 */
+	@Override
+	public synchronized void setAuxiliaryData(GeneralPurposeDataContainer container) { 
+		delegate.setAuxiliaryData(context.getProjectManager().getProjectScriptManager(getProjectId()),getPythonBlock(),container); 
+		requestHandler.postAlertingStatus(this);
+	}
+	/**
+	 * Rename the block.
+	 */
+	@Override
+	public synchronized void setName(String name) { 
+		delegate.setName(context.getProjectManager().getProjectScriptManager(getProjectId()),getPythonBlock(),name); 
+		requestHandler.postAlertingStatus(this);
 	}
 }

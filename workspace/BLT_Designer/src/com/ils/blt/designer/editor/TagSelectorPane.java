@@ -1,4 +1,4 @@
-package com.ils.blt.designer.config;
+package com.ils.blt.designer.editor;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -22,8 +22,7 @@ import com.inductiveautomation.ignition.client.sqltags.tree.TagRenderer;
 import com.inductiveautomation.ignition.client.sqltags.tree.TagTreeNode;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
-class TagSelectorPane extends JPanel implements ApplicationConfigurationController.EditorPane{
-	private final ApplicationConfigurationController controller;
+class TagSelectorPane extends JPanel {
 	private final OutputEditorPane outputEditorPane;
 	private static Icon previousIcon = new ImageIcon(TagSelectorPane.class.getResource("/images/arrow_left_green.png"));
 	final JButton previousButton = new JButton(previousIcon);
@@ -32,6 +31,7 @@ class TagSelectorPane extends JPanel implements ApplicationConfigurationControll
 	// Copied from Chuck...
 	private static final long serialVersionUID = 1L;
 	private final DesignerContext context;
+	private final ApplicationPropertyEditor editor;
 	private String selectedPath = "";
 	private final JTree tagTree;
 	private final TagRenderer cellRenderer;
@@ -40,12 +40,12 @@ class TagSelectorPane extends JPanel implements ApplicationConfigurationControll
 	
 	
 	// The constructor
-	public TagSelectorPane(ApplicationConfigurationController controller,OutputEditorPane outputEditorPane) {
+	public TagSelectorPane(ApplicationPropertyEditor editor,OutputEditorPane outputEditorPane) {
 		super(new BorderLayout(20, 30));
+		this.editor = editor;
 		System.out.println("In TagSelector pane constructor");
-		this.controller = controller;
 		this.outputEditorPane = outputEditorPane;
-		this.context = controller.context;
+		this.context = editor.context;
 		
 		JPanel mainPanel = new JPanel(new MigLayout("", "[right]"));
 		
@@ -69,13 +69,13 @@ class TagSelectorPane extends JPanel implements ApplicationConfigurationControll
 		add(bottomPanel,BorderLayout.SOUTH);
 		
 		bottomPanel.add(previousButton);
-		previousButton.setPreferredSize(ApplicationConfigurationConstants.BUTTON_SIZE);
+		previousButton.setPreferredSize(ApplicationEditConstants.BUTTON_SIZE);
 		previousButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {doPrevious();}
 		});
 		
 		bottomPanel.add(cancelButton);
-		cancelButton.setPreferredSize(ApplicationConfigurationConstants.BUTTON_SIZE);
+		cancelButton.setPreferredSize(ApplicationEditConstants.BUTTON_SIZE);
 		cancelButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {doCancel();}
 		});
@@ -83,14 +83,12 @@ class TagSelectorPane extends JPanel implements ApplicationConfigurationControll
 		add(mainPanel,BorderLayout.CENTER);
 	}
 	
-	//  I don't think this is used...
-	@Override
 	public void activate() {
-		controller.slideTo(ApplicationConfigurationConstants.TAGSELECTOR);
+		editor.setSelectedPane(ApplicationEditConstants.TAGSELECTOR);
 	}
 	
 	protected void doCancel() {
-		controller.slideTo(ApplicationConfigurationConstants.EDITOR);		
+		editor.setSelectedPane(ApplicationEditConstants.EDITOR);		
 	}
 	
 	protected void doPrevious() {
@@ -111,6 +109,6 @@ class TagSelectorPane extends JPanel implements ApplicationConfigurationControll
 			return;
 		}
 		
-		controller.slideTo(ApplicationConfigurationConstants.EDITOR);		
+		editor.setSelectedPane(ApplicationEditConstants.EDITOR);		
 	}
 }

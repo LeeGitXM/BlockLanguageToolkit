@@ -5,6 +5,7 @@ package com.ils.blt.designer;
 
 import java.util.Enumeration;
 
+import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.designer.navtree.DiagramTreeNode;
 import com.ils.blt.designer.navtree.NavTreeNodeInterface;
@@ -38,11 +39,13 @@ public class ResourceSaveManager implements Runnable {
 	private final AbstractResourceNavTreeNode root;	      // Root of our save.
 	private final DiagramWorkspace workspace;
 	private final ThreadCounter counter = ThreadCounter.getInstance();
+	private final ApplicationRequestHandler requestHandler;
 	
 	public ResourceSaveManager(DiagramWorkspace wksp,AbstractResourceNavTreeNode node) {
 		this.root = node;
 		this.workspace = wksp;
 		this.counter.incrementCount();
+		this.requestHandler = new ApplicationRequestHandler();
 	}
 	
 	/**
@@ -80,7 +83,7 @@ public class ResourceSaveManager implements Runnable {
 		int dirtyCount = saveNodeAndDescendants();
 		// Update UI
 		if( dirtyCount>0 ) {
-			((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler().triggerStatusNotifications();
+			requestHandler.triggerStatusNotifications();
 		}
 		this.counter.decrementCount();
 	}
