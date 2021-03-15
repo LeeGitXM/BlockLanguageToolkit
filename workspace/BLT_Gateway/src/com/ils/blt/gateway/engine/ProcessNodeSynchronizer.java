@@ -47,7 +47,7 @@ public class ProcessNodeSynchronizer {
     		if( nodeMap.get(key)==null) {
     			log.infof("%s.createMissingResources: ADDING node %d:%d %s (project resource not represented)", TAG,key.getProjectId(),key.getResourceId(),
     					resourceMap.get(key).getName());
-    			modelManager.analyzeResource(key.getProjectId(), resourceMap.get(key));
+    			modelManager.analyzeResource(key.getProjectId(), resourceMap.get(key),true);
     		}
     	}
     	log.infof("%s.createMissingResources ============================     Complete    ====================================", TAG);

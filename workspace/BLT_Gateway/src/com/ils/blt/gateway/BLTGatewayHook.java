@@ -40,7 +40,7 @@ import com.inductiveautomation.ignition.gateway.web.models.INamedTab;
  * At present this code does nothing.
  */
 public class BLTGatewayHook extends AbstractGatewayModuleHook  {
-	public static String TAG = "BLTGatewayHook";
+	public static String CLSS = "BLTGatewayHook";
 	public static String BUNDLE_NAME = "block";// Properties file is block.properties
 	private static GatewayContext context = null;
 	
@@ -59,7 +59,7 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	
 	public BLTGatewayHook() {
 		log = LogMaker.getLogger(this);
-		log.info(TAG+"Initializing BLT Gateway hook");
+		log.info(CLSS+"Initializing BLT Gateway hook");
 		BundleUtil.get().addBundle(prefix, getClass(), BUNDLE_NAME);
 		requestHandler = ControllerRequestHandler.getInstance();
 	}
@@ -75,7 +75,7 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 
 		// NOTE: Get serialization exception if ModelResourceManager is saved as a class member
 		//       Exception is thrown when we try to incorporate a StatusPanel
-		log.info(TAG+".setup - enable project listeners.");
+		log.info(CLSS+".setup - enable project listeners.");
 		ProxyHandler.getInstance().setContext(context);
 		requestHandler.setContext(context);
 		dispatcher = new GatewayRpcDispatcher(context);
@@ -107,9 +107,9 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	    	List<ProjectResource> resources = project.getResources();
 	    	for( ProjectResource res:resources ) {
 	    		// Model manager ignores resources that are not of interest to it.
-	    		log.tracef("%s.startup - found %s resource, %d = %s", TAG,res.getResourceType(),
+	    		log.infof("%s.startup - loading %s resource, %d = %s", CLSS,res.getResourceType(),
 	    				res.getResourceId(),res.getName());
-	    		mmgr.analyzeResource(project.getId(),res); 
+	    		mmgr.analyzeResource(project.getId(),res,true);  // Flag implies startup
 	    	}
 	    }
 	    
@@ -119,7 +119,7 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	    ToolkitRecord.META.addRecordListener(recordListener);
 	    
 	    context.getProjectManager().addProjectListener(mmgr);  
-	    log.infof("%s: Startup complete.",TAG);
+	    log.infof("%s: Startup complete.",CLSS);
 	}
 
 	@Override
