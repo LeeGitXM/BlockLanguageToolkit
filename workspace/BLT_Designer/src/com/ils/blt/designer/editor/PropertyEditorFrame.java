@@ -15,6 +15,7 @@ import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.common.log.ILSLogger;
 import com.ils.common.log.LogMaker;
+import com.inductiveautomation.ignition.client.designable.DesignableContainer;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockComponent;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignableContainer;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Connection;
@@ -89,6 +90,7 @@ public class PropertyEditorFrame extends DockableFrame implements ResourceWorksp
 	}
 	
 	public void refreshPropertyEditor() {
+		log.infof("%s.refreshPropertyEditor:",CLSS);
 		if( editor!=null) {
 			editor.shutdown();
 			if( editor instanceof BlockPropertyEditor) {
@@ -115,7 +117,7 @@ public class PropertyEditorFrame extends DockableFrame implements ResourceWorksp
 		public void itemSelectionChanged(List<JComponent> selections) {
 			if( selections!=null && selections.size()==1 ) {
 				JComponent selection = selections.get(0);
-				log.infof("%s: DiagramWorkspaceListener: selected a %s",CLSS,selection.getClass().getName());
+				log.infof("%s: DiagramWorkspaceListener.itemSelectionChanged: selected a %s",CLSS,selection.getClass().getName());
 				// KLUDGE ALERT: There should be a way to not hard code this.
 				if( selection instanceof BlockComponent ) {
 					if( editor!=null ) editor.shutdown();
@@ -153,6 +155,14 @@ public class PropertyEditorFrame extends DockableFrame implements ResourceWorksp
 					}
 				}
 			}
+		}
+		@Override 
+		public void containerClosed(DesignableContainer container) {
+			log.infof("%s: DiagramWorkspaceListener.containerClosed",CLSS);
+		}
+		@Override 
+		public void containerOpened(DesignableContainer container) {
+			log.infof("%s: DiagramWorkspaceListener.containerOpened",CLSS);
 		}
 	}
 	

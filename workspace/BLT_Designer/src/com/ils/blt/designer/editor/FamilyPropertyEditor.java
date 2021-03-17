@@ -21,9 +21,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.block.ActiveState;
 import com.ils.blt.common.serializable.SerializableFamily;
+import com.ils.blt.designer.ResourceUpdateManager;
 import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.log.ILSLogger;
 import com.ils.common.log.LogMaker;
+import com.inductiveautomation.ignition.common.execution.ExecutionManager;
+import com.inductiveautomation.ignition.common.execution.impl.BasicExecutionEngine;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
@@ -44,6 +47,7 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor  {
 	private final SerializableFamily family;
 	protected final ILSLogger log;
 	private final GeneralPurposeDataContainer model;           // Data container operated on by panels
+	private final ExecutionManager executionEngine;
 	private JPanel mainPanel = null;
 	protected JComboBox<String> stateBox;
 	protected JTextArea descriptionArea;
@@ -56,6 +60,7 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor  {
 		this.context = ctx;
 		this.family = fam;
 		this.model = new GeneralPurposeDataContainer();
+		executionEngine = new BasicExecutionEngine(1,CLSS);
 		this.log = LogMaker.getLogger(this);
         initialize();
 	}
@@ -81,7 +86,7 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor  {
 		
 		mainPanel = createMainPanel();
 		add(mainPanel,BorderLayout.CENTER);
-		
+		validate();
 	}
 
 	public void shutdown() {}
@@ -153,6 +158,7 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor  {
 		try{
 			byte[] bytes = mapper.writeValueAsBytes(family);
 			resource.setData(bytes);
+			executionEngine.executeOnce(new ResourceUpdateManager(resource));
 		}
 		catch(JsonProcessingException jpe) {
 			log.warnf("%s.run: Exception serializing family %s, resource %d (%s)",CLSS,family.getName(),resource.getResourceId(),jpe.getMessage());

@@ -53,6 +53,17 @@ public class ResourceUpdateManager implements Runnable {
 	}
 	
 	/**
+	 * This constructor is not valid for diagram updates
+	 * @param pr
+	 */
+	public ResourceUpdateManager(ProjectResource pr) {
+		this.workspace = null;
+		this.res = pr;
+		this.counter.incrementCount();
+		this.requestHandler = new ApplicationRequestHandler();
+	}
+	
+	/**
 	 * Call this method from the hook as soon as the context is established.
 	 * @param ctx designer context
 	 */

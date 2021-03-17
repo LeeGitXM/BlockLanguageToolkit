@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Random;
 import java.util.UUID;
 
 import javax.swing.Icon;
@@ -103,7 +102,6 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	public static final String BLT_COPY_OPERATION = "BLTCOPY";
 	private static final int OFFSET = 100;
 	private static final String PREFIX = BLTProperties.BUNDLE_PREFIX;  // Required for some defaults
-	private final static Random random = new Random();
 	private final ILSLogger logger = LogMaker.getLogger(this);
 	private boolean dirty = false;
 	private DiagramState state = DiagramState.ACTIVE;  // Used for Applications and Families
@@ -353,12 +351,13 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	
 	// If an application or family is selected, then display editing panel in the PropertyEditor
 	@Override
-	public void onSelected() {
-		UndoManager.getInstance().setSelectedContext(GeneralPurposeTreeNode.class);
+	public synchronized void onSelected() {
+		//UndoManager.getInstance().setSelectedContext(GeneralPurposeTreeNode.class);
 		ProjectResource resource = context.getProject().getResource(resourceId);
+		if( resource==null) return;
 		if(resource.getResourceType().equalsIgnoreCase(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
 			SerializableApplication sap = recursivelyDeserializeApplication(this);
-			logger.infof("%s.onSelected: selected application %s",CLSS,sap.getName());
+			logger.infof("%s.onSelected: selected application %s (%d)",CLSS,sap.getName(),resourceId);
 			ApplicationPropertyEditor appEditor = new ApplicationPropertyEditor(context,sap,resource);
 			workspace.getPropertyEditorFrame().setEditor(appEditor) ;
 			workspace.getPropertyEditorFrame().refreshPropertyEditor();
@@ -366,10 +365,9 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		} 
 		else if(resource.getResourceType().equalsIgnoreCase(BLTProperties.FAMILY_RESOURCE_TYPE)) {
 			SerializableFamily sfam = recursivelyDeserializeFamily(this);
-			logger.infof("%s.onSelected: selected family %s",CLSS,sfam.getName());
+			logger.infof("%s.onSelected: selected family %s (%d)",CLSS,sfam.getName(),resourceId);
 			FamilyPropertyEditor famEditor = new FamilyPropertyEditor(context,sfam,resource);
 			workspace.getPropertyEditorFrame().setEditor(famEditor) ;
-			logger.infof("%s.onSelected: selected application %s",CLSS,sfam.getName());
 			workspace.getPropertyEditorFrame().refreshPropertyEditor();
 		}
 	}

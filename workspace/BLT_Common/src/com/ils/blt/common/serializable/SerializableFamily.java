@@ -51,7 +51,7 @@ public class SerializableFamily {
 	public String getName() { return name; }
 	public ActiveState getState() {return state;}
 	
-	public void setAuxiliaryData(GeneralPurposeDataContainer auxiliaryData) {this.auxiliaryData = auxiliaryData;}
+	public void setAuxiliaryData(GeneralPurposeDataContainer data) {if(data!=null) this.auxiliaryData = data;}
 	public void setDiagrams(SerializableDiagram[] list) { diagrams=list; }
 	public void setFolders(SerializableFolder[] folders) {this.folders = folders;}
 	public void setId(UUID id) {this.id = id;}

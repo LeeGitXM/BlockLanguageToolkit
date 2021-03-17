@@ -90,7 +90,7 @@ public class SerializableBlock {
 			sa.setParentId(uuid);
 		}
 	}
-	public void setAuxiliaryData(GeneralPurposeDataContainer auxiliaryData) {this.auxiliaryData = auxiliaryData;}
+	public void setAuxiliaryData(GeneralPurposeDataContainer data) {if(data!=null) this.auxiliaryData = data;}
 	public void setBackground(int background) {this.background = background;}
 	public void setClassName(String className) {this.className = className;}
 	public void setDirty(boolean dirty) {this.dirty = dirty;}

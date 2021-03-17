@@ -15,9 +15,8 @@ import com.ils.common.log.ILSLogger;
 import com.ils.common.log.LogMaker;
 
 /**
- * The basic edit panel is an abstract base class that contains a
- * collection of useful methods and constants for concrete implementations
- * of panels that participate in block editing.   
+ * The basic edit panel contains a collection of useful methods and constants 
+ * for concrete implementations of panels that participate in block editing.   
  */
 public class BasicEditPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
@@ -61,8 +60,6 @@ public class BasicEditPanel extends JPanel {
 		panel.add(separator, "growx,wrap");
 		return label;
 	}
-	
-
 	/**
 	 * Create a new label
 	 */
