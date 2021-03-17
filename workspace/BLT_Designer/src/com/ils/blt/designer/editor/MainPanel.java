@@ -44,9 +44,11 @@ public class MainPanel extends BasicEditPanel {
 	protected final CorePropertyPanel corePanel;
 	protected final DesignerContext context;
 	protected final DiagramWorkspace workspace;
+	protected final BlockPropertyEditor bpe;
 
 	public MainPanel(DesignerContext context,BlockPropertyEditor editor,ProcessBlockView blk, DiagramWorkspace wrkspc) {
 		super(editor);
+		this.bpe = editor;
 		this.block = blk;
 		this.panelMap = new HashMap<String,PropertyPanel>();
 		this.corePanel = new CorePropertyPanel(block);
@@ -72,8 +74,8 @@ public class MainPanel extends BasicEditPanel {
 		JSeparator separator = new JSeparator();
 		add(separator,"span,growy");
 	}
-	
-	public void saveDiagramClean() {editor.saveDiagramClean();} 
+	public BlockPropertyEditor getBlockPropertyEditor() { return this.bpe; }
+	public void saveDiagramClean() {bpe.saveDiagramClean();} 
 
 	/**
 	 * Iterate over panels and close any subscriptions
@@ -174,7 +176,7 @@ public class MainPanel extends BasicEditPanel {
 			btn.setPreferredSize(BlockEditConstants.BUTTON_SIZE);
 			btn.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e){
-					editor.updatePanelForProperty(BlockEditConstants.CONFIGURATION_PANEL,prop);
+					bpe.updatePanelForProperty(BlockEditConstants.CONFIGURATION_PANEL,prop);
 					setSelectedPane(BlockEditConstants.CONFIGURATION_PANEL);
 				}
 			});
@@ -207,13 +209,13 @@ public class MainPanel extends BasicEditPanel {
 						prop.getBindingType().equals(BindingType.TAG_READ)   ||
 						prop.getBindingType().equals(BindingType.TAG_READWRITE) ||
 						prop.getBindingType().equals(BindingType.TAG_WRITE)	 )  {
-						editor.updatePanelForProperty(BlockEditConstants.TAG_BROWSER_PANEL,prop);
+						bpe.updatePanelForProperty(BlockEditConstants.TAG_BROWSER_PANEL,prop);
 						setSelectedPane(BlockEditConstants.TAG_BROWSER_PANEL);
 					}
 					// Use special editor for list types
 					else if( prop.getType().equals(PropertyType.LIST) ) {
 						log.debugf("%s.editButton actionPerformed for property %s (%s)",TAG,prop.getName(),prop.getType());
-						editor.updatePanelForProperty(BlockEditConstants.LIST_EDIT_PANEL,prop);
+						bpe.updatePanelForProperty(BlockEditConstants.LIST_EDIT_PANEL,prop);
 						setSelectedPane(BlockEditConstants.LIST_EDIT_PANEL);
 					}
 					else {
@@ -248,7 +250,7 @@ public class MainPanel extends BasicEditPanel {
 			btn.addActionListener(new ActionListener() {
 				// Determine the correct panel, depending on the property type
 				public void actionPerformed(ActionEvent e){
-					editor.updateCorePanel(BlockEditConstants.NAME_EDIT_PANEL,blk);
+					bpe.updateCorePanel(BlockEditConstants.NAME_EDIT_PANEL,blk);
 					setSelectedPane(BlockEditConstants.NAME_EDIT_PANEL);
 				}
 			});

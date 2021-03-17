@@ -23,6 +23,6 @@ public interface ApplicationEditConstants   {
 	public static final Dimension COMBO_SIZE  = new Dimension(300,24);
 	public static final Dimension DESCRIPTION_AREA_SIZE  = new Dimension(280,160);
 	public static final Dimension EDIT_BUTTON_SIZE  = new Dimension(60,36);
-	public static final Dimension NUMBER_BOX_SIZE  = new Dimension(50,24);
+
 	
 }

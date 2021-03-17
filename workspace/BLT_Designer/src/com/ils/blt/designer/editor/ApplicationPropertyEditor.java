@@ -14,6 +14,7 @@ import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.SortedListModel;
 import com.ils.common.log.ILSLogger;
 import com.ils.common.log.LogMaker;
+import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 /**
  * Display a dialog to configure an Application node
@@ -30,7 +31,8 @@ public class ApplicationPropertyEditor extends AbstractPropertyEditor {
 	// Getters
 	public ILSLogger getLog() { return log; }
 
-	public ApplicationPropertyEditor(DesignerContext ctx,SerializableApplication app) {
+	public ApplicationPropertyEditor(DesignerContext ctx,SerializableApplication app,ProjectResource res) {
+		super(res);
 		this.log = LogMaker.getLogger(this);
 		this.context = ctx;
 		this.model = new GeneralPurposeDataContainer();

@@ -88,10 +88,18 @@ public class PropertyEditorFrame extends DockableFrame implements ResourceWorksp
 		this.editor = eddy;
 	}
 	
-	public void refreshBlockEditor() {
-		if( editor!=null && editor instanceof BlockPropertyEditor) {
+	public void refreshPropertyEditor() {
+		if( editor!=null) {
 			editor.shutdown();
-			editor =  new BlockPropertyEditor(context,workspace,((BlockPropertyEditor)editor).getBlock());
+			if( editor instanceof BlockPropertyEditor) {
+				editor =  new BlockPropertyEditor(context,workspace,((BlockPropertyEditor)editor).getBlock());
+			}
+			else if( editor instanceof ApplicationPropertyEditor) {
+				editor =  new ApplicationPropertyEditor(context,((ApplicationPropertyEditor)editor).getApplication(),editor.getResource());
+			}
+			else if(editor instanceof FamilyPropertyEditor) {
+				editor =  new FamilyPropertyEditor(context,((FamilyPropertyEditor)editor).getFamily(),editor.getResource());
+			}
 		}
 
 		//Create a scroll pane
@@ -102,16 +110,23 @@ public class PropertyEditorFrame extends DockableFrame implements ResourceWorksp
 	
 
 	private class DiagramWorkspaceListener extends DesignableWorkspaceAdapter {
+		// Triggered by DiagramWorkspace.fireSelectedItemsChanged
 		@Override
 		public void itemSelectionChanged(List<JComponent> selections) {
 			if( selections!=null && selections.size()==1 ) {
 				JComponent selection = selections.get(0);
 				log.infof("%s: DiagramWorkspaceListener: selected a %s",CLSS,selection.getClass().getName());
+				// KLUDGE ALERT: There should be a way to not hard code this.
 				if( selection instanceof BlockComponent ) {
+					if( editor!=null ) editor.shutdown();
 					BlockComponent bc = ( BlockComponent)selection;
 					ProcessBlockView blk = (ProcessBlockView)bc.getBlock();
-					if( editor!=null ) editor.shutdown();
-					editor = new BlockPropertyEditor(context,workspace,blk);
+					if( blk.getClassName().contains("FinalDiagnosis")) {
+						editor = new FinalDiagnosisPropertyEditor(context,workspace,blk);
+					}
+					else {
+						editor = new BlockPropertyEditor(context,workspace,blk);
+					}
 					contentPanel.removeAll();
 					//Create a scroll pane
 				    JScrollPane scrollPane = new JScrollPane(editor);

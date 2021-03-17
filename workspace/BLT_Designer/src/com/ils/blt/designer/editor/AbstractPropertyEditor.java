@@ -4,12 +4,24 @@
 package com.ils.blt.designer.editor;
 
 import com.inductiveautomation.ignition.client.util.gui.SlidingPane;
+import com.inductiveautomation.ignition.common.project.ProjectResource;
 
 /**
  * This abstract class, adds a shutdown method to a SlidingPane (a JPanel) used as content for the property editor
  * frame in the designer.
  */
 public abstract class AbstractPropertyEditor extends SlidingPane  {	
+	private static final long serialVersionUID = 366366366;
+	protected final ProjectResource resource;
+	
+	public AbstractPropertyEditor(ProjectResource res) {
+		this.resource = res;
+	}
+	public AbstractPropertyEditor() {
+		this.resource = null;
+	}
+	
+	public ProjectResource getResource() { return this.resource; }
 	/**
 	 * Stop any current processing.
 	 */

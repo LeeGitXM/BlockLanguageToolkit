@@ -358,14 +358,19 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		ProjectResource resource = context.getProject().getResource(resourceId);
 		if(resource.getResourceType().equalsIgnoreCase(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
 			SerializableApplication sap = recursivelyDeserializeApplication(this);
-			ApplicationPropertyEditor appEditor = new ApplicationPropertyEditor(context,sap);
+			logger.infof("%s.onSelected: selected application %s",CLSS,sap.getName());
+			ApplicationPropertyEditor appEditor = new ApplicationPropertyEditor(context,sap,resource);
 			workspace.getPropertyEditorFrame().setEditor(appEditor) ;
+			workspace.getPropertyEditorFrame().refreshPropertyEditor();
 			
 		} 
 		else if(resource.getResourceType().equalsIgnoreCase(BLTProperties.FAMILY_RESOURCE_TYPE)) {
 			SerializableFamily sfam = recursivelyDeserializeFamily(this);
-			FamilyPropertyEditor famEditor = new FamilyPropertyEditor(context,sfam);
+			logger.infof("%s.onSelected: selected family %s",CLSS,sfam.getName());
+			FamilyPropertyEditor famEditor = new FamilyPropertyEditor(context,sfam,resource);
 			workspace.getPropertyEditorFrame().setEditor(famEditor) ;
+			logger.infof("%s.onSelected: selected application %s",CLSS,sfam.getName());
+			workspace.getPropertyEditorFrame().refreshPropertyEditor();
 		}
 	}
 
@@ -375,8 +380,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	// Note: dirtiness for deletes is taken care of in the delete action
 	@Override
 	public void projectResourceModified(ProjectResource res, ProjectChangeListener.ResourceModification changeType) {
-		// Take care of our special status before invoking the super-class method.
-		logger.infof("%s.projectResourceModified.%s: %s(%d), res %s(%d)",CLSS,changeType.name(),getName(),this.resourceId,res.getName(),res.getResourceId()); 
+		// Take care of any special status before invoking the super-class method.
+		logger.debugf("%s.projectResourceModified.%s: %s(%d), res %s(%d)",CLSS,changeType.name(),getName(),this.resourceId,res.getName(),res.getResourceId()); 
 		super.projectResourceModified(res, changeType);
 	}
 
@@ -730,7 +735,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		ProjectResource res = node.getProjectResource();
 		SerializableApplication sa = null;
 		if( res!=null ) {
-			logger.infof("%s.recursivelyDeserializeApplication: %s (%d)",CLSS,res.getName(),res.getResourceId());
+			logger.debugf("%s.recursivelyDeserializeApplication: %s (%d)",CLSS,res.getName(),res.getResourceId());
 			sa = deserializeApplication(res);
 			sa.setFamilies(new SerializableFamily[0]);
 			sa.setFolders(new SerializableFolder[0]);
@@ -750,7 +755,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 					if( sf!=null ) sa.addFolder(sf);
 				}
 				else {
-					logger.infof("%s.recursivelyDeserializeApplication: %s unexpected child resource type (%s)",CLSS,res.getName(),cres.getName(),cres.getResourceType());
+					logger.warnf("%s.recursivelyDeserializeApplication: %s unexpected child resource type (%s)",CLSS,res.getName(),cres.getName(),cres.getResourceType());
 				}
 			}
 		}
@@ -764,7 +769,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		ProjectResource res = node.getProjectResource();
 		SerializableDiagram sdiag = null;
 		if( res!=null ) {
-			logger.infof("%s.recursivelyDeserializeDiagram: %s (%d)",CLSS,res.getName(),res.getResourceId());
+			logger.debugf("%s.recursivelyDeserializeDiagram: %s (%d)",CLSS,res.getName(),res.getResourceId());
 			sdiag = deserializeDiagram(res);
 		}
 		return sdiag;
@@ -776,7 +781,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		ProjectResource res = node.getProjectResource();
 		SerializableFamily sfam = null;
 		if( res!=null ) {
-			logger.infof("%s.recursivelyDeserializeFamily: %s (%d)",CLSS,res.getName(),res.getResourceId());
+			logger.debugf("%s.recursivelyDeserializeFamily: %s (%d)",CLSS,res.getName(),res.getResourceId());
 			sfam = deserializeFamily(res);
 			sfam.setFolders(new SerializableFolder[0]);
 			sfam.setDiagrams(new SerializableDiagram[0]);
@@ -796,7 +801,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 					if( sf!=null ) sfam.addFolder(sf);
 				}
 				else {
-					logger.infof("%s.recursivelyDeserializeFamily: %s unexpected child resource type (%s)",CLSS,res.getName(),cres.getName(),cres.getResourceType());
+					logger.warnf("%s.recursivelyDeserializeFamily: %s unexpected child resource type (%s)",CLSS,res.getName(),cres.getName(),cres.getResourceType());
 				}
 			}
 		}

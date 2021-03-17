@@ -58,7 +58,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 	private final static Random random = new Random();
 	private Map<String,ProcessAnchorDescriptor> anchors;
 	private final EventListenerList listenerList;
-	private GeneralPurposeDataContainer auxiliaryData = null;
+	private GeneralPurposeDataContainer auxiliaryData = new GeneralPurposeDataContainer();
 	private final ChangeEvent changeEvent;
 	private int background = Color.white.getRGB();
 	private String className;

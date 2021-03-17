@@ -15,7 +15,6 @@ import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.ils.common.persistence.ToolkitProperties;
 import com.ils.common.tag.TagUtility;
-import com.inductiveautomation.ignition.client.util.gui.SlidingPane;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignableContainer;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
@@ -39,7 +38,6 @@ public class BlockPropertyEditor extends AbstractPropertyEditor   {
 	private final ListEditPanel      listEditPanel;   		// configure a property that is a list of strings
 	private final NameEditPanel      nameEditPanel;   		// configure a block's name
 	private final TagBrowserPanel    tagPanel;        		// configure tag for a bound value
-	private final FinalDiagnosisPanel finalDiagnosisPanel;	// Special case editor for FinalDiagnosis 
 	private final SourceMainPanel     sourceMainPanel;		// Special case editor for SourceConnection 
 	private final SourceEditPanel     sourceEditPanel;		// configure an editor for lists of source blocks
 	
@@ -63,7 +61,6 @@ public class BlockPropertyEditor extends AbstractPropertyEditor   {
         this.listEditPanel = new ListEditPanel(this);
         this.nameEditPanel = new NameEditPanel(this);
         this.tagPanel = new TagBrowserPanel(context,this);
-        this.finalDiagnosisPanel = new FinalDiagnosisPanel(context,this,block, wksp);
         this.sourceMainPanel = new SourceMainPanel(context,this,block, wksp);
         this.sourceEditPanel = new SourceEditPanel(this);
         init();    
@@ -75,10 +72,7 @@ public class BlockPropertyEditor extends AbstractPropertyEditor   {
 	 * Create the various panels. We keep one of each type.
 	 */
 	private void init() {
-		if (block.getClassName().toLowerCase().contains(".finaldiagnosis")) {
-			add(finalDiagnosisPanel);            // HOME_PANEL
-		} 
-		else if (block.getClassName().equals(BlockConstants.BLOCK_CLASS_SOURCE)) {
+		if (block.getClassName().equals(BlockConstants.BLOCK_CLASS_SOURCE)) {
 			sourceMainPanel.initialize();
 			add(sourceMainPanel);            // HOME_PANEL
 		} 

@@ -6,20 +6,25 @@ package com.ils.blt.designer.editor;
 
 
 import java.awt.BorderLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.Dimension;
 import java.util.HashMap;
 
+import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ils.blt.common.block.ActiveState;
 import com.ils.blt.common.serializable.SerializableFamily;
 import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.log.ILSLogger;
 import com.ils.common.log.LogMaker;
+import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
 import net.miginfocom.swing.MigLayout;
@@ -30,17 +35,24 @@ import net.miginfocom.swing.MigLayout;
 public class FamilyPropertyEditor extends AbstractPropertyEditor  { 
 	private final static String CLSS = "FamilyPropertyEditor";
 	private static final long serialVersionUID = 2882399376824334427L;
+	public static final Dimension BUTTON_SIZE  = new Dimension(80,36);
+	public static final Dimension COMBO_SIZE  = new Dimension(180,24);
+	public static final Dimension DESCRIPTION_AREA_SIZE  = new Dimension(200,160);
+	public static final Dimension NUMBER_BOX_SIZE  = new Dimension(50,24);
+	public static final Dimension PANEL_SIZE = new Dimension(250,300);
 	protected final DesignerContext context;
 	private final SerializableFamily family;
 	protected final ILSLogger log;
 	private final GeneralPurposeDataContainer model;           // Data container operated on by panels
 	private JPanel mainPanel = null;
-	private JTextField nameField = new JTextField();
-	private JTextField priorityField = new JTextField();
+	protected JComboBox<String> stateBox;
 	protected JTextArea descriptionArea;
-
+	protected JTextField nameField;
+	protected JTextField priorityField;
+	protected JButton saveButton;
 	
-	public FamilyPropertyEditor(DesignerContext ctx,SerializableFamily fam) {
+	public FamilyPropertyEditor(DesignerContext ctx,SerializableFamily fam,ProjectResource res) {
+		super(res);
 		this.context = ctx;
 		this.family = fam;
 		this.model = new GeneralPurposeDataContainer();
@@ -69,6 +81,7 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor  {
 		
 		mainPanel = createMainPanel();
 		add(mainPanel,BorderLayout.CENTER);
+		
 	}
 
 	public void shutdown() {}
@@ -83,8 +96,10 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor  {
 		final String layoutConstraints = "ins 10,gapy 3,gapx 5,fill";
 		final String rowConstraints = "para[][][][][][][][]";
 		panel.setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));
+		panel.setPreferredSize(PANEL_SIZE);
 
 		panel.add(new JLabel("Name"),"");
+		nameField = new JTextField(family.getName());
 		nameField.setEditable(false);
 		panel.add(nameField,"span,growx,wrap");
 
@@ -98,16 +113,28 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor  {
 		if( description==null) description="";
 		descriptionArea = new JTextArea(description);
 		JScrollPane scrollPane = new JScrollPane(descriptionArea);
-		scrollPane.setPreferredSize(ApplicationEditConstants.DESCRIPTION_AREA_SIZE);
+		scrollPane.setPreferredSize(DESCRIPTION_AREA_SIZE);
 		panel.add(scrollPane,"gaptop 2,aligny top,spanx,growx,growy,wrap");
 
 		panel.add(new JLabel("Priority"),"gaptop 2,aligny top");
 		String priority = model.getProperties().get("Priority");
 		if( priority==null) priority="0.0";
 		priorityField = new JTextField(priority);
-		priorityField.setPreferredSize(ApplicationEditConstants.NUMBER_BOX_SIZE);
+		priorityField.setPreferredSize(NUMBER_BOX_SIZE);
 		panel.add(priorityField,"");
 		
+		panel.add(new JLabel("State"),"gapleft 20");
+		stateBox = new JComboBox<String>();
+		for(ActiveState s:ActiveState.values()) {
+			stateBox.addItem(s.name());
+		}
+		stateBox.setSelectedItem(family.getState());
+		stateBox.setPreferredSize(COMBO_SIZE);
+		panel.add(stateBox,"wrap 20");
+		
+		saveButton = new JButton("Save");
+		saveButton.setPreferredSize(BUTTON_SIZE);
+		panel.add(saveButton,"skip,gaptop 20,alignx center,wrap");
 		return panel;
 	}
 	/**
@@ -115,10 +142,20 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor  {
 	 */
 	public SerializableFamily getFamily() { return family; }
 
-	// Call extension functions to save values.
+	// On save we serialize values back into resource
 	private void save(){
 		log.infof("%s.save()",CLSS);
+		family.setState(ActiveState.valueOf(stateBox.getSelectedItem().toString()));
 		model.getProperties().put("Description",descriptionArea.getText());
 		model.getProperties().put("Priority", priorityField.getText());
+		family.setAuxiliaryData(model);
+		ObjectMapper mapper = new ObjectMapper();
+		try{
+			byte[] bytes = mapper.writeValueAsBytes(family);
+			resource.setData(bytes);
+		}
+		catch(JsonProcessingException jpe) {
+			log.warnf("%s.run: Exception serializing family %s, resource %d (%s)",CLSS,family.getName(),resource.getResourceId(),jpe.getMessage());
+		}
 	}
 }

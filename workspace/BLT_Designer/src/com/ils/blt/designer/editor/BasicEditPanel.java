@@ -11,9 +11,8 @@ import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.JTextField;
 
-import com.ils.blt.common.DiagramState;
-import com.inductiveautomation.ignition.common.util.LogUtil;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
+import com.ils.common.log.ILSLogger;
+import com.ils.common.log.LogMaker;
 
 /**
  * The basic edit panel is an abstract base class that contains a
@@ -22,19 +21,18 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  */
 public class BasicEditPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
-	protected final LoggerEx log;
-	protected final BlockPropertyEditor editor;
+	protected final ILSLogger log;
+	protected final AbstractPropertyEditor editor;
 	
 	
-	
-	public BasicEditPanel(BlockPropertyEditor bpe) {
+	public BasicEditPanel(AbstractPropertyEditor bpe) {
 		this.editor = bpe;
-		this.log = LogUtil.getLogger(getClass().getPackage().getName());
+		this.log = LogMaker.getLogger(this);
 	}
 	protected void setSelectedPane(int selection) {
 		editor.setSelectedPane(selection);
 	}
-	public BlockPropertyEditor getEditor() { return this.editor; }
+	public AbstractPropertyEditor getEditor() { return this.editor; }
 	
 	// ========================== Component Creation Methods ========================
 	/**
@@ -87,16 +85,5 @@ public class BasicEditPanel extends JPanel {
 		final JTextField field = new JTextField(text);
 		field.setEditable(false);
 		return field;
-	}
-
-	/**
-	 * @return the provider for the current state of the diagram.
-	 */
-	protected String getProvider() {
-		DiagramState state = editor.getDiagram().getState();
-		String provider = "";
-		if( state.equals(DiagramState.ISOLATED)) provider = editor.getRequestHandler().getIsolationTagProvider();
-		else provider =  editor.getRequestHandler().getProductionTagProvider();
-		return provider;		
 	}
 }

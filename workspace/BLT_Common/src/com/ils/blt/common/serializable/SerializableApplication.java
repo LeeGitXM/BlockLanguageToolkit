@@ -28,7 +28,7 @@ public class SerializableApplication {
 		families = new SerializableFamily[0];
 		name="UNSET";
 		id = UUID.randomUUID();
-		auxiliaryData = null;
+		auxiliaryData = new GeneralPurposeDataContainer();
 	}
 	
 	public void addFamily(SerializableFamily sfam) {

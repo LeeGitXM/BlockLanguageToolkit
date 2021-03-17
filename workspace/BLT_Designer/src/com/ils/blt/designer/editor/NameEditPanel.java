@@ -19,6 +19,7 @@ import javax.swing.SwingUtilities;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.BusinessRules;
+import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
@@ -49,11 +50,13 @@ public class NameEditPanel extends BasicEditPanel {
 	private final JLabel headingLabel;
 	private final JTextField nameField;
 	private final JCheckBox annotationCheckBox;
+	private final BlockPropertyEditor bpe;
 	private final JTextField xfield;
 	private final JTextField yfield;
 
-	public NameEditPanel(final BlockPropertyEditor editor) {
-		super(editor);
+	public NameEditPanel(final BlockPropertyEditor edtr) {
+		super(edtr);
+		this.bpe = edtr;
 		setLayout(new BorderLayout());
 		JPanel interiorPanel = new JPanel();
 		interiorPanel.setLayout(new MigLayout("top,flowy,ins 2","",""));
@@ -90,8 +93,8 @@ public class NameEditPanel extends BasicEditPanel {
 		okButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if( !nameField.getText().isEmpty()) {
-					DesignerContext context = editor.getContext();
-					ProcessDiagramView diagram = editor.getDiagram();
+					DesignerContext context = bpe.getContext();
+					ProcessDiagramView diagram = bpe.getDiagram();
 					
 					// only check if name has changed.
 					if (block.isDiagnosis() && nameField.getText().equalsIgnoreCase(block.getName()) == false) {
@@ -106,11 +109,11 @@ public class NameEditPanel extends BasicEditPanel {
 						}
 					}
 					block.setName(nameField.getText());
-					editor.updateCorePanel(BlockEditConstants.HOME_PANEL,block);
+					bpe.updateCorePanel(BlockEditConstants.HOME_PANEL,block);
 					if( block.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK) ) {
 						BlockProperty prop = block.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
 						String path = prop.getBinding();
-						ApplicationRequestHandler handler = editor.getRequestHandler();
+						ApplicationRequestHandler handler = bpe.getRequestHandler();
 						// If the tag is is in the standard location, rename it
 						// otherwise, create a new one. Name must be a legal tag path element.
 						if( !BusinessRules.isStandardConnectionsFolder(path) ) {
@@ -133,7 +136,7 @@ public class NameEditPanel extends BasicEditPanel {
 							log.infof("NameEditPanel.actionPerformed: sink connected to %s",desc.getName());
 							handler.setBlockPropertyBinding(rd.getId(), desc.getIdString(),BlockConstants.BLOCK_PROPERTY_TAG_PATH,path);
 							handler.renameBlock(rd.getId(), desc.getIdString(), nameField.getText());
-							editor.saveDiagram(rd.getResourceId());
+							bpe.saveDiagram(rd.getResourceId());
 						}
 					}
 				}
@@ -142,9 +145,9 @@ public class NameEditPanel extends BasicEditPanel {
 					block.setNameOffsetX(Integer.parseInt(xfield.getText()));
 					block.setNameOffsetY(Integer.parseInt(yfield.getText()));
 					setSelectedPane(BlockEditConstants.HOME_PANEL);
-					editor.updateCorePanel(BlockEditConstants.HOME_PANEL, block);
-					editor.updatePanelForProperty(BlockEditConstants.HOME_PANEL, block.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH));
-					editor.saveDiagram();
+					bpe.updateCorePanel(BlockEditConstants.HOME_PANEL, block);
+					bpe.updatePanelForProperty(BlockEditConstants.HOME_PANEL, block.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH));
+					bpe.saveDiagram();
 				}
 				catch(NumberFormatException nfe) {
 					JOptionPane.showMessageDialog(NameEditPanel.this, String.format("Illegal value for offset--please re-enter (%s)",nfe.getLocalizedMessage()),
@@ -173,6 +176,14 @@ public class NameEditPanel extends BasicEditPanel {
 		field.setPreferredSize(BlockEditConstants.ENTRY_BOX_SIZE);
 		field.setEditable(true);
 		return field;
+	}
+	// return the name of the appropriate tag provider
+	private String getProvider() {
+		DiagramState state = bpe.getDiagram().getState();
+		String provider = (state.equals(DiagramState.ISOLATED)?
+				bpe.getRequestHandler().getIsolationTagProvider():
+				bpe.getRequestHandler().getIsolationTagProvider());
+		return provider;
 	}
 	// Replace the last element of path with name
 	private String renamePath(String name,String path) {

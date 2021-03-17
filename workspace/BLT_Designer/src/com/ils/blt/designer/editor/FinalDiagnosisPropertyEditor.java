@@ -3,6 +3,7 @@
  */
 package com.ils.blt.designer.editor;
 
+
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Insets;
@@ -27,6 +28,7 @@ import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
@@ -50,14 +52,14 @@ import net.miginfocom.swing.MigLayout;
  * This dialog allows for the display and editing of auxiliary data in the proxy block. There is no extension
  * function interaction until the block is saved as part of a diagram-save.
  */
-public class FinalDiagnosisPanel extends BasicEditPanel implements ActionListener,FocusListener, PropertyChangeListener {
+public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor implements ActionListener,FocusListener, PropertyChangeListener {
 	private static final long serialVersionUID = 7211480530910862375L;
 	private static final String TAG = "FinalDiagnosisPanel";
 	private final int DIALOG_HEIGHT = 700;
 	private final int DIALOG_WIDTH = 300;
 	private final ProcessDiagramView diagram;
 	private final ProcessBlockView block;
-	private JPanel mainPanel = null;
+	private BasicEditPanel mainPanel = null;
 	private final GeneralPurposeDataContainer model;           // Data container operated on by panels
 	protected DualListBox dual;
 	protected JTextField finalDiagnosisLabelField;
@@ -93,15 +95,14 @@ public class FinalDiagnosisPanel extends BasicEditPanel implements ActionListene
 
 	
 	//	Now figure out how to get this to refresh when the diagram state (active/disabled) changes
-	public FinalDiagnosisPanel(DesignerContext context,BlockPropertyEditor editor,ProcessBlockView blk, DiagramWorkspace wrkspc) {
-		super(editor);
+	public FinalDiagnosisPropertyEditor(DesignerContext context,DiagramWorkspace wrkspc,ProcessBlockView blk) {
 		this.block = blk;
 		this.model = blk.getAuxiliaryData();
 		this.rb = ResourceBundle.getBundle("com.ils.blt.designer.designer");  // designer.properties
 		this.requestHandler = new ApplicationRequestHandler();
 		this.context = context;
         this.diagram = wrkspc.getActiveDiagram();
-		this.corePanel = new CorePropertyPanel(block);
+		this.corePanel = new CorePropertyPanel(this,block);
 
 		this.setPreferredSize(new Dimension(DIALOG_WIDTH,DIALOG_HEIGHT));
         initialize();
@@ -130,14 +131,16 @@ public class FinalDiagnosisPanel extends BasicEditPanel implements ActionListene
 		add(mainPanel,"grow,push");;
 	}
 	
-	private JPanel createMainPanel() {	
+	public void shutdown() {}
+	
+	private BasicEditPanel createMainPanel() {	
 		// The internal panel has two panes
 		// - one for the dual list box, the other for the remaining attributes
 		//setLayout(new BorderLayout());
-		mainPanel = new JPanel();
+		mainPanel = new BasicEditPanel(this);
 		mainPanel.setLayout(new MigLayout("ins 2,fill","[][]","[][growprio 60,150:150:2000][]"));
 		
-		addSeparator(mainPanel,"FinalDiagnosis.QuantOutputs");
+		mainPanel.addSeparator(mainPanel,"QuantOutputs");
 		
 		dual = new DualListBox();
 		List<String> q1 = model.getLists().get("OutputsInUse");
@@ -161,12 +164,12 @@ public class FinalDiagnosisPanel extends BasicEditPanel implements ActionListene
 		return mainPanel;
 	}
 	
-	private JPanel createMainPanelNoData() {	
+	private BasicEditPanel createMainPanelNoData() {	
 		//setLayout(new BorderLayout());
-		mainPanel = new JPanel();
+		mainPanel = new BasicEditPanel(this);
 		mainPanel.setLayout(new MigLayout("ins 1,fill","[]","[growprio 60,150:150:2000][]"));
 		
-		addSeparator(mainPanel,"Editing restricted - Diagram disabled or no database");
+		mainPanel.addSeparator(mainPanel,"Editing restricted - Diagram disabled or no database");
 		
 		return mainPanel;
 	}
@@ -296,13 +299,14 @@ public class FinalDiagnosisPanel extends BasicEditPanel implements ActionListene
 	 * These properties are present in every block.
 	 * class, label, state, statusText
 	 */
-	private class CorePropertyPanel extends JPanel {
+	public class CorePropertyPanel extends BasicEditPanel {
 		private static final long serialVersionUID = -7849105885687872683L;
 		private static final String columnConstraints = "[para]0[]0[]";
 		private static final String layoutConstraints = "ins 2";
 		private static final String rowConstraints = "[para]0[]0[]";
 
-		public CorePropertyPanel(ProcessBlockView blk) {
+		public CorePropertyPanel(AbstractPropertyEditor edtr,ProcessBlockView blk) {
+			super(edtr);
 			setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));
 			addSeparator(this,"Core");
 			add(new JLabel("Name"),"skip");
@@ -314,13 +318,12 @@ public class FinalDiagnosisPanel extends BasicEditPanel implements ActionListene
 			add(new JLabel("UUID"),"skip");
 			add(createTextField(blk.getId().toString()),"span,growx");
 		}
-		
-		public void updatePanelForBlock(ProcessBlockView pbv) {
-			nameField.setText(pbv.getName());
+		public void updateCorePanel(int tab,ProcessBlockView blk) {
+			
 		}
 	}
 	
-	
+
 	// Copy the FinalDiagnosis auxiliary data back into the database
 	private void save(){
 		model.getProperties().put("Constant", (constantCheckBox.isSelected()?"1":"0"));
@@ -443,13 +446,10 @@ public class FinalDiagnosisPanel extends BasicEditPanel implements ActionListene
 			btn.addActionListener(new ActionListener() {
 				// Determine the correct panel, depending on the property type
 				public void actionPerformed(ActionEvent e){
-					editor.updateCorePanel(BlockEditConstants.NAME_EDIT_PANEL,blk);
+					//CorePropertyPanel.this.updateCorePanel(BlockEditConstants.NAME_EDIT_PANEL,blk);
 					setSelectedPane(BlockEditConstants.NAME_EDIT_PANEL);
 				}
 			});
-		}
-		else {
-			log.warnf("%s.createNameEditButton icon not found(%s)",TAG,ICON_PATH);
 		}
 		return btn;
 	}

@@ -20,7 +20,7 @@ import com.ils.common.GeneralPurposeDataContainer;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SerializableBlock {
 	private SerializableAnchor[] anchors = null;
-	private GeneralPurposeDataContainer auxiliaryData = null;
+	private GeneralPurposeDataContainer auxiliaryData = new GeneralPurposeDataContainer();
 	private int background = Color.white.getRGB();
 	private String className = null;
 	private boolean dirty = false;

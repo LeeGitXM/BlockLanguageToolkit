@@ -87,7 +87,6 @@ import com.ils.blt.designer.config.BlockInternalsViewer;
 import com.ils.blt.designer.config.BlockPropertiesSelector;
 import com.ils.blt.designer.config.ForceValueSettingsDialog;
 import com.ils.blt.designer.editor.BlockEditConstants;
-import com.ils.blt.designer.editor.BlockPropertyEditor;
 import com.ils.blt.designer.editor.PropertyEditorFrame;
 import com.ils.blt.designer.navtree.DiagramTreeNode;
 import com.ils.common.log.ILSLogger;
@@ -1312,7 +1311,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		if( container!=null ) {
 			ProcessDiagramView view = (ProcessDiagramView)(container.getModel());		
 			// update any open property panels\
-			propertyEditorFrame.refreshBlockEditor();
+			propertyEditorFrame.refreshPropertyEditor();
 			
 			container.setBackground(view.getBackgroundColorForState());
 			SwingUtilities.invokeLater(new WorkspaceRepainter());

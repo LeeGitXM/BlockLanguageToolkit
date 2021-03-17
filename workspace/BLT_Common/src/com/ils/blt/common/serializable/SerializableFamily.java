@@ -28,7 +28,7 @@ public class SerializableFamily {
 		folders = new SerializableFolder[0];
 		name="UNSET";
 		id = UUID.randomUUID();
-		auxiliaryData = null;
+		auxiliaryData = new GeneralPurposeDataContainer();
 	}
 
 	public void addDiagram(SerializableDiagram sdiag) {

@@ -120,17 +120,16 @@ public class ModelManager implements ProjectListener  {
 		if( res.getModuleId()!=null && res.getModuleId().equalsIgnoreCase(BLTProperties.MODULE_ID)) {
 			String type = res.getResourceType();
 			
-			
 			if( type.equalsIgnoreCase(BLTProperties.APPLICATION_RESOURCE_TYPE) ) {
-				log.infof("%s.analyzeResource: application = %s",CLSS,type);
+				log.infof("%s.analyzeResource: application = %s %s",CLSS,type,(startup?"(STARTUP)":""));
 				addModifyApplicationResource(projectId,res,startup);
 			}
 			else if( type.equalsIgnoreCase(BLTProperties.FAMILY_RESOURCE_TYPE) ) {
-				log.infof("%s.analyzeResource:  family = %s",CLSS,type);
+				log.infof("%s.analyzeResource:  family = %s %s",CLSS,type,(startup?"(STARTUP)":""));
 				addModifyFamilyResource(projectId,res,startup);
 			}
 			else if( type.equalsIgnoreCase(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
-				log.infof("%s.analyzeResource:  diagram = %s",CLSS,type);
+				log.infof("%s.analyzeResource:  diagram = %s %s",CLSS,type,(startup?"(STARTUP)":""));
 				addModifyDiagramResource(projectId,res,startup);
 			}
 			else if( type.equalsIgnoreCase(BLTProperties.FOLDER_RESOURCE_TYPE) ) {
@@ -690,13 +689,10 @@ public class ModelManager implements ProjectListener  {
 			UUID self = application.getSelf();
 			ProcessNode node = nodesByUUID.get(self);
 			if( node==null ) {
-				ProcessApplication processApp = new ProcessApplication(res.getName(),res.getParentUuid(),self);
-				processApp.setResourceId(res.getResourceId());
-				processApp.setProjectId(projectId);
 				// Add in the new Application
 				ProjectResourceKey key = new ProjectResourceKey(projectId,res.getResourceId());
-				nodesByKey.put(key,processApp);
-				addToHierarchy(projectId,processApp);
+				nodesByKey.put(key,application);
+				addToHierarchy(projectId,application);
 			}
 			else if( node.getProjectId() != projectId)  {
 				// The same UUID, but a different project, is a different resource
@@ -727,29 +723,29 @@ public class ModelManager implements ProjectListener  {
 			}
 			// Invoke extension script on application save or startup
 			// The SAVE script is smart enough to do an insert if application is new
-			if( node!=null ) {
-				if( startup ) {
-					// On startup, we only read aux data from the production database. There is no SAVE
-					String provider = toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER);
-					String db = toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_DATABASE);
-					Script script = extensionManager.createExtensionScript(ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.GET_AUX_OPERATION, provider);
-					extensionManager.runScript(context.getScriptManager(), script, node.getSelf().toString(),node.getAuxiliaryData(),db);
-				}
-				else {
-					String provider = (application.getState().equals(DiagramState.ACTIVE) ? 
-							toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER):
-								toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER));
-					Script script = extensionManager.createExtensionScript(ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.SAVE_OPERATION, provider);
-					extensionManager.runScript(context.getProjectManager().getProjectScriptManager(node.getProjectId()), 
-							script, node.getSelf().toString(),node.getAuxiliaryData());
-					String db = (application.getState().equals(DiagramState.ACTIVE) ? 
-							toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_DATABASE):
-								toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_DATABASE));
 
-					script = extensionManager.createExtensionScript(ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.SET_AUX_OPERATION, provider);
-					extensionManager.runScript(context.getScriptManager(), script, node.getSelf().toString(),node.getAuxiliaryData(),db);
-				}
+			if( startup ) {
+				// On startup, we only read aux data from the production database. There is no SAVE
+				String provider = toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER);
+				String db = toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_DATABASE);
+				Script script = extensionManager.createExtensionScript(ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.GET_AUX_OPERATION, provider);
+				extensionManager.runScript(context.getScriptManager(), script, application.getSelf().toString(),application.getAuxiliaryData(),db);
 			}
+			else  {
+				String provider = (application.getState().equals(DiagramState.ACTIVE) ? 
+						toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER):
+							toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER));
+				Script script = extensionManager.createExtensionScript(ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.SAVE_OPERATION, provider);
+				extensionManager.runScript(context.getProjectManager().getProjectScriptManager(application.getProjectId()), 
+						script, node.getSelf().toString(),node.getAuxiliaryData());
+				String db = (application.getState().equals(DiagramState.ACTIVE) ? 
+						toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_DATABASE):
+							toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_DATABASE));
+
+				script = extensionManager.createExtensionScript(ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.SET_AUX_OPERATION, provider);
+				extensionManager.runScript(context.getScriptManager(), script, node.getSelf().toString(),application.getAuxiliaryData(),db);
+			}
+
 		}
 		else {
 			log.warnf("%s.addModifyApplicationResource: failed to deserialize %s(%d)",CLSS,res.getName(),res.getResourceId());
@@ -885,13 +881,10 @@ public class ModelManager implements ProjectListener  {
 			UUID self = family.getSelf();
 			ProcessNode node = nodesByUUID.get(self);
 			if( node==null ) {
-				ProcessFamily processFam = new ProcessFamily(res.getName(),res.getParentUuid(),self);
-				processFam.setResourceId(res.getResourceId());
-				processFam.setProjectId(projectId);
 				// Add in the new Family
 				ProjectResourceKey key = new ProjectResourceKey(projectId,res.getResourceId());
-				nodesByKey.put(key,processFam);
-				addToHierarchy(projectId,processFam);
+				nodesByKey.put(key,family);
+				addToHierarchy(projectId,family);
 			}
 			else if(node.getProjectId() != projectId) {
 				// The same UUID, but a different project, is a different resource
@@ -927,33 +920,33 @@ public class ModelManager implements ProjectListener  {
 			}
 			// Invoke extension script on family save
 			// The SAVE script is smart enough to do an insert if family is new
-			if( node!=null ) {
-				if( startup ) {
-					// On startup, we only read aux data from the production database. There is no save.
-					String provider = toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER);
-					String db = toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_DATABASE);
-					Script script = extensionManager.createExtensionScript(ScriptConstants.FAMILY_CLASS_NAME, ScriptConstants.GET_AUX_OPERATION, provider);
-					extensionManager.runScript(context.getScriptManager(), script, node.getSelf().toString(),node.getAuxiliaryData(),db);
-				}
-				else {
-					String provider = (family.getState().equals(DiagramState.ACTIVE) ? 
-							toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER):
-								toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER));
-					Script script = extensionManager.createExtensionScript(ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.SAVE_OPERATION, provider);
-					extensionManager.runScript(context.getProjectManager().getProjectScriptManager(node.getProjectId()), 
-							script, node.getSelf().toString(),node.getAuxiliaryData());
-					String db = (family.getState().equals(DiagramState.ACTIVE) ? 
-							toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_DATABASE):
-								toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_DATABASE));
-	
-					script = extensionManager.createExtensionScript(ScriptConstants.FAMILY_CLASS_NAME, ScriptConstants.SET_AUX_OPERATION, provider);
-					extensionManager.runScript(context.getScriptManager(), script, node.getSelf().toString(),node.getAuxiliaryData(),db);
-				}
+			if( startup ) {
+				// On startup, we only read aux data from the production database. There is no save.
+				String provider = toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER);
+				String db = toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_DATABASE);
+				Script script = extensionManager.createExtensionScript(ScriptConstants.FAMILY_CLASS_NAME, ScriptConstants.GET_AUX_OPERATION, provider);
+				extensionManager.runScript(context.getScriptManager(), script, family.getSelf().toString(),family.getAuxiliaryData(),db);
 			}
 			else {
-				log.warnf("%s.addModifyFamilyResource: failed to deserialize %s(%d)",CLSS,res.getName(),res.getResourceId());
+				String provider = (family.getState().equals(DiagramState.ACTIVE) ? 
+						toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER):
+							toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER));
+				Script script = extensionManager.createExtensionScript(ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.SAVE_OPERATION, provider);
+				extensionManager.runScript(context.getProjectManager().getProjectScriptManager(family.getProjectId()), 
+						script, node.getSelf().toString(),node.getAuxiliaryData());
+				String db = (family.getState().equals(DiagramState.ACTIVE) ? 
+						toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_DATABASE):
+							toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_DATABASE));
+
+				script = extensionManager.createExtensionScript(ScriptConstants.FAMILY_CLASS_NAME, ScriptConstants.SET_AUX_OPERATION, provider);
+				extensionManager.runScript(context.getScriptManager(), script, family.getSelf().toString(),family.getAuxiliaryData(),db);
+
 			}
 		}
+		else {
+			log.warnf("%s.addModifyFamilyResource: failed to deserialize %s(%d)",CLSS,res.getName(),res.getResourceId());
+		}
+
 	}
 	/**
 	 * Add or update a folder resource from the ProjectResource.

@@ -45,6 +45,8 @@ import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessAnchorDescriptor;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
+import com.ils.common.log.ILSLogger;
+import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.client.sqltags.ClientTagManager;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.sqltags.model.Tag;
@@ -55,8 +57,6 @@ import com.inductiveautomation.ignition.common.sqltags.model.event.TagChangeList
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 import com.inductiveautomation.ignition.common.sqltags.model.types.ExpressionType;
 import com.inductiveautomation.ignition.common.sqltags.parser.TagPathParser;
-import com.inductiveautomation.ignition.common.util.LogUtil;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Connection;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
@@ -84,7 +84,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 	private static final String columnConstraints = "";
 	private static final String layoutConstraints = "ins 2,hidemode 2";
 	private static final String rowConstraints = "";
-	private final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
+	private final ILSLogger log = LogMaker.getLogger(this);
 	private final DesignerContext context;
 	private final JTextField bindingDisplayField;
 	private final JButton editButton;
@@ -185,7 +185,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 				property.getBindingType().equals(BindingType.TAG_READ) ||
 				property.getBindingType().equals(BindingType.TAG_READWRITE) ||
 				property.getBindingType().equals(BindingType.TAG_WRITE)	) {
-			String binding = main.getEditor().modifyPathForProvider(property.getBinding());
+			String binding = main.getBlockPropertyEditor().modifyPathForProvider(property.getBinding());
 			property.setBinding(binding);
 			bindingDisplayField.setText(binding);
 			bindingDisplayField.setVisible(true);
@@ -703,7 +703,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 		else {
 			if( !field.getText().equals(prop.getBinding()) ) {
 				unsubscribeToTagPath(prop.getBinding());
-				String tagPath = parent.getEditor().modifyPathForProvider(field.getText());
+				String tagPath = parent.getBlockPropertyEditor().modifyPathForProvider(field.getText());
 				if( DEBUG ) log.infof("%s.updatePropertyForField: Adjusting %s to %s", TAG,prop.getBinding(),tagPath);
 				prop.setBinding(tagPath);
 				subscribeToTagPath(tagPath);

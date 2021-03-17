@@ -47,7 +47,7 @@ public class SourceMainPanel extends MainPanel {
 		BlockProperty prop = block.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
 		String tagPath = prop.getBinding();
 		if( tagPath!=null ) {
-			List<SerializableBlockStateDescriptor> blocks = editor.getRequestHandler().listBlocksForTag(tagPath);
+			List<SerializableBlockStateDescriptor> blocks = bpe.getRequestHandler().listBlocksForTag(tagPath);
 			for(SerializableBlockStateDescriptor blk:blocks) {
 				if(blk.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK)) {
 					sinkName = blk.getName();
@@ -86,7 +86,7 @@ public class SourceMainPanel extends MainPanel {
 			btn.setPreferredSize(BlockEditConstants.BUTTON_SIZE);
 			btn.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e){
-					editor.updatePanelForProperty(BlockEditConstants.SOURCE_EDIT_PANEL,prop);
+					bpe.updatePanelForProperty(BlockEditConstants.SOURCE_EDIT_PANEL,prop);
 					setSelectedPane(BlockEditConstants.SOURCE_EDIT_PANEL);
 				}
 			});

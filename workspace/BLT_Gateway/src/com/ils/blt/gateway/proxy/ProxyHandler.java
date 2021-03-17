@@ -214,7 +214,7 @@ public class ProxyHandler   {
 	}
 	public GeneralPurposeDataContainer getAuxiliaryData(ScriptManager mgr,PyObject block) {
 		GeneralPurposeDataContainer container = new GeneralPurposeDataContainer();
-		log.debugf("%s.getBlockState ... ",CLSS);
+		log.debugf("%s.getAuxiliaryData ... ",CLSS);
 		if( getAuxiliaryDataCallback.compileScript() ) {
 			synchronized(getAuxiliaryDataCallback) {
 				PyList pylist = new PyList();  // Empty
