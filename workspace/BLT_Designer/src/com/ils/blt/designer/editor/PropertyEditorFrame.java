@@ -83,15 +83,17 @@ public class PropertyEditorFrame extends DockableFrame implements ResourceWorksp
 		return editor;
 	}
 
-	// A selection was made in the NavTree that we want to edit
+	// A selection was made in the NavTree or on the diagram workspace.
+	// Set the appropriate editor and refresh.
 	public void setEditor(AbstractPropertyEditor eddy) {
 		if( editor!=null ) editor.shutdown();
 		this.editor = eddy;
 	}
 	
 	public void refreshPropertyEditor() {
-		log.infof("%s.refreshPropertyEditor:",CLSS);
+		
 		if( editor!=null) {
+			log.infof("%s.refreshPropertyEditor:",CLSS);
 			editor.shutdown();
 			if( editor instanceof BlockPropertyEditor) {
 				editor =  new BlockPropertyEditor(context,workspace,((BlockPropertyEditor)editor).getBlock());

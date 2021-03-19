@@ -447,8 +447,13 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 	public void setPreferredWidth(int preferredWidth) {this.preferredWidth = preferredWidth;}
 	public void setPreferredWidth(String backgroundColor) {this.backgroundColor = backgroundColor;}
 	public void setProperties(Collection<BlockProperty> props) { 
-		this.properties = props; 
+		if( props!=null ) {
+			this.properties = props; 
 		}
+		else {
+			log.warnf("%s.setProperties: WARNING: attempt to set %s properties to null",TAG,getName());
+		}
+	}
 //	public void setReceiveEnabled(boolean receiveEnabled) {this.receiveEnabled = receiveEnabled;}
 	public void setBackground(int b)  { this.background = b; }
 	// Find the generic signal anchor and set its "hidden" property

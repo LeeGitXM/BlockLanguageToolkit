@@ -55,7 +55,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	private static LoggerEx log = LogUtil.getLogger(ProcessDiagramView.class.getPackage().getName());
 	// Use TAG as the "source" identifier when registering for notifications from Gateway
 	private static final String TAG = "ProcessDiagramView";
-	private ApplicationRequestHandler appRequestHandler = null;
+	private final ApplicationRequestHandler appRequestHandler;
 	private final Map<UUID,ProcessBlockView> blockMap = new HashMap<UUID,ProcessBlockView>();
 	private List<Connection> connections = new ArrayList<Connection>();
 	private static final int MIN_WIDTH = 200;
@@ -148,6 +148,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		this.id = uuid;
 		this.resourceId = resId;
 		this.name = nam;
+		this.appRequestHandler = new ApplicationRequestHandler();
 	}
 	
 	/** Get the current block property values from the Gateway. 
