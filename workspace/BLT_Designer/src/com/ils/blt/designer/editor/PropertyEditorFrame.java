@@ -87,36 +87,20 @@ public class PropertyEditorFrame extends DockableFrame implements ResourceWorksp
 	// Set the appropriate editor and refresh.
 	public void setEditor(AbstractPropertyEditor eddy) {
 		if( editor!=null ) editor.shutdown();
+		contentPanel.removeAll();
 		this.editor = eddy;
-	}
-	
-	public void refreshPropertyEditor() {
 		
-		if( editor!=null) {
-			log.infof("%s.refreshPropertyEditor:",CLSS);
-			editor.shutdown();
-			if( editor instanceof BlockPropertyEditor) {
-				editor =  new BlockPropertyEditor(context,workspace,((BlockPropertyEditor)editor).getBlock());
-			}
-			else if( editor instanceof ApplicationPropertyEditor) {
-				editor =  new ApplicationPropertyEditor(context,((ApplicationPropertyEditor)editor).getApplication(),editor.getResource());
-			}
-			else if(editor instanceof FamilyPropertyEditor) {
-				editor =  new FamilyPropertyEditor(context,((FamilyPropertyEditor)editor).getFamily(),editor.getResource());
-			}
-		}
-
 		//Create a scroll pane
 	    JScrollPane scrollPane = new JScrollPane(editor);
 		contentPanel.add(scrollPane,BorderLayout.CENTER);
 		validate();
 	}
 	
-
 	private class DiagramWorkspaceListener extends DesignableWorkspaceAdapter {
 		// Triggered by DiagramWorkspace.fireSelectedItemsChanged
 		@Override
 		public void itemSelectionChanged(List<JComponent> selections) {
+			AbstractPropertyEditor newEditor = null;
 			if( selections!=null && selections.size()==1 ) {
 				JComponent selection = selections.get(0);
 				log.infof("%s: DiagramWorkspaceListener.itemSelectionChanged: selected a %s",CLSS,selection.getClass().getName());
@@ -126,17 +110,11 @@ public class PropertyEditorFrame extends DockableFrame implements ResourceWorksp
 					BlockComponent bc = ( BlockComponent)selection;
 					ProcessBlockView blk = (ProcessBlockView)bc.getBlock();
 					if( blk.getClassName().contains("FinalDiagnosis")) {
-						editor = new FinalDiagnosisPropertyEditor(context,workspace,blk);
+						newEditor = new FinalDiagnosisPropertyEditor(context,workspace,blk);
 					}
 					else {
-						editor = new BlockPropertyEditor(context,workspace,blk);
+						newEditor = new BlockPropertyEditor(context,workspace,blk);
 					}
-					contentPanel.removeAll();
-					//Create a scroll pane
-				    JScrollPane scrollPane = new JScrollPane(editor);
-					contentPanel.add(scrollPane,BorderLayout.CENTER);
-					validate();
-					return;
 				}
 				// There may be a connection selected
 				else {
@@ -148,14 +126,10 @@ public class PropertyEditorFrame extends DockableFrame implements ResourceWorksp
 						log.debugf("%s: DiagramWorkspaceListener: connection origin is a %s",CLSS,cxn.getOrigin().getClass().getName());
 						log.debugf("%s: DiagramWorkspaceListener: connection id is a %s",CLSS,cxn.getOrigin().getId().getClass().getName());
 						log.debugf("%s: DiagramWorkspaceListener: connection block is a %s",CLSS,cxn.getOrigin().getBlock().getClass().getName());
-						ConnectionPropertyEditor editr = new ConnectionPropertyEditor(context,cxn);
-						contentPanel.removeAll();
-						//Create a scroll pane
-					    JScrollPane scrollPane = new JScrollPane(editr);
-						contentPanel.add(scrollPane,BorderLayout.CENTER);
-						return;
+						newEditor = new ConnectionPropertyEditor(context,cxn);
 					}
 				}
+				if( newEditor!=null) setEditor(newEditor);
 			}
 		}
 		@Override 

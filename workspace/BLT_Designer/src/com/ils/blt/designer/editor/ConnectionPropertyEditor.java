@@ -28,7 +28,7 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
  * Display a panel to show connection attributes.    
  */
 
-public class ConnectionPropertyEditor extends JPanel {
+public class ConnectionPropertyEditor extends AbstractPropertyEditor {
 	private static final long serialVersionUID = 8971626415423709616L;
 	private Connection cxn;
 	private static final List<String> coreAttributeNames;
@@ -47,7 +47,11 @@ public class ConnectionPropertyEditor extends JPanel {
         init();    
 	}
 
-	
+	/**
+	 * Un-subscribe to notifications to allow cleanup. 
+	 */
+	public void shutdown() {
+	}
 	/** 
 	 * For a connection we get all our information from the UI.
 	 * The attribute list is fixed. 

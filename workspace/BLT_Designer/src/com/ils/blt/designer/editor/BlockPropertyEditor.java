@@ -148,6 +148,7 @@ public class BlockPropertyEditor extends AbstractPropertyEditor   {
 	public void shutdown() {
 		mainPanel.shutdown();
 	}
+	
 	// Update the displayed value in the main panel
 	public void updatePanelValue(String propertyName,Object val) {
 		if (block.getClassName().equals(BlockConstants.BLOCK_CLASS_SOURCE)) {

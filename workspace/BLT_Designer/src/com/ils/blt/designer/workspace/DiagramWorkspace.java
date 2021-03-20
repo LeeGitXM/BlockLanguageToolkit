@@ -190,33 +190,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		this.addMouseListener(rightClickHandler);
 		this.propertyEditorFrame = new PropertyEditorFrame(context,this);
 		requestHandler = new ApplicationRequestHandler();
-		 //		this.keyHandler = new KeystrokeListener();
-//		this.addKeyListener(keyHandler);
-
-		// none of this keystroke stuff works
-	    KeyStroke ltA = KeyStroke.getKeyStroke("a");
-	    Action lt_A_Action = new AbstractAction(){
-	      public void actionPerformed(ActionEvent e){
-	    	  logger.errorf("DiagramWorkspace keyReleased A");
-	    	  selectAllBlocks();
-	      }
-	    };
-//	    this.getInputMap().put(ltA, "LT_A");
-	    this.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(ltA, "LT_A"); 
-	    this.getActionMap().put("LT_A", lt_A_Action);
-
-
-	    
-	    KeyStroke altA = KeyStroke.getKeyStroke(KeyEvent.VK_A,java.awt.event.InputEvent.ALT_DOWN_MASK,false);
-	    Action alt_A_Action = new AbstractAction(){
-	      public void actionPerformed(ActionEvent e){
-	    	  selectAllBlocks();
-	      }
-	    };
-	    this.getInputMap().put(altA, "ALT_A");
-//	    this.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(altA, "ALT_A");
-	    this.getActionMap().put("ALT_A", alt_A_Action);
-
 		statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
 		initialize();
 		setBackground(Color.red);
@@ -1303,16 +1276,13 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	}
 	
 	/**
-	 * We've made a major change on the currently active diagram. Set its background accordingly.
-	 * The diagram should have set its own state.
+	 * The selection has changed. If we've made a major change on the currently active diagram,
+	 * set its background accordingly. The diagram should have set its own state.
 	 */
 	private void updateBackgroundForDirty() {
 		BlockDesignableContainer container = getSelectedContainer();
 		if( container!=null ) {
-			ProcessDiagramView view = (ProcessDiagramView)(container.getModel());		
-			// update any open property panels\
-			propertyEditorFrame.refreshPropertyEditor();
-			
+			ProcessDiagramView view = (ProcessDiagramView)(container.getModel());			
 			container.setBackground(view.getBackgroundColorForState());
 			SwingUtilities.invokeLater(new WorkspaceRepainter());
 		}
@@ -1390,11 +1360,13 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	// ============================== Change Listener ================================
 	/**
 	 * If the current diagram changes state, then paint the background accordingly.
+	 *
 	 * 
 	 * @param event
 	 */
 	@Override
 	public void stateChanged(ChangeEvent event) {
+		logger.infof("%s.stateChanged: source = %s",CLSS,event.getSource().getClass().getCanonicalName());
 		updateBackgroundForDirty();
 	}
 	
@@ -1488,7 +1460,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	}
 
 	/**
-	 * Post a custom editor for the block. This action is expected to
+	 * Post a custom  for the block. This action is expected to
 	 * apply to only a few block types. The action should be invoked only
 	 * if an editor class has been specified. 
 	 */

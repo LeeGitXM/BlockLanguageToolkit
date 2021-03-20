@@ -360,7 +360,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			logger.infof("%s.onSelected: selected application %s (%d)",CLSS,sap.getName(),resourceId);
 			ApplicationPropertyEditor appEditor = new ApplicationPropertyEditor(context,sap,resource);
 			workspace.getPropertyEditorFrame().setEditor(appEditor) ;
-			workspace.getPropertyEditorFrame().refreshPropertyEditor();
+			//workspace.getPropertyEditorFrame().refreshPropertyEditor();
 			
 		} 
 		else if(resource.getResourceType().equalsIgnoreCase(BLTProperties.FAMILY_RESOURCE_TYPE)) {
@@ -368,7 +368,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			logger.infof("%s.onSelected: selected family %s (%d)",CLSS,sfam.getName(),resourceId);
 			FamilyPropertyEditor famEditor = new FamilyPropertyEditor(context,sfam,resource);
 			workspace.getPropertyEditorFrame().setEditor(famEditor) ;
-			workspace.getPropertyEditorFrame().refreshPropertyEditor();
+			//workspace.getPropertyEditorFrame().refreshPropertyEditor();
 		}
 	}
 
