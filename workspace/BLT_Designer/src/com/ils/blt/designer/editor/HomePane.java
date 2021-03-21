@@ -65,8 +65,8 @@ public class HomePane extends JPanel  {
 		
 		log.infof("In the HomePane constructor");
 		
-		okButton.setPreferredSize(ApplicationEditConstants.BUTTON_SIZE);
-		cancelButton.setPreferredSize(ApplicationEditConstants.BUTTON_SIZE);
+		okButton.setPreferredSize(ApplicationPropertyEditor.BUTTON_SIZE);
+		cancelButton.setPreferredSize(ApplicationPropertyEditor.BUTTON_SIZE);
 
 		// Add a couple of panels to the main panel
 		buttonPanel = new JPanel(new FlowLayout());
@@ -78,7 +78,7 @@ public class HomePane extends JPanel  {
 		// Add components to the main panel
 		mainPanel.add(new JLabel("Name:"),"align right");
 		nameField.setText(model.getProperties().get("Name"));
-		nameField.setPreferredSize(ApplicationEditConstants.COMBO_SIZE);
+		nameField.setPreferredSize(ApplicationPropertyEditor.COMBO_SIZE);
 		nameField.setEditable(false);
 		nameField.setToolTipText("The name can only be changed from the project tree.");
 		mainPanel.add(nameField,"span,wrap");
@@ -117,7 +117,7 @@ public class HomePane extends JPanel  {
 		else if( queueComboBox.getItemCount()>0) {
 			queueComboBox.setSelectedIndex(0);
 		}
-		queueComboBox.setPreferredSize(ApplicationEditConstants.COMBO_SIZE);
+		queueComboBox.setPreferredSize(ApplicationPropertyEditor.COMBO_SIZE);
 		mainPanel.add(queueComboBox, "wrap");
 
 		// Set up the Group Ramp Method Combo Box
@@ -135,7 +135,7 @@ public class HomePane extends JPanel  {
 		else if( groupRampMethodComboBox.getItemCount()>0) {
 			groupRampMethodComboBox.setSelectedIndex(0);
 		}
-		groupRampMethodComboBox.setPreferredSize(ApplicationEditConstants.COMBO_SIZE);
+		groupRampMethodComboBox.setPreferredSize(ApplicationPropertyEditor.COMBO_SIZE);
 		mainPanel.add(groupRampMethodComboBox, "wrap");
 		
 		// Set up the Unit Combo Box
@@ -153,7 +153,7 @@ public class HomePane extends JPanel  {
 		else if( unitComboBox.getItemCount()>0) {
 			unitComboBox.setSelectedIndex(0);
 		}
-		unitComboBox.setPreferredSize(ApplicationEditConstants.COMBO_SIZE);
+		unitComboBox.setPreferredSize(ApplicationPropertyEditor.COMBO_SIZE);
 		mainPanel.add(unitComboBox, "wrap");
 		
 		mainPanel.add(nextButton,"cell 1 13,right");
@@ -197,10 +197,10 @@ public class HomePane extends JPanel  {
 	}
 
 	protected void doNext() {
-		editor.setSelectedPane(ApplicationEditConstants.OUTPUTS);
+		editor.setSelectedPane(ApplicationPropertyEditor.OUTPUTS);
 	}
 	public void activate() {
-		editor.setSelectedPane(ApplicationEditConstants.HOME);
+		editor.setSelectedPane(ApplicationPropertyEditor.HOME);
 	}
 
 }

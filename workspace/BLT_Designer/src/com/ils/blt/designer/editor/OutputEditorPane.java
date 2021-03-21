@@ -94,7 +94,7 @@ public class OutputEditorPane extends JPanel {
 			}
 		}
 		feedbackMethodComboBox.setToolTipText("The technique used to combine multiple recommendations for the this output!");
-		feedbackMethodComboBox.setPreferredSize(ApplicationEditConstants.COMBO_SIZE);
+		feedbackMethodComboBox.setPreferredSize(ApplicationPropertyEditor.COMBO_SIZE);
 		mainPanel.add(feedbackMethodComboBox, "span, growx, wrap");
 		
 		mainPanel.add(new JLabel("Incremental Output:"), "gap 10");
@@ -144,13 +144,13 @@ public class OutputEditorPane extends JPanel {
 		JPanel bottomPanel = new JPanel(new MigLayout("","[25%, left][50%, center][25%]",""));
 		add(bottomPanel, BorderLayout.SOUTH);
 		bottomPanel.add(previousButton);
-		previousButton.setPreferredSize(ApplicationEditConstants.BUTTON_SIZE);
+		previousButton.setPreferredSize(ApplicationPropertyEditor.BUTTON_SIZE);
 		previousButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {doPrevious();}
 		});
 
 		bottomPanel.add(cancelButton);
-		cancelButton.setPreferredSize(ApplicationEditConstants.BUTTON_SIZE);
+		cancelButton.setPreferredSize(ApplicationPropertyEditor.BUTTON_SIZE);
 		cancelButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {doCancel();}
 		});
@@ -198,20 +198,20 @@ public class OutputEditorPane extends JPanel {
 		editor.refreshOutputs();
 
 		// Slide back to the Outputs pane
-		editor.setSelectedPane(ApplicationEditConstants.OUTPUTS);	
+		editor.setSelectedPane(ApplicationPropertyEditor.OUTPUTS);	
 	}
 
 	protected void doCancel() {
-		editor.setSelectedPane(ApplicationEditConstants.OUTPUTS);	
+		editor.setSelectedPane(ApplicationPropertyEditor.OUTPUTS);	
 	}
 	
 	protected void doTagSelector() {
-		editor.setSelectedPane(ApplicationEditConstants.TAGSELECTOR);	
+		editor.setSelectedPane(ApplicationPropertyEditor.TAGSELECTOR);	
 	}
 
 
 	public void activate() {
-		editor.setSelectedPane(ApplicationEditConstants.EDITOR);
+		editor.setSelectedPane(ApplicationPropertyEditor.EDITOR);
 	}
 
 }

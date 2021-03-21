@@ -69,13 +69,13 @@ class TagSelectorPane extends JPanel {
 		add(bottomPanel,BorderLayout.SOUTH);
 		
 		bottomPanel.add(previousButton);
-		previousButton.setPreferredSize(ApplicationEditConstants.BUTTON_SIZE);
+		previousButton.setPreferredSize(ApplicationPropertyEditor.BUTTON_SIZE);
 		previousButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {doPrevious();}
 		});
 		
 		bottomPanel.add(cancelButton);
-		cancelButton.setPreferredSize(ApplicationEditConstants.BUTTON_SIZE);
+		cancelButton.setPreferredSize(ApplicationPropertyEditor.BUTTON_SIZE);
 		cancelButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {doCancel();}
 		});
@@ -84,11 +84,11 @@ class TagSelectorPane extends JPanel {
 	}
 	
 	public void activate() {
-		editor.setSelectedPane(ApplicationEditConstants.TAGSELECTOR);
+		editor.setSelectedPane(ApplicationPropertyEditor.TAGSELECTOR);
 	}
 	
 	protected void doCancel() {
-		editor.setSelectedPane(ApplicationEditConstants.EDITOR);		
+		editor.setSelectedPane(ApplicationPropertyEditor.EDITOR);		
 	}
 	
 	protected void doPrevious() {
@@ -109,6 +109,6 @@ class TagSelectorPane extends JPanel {
 			return;
 		}
 		
-		editor.setSelectedPane(ApplicationEditConstants.EDITOR);		
+		editor.setSelectedPane(ApplicationPropertyEditor.EDITOR);		
 	}
 }

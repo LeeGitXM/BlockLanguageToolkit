@@ -3,9 +3,11 @@
  */
 package com.ils.blt.designer.editor;
 
+import java.awt.Dimension;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.JButton;
 import javax.swing.JPanel;
 
 import com.ils.blt.common.serializable.SerializableApplication;
@@ -21,12 +23,23 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
  */
 public class ApplicationPropertyEditor extends AbstractPropertyEditor { 
 	private static final long serialVersionUID = 2882399376824334427L;
+	public static final Dimension BUTTON_SIZE  = new Dimension(80,36);
+	public static final Dimension COMBO_SIZE  = new Dimension(180,24);
+	public static final Dimension EDIT_BUTTON_SIZE  = new Dimension(80,36);
+
+	// Indices for the sub-panes. We add them in this order ...
+	public static final int HOME = 0;
+	public static final int OUTPUTS = 1;
+	public static final int EDITOR = 2;
+	public static final int TAGSELECTOR = 3;
+	
 	protected final DesignerContext context;
 	private final SerializableApplication sa;
 	private final GeneralPurposeDataContainer model;           // Data container operated on by panels
-	protected final ILSLogger log;
-	protected boolean cancelled = false;
+	private final ILSLogger log;
+	private boolean cancelled = false;
 	private final SortedListModel<String> outputListModel;
+	private JButton saveButton;
 	
 	// Getters
 	public ILSLogger getLog() { return log; }
@@ -50,7 +63,7 @@ public class ApplicationPropertyEditor extends AbstractPropertyEditor {
 		add(outputEditor);
 		add(new TagSelectorPane(this, outputEditor));
 		add(new JPanel());  // a blank pane
-		setSelectedPane(ApplicationEditConstants.HOME);
+		setSelectedPane(HOME);
 	}
 
 	public GeneralPurposeDataContainer getModel() { return this.model; }

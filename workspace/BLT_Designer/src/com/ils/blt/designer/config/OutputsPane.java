@@ -22,7 +22,6 @@ import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 import javax.swing.border.EtchedBorder;
 
-import com.ils.blt.designer.editor.ApplicationEditConstants;
 import com.ils.blt.designer.editor.ApplicationPropertyEditor;
 import com.ils.blt.designer.editor.OutputEditorPane;
 import com.ils.common.GeneralPurposeDataContainer;
@@ -78,21 +77,21 @@ public class OutputsPane extends JPanel  {
 		add(buttonPanel,BorderLayout.EAST);
 		
 		addButton.setAlignmentX(RIGHT_ALIGNMENT);
-		addButton.setPreferredSize(ApplicationEditConstants.EDIT_BUTTON_SIZE);
+		addButton.setPreferredSize(ApplicationPropertyEditor.EDIT_BUTTON_SIZE);
 		buttonPanel.add(addButton);
 		addButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {doAdd();}
 		});
 		
 		deleteButton.setAlignmentX(RIGHT_ALIGNMENT);
-		deleteButton.setPreferredSize(ApplicationEditConstants.EDIT_BUTTON_SIZE);
+		deleteButton.setPreferredSize(ApplicationPropertyEditor.EDIT_BUTTON_SIZE);
 		buttonPanel.add(deleteButton);
 		deleteButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {doDelete();}
 		});
 		
 		editButton.setAlignmentX(RIGHT_ALIGNMENT);
-		editButton.setPreferredSize(ApplicationEditConstants.EDIT_BUTTON_SIZE);
+		editButton.setPreferredSize(ApplicationPropertyEditor.EDIT_BUTTON_SIZE);
 		buttonPanel.add(editButton);
 		editButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {doEdit();}
@@ -102,7 +101,7 @@ public class OutputsPane extends JPanel  {
 		JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		add(bottomPanel,BorderLayout.SOUTH);
 		bottomPanel.add(previousButton);
-		previousButton.setPreferredSize(ApplicationEditConstants.BUTTON_SIZE);
+		previousButton.setPreferredSize(ApplicationPropertyEditor.BUTTON_SIZE);
 		previousButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {doPrevious();}
 		});
@@ -142,7 +141,7 @@ public class OutputsPane extends JPanel  {
 			System.out.println("Looking at an Output" + outputMap);
 			// Get the output editor and call method that puts the output into the fields
 			outputEditor.updateFields(outputMap);
-			editor.setSelectedPane(ApplicationEditConstants.EDITOR);
+			editor.setSelectedPane(ApplicationPropertyEditor.EDITOR);
 		}
 	}
 
@@ -175,16 +174,16 @@ public class OutputsPane extends JPanel  {
 			System.out.println("Looking at an Output" + outputMap);
 			// Get the output editor and call method that puts the output into the fields
 			outputEditor.updateFields(outputMap);
-			editor.setSelectedPane(ApplicationEditConstants.EDITOR);
+			editor.setSelectedPane(ApplicationPropertyEditor.EDITOR);
 		}
 	}
 
 	protected void doPrevious() {
-		editor.setSelectedPane(ApplicationEditConstants.HOME);		
+		editor.setSelectedPane(ApplicationPropertyEditor.HOME);		
 	}
 
 	public void activate() {
-		editor.setSelectedPane(ApplicationEditConstants.EDITOR);
+		editor.setSelectedPane(ApplicationPropertyEditor.EDITOR);
 	}
 
 	// Create a new outputMap, which corresponds to a QuantOutput, with default values

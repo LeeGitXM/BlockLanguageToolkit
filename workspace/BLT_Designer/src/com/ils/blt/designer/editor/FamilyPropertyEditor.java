@@ -38,22 +38,22 @@ import net.miginfocom.swing.MigLayout;
 public class FamilyPropertyEditor extends AbstractPropertyEditor  { 
 	private final static String CLSS = "FamilyPropertyEditor";
 	private static final long serialVersionUID = 2882399376824334427L;
-	public static final Dimension BUTTON_SIZE  = new Dimension(80,36);
-	public static final Dimension COMBO_SIZE  = new Dimension(180,24);
-	public static final Dimension DESCRIPTION_AREA_SIZE  = new Dimension(200,160);
-	public static final Dimension NUMBER_BOX_SIZE  = new Dimension(50,24);
-	public static final Dimension PANEL_SIZE = new Dimension(250,300);
+	private static final Dimension BUTTON_SIZE  = new Dimension(80,36);
+	private static final Dimension COMBO_SIZE  = new Dimension(180,24);
+	private static final Dimension DESCRIPTION_AREA_SIZE  = new Dimension(200,160);
+	private static final Dimension NUMBER_BOX_SIZE  = new Dimension(50,24);
+	private static final Dimension PANEL_SIZE = new Dimension(250,300);
 	protected final DesignerContext context;
 	private final SerializableFamily family;
 	protected final ILSLogger log;
 	private final GeneralPurposeDataContainer model;           // Data container operated on by panels
 	private final ExecutionManager executionEngine;
 	private JPanel mainPanel = null;
-	protected JComboBox<String> stateBox;
-	protected JTextArea descriptionArea;
-	protected JTextField nameField;
-	protected JTextField priorityField;
-	protected JButton saveButton;
+	private JComboBox<String> stateBox;
+	private JTextArea descriptionArea;
+	private JTextField nameField;
+	private JTextField priorityField;
+	private JButton saveButton;
 	
 	public FamilyPropertyEditor(DesignerContext ctx,SerializableFamily fam,ProjectResource res) {
 		super(res);
