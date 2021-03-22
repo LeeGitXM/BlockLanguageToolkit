@@ -72,11 +72,13 @@ public class OutputEditorPane extends JPanel {
 		mainPanel.add(new JLabel("Name:"), "gap 10,gaptop 10");
 		nameField.setPreferredSize(TEXT_FIELD_SIZE);
 		nameField.setToolTipText("The name of the Quant Output.");
+		nameField.addFocusListener(editor);
 		mainPanel.add(nameField, "span, growx, wrap");
 
 		mainPanel.add(new JLabel("Tag:"), "gap 10");		
 		tagField.setPreferredSize(TEXT_FIELD_SIZE);
 		tagField.setToolTipText("The name of the OPC tag that corresponds to this quant output.");
+		tagField.addFocusListener(editor);
 		mainPanel.add(tagField, "growx");
 		
 		mainPanel.add(nextButton,"right, wrap");
@@ -95,6 +97,7 @@ public class OutputEditorPane extends JPanel {
 		}
 		feedbackMethodComboBox.setToolTipText("The technique used to combine multiple recommendations for the this output!");
 		feedbackMethodComboBox.setPreferredSize(ApplicationPropertyEditor.COMBO_SIZE);
+		feedbackMethodComboBox.addFocusListener(editor);
 		mainPanel.add(feedbackMethodComboBox, "span, growx, wrap");
 		
 		mainPanel.add(new JLabel("Incremental Output:"), "gap 10");

@@ -7,9 +7,9 @@ package com.ils.blt.designer.editor;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.util.HashMap;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 
-import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -21,7 +21,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.block.ActiveState;
 import com.ils.blt.common.serializable.SerializableFamily;
-import com.ils.blt.designer.ResourceUpdateManager;
 import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.log.ILSLogger;
 import com.ils.common.log.LogMaker;
@@ -35,10 +34,9 @@ import net.miginfocom.swing.MigLayout;
 /**
  * Display a sliding pane in the property edit window to configure a Family node
  */
-public class FamilyPropertyEditor extends AbstractPropertyEditor  { 
+public class FamilyPropertyEditor extends AbstractPropertyEditor implements FocusListener { 
 	private final static String CLSS = "FamilyPropertyEditor";
 	private static final long serialVersionUID = 2882399376824334427L;
-	private static final Dimension BUTTON_SIZE  = new Dimension(80,36);
 	private static final Dimension COMBO_SIZE  = new Dimension(180,24);
 	private static final Dimension DESCRIPTION_AREA_SIZE  = new Dimension(200,160);
 	private static final Dimension NUMBER_BOX_SIZE  = new Dimension(50,24);
@@ -47,20 +45,17 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor  {
 	private final SerializableFamily family;
 	protected final ILSLogger log;
 	private final GeneralPurposeDataContainer model;           // Data container operated on by panels
-	private final ExecutionManager executionEngine;
 	private JPanel mainPanel = null;
 	private JComboBox<String> stateBox;
 	private JTextArea descriptionArea;
 	private JTextField nameField;
 	private JTextField priorityField;
-	private JButton saveButton;
 	
 	public FamilyPropertyEditor(DesignerContext ctx,SerializableFamily fam,ProjectResource res) {
 		super(res);
 		this.context = ctx;
 		this.family = fam;
-		this.model = new GeneralPurposeDataContainer();
-		executionEngine = new BasicExecutionEngine(1,CLSS);
+		this.model = family.getAuxiliaryData();;
 		this.log = LogMaker.getLogger(this);
         initialize();
 	}
@@ -72,18 +67,7 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor  {
 	 * 2) Python hook definitions.
 	 */
 	private void initialize() {
-		// Fetch data from the database and store in the model
-		model.setProperties(new HashMap<String,String>());
-		model.setLists(new HashMap<>());
-		model.setMapLists(new HashMap<>());
 		model.getProperties().put("Name", family.getName());   // Use as a key when fetching
-		try {
-			family.setAuxiliaryData(model);
-		}
-		catch( Exception ex ) {
-			log.errorf("FamilyConfigurationController.initialize: Exception ("+ex.getMessage()+")",ex); // Throw stack trace
-		}
-		
 		mainPanel = createMainPanel();
 		add(mainPanel,BorderLayout.CENTER);
 		validate();
@@ -106,17 +90,20 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor  {
 		panel.add(new JLabel("Name"),"");
 		nameField = new JTextField(family.getName());
 		nameField.setEditable(false);
+		nameField.addFocusListener(this);
 		panel.add(nameField,"span,growx,wrap");
 
 		panel.add(new JLabel("UUID"),"gaptop 2,aligny top");
 		JTextField uuidField = new JTextField(family.getId().toString());
 		uuidField.setEditable(false);
+		uuidField.addFocusListener(this);
 		panel.add(uuidField,"span,growx,wrap");
 		
 		panel.add(new JLabel("Description"),"gaptop 2,aligny top");
 		String description = model.getProperties().get("Description");
 		if( description==null) description="";
 		descriptionArea = new JTextArea(description);
+		descriptionArea.addFocusListener(this);
 		JScrollPane scrollPane = new JScrollPane(descriptionArea);
 		scrollPane.setPreferredSize(DESCRIPTION_AREA_SIZE);
 		panel.add(scrollPane,"gaptop 2,aligny top,spanx,growx,growy,wrap");
@@ -126,6 +113,7 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor  {
 		if( priority==null) priority="0.0";
 		priorityField = new JTextField(priority);
 		priorityField.setPreferredSize(NUMBER_BOX_SIZE);
+		priorityField.addFocusListener(this);
 		panel.add(priorityField,"");
 		
 		panel.add(new JLabel("State"),"gapleft 20");
@@ -135,11 +123,8 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor  {
 		}
 		stateBox.setSelectedItem(family.getState());
 		stateBox.setPreferredSize(COMBO_SIZE);
+		stateBox.addFocusListener(this);
 		panel.add(stateBox,"wrap 20");
-		
-		saveButton = new JButton("Save");
-		saveButton.setPreferredSize(BUTTON_SIZE);
-		panel.add(saveButton,"skip,gaptop 20,alignx center,wrap");
 		return panel;
 	}
 	/**
@@ -147,21 +132,36 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor  {
 	 */
 	public SerializableFamily getFamily() { return family; }
 
-	// On save we serialize values back into resource
+	// On save we get values from the widgets and place back into the model
 	private void save(){
 		log.infof("%s.save()",CLSS);
 		family.setState(ActiveState.valueOf(stateBox.getSelectedItem().toString()));
 		model.getProperties().put("Description",descriptionArea.getText());
 		model.getProperties().put("Priority", priorityField.getText());
-		family.setAuxiliaryData(model);
 		ObjectMapper mapper = new ObjectMapper();
 		try{
 			byte[] bytes = mapper.writeValueAsBytes(family);
+			//log.tracef("%s.run JSON = %s",CLSS,new String(bytes));
 			resource.setData(bytes);
-			executionEngine.executeOnce(new ResourceUpdateManager(resource));
+			if( context.requestLockQuietly(resource.getResourceId()) )  {
+				context.updateResource(resource.getResourceId(),resource.getData());   // Force an update
+			}
+			else {
+				log.infof("%s.save: Failed to lock resource",CLSS);
+			}
 		}
 		catch(JsonProcessingException jpe) {
-			log.warnf("%s.run: Exception serializing family %s, resource %d (%s)",CLSS,family.getName(),resource.getResourceId(),jpe.getMessage());
+			log.warnf("%s.run: Exception serializing fmily, resource %d (%s)",CLSS,resource.getResourceId(),jpe.getMessage());
 		}
 	}
+	
+	// ============================================== Focus listener ==========================================
+	@Override
+	public void focusGained(FocusEvent event) {
+	}
+	@Override
+	public void focusLost(FocusEvent event) {
+		save();
+	}
+
 }

@@ -479,7 +479,6 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				ApplicationImportAction applicationImportAction = new ApplicationImportAction(context.getFrame(),this);
 				ClearAction clearAction = new ClearAction();
 				DebugAction debugAction = new DebugAction();
-				RefreshAction refreshAction = new RefreshAction(this);
 				SaveAllAction saveAllAction = new SaveAllAction(this);
 				if( requestHandler.isControllerRunning() ) {
 					startAction.setEnabled(false);
@@ -491,7 +490,6 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				menu.add(applicationCreateAction);
 				menu.add(applicationImportAction);
 				menu.add(folderCreateAction);
-				menu.add(refreshAction);
 				menu.add(saveAllAction);
 				menu.add(startAction);
 				menu.add(stopAction);
@@ -507,7 +505,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		else if(getProjectResource().getResourceType().equalsIgnoreCase(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
 			ApplicationExportAction applicationExportAction = new ApplicationExportAction(menu.getRootPane(),this);
 			FamilyCreateAction familyAction = new FamilyCreateAction(this);
-
+			RefreshAction refreshAction = new RefreshAction(this);
 			treeSaveAction = new TreeSaveAction(this,PREFIX+".SaveApplication");
 
 			menu.add(familyAction);
@@ -520,6 +518,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			setStateMenu.add(ssaDisable);
 			setStateMenu.add(ssaIsolated);
 			menu.add(setStateMenu);
+			menu.add(refreshAction);
 			menu.addSeparator();
 			menu.add(copyBranchAction);
 			menu.add(pasteBranchAction);
@@ -1919,25 +1918,54 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			}
 		}
 	}
-	// Re-compute the nav tree.
+	// Navigate the NavTree for this application and beneath. Call GetWAux on each node.
 	private class RefreshAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
 		private final AbstractResourceNavTreeNode node;
+		private final ScriptExtensionManager extensionManager;
+		private String db;
+		private String provider;
+		
 
 		public RefreshAction(AbstractResourceNavTreeNode treeNode)  {
 			super(PREFIX+".Refresh",IconUtil.getIcon("refresh")); 
 			this.node = treeNode;
+			this.extensionManager = ScriptExtensionManager.getInstance();
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			// 
-			if( !isRootFolder() ) return;
-			node.setBold(true);
-			threadCounter.reset();
-			statusManager.updateAll();
-			node.reload();
-			ThreadCompletionDetector detector = new ThreadCompletionDetector(node);
-			new Thread(detector).start();
+			SerializableApplication sap = recursivelyDeserializeApplication(node);
+			db       = (sap.getState().equals(DiagramState.ISOLATED)?requestHandler.getIsolationDatabase():requestHandler.getProductionDatabase());
+			provider = (sap.getState().equals(DiagramState.ISOLATED)?requestHandler.getIsolationTagProvider():requestHandler.getProductionTagProvider());
+			Script script = extensionManager.createExtensionScript(ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.GET_AUX_OPERATION, provider);
+			extensionManager.runScript(context.getScriptManager(), script, sap.getId().toString(),sap.getAuxiliaryData(),db);
+			recurseFamilies(sap.getFamilies());
+			recurseFolders(sap.getFolders());
+		}
+		// Recursively scan child nodes for more descendants. For each read AuxData from database
+		private void recurseDiagrams(SerializableDiagram[] diagrams) {
+			
+			for(SerializableDiagram diagram:diagrams) {
+				for(SerializableBlock block:diagram.getBlocks()) {
+					Script script = extensionManager.createExtensionScript(block.getClassName(), ScriptConstants.GET_AUX_OPERATION, provider);
+					extensionManager.runScript(context.getScriptManager(), script, block.getId(),block.getAuxiliaryData(),db);
+				}
+			}
+		}
+		private void recurseFamilies(SerializableFamily[] families) {
+			Script script = extensionManager.createExtensionScript(ScriptConstants.FAMILY_CLASS_NAME, ScriptConstants.GET_AUX_OPERATION, provider);
+			for(SerializableFamily fam:families) {
+				extensionManager.runScript(context.getScriptManager(), script, fam.getId().toString(),fam.getAuxiliaryData(),db);
+				recurseDiagrams(fam.getDiagrams());
+				recurseFolders(fam.getFolders());
+			}
+		}
+		private void recurseFolders(SerializableFolder[] folders) {
+			for(SerializableFolder folder:folders) {
+				recurseDiagrams(folder.getDiagrams());
+				recurseFamilies(folder.getFamilies());
+			}
+
 		}
 	}
 	
@@ -1958,9 +1986,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			threadCounter.reset();
 			statusManager.updateAll();
 			ResourceSaveManager rsm = new ResourceSaveManager(workspace,node);
-			rsm.saveSynchronously();
-			ThreadCompletionDetector detector = new ThreadCompletionDetector(node);
-			new Thread(detector).start();
+			rsm.saveSynchronously();;
 		}
 	}
 	
@@ -2042,34 +2068,6 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		}
 	}
 
-	// Wait until the background threads are quiescent
-	private class ThreadCompletionDetector implements Runnable {
-		private static final long serialVersionUID = 1L;
-		private final AbstractResourceNavTreeNode node;
-
-		public ThreadCompletionDetector(AbstractResourceNavTreeNode treeNode)  {
-			node = treeNode;
-		}
-
-		public void run() {
-			// Wait for all the threads to complete
-			for(;;) {
-				try {
-					Thread.sleep(250);
-					if( threadCounter.isQuiescent()) break;
-				}
-				catch(InterruptedException ie) {
-					break;
-				}
-			}
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					node.setBold(false);
-				}
-			});
-		}
-	}
-
 	// Save this node and all its descendants.
 	private class TreeSaveAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
@@ -2087,8 +2085,6 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			statusManager.updateAll();
 			ResourceSaveManager rsm = new ResourceSaveManager(workspace,node);
 			rsm.saveSynchronously();
-			ThreadCompletionDetector detector = new ThreadCompletionDetector(node);
-			new Thread(detector).start();
 		}
 	}
 	

@@ -54,7 +54,7 @@ import net.miginfocom.swing.MigLayout;
  */
 public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor implements ActionListener,FocusListener, PropertyChangeListener {
 	private static final long serialVersionUID = 7211480530910862375L;
-	private static final String TAG = "FinalDiagnosisPanel";
+	private static final String CLSS = "FinalDiagnosisPanel";
 	private final int DIALOG_HEIGHT = 700;
 	private final int DIALOG_WIDTH = 300;
 	private final ProcessDiagramView diagram;
@@ -75,9 +75,9 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 	protected JCheckBox manualMoveAllowedCheckBox;
 	protected JTextArea explanationArea;
 	protected JTextArea commentArea;
-	protected static final Dimension EXPLANATIION_AREA_SIZE  = new Dimension(280,300);
-	protected static final Dimension TEXT_RECOMMENDATION_AREA_SIZE  = new Dimension(280,300);
-	protected static final Dimension COMMENT_AREA_SIZE  = new Dimension(280,300);
+	protected static final Dimension EXPLANATIION_AREA_SIZE  = new Dimension(250,300);
+	protected static final Dimension TEXT_RECOMMENDATION_AREA_SIZE  = new Dimension(250,300);
+	protected static final Dimension COMMENT_AREA_SIZE  = new Dimension(250,300);
 	private final CorePropertyPanel corePanel;
 	
 
@@ -86,7 +86,7 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 	protected final ResourceBundle rb;
 	protected static final Dimension BUTTON_SIZE  = new Dimension(90,28);
 	protected static final Dimension COMBO_SIZE  = new Dimension(120,24);
-	protected static final Dimension DESCRIPTION_AREA_SIZE  = new Dimension(280,160);
+	protected static final Dimension DESCRIPTION_AREA_SIZE  = new Dimension(250,160);
 	protected static final Dimension NAME_BOX_SIZE  = new Dimension(280,24);
 	protected static final Dimension NUMBER_BOX_SIZE  = new Dimension(50,24);
 	protected final ApplicationRequestHandler requestHandler;
@@ -106,7 +106,6 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 
 		this.setPreferredSize(new Dimension(DIALOG_WIDTH,DIALOG_HEIGHT));
         initialize();
-        
 	}
 
 	/**
@@ -120,7 +119,6 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		setLayout(new MigLayout("top,flowy,ins 2,gapy 0:10:15","","[top]0[]"));
 		add(corePanel,"grow,push");
    
-
 		if(diagram.getState().equals(DiagramState.ACTIVE) ||
 		   diagram.getState().equals(DiagramState.ISOLATED) ) {
 			mainPanel = createMainPanel();
@@ -168,9 +166,7 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		//setLayout(new BorderLayout());
 		mainPanel = new BasicEditPanel(this);
 		mainPanel.setLayout(new MigLayout("ins 1,fill","[]","[growprio 60,150:150:2000][]"));
-		
 		mainPanel.addSeparator(mainPanel,"Editing restricted - Diagram disabled or no database");
-		
 		return mainPanel;
 	}
 	
@@ -324,7 +320,7 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 	}
 	
 
-	// Copy the FinalDiagnosis auxiliary data back into the database
+	// Copy the FinalDiagnosis auxiliary data back into the block's aux data
 	private void save(){
 		model.getProperties().put("Constant", (constantCheckBox.isSelected()?"1":"0"));
 		model.getProperties().put("ManualMoveAllowed", (manualMoveAllowedCheckBox.isSelected()?"1":"0"));
@@ -453,16 +449,18 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		}
 		return btn;
 	}
+	
+	// Focus listener
 	@Override
-	public void focusGained(FocusEvent arg0) {
+	public void focusGained(FocusEvent event) {
 	}
 	@Override
-	public void focusLost(FocusEvent arg0) {
+	public void focusLost(FocusEvent event) {
 		save();
 	}
 
 	@Override
-	public void actionPerformed(ActionEvent arg0) {
+	public void actionPerformed(ActionEvent event) {
 		save();
 		
 	}

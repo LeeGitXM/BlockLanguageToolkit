@@ -73,6 +73,7 @@ public class ScriptExtensionManager {
 	 */
 	public Script createExtensionScript(String className, String operation, String provider) {
 		Script script = null;
+		try {
 		String path = tagPathForClass(className);
 		String moduleName = moduleFromTag(provider,path,operation);
 		String args = argumenstForOperation(operation);
@@ -81,6 +82,10 @@ public class ScriptExtensionManager {
 		}
 		else {
 			log.infof("%s.createExtensionScript: Failed to create script for %s.%s (provider=%s)", CLSS,className,operation,provider);
+		}
+		}
+		catch(IllegalArgumentException iae) {
+			log.warnf("%s.createExtensionScript: Error creating script for %s.%s (provider=%s)", CLSS,className,operation,provider); 
 		}
 		return script;
 	}
@@ -95,6 +100,7 @@ public class ScriptExtensionManager {
 	 */
 	@SuppressWarnings("unchecked")
 	public void runScript(ScriptManager mgr,Script script,Object...args) {
+		if( script==null) return;  // We should already have logged an error
 		if( script.compileScript()) {
 			try {
 				script.initializeLocalsMap(mgr);

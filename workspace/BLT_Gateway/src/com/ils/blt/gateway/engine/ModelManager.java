@@ -845,7 +845,7 @@ public class ModelManager implements ProjectListener  {
 					if( startup ) {
 						String provider = toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER);
 						String db = toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_DATABASE);
-						Script script = extensionManager.createExtensionScript(ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.GET_AUX_OPERATION, provider);
+						Script script = extensionManager.createExtensionScript(block.getClassName(), ScriptConstants.GET_AUX_OPERATION, provider);
 						extensionManager.runScript(context.getScriptManager(), script, block.getBlockId().toString(),block.getAuxiliaryData(),db);
 					}
 					else {
@@ -857,7 +857,7 @@ public class ModelManager implements ProjectListener  {
 					String db = (block.getState().equals(DiagramState.ACTIVE) ? 
 							toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_DATABASE):
 								toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_DATABASE));
-					Script script = extensionManager.createExtensionScript(ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.SET_AUX_OPERATION, provider);
+					Script script = extensionManager.createExtensionScript(block.getClassName(), ScriptConstants.SET_AUX_OPERATION, provider);
 					extensionManager.runScript(context.getScriptManager(), script, block.getBlockId().toString(),block.getAuxiliaryData(),db);
 				}
 			}
@@ -940,7 +940,6 @@ public class ModelManager implements ProjectListener  {
 
 				script = extensionManager.createExtensionScript(ScriptConstants.FAMILY_CLASS_NAME, ScriptConstants.SET_AUX_OPERATION, provider);
 				extensionManager.runScript(context.getScriptManager(), script, family.getSelf().toString(),family.getAuxiliaryData(),db);
-
 			}
 		}
 		else {
