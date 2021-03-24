@@ -214,7 +214,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	@Override
 	public String getApplicationName(String uuid) {
 		ProcessApplication app = pyHandler.getApplication(uuid);
-		return app.getName();
+		return (app==null?"NO_APP":app.getName());
 	}
 	@Override
 	public String getBlockId(String diagramId, String blockName) {

@@ -23,7 +23,14 @@ public abstract class AbstractPropertyEditor extends SlidingPane  {
 	
 	public ProjectResource getResource() { return this.resource; }
 	/**
+	 * Save the project resource. This stub method is provided for
+	 * editors that are not associated with a project resource.
+	 */
+	public void saveResource() {
+	}
+	/**
 	 * Stop any current processing.
 	 */
 	abstract public void shutdown();
+
 }

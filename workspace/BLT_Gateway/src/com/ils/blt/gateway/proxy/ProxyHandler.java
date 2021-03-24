@@ -60,7 +60,7 @@ public class ProxyHandler   {
 	// These are the instances of specific callback functions
 	private final Callback acceptValueCallback;
 	private final Callback createBlockCallback;
-	private final Callback getAuxiliaryDataCallback;
+	private final Callback getAuxDataCallback;
 	private final Callback evaluateCallback;
 	private final Callback getBlockPropertiesCallback;
 	private final Callback getBlockStateCallback;
@@ -70,7 +70,7 @@ public class ProxyHandler   {
 	private final Callback onSaveCallback;
 	private final Callback propagateCallback;
 	private final Callback resetCallback;
-	private final Callback setAuxiliaryDataCallback;
+	private final Callback setAuxDataCallback;
 	private final Callback setBlockPropertyCallback;
 	private final Callback setBlockStateCallback;
 	private final Callback setNameCallback;
@@ -86,7 +86,7 @@ public class ProxyHandler   {
 		acceptValueCallback = new AcceptValue();
 		createBlockCallback = new CreateBlock();
 		evaluateCallback = new Evaluate();
-		getAuxiliaryDataCallback = new GetAuxiliaryData();
+		getAuxDataCallback = new GetAuxData();
 		getBlockPropertiesCallback = new GetBlockProperties();
 		getBlockStateCallback = new GetBlockState();
 		getBlockPrototypesCallback = new GetBlockPrototypes();
@@ -95,7 +95,7 @@ public class ProxyHandler   {
 		onSaveCallback = new OnSave();
 		propagateCallback = new Propagate();
 		resetCallback = new Reset();
-		setAuxiliaryDataCallback = new SetAuxiliaryData();
+		setAuxDataCallback = new SetAuxData();
 		setBlockPropertyCallback = new SetBlockProperty();
 		setBlockStateCallback = new SetBlockState();
 		setNameCallback = new SetName();
@@ -212,16 +212,16 @@ public class ProxyHandler   {
 			evaluateCallback.execute(mgr);
 		}
 	}
-	public GeneralPurposeDataContainer getAuxiliaryData(ScriptManager mgr,PyObject block) {
+	public GeneralPurposeDataContainer getAuxData(ScriptManager mgr,PyObject block) {
 		GeneralPurposeDataContainer container = new GeneralPurposeDataContainer();
-		log.debugf("%s.getAuxiliaryData ... ",CLSS);
-		if( getAuxiliaryDataCallback.compileScript() ) {
-			synchronized(getAuxiliaryDataCallback) {
+		log.debugf("%s.getAuxData ... ",CLSS);
+		if( getAuxDataCallback.compileScript() ) {
+			synchronized(getAuxDataCallback) {
 				PyList pylist = new PyList();  // Empty
-				getAuxiliaryDataCallback.initializeLocalsMap(mgr);
-				getAuxiliaryDataCallback.setLocalVariable(0,block);
-				getAuxiliaryDataCallback.setLocalVariable(1,pylist);
-				getAuxiliaryDataCallback.execute(mgr);
+				getAuxDataCallback.initializeLocalsMap(mgr);
+				getAuxDataCallback.setLocalVariable(0,block);
+				getAuxDataCallback.setLocalVariable(1,pylist);
+				getAuxDataCallback.execute(mgr);
 				log.debug(CLSS+".getAuxiliaryData returned "+ pylist);   // Should now be updated
 				// Contents of list are Hashtable<String,?>
 				// We're looking for a single string entry in the list
@@ -527,14 +527,14 @@ public class ProxyHandler   {
 			resetCallback.execute(mgr);
 		}
 	}
-	public void setAuxiliaryData(ScriptManager mgr,PyObject block,GeneralPurposeDataContainer container ) {
+	public void setAuxData(ScriptManager mgr,PyObject block,GeneralPurposeDataContainer container ) {
 		if( block==null ) return;
-		if( setAuxiliaryDataCallback.compileScript() ) {
-			synchronized(setAuxiliaryDataCallback) {
-				setAuxiliaryDataCallback.initializeLocalsMap(mgr);
-				setAuxiliaryDataCallback.setLocalVariable(0,block);
-				setAuxiliaryDataCallback.setLocalVariable(1,toPythonTranslator.objectToPy(container));
-				setAuxiliaryDataCallback.execute(mgr);
+		if( setAuxDataCallback.compileScript() ) {
+			synchronized(setAuxDataCallback) {
+				setAuxDataCallback.initializeLocalsMap(mgr);
+				setAuxDataCallback.setLocalVariable(0,block);
+				setAuxDataCallback.setLocalVariable(1,toPythonTranslator.objectToPy(container));
+				setAuxDataCallback.execute(mgr);
 			}
 		}
 	}

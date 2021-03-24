@@ -5,6 +5,8 @@ import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.text.NumberFormat;
 import java.util.List;
 import java.util.Map;
@@ -28,12 +30,16 @@ import com.ils.common.log.LogMaker;
 
 import net.miginfocom.swing.MigLayout;
 
-
-public class OutputEditorPane extends JPanel {
+/**
+ * Handle editing Quant Outputs for an application. This panel handles details for 
+ * a single named output.
+ */
+public class OutputEditorPane extends JPanel implements FocusListener  {
 	private static final long serialVersionUID = -5387165467458025431L;
 	private final static String CLSS = "OutputEditorPane";
 	private static final Insets insets = new Insets(0,0,0,0);
 	private final ApplicationPropertyEditor editor;
+	private final JPanel mainPanel;
 	private final GeneralPurposeDataContainer model;
 	private Map<String,String> outputMap;
 	private final ILSLogger log;
@@ -48,12 +54,11 @@ public class OutputEditorPane extends JPanel {
 	final JComboBox<String> feedbackMethodComboBox = new JComboBox<String>();
 	private static Icon previousIcon = new ImageIcon(OutputEditorPane.class.getResource("/images/arrow_left_green.png"));
 	final JButton previousButton = new JButton(previousIcon);
-	final JButton cancelButton = new JButton("Cancel");
 	private static Icon tagBrowserIcon = new ImageIcon(OutputEditorPane.class.getResource("/images/arrow_right_green.png"));
 	final JButton nextButton = new JButton("Tags", tagBrowserIcon);
 	private final UtilityFunctions fcns = new UtilityFunctions();
 	
-	protected static final Dimension TEXT_FIELD_SIZE  = new Dimension(300,24);
+	protected static final Dimension TEXT_FIELD_SIZE  = new Dimension(120,24);
 	protected static final Dimension NUMERIC_FIELD_SIZE  = new Dimension(100,24);
 	
 	// The constructor
@@ -63,7 +68,9 @@ public class OutputEditorPane extends JPanel {
 		this.log = LogMaker.getLogger(this);
 		this.model = editor.getModel();
 				
-		JPanel mainPanel = new JPanel(new MigLayout("", "[right]"));
+		//mainPanel = new JPanel(new MigLayout("", "[right]"));
+		mainPanel = new JPanel(new MigLayout());
+		add(mainPanel,BorderLayout.CENTER);
 
 		JLabel label = new JLabel("Quant Output Editor");
 		label.setHorizontalAlignment(SwingConstants.CENTER);
@@ -72,13 +79,13 @@ public class OutputEditorPane extends JPanel {
 		mainPanel.add(new JLabel("Name:"), "gap 10,gaptop 10");
 		nameField.setPreferredSize(TEXT_FIELD_SIZE);
 		nameField.setToolTipText("The name of the Quant Output.");
-		nameField.addFocusListener(editor);
+		nameField.addFocusListener(this);
 		mainPanel.add(nameField, "span, growx, wrap");
 
 		mainPanel.add(new JLabel("Tag:"), "gap 10");		
 		tagField.setPreferredSize(TEXT_FIELD_SIZE);
 		tagField.setToolTipText("The name of the OPC tag that corresponds to this quant output.");
-		tagField.addFocusListener(editor);
+		tagField.addFocusListener(this);
 		mainPanel.add(tagField, "growx");
 		
 		mainPanel.add(nextButton,"right, wrap");
@@ -97,7 +104,7 @@ public class OutputEditorPane extends JPanel {
 		}
 		feedbackMethodComboBox.setToolTipText("The technique used to combine multiple recommendations for the this output!");
 		feedbackMethodComboBox.setPreferredSize(ApplicationPropertyEditor.COMBO_SIZE);
-		feedbackMethodComboBox.addFocusListener(editor);
+		feedbackMethodComboBox.addFocusListener(this);
 		mainPanel.add(feedbackMethodComboBox, "span, growx, wrap");
 		
 		mainPanel.add(new JLabel("Incremental Output:"), "gap 10");
@@ -110,18 +117,21 @@ public class OutputEditorPane extends JPanel {
 		mostNegativeIncrementField.setPreferredSize(NUMERIC_FIELD_SIZE);
 		mostNegativeIncrementField.setToolTipText("The largest negative change.");
 		mostNegativeIncrementField.setFocusLostBehavior(JFormattedTextField.COMMIT_OR_REVERT);
+		mostNegativeIncrementField.addFocusListener(this);
 		incrementalContainer.add(mostNegativeIncrementField, "span, growx");
 
 		incrementalContainer.add(new JLabel("Most Positive:"), "gap 10");
 		mostPositiveIncrementField.setPreferredSize(NUMERIC_FIELD_SIZE);
 		mostPositiveIncrementField.setToolTipText("The largest positive change.");
 		mostPositiveIncrementField.setFocusLostBehavior(JFormattedTextField.COMMIT_OR_REVERT);
+		mostPositiveIncrementField.addFocusListener(this);
 		incrementalContainer.add(mostPositiveIncrementField, "span, growx");
 		
 		incrementalContainer.add(new JLabel("Min Change:"), "gap 10");
 		minimumIncrementField.setPreferredSize(NUMERIC_FIELD_SIZE);
 		minimumIncrementField.setToolTipText("The minimum absolute change.");
 		minimumIncrementField.setFocusLostBehavior(JFormattedTextField.COMMIT_OR_REVERT);
+		minimumIncrementField.addFocusListener(this);
 		incrementalContainer.add(minimumIncrementField, "span, growx");
 
 		mainPanel.add(incrementalContainer, "span, growx, wrap");
@@ -133,34 +143,32 @@ public class OutputEditorPane extends JPanel {
 		setpointLowLimitField.setPreferredSize(NUMERIC_FIELD_SIZE);
 		setpointLowLimitField.setToolTipText("The absolute lower limit.");
 		setpointLowLimitField.setFocusLostBehavior(JFormattedTextField.COMMIT_OR_REVERT);
+		setpointLowLimitField.addFocusListener(this);
 		absoluteContainer.add(setpointLowLimitField, "span, growx");
 		
 		absoluteContainer.add(new JLabel("High Limit:"), "gap 10");
 		setpointHighLimitField.setPreferredSize(NUMERIC_FIELD_SIZE);
 		setpointHighLimitField.setToolTipText("The absolute upper limit.");
 		setpointHighLimitField.setFocusLostBehavior(JFormattedTextField.COMMIT_OR_REVERT);
+		setpointHighLimitField.addFocusListener(this);
 		absoluteContainer.add(setpointHighLimitField, "span, growx");
 		
 		mainPanel.add(absoluteContainer, "span, growx, wrap");
 		
 		// Now the buttons that go at the bottom
 		JPanel bottomPanel = new JPanel(new MigLayout("","[25%, left][50%, center][25%]",""));
-		add(bottomPanel, BorderLayout.SOUTH);
+		mainPanel.add(bottomPanel, "span");
 		bottomPanel.add(previousButton);
 		previousButton.setPreferredSize(ApplicationPropertyEditor.BUTTON_SIZE);
 		previousButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {doPrevious();}
+			public void actionPerformed(ActionEvent e) {save(); editor.saveResource();}
 		});
-
-		bottomPanel.add(cancelButton);
-		cancelButton.setPreferredSize(ApplicationPropertyEditor.BUTTON_SIZE);
-		cancelButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {doCancel();}
-		});
-		
-		add(mainPanel,BorderLayout.CENTER);
 	}
 
+	/**
+	 * Called from the OutputsPane to indicate which output to edit.
+	 * @param map
+	 */
 	public void updateFields(Map<String,String> map){
 		outputMap=map;
 		nameField.setText((String) outputMap.get("QuantOutput"));
@@ -181,9 +189,9 @@ public class OutputEditorPane extends JPanel {
 	
 	public JTextField getTagField() { return this.tagField; }
 
-	// The user pressed the OK button so save everything (I don't keep track of what, if anything, was 
-	// changed so assume they change everything.
-	protected void doPrevious() {
+	// The user exited a field, so save everything (I don't keep track of what, if anything, was 
+	// changed.
+	protected void save() {
 		
 		// Update the outputMap with everything in the screen
 		outputMap.put("QuantOutput", nameField.getText());
@@ -194,17 +202,15 @@ public class OutputEditorPane extends JPanel {
 		outputMap.put("MinimumIncrement", minimumIncrementField.getText());
 		outputMap.put("SetpointLowLimit", setpointLowLimitField.getText());
 		outputMap.put("SetpointHighLimit", setpointHighLimitField.getText());
-		outputMap.put("FeedbackMethod", feedbackMethodComboBox.getSelectedItem().toString());
+		if(feedbackMethodComboBox.getSelectedItem()!=null) {
+			outputMap.put("FeedbackMethod", feedbackMethodComboBox.getSelectedItem().toString());
+		}
 
 		log.infof("%s.doPrevious: Saving values %s\n ",CLSS,outputMap.toString());
 		
 		editor.refreshOutputs();
 
 		// Slide back to the Outputs pane
-		editor.setSelectedPane(ApplicationPropertyEditor.OUTPUTS);	
-	}
-
-	protected void doCancel() {
 		editor.setSelectedPane(ApplicationPropertyEditor.OUTPUTS);	
 	}
 	
@@ -216,5 +222,13 @@ public class OutputEditorPane extends JPanel {
 	public void activate() {
 		editor.setSelectedPane(ApplicationPropertyEditor.EDITOR);
 	}
-
+	// ============================================== Focus listener ==========================================
+	@Override
+	public void focusGained(FocusEvent event) {
+	}
+	@Override
+	public void focusLost(FocusEvent event) {
+		save();
+		editor.saveResource();
+	}
 }

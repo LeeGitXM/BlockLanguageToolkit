@@ -5,6 +5,8 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.util.List;
 
 import javax.swing.ButtonGroup;
@@ -29,16 +31,14 @@ import com.ils.common.log.LogMaker;
 
 import net.miginfocom.swing.MigLayout;
 
-public class HomePane extends JPanel  {
+public class ApplicationHomePane extends JPanel implements FocusListener {
 	private final ApplicationPropertyEditor editor;
 	private final GeneralPurposeDataContainer model;
 	private static final long serialVersionUID = 2882399376824334427L;
 	
-	protected static final Dimension AREA_SIZE  = new Dimension(300,80);
+	protected static final Dimension AREA_SIZE  = new Dimension(250,80);
 
-	private final JPanel buttonPanel;
 	private final JPanel mainPanel;
-	
 	private final JTextField nameField = new JTextField();
 	private final JTextArea descriptionTextArea = new JTextArea();
 	private final JComboBox<String> queueComboBox = new JComboBox<String>();
@@ -46,10 +46,8 @@ public class HomePane extends JPanel  {
 	private final JComboBox<String> unitComboBox = new JComboBox<String>();
 	final JCheckBox managedCheckBox = new JCheckBox();
 	
-	private static Icon nextIcon = new ImageIcon(HomePane.class.getResource("/images/arrow_right_green.png"));
-	final JButton nextButton = new JButton("Outputs", nextIcon);
-	final JButton cancelButton = new JButton("Cancel");
-	final JButton okButton = new JButton("OK");
+	private static Icon nextIcon = new ImageIcon(ApplicationHomePane.class.getResource("/images/arrow_right_green.png"));
+	private final JButton nextButton = new JButton("Outputs", nextIcon);;
 	private final UtilityFunctions fcns = new UtilityFunctions();
 	protected final ILSLogger log;
 
@@ -57,20 +55,11 @@ public class HomePane extends JPanel  {
 	// back from the extension manager.
 	
 
-	public HomePane(ApplicationPropertyEditor editor) {
+	public ApplicationHomePane(ApplicationPropertyEditor editor) {
 		super(new BorderLayout());
 		this.editor = editor;
 		this.model = editor.getModel();
 		this.log = LogMaker.getLogger(this);
-		
-		log.infof("In the HomePane constructor");
-		
-		okButton.setPreferredSize(ApplicationPropertyEditor.BUTTON_SIZE);
-		cancelButton.setPreferredSize(ApplicationPropertyEditor.BUTTON_SIZE);
-
-		// Add a couple of panels to the main panel
-		buttonPanel = new JPanel(new FlowLayout());
-		add(buttonPanel,BorderLayout.SOUTH);
 		
 		mainPanel = new JPanel(new MigLayout());
 		add(mainPanel,BorderLayout.CENTER);
@@ -91,9 +80,11 @@ public class HomePane extends JPanel  {
 		descriptionTextArea.setLineWrap(true);
 		descriptionTextArea.setWrapStyleWord(true);
 		descriptionTextArea.setToolTipText("Optional description of this application");
-
+		descriptionTextArea.addFocusListener(this);
+		descriptionTextArea.setPreferredSize(AREA_SIZE);
+		
 		JScrollPane scrollPane = new JScrollPane(descriptionTextArea);
-		scrollPane.setPreferredSize(AREA_SIZE);
+		
 		mainPanel.add(scrollPane,"gaptop 2,aligny top,span,wrap");
 		
 		// Add the Managed check box
@@ -118,6 +109,7 @@ public class HomePane extends JPanel  {
 			queueComboBox.setSelectedIndex(0);
 		}
 		queueComboBox.setPreferredSize(ApplicationPropertyEditor.COMBO_SIZE);
+		queueComboBox.addFocusListener(this);
 		mainPanel.add(queueComboBox, "wrap");
 
 		// Set up the Group Ramp Method Combo Box
@@ -128,8 +120,9 @@ public class HomePane extends JPanel  {
 				groupRampMethodComboBox.addItem(o);
 			}
 		}
-		
 		groupRampMethodComboBox.setToolTipText("The Group Ramp Method that will be used for outputs in this application!");
+		groupRampMethodComboBox.addFocusListener(this);
+		
 		String method = model.getProperties().get("GroupRampMethod");
 		if( method!=null ) groupRampMethodComboBox.setSelectedItem(method);
 		else if( groupRampMethodComboBox.getItemCount()>0) {
@@ -154,34 +147,16 @@ public class HomePane extends JPanel  {
 			unitComboBox.setSelectedIndex(0);
 		}
 		unitComboBox.setPreferredSize(ApplicationPropertyEditor.COMBO_SIZE);
+		unitComboBox.addFocusListener(this);
 		mainPanel.add(unitComboBox, "wrap");
 		
-		mainPanel.add(nextButton,"cell 1 13,right");
+		mainPanel.add(nextButton,"cell 1 13,center");
 		nextButton.setHorizontalTextPosition(SwingConstants.LEFT);
 		nextButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {doNext();}			
 		});
-		
-		// Add buttons to the button panel
-		buttonPanel.add(okButton);
-		okButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {doOk();}
-		});
-	
-		buttonPanel.add(cancelButton);
-		cancelButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {doCancel();}
-		});
-
 	}
 
-	protected void doOk() {
-		save();
-	}
-	
-	protected void doApply() {
-		save();
-	}
 	
 	protected void save(){
 		// Set attributes from fields on this pane
@@ -193,14 +168,22 @@ public class HomePane extends JPanel  {
 		model.getProperties().put("Managed",(managedCheckBox.isSelected()?"1":"0"));
 	}
 
-	protected void doCancel() {
-	}
 
 	protected void doNext() {
 		editor.setSelectedPane(ApplicationPropertyEditor.OUTPUTS);
 	}
 	public void activate() {
 		editor.setSelectedPane(ApplicationPropertyEditor.HOME);
+	}
+	
+	// ============================================== Focus listener ==========================================
+	@Override
+	public void focusGained(FocusEvent event) {
+	}
+	@Override
+	public void focusLost(FocusEvent event) {
+		save();
+		editor.saveResource();
 	}
 
 }

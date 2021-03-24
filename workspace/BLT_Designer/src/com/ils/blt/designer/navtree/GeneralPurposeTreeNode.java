@@ -385,7 +385,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 
 	@Override
 	public void projectUpdated(Project diff) {
-		logger.infof("%s.projectUpdated ...",CLSS);
+		logger.debugf("%s.projectUpdated ...",CLSS);
 		super.projectUpdated(diff);
 	}
 
@@ -1918,7 +1918,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			}
 		}
 	}
-	// Navigate the NavTree for this application and beneath. Call GetWAux on each node.
+	// Navigate the NavTree for this application and beneath. Call GetAux on each node.
 	private class RefreshAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
 		private final AbstractResourceNavTreeNode node;
@@ -1943,12 +1943,11 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			recurseFolders(sap.getFolders());
 		}
 		// Recursively scan child nodes for more descendants. For each read AuxData from database
+		// Note: A diagram does not have auxiliary data. A block has an opportunity to read from the database when fetching its auxiliary data.
 		private void recurseDiagrams(SerializableDiagram[] diagrams) {
-			
 			for(SerializableDiagram diagram:diagrams) {
 				for(SerializableBlock block:diagram.getBlocks()) {
-					Script script = extensionManager.createExtensionScript(block.getClassName(), ScriptConstants.GET_AUX_OPERATION, provider);
-					extensionManager.runScript(context.getScriptManager(), script, block.getId(),block.getAuxiliaryData(),db);
+					block.getAuxiliaryData();
 				}
 			}
 		}

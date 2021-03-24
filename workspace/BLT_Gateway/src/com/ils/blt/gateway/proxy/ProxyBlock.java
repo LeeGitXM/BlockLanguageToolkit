@@ -179,14 +179,14 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	public synchronized void evaluate() { 
 		delegate.evaluate(context.getProjectManager().getProjectScriptManager(getProjectId()),getPythonBlock()); 
 	}
+
 	/**
 	 * Return the custom internal data owned by the block.
 	 */
 	@Override
-	public synchronized GeneralPurposeDataContainer getAuxiliaryData() { 
-		GeneralPurposeDataContainer container = delegate.getAuxiliaryData(context.getProjectManager().getProjectScriptManager(getProjectId()),getPythonBlock()); 
+	public synchronized  void getAuxData(GeneralPurposeDataContainer container) { 
+		delegate.getAuxData(context.getProjectManager().getProjectScriptManager(getProjectId()),getPythonBlock());
 		requestHandler.postAlertingStatus(this);
-		return container;
 	}
 	
 	/**
@@ -237,11 +237,12 @@ public class ProxyBlock extends AbstractProcessBlock  {
 		recordActivity(Activity.ACTIVITY_RESET,"");
 	}
 	/**
-	 * In form the block of its custom auxiliary data.
+	 * Allow the block to write its custom auxiliary to an external source.
 	 */
 	@Override
-	public synchronized void setAuxiliaryData(GeneralPurposeDataContainer container) { 
-		delegate.setAuxiliaryData(context.getProjectManager().getProjectScriptManager(getProjectId()),getPythonBlock(),container); 
+	public synchronized void setAuxData(GeneralPurposeDataContainer container) { 
+		delegate.setAuxData(context.getProjectManager().getProjectScriptManager(getProjectId()),getPythonBlock(),container); 
+		setAuxiliaryData(container);
 		requestHandler.postAlertingStatus(this);
 	}
 	/**

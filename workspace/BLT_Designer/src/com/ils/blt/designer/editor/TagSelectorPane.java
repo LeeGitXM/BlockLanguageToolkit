@@ -22,6 +22,9 @@ import com.inductiveautomation.ignition.client.sqltags.tree.TagRenderer;
 import com.inductiveautomation.ignition.client.sqltags.tree.TagTreeNode;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
+/**
+ * Display a tag selection panel inside the PropertyEditor
+ */
 class TagSelectorPane extends JPanel {
 	private final OutputEditorPane outputEditorPane;
 	private static Icon previousIcon = new ImageIcon(TagSelectorPane.class.getResource("/images/arrow_left_green.png"));
@@ -36,7 +39,7 @@ class TagSelectorPane extends JPanel {
 	private final JTree tagTree;
 	private final TagRenderer cellRenderer;
 	private final TreeSelectionModel tagTreeSelectionModel;
-	public static final Dimension TREE_SIZE = new Dimension(600,500);
+	public static final Dimension TREE_SIZE = new Dimension(300,250);
 	
 	
 	// The constructor
@@ -47,10 +50,12 @@ class TagSelectorPane extends JPanel {
 		this.outputEditorPane = outputEditorPane;
 		this.context = editor.context;
 		
-		JPanel mainPanel = new JPanel(new MigLayout("", "[right]"));
+		//JPanel mainPanel = new JPanel(new MigLayout("", "[right]"));
+		JPanel mainPanel = new JPanel(new BorderLayout());
+		setPreferredSize(editor.PANEL_SIZE);
 		
 		this.cellRenderer = new TagRenderer();
-		setLayout(new BorderLayout());
+		//setLayout(new BorderLayout());
 		tagTree = new JTree();
 		tagTree.setOpaque(true);
 		tagTree.setCellRenderer(cellRenderer);
@@ -66,20 +71,19 @@ class TagSelectorPane extends JPanel {
 
 		// The previous button should be all the way at the bottom, hugging the left side.
 		JPanel bottomPanel = new JPanel(new MigLayout("","[25%, left][50%, center][25%]",""));
-		add(bottomPanel,BorderLayout.SOUTH);
 		
-		bottomPanel.add(previousButton);
 		previousButton.setPreferredSize(ApplicationPropertyEditor.BUTTON_SIZE);
 		previousButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {doPrevious();}
 		});
-		
-		bottomPanel.add(cancelButton);
+		bottomPanel.add(previousButton,"");
+	
 		cancelButton.setPreferredSize(ApplicationPropertyEditor.BUTTON_SIZE);
 		cancelButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {doCancel();}
 		});
-		
+		bottomPanel.add(cancelButton,"wrap");
+		mainPanel.add(bottomPanel,BorderLayout.SOUTH);
 		add(mainPanel,BorderLayout.CENTER);
 	}
 	

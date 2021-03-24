@@ -27,6 +27,7 @@ import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.SerializableFamily;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
+import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.persistence.ToolkitProperties;
 import com.ils.common.persistence.ToolkitRecordHandler;
 import com.inductiveautomation.ignition.common.model.ApplicationScope;
@@ -651,9 +652,9 @@ public class ModelManager implements ProjectListener  {
 			// just changed the enabled status of the project. Synchronize resources.
 			if( countOfInteresting==0) {
 				Project project = context.getProjectManager().getProject(projectId, ApplicationScope.GATEWAY,ProjectVersion.Staging);
-				log.info("============================== ENABLED =================================");
+				log.debug("============================== ENABLED =================================");
 				for( ProjectResource res: project.getResources() ) {
-					log.infof("%s.projectUpdated: enabling %d:%d %s",CLSS,projectId,res.getResourceId(),res.getName());
+					log.debugf("%s.projectUpdated: enabling %d:%d %s",CLSS,projectId,res.getResourceId(),res.getName());
 				}
 				
 				for( ProjectResource res: project.getResources() ) {
@@ -723,7 +724,6 @@ public class ModelManager implements ProjectListener  {
 			}
 			// Invoke extension script on application save or startup
 			// The SAVE script is smart enough to do an insert if application is new
-
 			if( startup ) {
 				// On startup, we only read aux data from the production database. There is no SAVE
 				String provider = toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER);
@@ -737,7 +737,7 @@ public class ModelManager implements ProjectListener  {
 							toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER));
 				Script script = extensionManager.createExtensionScript(ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.SAVE_OPERATION, provider);
 				extensionManager.runScript(context.getProjectManager().getProjectScriptManager(application.getProjectId()), 
-						script, node.getSelf().toString(),node.getAuxiliaryData());
+						script, node.getSelf().toString());
 				String db = (application.getState().equals(DiagramState.ACTIVE) ? 
 						toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_DATABASE):
 							toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_DATABASE));
@@ -838,27 +838,41 @@ public class ModelManager implements ProjectListener  {
 				diagram.updateProperties(sd);                    // Fixes subscriptions, as necessary
 				diagram.setState(sd.getState());// Handle state change, if any
 			}
-			//	Invoke extension script on diagram save
-			// NOTE: On startup, we read block aux data from production
+			// NOTE: On startup, we read block aux data from production for each of the blocks.
+			//       There are no aux data for the diagram itself.
 			if( diagram!=null )  {
 				for(ProcessBlock block:diagram.getProcessBlocks()) {
 					if( startup ) {
-						String provider = toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER);
-						String db = toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_DATABASE);
-						Script script = extensionManager.createExtensionScript(block.getClassName(), ScriptConstants.GET_AUX_OPERATION, provider);
-						extensionManager.runScript(context.getScriptManager(), script, block.getBlockId().toString(),block.getAuxiliaryData(),db);
+						block.getAuxiliaryData();
 					}
 					else {
 						block.onSave();
 					}
-					String provider = (block.getState().equals(DiagramState.ACTIVE) ? 
-							toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER):
-								toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER));
-					String db = (block.getState().equals(DiagramState.ACTIVE) ? 
-							toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_DATABASE):
-								toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_DATABASE));
-					Script script = extensionManager.createExtensionScript(block.getClassName(), ScriptConstants.SET_AUX_OPERATION, provider);
-					extensionManager.runScript(context.getScriptManager(), script, block.getBlockId().toString(),block.getAuxiliaryData(),db);
+				}
+			}
+			// Invoke extension script for the diagram itself
+			// The SAVE script is smart enough to do an insert if diagram is new
+			if( startup ) {
+				for(ProcessBlock block:diagram.getProcessBlocks()) {
+					block.setAuxiliaryData(new GeneralPurposeDataContainer());
+					block.getAuxData(block.getAuxiliaryData());
+				}
+			}
+			else {
+				String provider = (diagram.getState().equals(DiagramState.ACTIVE) ? 
+						toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER):
+							toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER));
+				Script script = extensionManager.createExtensionScript(ScriptConstants.DIAGRAM_CLASS_NAME, ScriptConstants.SAVE_OPERATION, provider);
+				extensionManager.runScript(context.getProjectManager().getProjectScriptManager(diagram.getProjectId()), 
+						script, diagram.getSelf().toString());
+				String db = (diagram.getState().equals(DiagramState.ACTIVE) ? 
+						toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_DATABASE):
+							toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_DATABASE));
+
+				script = extensionManager.createExtensionScript(ScriptConstants.DIAGRAM_CLASS_NAME, ScriptConstants.SET_AUX_OPERATION, provider);
+				extensionManager.runScript(context.getScriptManager(), script, diagram.getSelf().toString(),diagram.getAuxiliaryData(),db);
+				for(ProcessBlock block:diagram.getProcessBlocks()) {
+					block.setAuxData(block.getAuxiliaryData());
 				}
 			}
 		}
@@ -933,7 +947,7 @@ public class ModelManager implements ProjectListener  {
 							toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER));
 				Script script = extensionManager.createExtensionScript(ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.SAVE_OPERATION, provider);
 				extensionManager.runScript(context.getProjectManager().getProjectScriptManager(family.getProjectId()), 
-						script, node.getSelf().toString(),node.getAuxiliaryData());
+						script, node.getSelf().toString());
 				String db = (family.getState().equals(DiagramState.ACTIVE) ? 
 						toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_DATABASE):
 							toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_DATABASE));

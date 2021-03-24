@@ -340,7 +340,6 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		model.getLists().put("OutputsInUse",inUseList);
 	}
 	
-	
 	/*
 	 * Create a text area for editing the description. This should be placed inside a
 	 * scroll pane.

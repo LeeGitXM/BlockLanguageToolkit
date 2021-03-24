@@ -77,6 +77,11 @@ public interface ProcessBlock extends BlockPropertyChangeListener {
 	 */
 	public List<AnchorPrototype> getAnchors();
 	/**
+	 * Get data in the block that is not of interest within the diagram.
+	 * Fetch it from an external source, and fill the supplied container. 
+	 */
+	public void getAuxData(GeneralPurposeDataContainer container);
+	/**
 	 * Get data in the block that is not of interest within the diagram
 	 * @return auxiliaryData list of properties, lists, lists-of-maps 
 	 */
@@ -232,6 +237,12 @@ public interface ProcessBlock extends BlockPropertyChangeListener {
 	 * @param prototypes descriptions of anchors
 	 */
 	public void setAnchors(List<AnchorPrototype> prototypes);
+	/**
+	 * Set data in the block that is not of interest within the diagram.
+	 * Save it to an external source, if applicable.
+	 * @param auxiliaryData list of properties, lists, lists-of-maps 
+	 */
+	public void setAuxData(GeneralPurposeDataContainer auxiliaryData);
 	/**
 	 * Set data in the block that is not of interest within the diagram
 	 * @param auxiliaryData list of properties, lists, lists-of-maps 

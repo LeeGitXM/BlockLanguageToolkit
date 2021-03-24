@@ -187,12 +187,23 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		}
 	@Override
 	public GeneralPurposeDataContainer getAuxiliaryData() {return auxiliaryData;}
+	/**
+	 * This interface is used to fetch auxiliary data from external an source when applicable.
+	 * The base method does nothing
+	 */
+	@Override
+	public void getAuxData(GeneralPurposeDataContainer data) {}
 	@Override
 	public void onDelete() {}
 	@Override 
 	public void onSave() {}
+	/**
+	 * This interface is used to write auxiliary data to an external source when appropriate.
+	 */
 	@Override
 	public void setAuxiliaryData(GeneralPurposeDataContainer auxiliaryData) {this.auxiliaryData = auxiliaryData;}
+	@Override
+	public void setAuxData(GeneralPurposeDataContainer auxiliaryData) {this.auxiliaryData = auxiliaryData;}
 	@Override
 	public PalettePrototype getBlockPrototype() {return prototype; }
 	@Override

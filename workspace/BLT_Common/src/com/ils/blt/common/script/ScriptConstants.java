@@ -1,5 +1,5 @@
 /**
- *   (c) 2015,2018 ILS Automation. All rights reserved.
+ *   (c) 2015,2021 ILS Automation. All rights reserved.
  *  
  */
 package com.ils.blt.common.script;
@@ -17,9 +17,9 @@ public interface ScriptConstants   {
 	public final static String DIAGRAM_CLASS_NAME      = "com.ils.diagram";
 	
 	// These are the UDT paths 
-	public final static String APPLICATION_TAG_PATH  = "Configuration/DiagnosticToolkit/Application";
-	public final static String FAMILY_TAG_PATH       = "Configuration/DiagnosticToolkit/Family";
-	public final static String DIAGRAM_TAG_PATH      = "Configuration/DiagnosticToolkit/Diagram";
+	public final static String APPLICATION_TAG_PATH  = "Configuration/DiagnosticToolkit/ApplicationExtensions";
+	public final static String FAMILY_TAG_PATH       = "Configuration/DiagnosticToolkit/FamilyExtensions";
+	public final static String DIAGRAM_TAG_PATH      = "Configuration/DiagnosticToolkit/DiagramExtensions";
 	
 	// These are tag-paths within the UDT for each method type
 	public final static String DELETE_OPERATION      = "Delete";

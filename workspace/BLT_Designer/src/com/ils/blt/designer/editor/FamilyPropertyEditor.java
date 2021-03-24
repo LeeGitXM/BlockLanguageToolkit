@@ -138,6 +138,10 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor implements Focu
 		family.setState(ActiveState.valueOf(stateBox.getSelectedItem().toString()));
 		model.getProperties().put("Description",descriptionArea.getText());
 		model.getProperties().put("Priority", priorityField.getText());
+	}
+	
+	@Override
+	public void saveResource() {
 		ObjectMapper mapper = new ObjectMapper();
 		try{
 			byte[] bytes = mapper.writeValueAsBytes(family);
@@ -151,7 +155,7 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor implements Focu
 			}
 		}
 		catch(JsonProcessingException jpe) {
-			log.warnf("%s.run: Exception serializing fmily, resource %d (%s)",CLSS,resource.getResourceId(),jpe.getMessage());
+			log.warnf("%s.run: Exception serializing family, resource %d (%s)",CLSS,resource.getResourceId(),jpe.getMessage());
 		}
 	}
 	
@@ -162,6 +166,7 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor implements Focu
 	@Override
 	public void focusLost(FocusEvent event) {
 		save();
+		saveResource();
 	}
 
 }

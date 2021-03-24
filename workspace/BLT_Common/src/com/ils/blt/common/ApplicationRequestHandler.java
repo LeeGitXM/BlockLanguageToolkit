@@ -126,7 +126,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	public String getApplicationName(String uuid) {
 		String name = "NULL UUID";
 		if( uuid!=null) {
-			log.debugf("%s.getApplicationName... %s",TAG,uuid);
+			log.infof("%s.getApplicationName... %s",TAG,uuid);
 			try {
 				name = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 						BLTProperties.MODULE_ID, "getApplicationName",uuid);

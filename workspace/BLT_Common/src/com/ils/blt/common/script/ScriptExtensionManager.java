@@ -24,7 +24,7 @@ import com.inductiveautomation.ignition.common.script.ScriptManager;
 
 
 /**
- *  The manger is used to compile and execute Python scripts.
+ *  The manager is used to compile and execute Python scripts.
  *  Scripts are compiled with every execution. Those that are empty or null are logged and ignored.
  *  
  *  Manager instances exist in all scopes.
@@ -74,15 +74,15 @@ public class ScriptExtensionManager {
 	public Script createExtensionScript(String className, String operation, String provider) {
 		Script script = null;
 		try {
-		String path = tagPathForClass(className);
-		String moduleName = moduleFromTag(provider,path,operation);
-		String args = argumenstForOperation(operation);
-		if( moduleName != null) {
-			script = new Script(moduleName,args);
-		}
-		else {
-			log.infof("%s.createExtensionScript: Failed to create script for %s.%s (provider=%s)", CLSS,className,operation,provider);
-		}
+			String path = tagPathForClass(className);
+			String moduleName = moduleFromTag(provider,path,operation);
+			String args = argumenstForOperation(operation);
+			if( moduleName != null) {
+				script = new Script(moduleName,args);
+			}
+			else {
+				log.warnf("%s.createExtensionScript: Failed to create script for %s.%s (provider=%s)", CLSS,className,operation,provider);
+			}
 		}
 		catch(IllegalArgumentException iae) {
 			log.warnf("%s.createExtensionScript: Error creating script for %s.%s (provider=%s)", CLSS,className,operation,provider); 
@@ -115,6 +115,7 @@ public class ScriptExtensionManager {
 						}
 						else {
 							PyObject pyarg = j2p.objectToPy(arg);
+							log.tracef("%s.runScript: set local variable %d = %s",CLSS,index,pyarg);
 							script.setLocalVariable(index, pyarg);
 							pyargs.add(pyarg);
 						}
@@ -124,7 +125,7 @@ public class ScriptExtensionManager {
 				else {
 					log.warnf("%s.runScript: WARNING: null arguments in %s",CLSS,script.toString());
 				}
-				log.infof("%s.runScript: %s",CLSS,script.toString());
+				log.infof("%s.runScript: executing %s",CLSS,script.toString());
 				script.execute(mgr);
 				// For "complex" arguments, we update contents
 				// as a mechanism to return info from the script
@@ -133,19 +134,24 @@ public class ScriptExtensionManager {
 					if( arg instanceof Map) {
 						PyObject pyarg = pyargs.get(index);
 						p2j.updateMapFromDictionary((Map<String,Object>)arg,(PyDictionary)pyarg);
-						log.debugf("%s.runScript: Updating map on return: %s",CLSS,pyarg.toString());
+						log.tracef("%s.runScript: Updating map on return: %s",CLSS,pyarg.toString());
 					}
 					else if( arg instanceof GeneralPurposeDataContainer) {
 						PyObject pyarg = pyargs.get(index);
 						p2j.updateDataContainerFromPython((GeneralPurposeDataContainer)arg,(PyList)pyarg);
-						log.debugf("%s.runScript: Updating container on return: %s",CLSS,pyarg.toString());
+						log.tracef("%s.runScript: Updating container on return: %s",CLSS,pyarg.toString());
 					}
 					index++;
 				}
 			}
+			// NOTE: If the exception message consists of a single digit, it my be referring to an issue with 
+			// the nth argument (e.g. wrong numbr of arguments).
 			catch(Exception ex) {
-				log.warnf("%s.runScript: Exception (%s)",CLSS,ex.getMessage(),ex);
+				log.warnf("%s.runScript: Exception %s)",CLSS,ex.getMessage());
 			}
+		}
+		else {
+			log.warnf("%s.runScript: Failed to compile - %s (%s)",CLSS,script.toString());
 		}
 	}
 	
@@ -175,7 +181,7 @@ public class ScriptExtensionManager {
 		String module = "";
 		if(path!=null && operation!=null && context!=null) {
 			TagReader treader = new TagReader(context);
-			path = String.format("[%s]%s", provider,path);
+			path = String.format("[%s]%s/%s", provider,path,operation);
 			QualifiedValue qv = treader.readTag(path);
 			if(qv!=null && qv.getValue()!=null) module = qv.getValue().toString();
 		}
