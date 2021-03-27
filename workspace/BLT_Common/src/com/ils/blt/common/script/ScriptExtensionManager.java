@@ -151,7 +151,7 @@ public class ScriptExtensionManager {
 			}
 		}
 		else {
-			log.warnf("%s.runScript: Failed to compile - %s (%s)",CLSS,script.toString());
+			log.warnf("%s.runScript: Failed to compile - %s",CLSS,script.toString());
 		}
 	}
 	
