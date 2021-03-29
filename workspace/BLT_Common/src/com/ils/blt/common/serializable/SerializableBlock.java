@@ -56,6 +56,7 @@ public class SerializableBlock {
 		return anchors; 
 		}
 	public GeneralPurposeDataContainer getAuxiliaryData() {return auxiliaryData;}
+	public GeneralPurposeDataContainer getAuxData() {return auxiliaryData;}  // Used to trigger external script
 	public int getBackground() {return background;}
 	public String getClassName() {return className;}
 	public String getEditorClass() {return editorClass;}
@@ -91,6 +92,7 @@ public class SerializableBlock {
 		}
 	}
 	public void setAuxiliaryData(GeneralPurposeDataContainer data) {if(data!=null) this.auxiliaryData = data;}
+	public void setAuxData() {}  // Set aux data via external script
 	public void setBackground(int background) {this.background = background;}
 	public void setClassName(String className) {this.className = className;}
 	public void setDirty(boolean dirty) {this.dirty = dirty;}

@@ -425,6 +425,16 @@ public class GatewayRpcDispatcher   {
 	public List<SerializableBlockStateDescriptor> queryDiagram(String diagId) {
 		return  requestHandler.listBlocksInDiagram(diagId);
 	}
+	/**
+	 * Execute the getAux extension function in Gateway scope, recursively from
+	 * a supplied root node.
+	 * @param root the resourceId of an application to be refreshed
+	 * @param provider tag provider
+	 * @param db datasource
+	 */
+	public void refreshAuxData(long projId,long root,String provider,String db) {
+		requestHandler.refreshAuxData(projId,root, provider, db);
+	}
 	/** Change the name of a block
 	 * 
 	 */

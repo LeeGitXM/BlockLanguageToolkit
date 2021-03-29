@@ -1,5 +1,5 @@
 /**
- *   (c) 2014-2016  ILS Automation. All rights reserved.
+ *   (c) 2014-2021 ILS Automation. All rights reserved.
  *  
  */
 package com.ils.blt.gateway;
@@ -33,8 +33,13 @@ import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.BroadcastNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.notification.Signal;
+import com.ils.blt.common.script.Script;
+import com.ils.blt.common.script.ScriptConstants;
+import com.ils.blt.common.script.ScriptExtensionManager;
 import com.ils.blt.common.serializable.SerializableAnchor;
+import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
+import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.blt.gateway.engine.ProcessApplication;
@@ -49,10 +54,13 @@ import com.ils.common.persistence.ToolkitProperties;
 import com.ils.common.persistence.ToolkitRecordHandler;
 import com.ils.common.watchdog.AcceleratedWatchdogTimer;
 import com.inductiveautomation.ignition.common.datasource.DatasourceStatus;
+import com.inductiveautomation.ignition.common.model.ApplicationScope;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.Quality;
+import com.inductiveautomation.ignition.common.project.ProjectResource;
+import com.inductiveautomation.ignition.common.project.ProjectVersion;
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -76,6 +84,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	private GatewayContext context = null;
 	private static ControllerRequestHandler instance = null;
 	private final BlockExecutionController controller = BlockExecutionController.getInstance();
+	private final ScriptExtensionManager extensionManager = ScriptExtensionManager.getInstance();
 	private final PythonRequestHandler pyHandler;
 	private ToolkitRecordHandler toolkitRecordHandler;
 	private final UtilityFunctions fcns;
@@ -1211,6 +1220,33 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			blockUUID = UUID.nameUUIDFromBytes(blockId.getBytes());
 		}
 		controller.propagateBlockState(diagramUUID, blockUUID);
+	}
+	/**
+	 * Execute the getAux extension function in Gateway scope for the supplied resource
+	 * @param projectId the project
+	 * @param resid the resourceId of an application to be refreshed
+	 * @param provider tag provider
+	 * @param db datasource
+	 */
+	@Override
+	public void refreshAuxData(long projectId,long resid,String provider,String db) {
+		ProjectResource res = context.getProjectManager().getProject(projectId, ApplicationScope.GATEWAY,ProjectVersion.Staging).getResource(resid);
+		if( res!=null && res.getResourceType().equals(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
+			ProcessApplication app = controller.getDelegate().deserializeApplicationResource(projectId, res);
+			Script script = extensionManager.createExtensionScript(ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.GET_AUX_OPERATION, provider);
+			extensionManager.runScript(context.getScriptManager(), script, app.getSelf().toString(),app.getAuxiliaryData(),db);
+		}
+		else if( res!=null && res.getResourceType().equals(BLTProperties.FAMILY_RESOURCE_TYPE)) {
+			ProcessFamily fam = controller.getDelegate().deserializeFamilyResource(projectId, res);
+			Script script = extensionManager.createExtensionScript(ScriptConstants.FAMILY_CLASS_NAME, ScriptConstants.GET_AUX_OPERATION, provider);
+			extensionManager.runScript(context.getScriptManager(), script, fam.getSelf().toString(),fam.getAuxiliaryData(),db);
+		}
+		else if( res!=null && res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
+			SerializableDiagram dia = controller.getDelegate().deserializeDiagramResource(projectId, res);
+			for(SerializableBlock block:dia.getBlocks()) {
+				block.getAuxData();
+			}
+		}
 	}
 	/**
 	 * Set the name of a block. Property listeners are notified. 

@@ -59,7 +59,6 @@ public interface ToolkitRequestHandler  {
 	 */
 	public String getApplicationName(String uuid);
 	
-	
 	/**
 	 * Obtain a list of BlockProperty objects for the specified block. 
 	 * CAUTION: If the block is not known to the gateway it will be created.
@@ -380,12 +379,21 @@ public interface ToolkitRequestHandler  {
 	 * @param blockId id of the subject block as a string
 	 */
 	public void propagateBlockState(String diagramId,String blockId) ;
-		/** Update a single property for a block 
-		 * @param duuid diagram unique Id
-		 * @param buuid block unique Id
-		 * @param name the new name
-		 */
-		public void renameBlock(String duuid,String buuid,String name ) ;
+	/**
+	 * Execute the getAux extension function in Gateway scope, recursively from
+	 * a supplied root node.
+	 * @param projectId project identifier
+	 * @param root the resourceId of an application to be refreshed
+	 * @param provider tag provider
+	 * @param db datasource
+	 */
+	public void refreshAuxData(long projectId,long root,String provider,String database);
+	/** Update a single property for a block 
+	 * @param duuid diagram unique Id
+	 * @param buuid block unique Id
+	 * @param name the new name
+	 */
+	public void renameBlock(String duuid,String buuid,String name ) ;
 	/**
 	 * Rename a SQLTag given its path and new name. The path must contain the
 	 * provider name in brackets.

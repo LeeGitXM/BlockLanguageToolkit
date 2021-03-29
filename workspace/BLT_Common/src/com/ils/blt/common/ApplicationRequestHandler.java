@@ -1,5 +1,5 @@
 /**
- *   (c) 2014-2021  ILS Automation. All rights reserved.
+33333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333 *   (c) 2014-2021  ILS Automation. All rights reserved.
  *  
  */
 package com.ils.blt.common;
@@ -36,7 +36,7 @@ import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
  *  Each request is relayed to the Gateway scope via an RPC call.
  */
 public class ApplicationRequestHandler implements ToolkitRequestHandler {
-	private final static String TAG = "ApplicationRequestHandler";
+	private final static String CLSS = "ApplicationRequestHandler";
 	private final ILSLogger log;
 
 	/**
@@ -60,10 +60,10 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 					BLTProperties.MODULE_ID, "clearController");
-			log.debugf("%s.clearController ...",TAG);
+			log.debugf("%s.clearController ...",CLSS);
 		}
 		catch(Exception ge) {
-			log.infof("%s.clearController: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.clearController: GatewayException (%s)",CLSS,ge.getMessage());
 		}
 	}
 	/**
@@ -76,7 +76,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 									BLTProperties.MODULE_ID, "clearWatermark",diagramId);
 		}
 		catch(Exception ge) {
-			log.infof("%s.clearWatermark: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.clearWatermark: GatewayException (%s)",CLSS,ge.getMessage());
 		}
 	}
 	public void createTag(DataType type,String path) {
@@ -85,7 +85,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 									BLTProperties.MODULE_ID, "createTag",type,path);
 		}
 		catch(Exception ge) {
-			log.infof("%s.createTag: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.createTag: GatewayException (%s)",CLSS,ge.getMessage());
 		}
 	}
 	/**
@@ -98,7 +98,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 									BLTProperties.MODULE_ID, "deleteTag",path);
 		}
 		catch(Exception ge) {
-			log.infof("%s.deleteTag: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.deleteTag: GatewayException (%s)",CLSS,ge.getMessage());
 		}
 	}
 	/**
@@ -111,11 +111,11 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		try {
 			Boolean value = (Boolean)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 					BLTProperties.MODULE_ID, "diagramExists",uuidString);
-			log.debugf("%s.diagramExists  ...%s = %s",TAG,uuidString,result);
+			log.debugf("%s.diagramExists  ...%s = %s",CLSS,uuidString,result);
 			if( value!=null ) result = value.booleanValue();
 		}
 		catch(Exception ge) {
-			log.infof("%s.diagramExists: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.diagramExists: GatewayException (%s)",CLSS,ge.getMessage());
 		}
 		return result;
 	}
@@ -126,13 +126,13 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	public String getApplicationName(String uuid) {
 		String name = "NULL UUID";
 		if( uuid!=null) {
-			log.infof("%s.getApplicationName... %s",TAG,uuid);
+			log.infof("%s.getApplicationName... %s",CLSS,uuid);
 			try {
 				name = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 						BLTProperties.MODULE_ID, "getApplicationName",uuid);
 			}
 			catch(Exception ex) {
-				log.infof("%s.getApplicationName: Exception (%s)",TAG,ex.getMessage());
+				log.infof("%s.getApplicationName: Exception (%s)",CLSS,ex.getMessage());
 			};
 		}
 		return name;
@@ -151,7 +151,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 					BLTProperties.MODULE_ID, "getBlockId",diagramId,blockName);
 		}
 		catch(Exception ge) {
-			log.infof("%s.getBlockId: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.getBlockId: GatewayException (%s)",CLSS,ge.getMessage());
 		}
 		return id;
 	}
@@ -169,7 +169,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	@SuppressWarnings("unchecked")
 	@Override
 	public List<BlockProperty> getBlockProperties(String className,long projectId,long resourceId,UUID blockId) {
-		log.debugf("%s.getBlockProperties: for block %s (%s)",TAG,blockId.toString(),className);
+		log.debugf("%s.getBlockProperties: for block %s (%s)",CLSS,blockId.toString(),className);
 		List<BlockProperty> result = null;
 		List<String> jsonList = new ArrayList<String>();
 		try {
@@ -177,14 +177,14 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 					BLTProperties.MODULE_ID, "getBlockProperties",className,new Long(projectId),new Long(resourceId),blockId.toString());
 		}
 		catch(Exception ge) {
-			log.infof("%s.getBlockProperties: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.getBlockProperties: GatewayException (%s)",CLSS,ge.getMessage());
 		}
 		result = new ArrayList<>();	
 		if( jsonList!=null) {
 			for( String json:jsonList ) {
-				log.tracef("%s: property: %s",TAG,json);
+				log.tracef("%s: property: %s",CLSS,json);
 				BlockProperty bp = BlockProperty.createProperty(json);
-				log.debugf("%s.getBlockProperties: %s",TAG, bp.toString());
+				log.debugf("%s.getBlockProperties: %s",CLSS, bp.toString());
 				result.add(bp);
 			}
 		}
@@ -194,7 +194,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	@SuppressWarnings("unchecked")
 	@Override
 	public List<PalettePrototype> getBlockPrototypes() {
-		log.infof("%s.getBlockPrototypes ...",TAG);
+		log.infof("%s.getBlockPrototypes ...",CLSS);
 		List<PalettePrototype> result = new ArrayList<PalettePrototype>();
 		List<String> jsonList = new ArrayList<String>();
 		try {
@@ -202,12 +202,12 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 					BLTProperties.MODULE_ID, "getBlockPrototypes");
 		}
 		catch(Exception ge) {
-			log.infof("%s.getBlockPrototypes: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.getBlockPrototypes: GatewayException (%s)",CLSS,ge.getMessage());
 		}
 		
 		if( jsonList!=null) {
 			for( String json:jsonList ) {
-				log.tracef("%s.getBlockPrototypes: %s",TAG,json);
+				log.tracef("%s.getBlockPrototypes: %s",CLSS,json);
 				PalettePrototype bp = PalettePrototype.createPrototype(json);
 				result.add(bp);
 			}
@@ -227,10 +227,10 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		try {
 			state = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 					BLTProperties.MODULE_ID, "getBlockState",diagramId,blockName);
-			log.debugf("%s.getBlockState %s = %s",TAG,blockName,state);
+			log.debugf("%s.getBlockState %s = %s",CLSS,blockName,state);
 		}
 		catch(Exception ge) {
-			log.infof("%s.getBlockState: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.getBlockState: GatewayException (%s)",CLSS,ge.getMessage());
 		}
 		return state;
 	}
@@ -246,10 +246,10 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 			// Returns either "running" or "stopped"
 			state = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 					BLTProperties.MODULE_ID, "getControllerState");
-			log.debugf("%s.getControllerState ... %s",TAG,state);
+			log.debugf("%s.getControllerState ... %s",CLSS,state);
 		}
 		catch(Exception ge) {
-			log.infof("%s.getControllerState: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.getControllerState: GatewayException (%s)",CLSS,ge.getMessage());
 		}
 		return state;
 	}
@@ -265,13 +265,13 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	public String getDatabaseForUUID(String uuid) {
 		String db = "NONE";
 		if( uuid!=null) {
-			log.infof("%s.getDatabaseForUUID... %s",TAG,uuid);
+			log.infof("%s.getDatabaseForUUID... %s",CLSS,uuid);
 			try {
 				db = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 						BLTProperties.MODULE_ID, "getDatabaseForUUID",uuid);
 			}
 			catch(Exception ex) {
-				log.infof("%s.getDatabaseForUUID: Exception (%s)",TAG,ex.getMessage());
+				log.infof("%s.getDatabaseForUUID: Exception (%s)",CLSS,ex.getMessage());
 			};
 		}
 		return db;
@@ -288,7 +288,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 					BLTProperties.MODULE_ID, "getDiagram",diagramId);
 		}
 		catch(Exception ge) {
-			log.infof("%s.getDiagram: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.getDiagram: GatewayException (%s)",CLSS,ge.getMessage());
 		}
 		return result;
 	}
@@ -302,7 +302,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 					BLTProperties.MODULE_ID, "getDatasourceNames");
 		}
 		catch(Exception ge) {
-			log.infof("%s.getControllerState: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.getControllerState: GatewayException (%s)",CLSS,ge.getMessage());
 		}
 		return names;
 	}
@@ -317,7 +317,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 					BLTProperties.MODULE_ID, "getDiagramForBlock",blockId);
 		}
 		catch(Exception ge) {
-			log.infof("%s.getDiagramForBlock: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.getDiagramForBlock: GatewayException (%s)",CLSS,ge.getMessage());
 		}
 		return result;
 	}
@@ -330,11 +330,11 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		try {
 			String state = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 					BLTProperties.MODULE_ID, "getDiagramState",projectId,resourceId);
-			log.debugf("%s.getDiagramState ... %s",TAG,result.toString());
+			log.debugf("%s.getDiagramState ... %s",CLSS,result.toString());
 			result = DiagramState.valueOf(state);
 		}
 		catch(Exception ge) {
-			log.infof("%s.getDiagramState: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.getDiagramState: GatewayException (%s)",CLSS,ge.getMessage());
 		}
 		return result;
 	}
@@ -347,11 +347,11 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		try {
 			String state = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 					BLTProperties.MODULE_ID, "getDiagramState",diagramId);
-			log.debugf("%s.getDiagramState ... %s",TAG,result.toString());
+			log.debugf("%s.getDiagramState ... %s",CLSS,result.toString());
 			result = DiagramState.valueOf(state);
 		}
 		catch(Exception ge) {
-			log.infof("%s.getDiagramState: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.getDiagramState: GatewayException (%s)",CLSS,ge.getMessage());
 		}
 		return result;
 	}
@@ -367,7 +367,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 					BLTProperties.MODULE_ID, "getExplanation",diagramId,blockId);
 		}
 		catch(Exception ex) {
-			log.infof("%s.getExplanation: Exception (%s)",TAG,ex.getMessage());
+			log.infof("%s.getExplanation: Exception (%s)",CLSS,ex.getMessage());
 		};
 		return reason;
 	}
@@ -375,13 +375,13 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	public String getFamilyName(String uuid) {
 		String name = "NULL UUID";
 		if( uuid!=null ) {
-			log.infof("%s.getFamilyName... %s",TAG,uuid);
+			log.infof("%s.getFamilyName... %s",CLSS,uuid);
 			try {
 				name = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 						BLTProperties.MODULE_ID, "getFamilyName",uuid);
 			}
 			catch(Exception ex) {
-				log.infof("%s.getFamilyName: Exception (%s)",TAG,ex.getMessage());
+				log.infof("%s.getFamilyName: Exception (%s)",CLSS,ex.getMessage());
 			};
 		}
 		return name;
@@ -397,7 +397,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 					BLTProperties.MODULE_ID, "getHostname");
 		}
 		catch(Exception ex) {
-			log.infof("%s.getGatewayHostname: Exception (%s)",TAG,ex.getMessage());
+			log.infof("%s.getGatewayHostname: Exception (%s)",CLSS,ex.getMessage());
 		};
 		return hostname;
 	}
@@ -415,10 +415,10 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 			// Returns either "running" or "stopped"
 			json = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 					BLTProperties.MODULE_ID, "getInternalState",diagramId,blockId);
-			log.debugf("%s.getInternalState ... %s",TAG,json);
+			log.debugf("%s.getInternalState ... %s",CLSS,json);
 		}
 		catch(Exception ge) {
-			log.infof("%s.getInternalState: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.getInternalState: GatewayException (%s)",CLSS,ge.getMessage());
 		}
 		if( json!=null) {
 			ObjectMapper mapper = new ObjectMapper();
@@ -427,13 +427,13 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 				result = mapper.readValue(json, SerializableBlockStateDescriptor.class);
 			} 
 			catch (JsonParseException jpe) {
-				log.warnf("%s: getInternalState parse exception (%s)",TAG,jpe.getLocalizedMessage());
+				log.warnf("%s: getInternalState parse exception (%s)",CLSS,jpe.getLocalizedMessage());
 			}
 			catch(JsonMappingException jme) {
-				log.warnf("%s: getInternalState mapping exception (%s)",TAG,jme.getLocalizedMessage());
+				log.warnf("%s: getInternalState mapping exception (%s)",CLSS,jme.getLocalizedMessage());
 			}
 			catch(IOException ioe) {
-				log.warnf("%s: getInternalState IO exception (%s)",TAG,ioe.getLocalizedMessage());
+				log.warnf("%s: getInternalState IO exception (%s)",CLSS,ioe.getLocalizedMessage());
 			}
 		}
 		return result;
@@ -484,10 +484,10 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		try {
 			result = GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 					BLTProperties.MODULE_ID, "getPropertyBinding",diagramId,blockId,propertyName);
-			log.debugf("%s.getPropertyBinding ... %s",TAG,result.toString());
+			log.debugf("%s.getPropertyBinding ... %s",CLSS,result.toString());
 		}
 		catch(Exception ge) {
-			log.infof("%s.getPropertyBinding: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.getPropertyBinding: GatewayException (%s)",CLSS,ge.getMessage());
 		}
 		return result;
 	}
@@ -502,10 +502,10 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		try {
 			result = GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 					BLTProperties.MODULE_ID, "getPropertyValue",diagramId,blockId,propertyName);
-			log.debugf("%s.getPropertyValue ... %s",TAG,result.toString());
+			log.debugf("%s.getPropertyValue ... %s",CLSS,result.toString());
 		}
 		catch(Exception ge) {
-			log.infof("%s.getPropertyValue: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.getPropertyValue: GatewayException (%s)",CLSS,ge.getMessage());
 		}
 		return result;
 	}
@@ -520,13 +520,13 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	public String getProviderForUUID(String uuid) {
 		String provider = "NONE";
 		if( uuid!=null) {
-			log.infof("%s.getProviderForUUID... %s",TAG,uuid);
+			log.infof("%s.getProviderForUUID... %s",CLSS,uuid);
 			try {
 				provider = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 						BLTProperties.MODULE_ID, "getProviderForUUID",uuid);
 			}
 			catch(Exception ex) {
-				log.infof("%s.getProviderForUUID: Exception (%s)",TAG,ex.getMessage());
+				log.infof("%s.getProviderForUUID: Exception (%s)",CLSS,ex.getMessage());
 			};
 		}
 		return provider;
@@ -538,7 +538,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 					BLTProperties.MODULE_ID, "getTimeOfLastBlockStateChange",diagramId,blockName);
 		}
 		catch(Exception ge) {
-			log.infof("%s.getTimeOfLastBlockStateChange: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.getTimeOfLastBlockStateChange: GatewayException (%s)",CLSS,ge.getMessage());
 		}
 		return result;
 	}
@@ -552,10 +552,10 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		try {
 			result = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 					BLTProperties.MODULE_ID, "getWindowsBrowserPath");
-			log.tracef("%s.getWindowsBrowserPath ... %s",TAG,result);
+			log.tracef("%s.getWindowsBrowserPath ... %s",CLSS,result);
 		}
 		catch(Exception ge) {
-			log.infof("%s.getWindowsBrowserPath: GatewayException (%s:%s)",TAG,ge.getClass().getName(),ge.getMessage());
+			log.infof("%s.getWindowsBrowserPath: GatewayException (%s:%s)",CLSS,ge.getClass().getName(),ge.getMessage());
 		}
 		return result;
 	}
@@ -571,10 +571,10 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		try {
 			result = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 					BLTProperties.MODULE_ID, "getToolkitProperty",propertyName);
-			log.tracef("%s.getToolkitProperty ... %s = %s",TAG,propertyName,result);
+			log.tracef("%s.getToolkitProperty ... %s = %s",CLSS,propertyName,result);
 		}
 		catch(Exception ge) {
-			log.infof("%s.getToolkitProperty: GatewayException (%s:%s)",TAG,ge.getClass().getName(),ge.getMessage());
+			log.infof("%s.getToolkitProperty: GatewayException (%s:%s)",CLSS,ge.getClass().getName(),ge.getMessage());
 		}
 		return result;
 	}
@@ -597,10 +597,10 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		try {
 			result = (Boolean)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 					BLTProperties.MODULE_ID, "isAlerting",projectId,resid);
-			log.debugf("%s.isAlerting ...%d:%d = %s",TAG,projectId,resid,result);
+			log.debugf("%s.isAlerting ...%d:%d = %s",CLSS,projectId,resid,result);
 		}
 		catch(Exception ge) {
-			log.infof("%s.isAlerting: GatewayException (%s) for project %d, resource %d",TAG,ge.getMessage(),projectId.longValue(),resid.longValue());
+			log.infof("%s.isAlerting: GatewayException (%s) for project %d, resource %d",CLSS,ge.getMessage(),projectId.longValue(),resid.longValue());
 		}
 		if( result==null ) return false;
 		return result.booleanValue();
@@ -622,7 +622,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 					BLTProperties.MODULE_ID, "listBlocksConnectedAtPort",diagramId,blockId,portName);
 		}
 		catch(Exception ge) {
-			log.infof("%s.listBlocksConnectedAtPort: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.listBlocksConnectedAtPort: GatewayException (%s)",CLSS,ge.getMessage());
 		}
 		return result;
 	}
@@ -636,7 +636,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 					BLTProperties.MODULE_ID, "listBlocksDownstreamOf",diagramId,blockName);
 		}
 		catch(Exception ge) {
-			log.infof("%s.listBlocksDownstreamOf: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.listBlocksDownstreamOf: GatewayException (%s)",CLSS,ge.getMessage());
 		}
 		return result;
 	}
@@ -649,7 +649,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 					BLTProperties.MODULE_ID, "listBlocksForTag",tagpath);
 		}
 		catch(Exception ge) {
-			log.infof("%s.queryDiagram: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.queryDiagram: GatewayException (%s)",CLSS,ge.getMessage());
 		}
 		return result;
 	}
@@ -668,7 +668,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 					BLTProperties.MODULE_ID, "queryDiagram",diagramId);
 		}
 		catch(Exception ge) {
-			log.infof("%s.listBlocksInDiagram: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.listBlocksInDiagram: GatewayException (%s)",CLSS,ge.getMessage());
 		}
 		return result;
 	}
@@ -684,7 +684,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 					BLTProperties.MODULE_ID, "listBlocksOfClass",className);
 		}
 		catch(Exception ge) {
-			log.infof("%s.listBlocksOfClass: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.listBlocksOfClass: GatewayException (%s)",CLSS,ge.getMessage());
 		}
 		return result;
 	}
@@ -704,7 +704,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 					BLTProperties.MODULE_ID, "listBlocksGloballyDownstreamOf",diagramId,blockId);
 		}
 		catch(Exception ge) {
-			log.infof("%s.listBlocksGloballyDownstreamOf: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.listBlocksGloballyDownstreamOf: GatewayException (%s)",CLSS,ge.getMessage());
 		}
 		return result;
 	}
@@ -724,7 +724,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 					BLTProperties.MODULE_ID, "listBlocksGloballyUpstreamOf",diagramId,blockId);
 		}
 		catch(Exception ge) {
-			log.infof("%s.listBlocksGloballyUpstreamOf: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.listBlocksGloballyUpstreamOf: GatewayException (%s)",CLSS,ge.getMessage());
 		}
 		return result;
 	}
@@ -737,7 +737,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 					BLTProperties.MODULE_ID, "listBlocksUpstreamOf",diagramId,blockId);
 		}
 		catch(Exception ge) {
-			log.infof("%s.listBlocksUpstreamOf: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.listBlocksUpstreamOf: GatewayException (%s)",CLSS,ge.getMessage());
 		}
 		return result;
 	}
@@ -751,7 +751,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 					BLTProperties.MODULE_ID, "listConfigurationErrors");
 		}
 		catch(Exception ge) {
-			log.infof("%s.listConfigurationErrors: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.listConfigurationErrors: GatewayException (%s)",CLSS,ge.getMessage());
 		}
 		return result;
 	}
@@ -764,7 +764,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 					BLTProperties.MODULE_ID, "listSubscriptionErrors");
 		}
 		catch(Exception ge) {
-			log.infof("%s.listSubscriptionErrors: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.listSubscriptionErrors: GatewayException (%s)",CLSS,ge.getMessage());
 		}
 		return result;
 	}	
@@ -777,7 +777,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 					BLTProperties.MODULE_ID, "listUnresponsiveBlocks",new Double(hours),className);
 		}
 		catch(Exception ge) {
-			log.infof("%s.listUnresponsiveBlocks: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.listUnresponsiveBlocks: GatewayException (%s)",CLSS,ge.getMessage());
 		}
 		return result;
 	}
@@ -791,28 +791,28 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	@SuppressWarnings({ "unchecked" })
 	@Override
 	public List<SerializableBlockStateDescriptor> listDiagramBlocksOfClass(String diagramId,String className) {
-		log.debugf("%s.getDiagramBlocksOfClass: for diagram %s (%s)",TAG,diagramId,className);
+		log.debugf("%s.getDiagramBlocksOfClass: for diagram %s (%s)",CLSS,diagramId,className);
 		List<SerializableBlockStateDescriptor> blockList = new ArrayList<>();
 		try {
 			blockList = (List<SerializableBlockStateDescriptor>)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 					BLTProperties.MODULE_ID, "listDiagramBlocksOfClass",diagramId,className);
 		}
 		catch(Exception ge) {
-			log.infof("%s.listDiagramBlocksOfClass: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.listDiagramBlocksOfClass: GatewayException (%s)",CLSS,ge.getMessage());
 		}
 		return blockList;
 	}
 	@SuppressWarnings("unchecked")
 	@Override
 	public List<SerializableResourceDescriptor> listDiagramDescriptors(String projectName) {
-		log.debugf("%s.listDiagramDescriptors for %s ...",TAG,projectName);
+		log.debugf("%s.listDiagramDescriptors for %s ...",CLSS,projectName);
 		List<SerializableResourceDescriptor> result = new ArrayList<>();
 		try {
 			result = (List<SerializableResourceDescriptor>)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 					BLTProperties.MODULE_ID, "listDiagramDescriptors",projectName);
 		}
 		catch(Exception ge) {
-			log.infof("%s.listDiagramDescriptors: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.listDiagramDescriptors: GatewayException (%s)",CLSS,ge.getMessage());
 		}
 		return result;
 	}
@@ -831,7 +831,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 					BLTProperties.MODULE_ID, "listResourceNodes");
 		}
 		catch(Exception ge) {
-			log.infof("%s.listResourceNodes: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.listResourceNodes: GatewayException (%s)",CLSS,ge.getMessage());
 		}
 		return result;
 	}
@@ -846,7 +846,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 					BLTProperties.MODULE_ID, "listSinksForSource",diagramId,blockId);
 		}
 		catch(Exception ge) {
-			log.infof("%s.listSinksForSource: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.listSinksForSource: GatewayException (%s)",CLSS,ge.getMessage());
 		}
 		return blockList;
 	}
@@ -861,7 +861,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 					BLTProperties.MODULE_ID, "listSourcesForSink",diagramId,blockId);
 		}
 		catch(Exception ge) {
-			log.infof("%s.listSourcesForSink: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.listSourcesForSink: GatewayException (%s)",CLSS,ge.getMessage());
 		}
 		return blockList;
 	}
@@ -874,7 +874,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 					BLTProperties.MODULE_ID,"pathForBlock",diagramId,blockName);
 		}
 		catch(Exception ge) {
-			log.infof("%s.pathForBlock: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.pathForBlock: GatewayException (%s)",CLSS,ge.getMessage());
 		}
 		return path;
 	}
@@ -891,7 +891,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 					BLTProperties.MODULE_ID,"pathForNode",nodeId);
 		}
 		catch(Exception ge) {
-			log.infof("%s.pathForNode: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.pathForNode: GatewayException (%s)",CLSS,ge.getMessage());
 		}
 		return path;
 	}
@@ -908,7 +908,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 					BLTProperties.MODULE_ID, "postResult",diagramId,blockId,port,value);
 		}
 		catch(Exception ge) {
-			log.infof("%s.postResult: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.postResult: GatewayException (%s)",CLSS,ge.getMessage());
 		}
 	}
 	/**
@@ -917,14 +917,31 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 */
 	@Override
 	public void propagateBlockState(String diagramId,String blockId) {
-		log.debugf("%s.propagateBlockState ...",TAG);
+		log.debugf("%s.propagateBlockState ...",CLSS);
 
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 					BLTProperties.MODULE_ID, "propagateBlockState",diagramId,blockId);
 		}
 		catch(Exception ge) {
-			log.infof("%s.propagateBlockState: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.propagateBlockState: GatewayException (%s)",CLSS,ge.getMessage());
+		}
+	}
+	/**
+	 * Execute the getAux extension function in Gateway scope, recursively from
+	 * a supplied root node.
+	 * @param projId project identifier
+	 * @param root the resourceId of an application to be refreshed
+	 * @param provider tag provider
+	 * @param db data source
+	 */
+	public void refreshAuxData(long projId,long root,String provider,String database) {
+		try {
+			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "refreshAuxData",projId,root,provider,database);
+		}
+		catch(Exception ge) {
+			log.infof("%s.refreshAuxData: GatewayException (%s)",CLSS,ge.getMessage());
 		}
 	}
 	/** Change the name of a block 
@@ -938,7 +955,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 				BLTProperties.MODULE_ID, "renameBlock",duuid,buuid,name);
 		}
 		catch(Exception ge) {
-			log.infof("%s.renameBlock: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.renameBlock: GatewayException (%s)",CLSS,ge.getMessage());
 		}
 	}
 	/**
@@ -951,7 +968,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 				BLTProperties.MODULE_ID, "renameTag",name,path);
 		}
 		catch(Exception ge) {
-			log.infof("%s.renameTag: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.renameTag: GatewayException (%s)",CLSS,ge.getMessage());
 		}
 	}
 	/**
@@ -959,14 +976,14 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 */
 	@Override
 	public void resetBlock(String diagramId,String blockName) {
-		log.debugf("%s.resetBlock ...",TAG);
+		log.debugf("%s.resetBlock ...",CLSS);
 
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 					BLTProperties.MODULE_ID, "resetBlock",diagramId,blockName);
 		}
 		catch(Exception ge) {
-			log.infof("%s.resetBlock: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.resetBlock: GatewayException (%s)",CLSS,ge.getMessage());
 		}
 	}
 	
@@ -975,14 +992,14 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 */
 	@Override
 	public void resetDiagram(String diagramId) {
-		log.debugf("%s.resetDiagram ...",TAG);
+		log.debugf("%s.resetDiagram ...",CLSS);
 
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 					BLTProperties.MODULE_ID, "resetDiagram",diagramId);
 		}
 		catch(Exception ge) {
-			log.infof("%s.resetDiagram: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.resetDiagram: GatewayException (%s)",CLSS,ge.getMessage());
 		}
 	}
 	/**
@@ -990,14 +1007,14 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 */
 	@Override
 	public void restartBlock(String diagramId,String blockName) {
-		log.debugf("%s.restartBlock ...",TAG);
+		log.debugf("%s.restartBlock ...",CLSS);
 
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 					BLTProperties.MODULE_ID, "restartBlock",diagramId,blockName);
 		}
 		catch(Exception ge) {
-			log.infof("%s.restartBlock: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.restartBlock: GatewayException (%s)",CLSS,ge.getMessage());
 		}
 	}
 	/**
@@ -1009,10 +1026,10 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		try {
 			result = (Boolean)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 					BLTProperties.MODULE_ID, "resourceExists",projectId,resid);
-			log.debugf("%s.resourceExists ...%d:%d = %s",TAG,projectId,resid,result);
+			log.debugf("%s.resourceExists ...%d:%d = %s",CLSS,projectId,resid,result);
 		}
 		catch(Exception ge) {
-			log.infof("%s.resourceExists: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.resourceExists: GatewayException (%s)",CLSS,ge.getMessage());
 		}
 		if( result==null ) return false;
 		return result.booleanValue();
@@ -1030,7 +1047,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 */
 	@Override
 	public boolean sendLocalSignal(String diagramId, String command,String message,String arg) {
-		log.infof("%s.sendLocalSignal for %s %s %s %s...",TAG,diagramId,command,message,arg);
+		log.infof("%s.sendLocalSignal for %s %s %s %s...",CLSS,diagramId,command,message,arg);
 		boolean result = false;
 		try {
 			Boolean value = GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
@@ -1038,7 +1055,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 			if( value!=null ) result = value.booleanValue();
 		}
 		catch(Exception ex) {
-			log.infof("%s.sendLocalSignal: Exception (%s)",TAG,ex.getMessage());
+			log.infof("%s.sendLocalSignal: Exception (%s)",CLSS,ex.getMessage());
 		}
 		return result;
 	}
@@ -1053,7 +1070,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 */
 	@Override
 	public boolean sendSignal(String diagramId,String blockName,String command,String message) {
-		log.infof("%s.sendSignal for %s:%s %s %s...",TAG,diagramId,blockName,command,message);
+		log.infof("%s.sendSignal for %s:%s %s %s...",CLSS,diagramId,blockName,command,message);
 		boolean result = false;
 		try {
 			Boolean value = GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
@@ -1061,7 +1078,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 			if( value!=null ) result = value.booleanValue();
 		}
 		catch(Exception ex) {
-			log.infof("%s.sendSignal: Exception (%s)",TAG,ex.getMessage());
+			log.infof("%s.sendSignal: Exception (%s)",CLSS,ex.getMessage());
 		}
 		return result;
 	}
@@ -1079,7 +1096,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 */
 	@Override
 	public boolean sendTimestampedSignal(String diagramId, String command,String message,String arg,long time) {
-		log.infof("%s.sendTimestampedSignal for %s %s %s %s...",TAG,diagramId,command,message,arg);
+		log.infof("%s.sendTimestampedSignal for %s %s %s %s...",CLSS,diagramId,command,message,arg);
 		boolean result = false;
 		try {
 			Boolean value = GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
@@ -1087,7 +1104,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 			if( value!=null ) result = value.booleanValue();
 		}
 		catch(Exception ex) {
-			log.infof("%s.sendTimestampedSignal: Exception (%s)",TAG,ex.getMessage());
+			log.infof("%s.sendTimestampedSignal: Exception (%s)",CLSS,ex.getMessage());
 		}
 		return result;
 	}
@@ -1099,13 +1116,13 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 */
 	@Override
 	public void setApplicationState(String appname, String state) {
-		log.infof("%s.setApplicationState for %s to %s...",TAG,appname,state);
+		log.infof("%s.setApplicationState for %s to %s...",CLSS,appname,state);
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 					BLTProperties.MODULE_ID, "setApplicationState",appname,state);
 		}
 		catch(Exception ex) {
-			log.infof("%s.setApplicationState: Exception (%s)",TAG,ex.getMessage());
+			log.infof("%s.setApplicationState: Exception (%s)",CLSS,ex.getMessage());
 		}
 	}
 
@@ -1124,16 +1141,16 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 			json = mapper.writeValueAsString(props);
 		}
 		catch(Exception ge) {
-			log.warnf("%s: toJson (%s)",TAG,ge.getMessage());
+			log.warnf("%s: toJson (%s)",CLSS,ge.getMessage());
 		}
-		log.tracef("%s: json properties = %s",TAG,json);
-		log.debugf("%s.setBlockProperties: %s %s %s %s: %s", TAG, diagId,blockId, json);
+		log.tracef("%s: json properties = %s",CLSS,json);
+		log.debugf("%s.setBlockProperties: %s %s %s %s: %s", CLSS, diagId,blockId, json);
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 				BLTProperties.MODULE_ID, "setBlockProperties", diagId,blockId, json);
 		}
 		catch(Exception ge) {
-			log.infof("%s.setBlockProperties: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.setBlockProperties: GatewayException (%s)",CLSS,ge.getMessage());
 		}		
 	}
 
@@ -1153,16 +1170,16 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 			json = mapper.writeValueAsString(property);
 		}
 		catch(Exception ge) {
-			log.warnf("%s: toJson (%s)",TAG,ge.getMessage());
+			log.warnf("%s: toJson (%s)",CLSS,ge.getMessage());
 		}
-		log.tracef("%s: json property = %s",TAG,json);
-		log.debugf("%s.setBlockProperty: %s %s %s", TAG, diagId,blockId, json);
+		log.tracef("%s: json property = %s",CLSS,json);
+		log.debugf("%s.setBlockProperty: %s %s %s", CLSS, diagId,blockId, json);
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 				BLTProperties.MODULE_ID, "setBlockProperty", diagId,blockId, json);
 		}
 		catch(Exception ge) {
-			log.infof("%s.setBlockProperty: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.setBlockProperty: GatewayException (%s)",CLSS,ge.getMessage());
 		}		
 	}
 	/** Change the binding on a block property in such a way that the block and UI
@@ -1179,7 +1196,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 				BLTProperties.MODULE_ID, "setBlockPropertyBinding", diagramId,blockId, pname,value);
 		}
 		catch(Exception ge) {
-			log.infof("%s.setBlockPropertyBinding: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.setBlockPropertyBinding: GatewayException (%s)",CLSS,ge.getMessage());
 		}	
 	}
 	/** Change the value of a block property in such a way that the block and UI
@@ -1192,13 +1209,13 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 */
 	@Override
 	public void setBlockPropertyValue(String diagramId,String bname,String pname,String value )  {
-		log.debugf("%s.setBlockPropertyValue: %s %s %s=%s", TAG, diagramId,bname, pname,value);
+		log.debugf("%s.setBlockPropertyValue: %s %s %s=%s", CLSS, diagramId,bname, pname,value);
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 				BLTProperties.MODULE_ID, "setBlockPropertyValue", diagramId,bname, pname,value);
 		}
 		catch(Exception ge) {
-			log.infof("%s.setBlockPropertyValue: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.setBlockPropertyValue: GatewayException (%s)",CLSS,ge.getMessage());
 		}		
 	}
 	/** 
@@ -1210,38 +1227,38 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 */
 	@Override
 	public void setBlockState(String diagramId,String bname,String state ) {
-		log.debugf("%s.setBlockState ... %s:%s %s",TAG,diagramId,bname,state);
+		log.debugf("%s.setBlockState ... %s:%s %s",CLSS,diagramId,bname,state);
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 					BLTProperties.MODULE_ID, "setBlockState",diagramId,bname,state);
 		}
 		catch(Exception ge) {
-			log.infof("%s.setBlockState: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.setBlockState: GatewayException (%s)",CLSS,ge.getMessage());
 		}
 	}
 	@Override
 	public void setDiagramState(Long projectId, Long resourceId, String state) {
-		log.debugf("%s.setDiagramState ... %d:%d %s",TAG,projectId.longValue(),resourceId.longValue(),state);
+		log.debugf("%s.setDiagramState ... %d:%d %s",CLSS,projectId.longValue(),resourceId.longValue(),state);
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 					BLTProperties.MODULE_ID, "setDiagramState",projectId,resourceId,state);
 
 		}
 		catch(Exception ge) {
-			log.infof("%s.setDiagramState: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.setDiagramState: GatewayException (%s)",CLSS,ge.getMessage());
 		}
 	}
 
 	@Override
 	public void setDiagramState(String diagramId, String state) {
-		log.debugf("%s.setDiagramState ... %s %s",TAG,diagramId,state);
+		log.debugf("%s.setDiagramState ... %s %s",CLSS,diagramId,state);
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 					BLTProperties.MODULE_ID, "setDiagramState",diagramId,state);
 
 		}
 		catch(Exception ge) {
-			log.infof("%s.setDiagramState: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.setDiagramState: GatewayException (%s)",CLSS,ge.getMessage());
 		}
 	}
 	/**
@@ -1252,13 +1269,13 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 *        in the past.
 	 */
 	public void setTestTimeOffset(long offset) {
-		log.infof("%s.setTestTimeOffset ... %s",TAG,String.valueOf(offset));
+		log.infof("%s.setTestTimeOffset ... %s",CLSS,String.valueOf(offset));
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 					BLTProperties.MODULE_ID, "setTestTimeOffset",new Long(offset));
 		}
 		catch(Exception ge) {
-			log.infof("%s.setTestTimeOffset: GatewayException (%s:%s)",TAG,ge.getClass().getName(),ge.getMessage());
+			log.infof("%s.setTestTimeOffset: GatewayException (%s:%s)",CLSS,ge.getClass().getName(),ge.getMessage());
 		}
 	}
 	
@@ -1269,13 +1286,13 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 *        than one implies an accelerated clock.
 	 */
 	public void setTimeFactor(double factor) {
-		log.infof("%s.setTimeFactor ... %s",TAG,String.valueOf(factor));
+		log.infof("%s.setTimeFactor ... %s",CLSS,String.valueOf(factor));
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 					BLTProperties.MODULE_ID, "setTimeFactor",new Double(factor));
 		}
 		catch(Exception ge) {
-			log.infof("%s.setTimeFactor: GatewayException (%s:%s)",TAG,ge.getClass().getName(),ge.getMessage());
+			log.infof("%s.setTimeFactor: GatewayException (%s:%s)",CLSS,ge.getClass().getName(),ge.getMessage());
 		}
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
@@ -1294,13 +1311,13 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 */
 	@Override
 	public void setToolkitProperty(String propertyName,String value) {
-		log.tracef("%s.setToolkitProperty ... %s=%s",TAG,propertyName,value);
+		log.tracef("%s.setToolkitProperty ... %s=%s",CLSS,propertyName,value);
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 					BLTProperties.MODULE_ID, "setToolkitProperty",propertyName,value);
 		}
 		catch(Exception ge) {
-			log.infof("%s.setToolkitProperty: GatewayException (%s:%s)",TAG,ge.getClass().getName(),ge.getMessage());
+			log.infof("%s.setToolkitProperty: GatewayException (%s:%s)",CLSS,ge.getClass().getName(),ge.getMessage());
 		}
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
@@ -1320,7 +1337,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 									BLTProperties.MODULE_ID, "setWatermark",diagramId,text);
 		}
 		catch(Exception ge) {
-			log.infof("%s.setWatermark: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.setWatermark: GatewayException (%s)",CLSS,ge.getMessage());
 		}
 	}
 	/**
@@ -1328,14 +1345,14 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 */
 	@Override
 	public void startController() {
-		log.debugf("%s.startController ...",TAG);
+		log.debugf("%s.startController ...",CLSS);
 
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 					BLTProperties.MODULE_ID, "startController");
 		}
 		catch(Exception ge) {
-			log.infof("%s.startController: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.startController: GatewayException (%s)",CLSS,ge.getMessage());
 		}
 	}
 
@@ -1344,14 +1361,14 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 */
 	@Override
 	public void stopController() {
-		log.debugf("%s.stopController ...",TAG);
+		log.debugf("%s.stopController ...",CLSS);
 
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 					BLTProperties.MODULE_ID, "stopController");
 		}
 		catch(Exception ge) {
-			log.infof("%s.stopController: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.stopController: GatewayException (%s)",CLSS,ge.getMessage());
 		}
 	}
 
@@ -1367,7 +1384,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 					BLTProperties.MODULE_ID, "triggerStatusNotifications");
 		}
 		catch(Exception ex) {
-			log.infof("%s.triggerStatusNotifications: Exception (%s:%s)",TAG,ex.getClass().getName(),ex.getMessage());
+			log.infof("%s.triggerStatusNotifications: Exception (%s:%s)",CLSS,ex.getClass().getName(),ex.getMessage());
 		}
 	}
 
@@ -1387,16 +1404,16 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 			json = mapper.writeValueAsString(anchors);
 		}
 		catch(Exception ge) {
-			log.warnf("%s: toJson (%s)",TAG,ge.getMessage());
+			log.warnf("%s: toJson (%s)",CLSS,ge.getMessage());
 		}
-		log.tracef("%s: json properties = %s",TAG,json);
-		log.debugf("%s.setBlockProperties: %s %s %s %s: %s", TAG, diagId,blockId, json);
+		log.tracef("%s: json properties = %s",CLSS,json);
+		log.debugf("%s.setBlockProperties: %s %s %s %s: %s", CLSS, diagId,blockId, json);
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 				BLTProperties.MODULE_ID, "updateBlockAnchors", diagId,blockId, json);
 		}
 		catch(Exception ge) {
-			log.infof("%s.setBlockProperties: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.setBlockProperties: GatewayException (%s)",CLSS,ge.getMessage());
 		}
 		
 	}

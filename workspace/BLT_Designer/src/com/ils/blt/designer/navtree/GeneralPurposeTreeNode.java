@@ -40,6 +40,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.ApplicationRequestHandler;
+import com.ils.blt.common.ApplicationScriptFunctions;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.script.Script;
@@ -1921,50 +1922,35 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	// Navigate the NavTree for this application and beneath. Call GetAux on each node.
 	private class RefreshAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
-		private final AbstractResourceNavTreeNode node;
-		private final ScriptExtensionManager extensionManager;
+		private final AbstractResourceNavTreeNode tnode;
 		private String db;
 		private String provider;
 		
 
-		public RefreshAction(AbstractResourceNavTreeNode treeNode)  {
+		public RefreshAction(AbstractResourceNavTreeNode tn)  {
 			super(PREFIX+".Refresh",IconUtil.getIcon("refresh")); 
-			this.node = treeNode;
-			this.extensionManager = ScriptExtensionManager.getInstance();
+			this.tnode = tn;
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			SerializableApplication sap = recursivelyDeserializeApplication(node);
-			db       = (sap.getState().equals(DiagramState.ISOLATED)?requestHandler.getIsolationDatabase():requestHandler.getProductionDatabase());
-			provider = (sap.getState().equals(DiagramState.ISOLATED)?requestHandler.getIsolationTagProvider():requestHandler.getProductionTagProvider());
-			Script script = extensionManager.createExtensionScript(ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.GET_AUX_OPERATION, provider);
-			extensionManager.runScript(context.getScriptManager(), script, sap.getId().toString(),sap.getAuxiliaryData(),db);
-			recurseFamilies(sap.getFamilies());
-			recurseFolders(sap.getFolders());
+			long projectId = context.getProject().getId();
+			ProjectResource pr = tnode.getProjectResource();
+			if( pr.getResourceType().equalsIgnoreCase(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
+				SerializableApplication sap = recursivelyDeserializeApplication(tnode);
+				db       = (sap.getState().equals(DiagramState.ISOLATED)?requestHandler.getIsolationDatabase():requestHandler.getProductionDatabase());
+				provider = (sap.getState().equals(DiagramState.ISOLATED)?requestHandler.getIsolationTagProvider():requestHandler.getProductionTagProvider());
+				refreshNode(tnode,projectId,provider,db);
+			}	
 		}
-		// Recursively scan child nodes for more descendants. For each read AuxData from database
-		// Note: A diagram does not have auxiliary data. A block has an opportunity to read from the database when fetching its auxiliary data.
-		private void recurseDiagrams(SerializableDiagram[] diagrams) {
-			for(SerializableDiagram diagram:diagrams) {
-				for(SerializableBlock block:diagram.getBlocks()) {
-					block.getAuxiliaryData();
-				}
+		// This function is called recursively
+		private void refreshNode(AbstractResourceNavTreeNode node,long projectId,String tagp,String dsource) {
+			ProjectResource pr = node.getProjectResource();
+			ApplicationScriptFunctions.refreshAuxData(projectId,pr.getResourceId(), tagp, dsource);
+			Enumeration<AbstractResourceNavTreeNode> childWalker = node.children();
+			while(childWalker.hasMoreElements()) {
+				AbstractResourceNavTreeNode child = childWalker.nextElement();
+				refreshNode(child,projectId,tagp,dsource);
 			}
-		}
-		private void recurseFamilies(SerializableFamily[] families) {
-			Script script = extensionManager.createExtensionScript(ScriptConstants.FAMILY_CLASS_NAME, ScriptConstants.GET_AUX_OPERATION, provider);
-			for(SerializableFamily fam:families) {
-				extensionManager.runScript(context.getScriptManager(), script, fam.getId().toString(),fam.getAuxiliaryData(),db);
-				recurseDiagrams(fam.getDiagrams());
-				recurseFolders(fam.getFolders());
-			}
-		}
-		private void recurseFolders(SerializableFolder[] folders) {
-			for(SerializableFolder folder:folders) {
-				recurseDiagrams(folder.getDiagrams());
-				recurseFamilies(folder.getFamilies());
-			}
-
 		}
 	}
 	

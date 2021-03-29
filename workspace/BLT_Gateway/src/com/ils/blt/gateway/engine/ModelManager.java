@@ -27,7 +27,6 @@ import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.SerializableFamily;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
-import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.persistence.ToolkitProperties;
 import com.ils.common.persistence.ToolkitRecordHandler;
 import com.inductiveautomation.ignition.common.model.ApplicationScope;
@@ -853,10 +852,7 @@ public class ModelManager implements ProjectListener  {
 			// Invoke extension script for the diagram itself
 			// The SAVE script is smart enough to do an insert if diagram is new
 			if( startup ) {
-				for(ProcessBlock block:diagram.getProcessBlocks()) {
-					block.setAuxiliaryData(new GeneralPurposeDataContainer());
-					block.getAuxData(block.getAuxiliaryData());
-				}
+				// A diagram has no associated data. There is nothing needed on startup.
 			}
 			else {
 				String provider = (diagram.getState().equals(DiagramState.ACTIVE) ? 
@@ -1148,7 +1144,7 @@ public class ModelManager implements ProjectListener  {
 	 * @param projId the identifier of the project
 	 * @param res
 	 */ 
-	private ProcessApplication deserializeApplicationResource(long projId,ProjectResource res) {
+	public ProcessApplication deserializeApplicationResource(long projId,ProjectResource res) {
 		byte[] serializedObj = res.getData();
 		String json = new String(serializedObj);
 		log.debugf("%s.deserializeApplicationResource: json = %s",CLSS,json);
@@ -1181,7 +1177,7 @@ public class ModelManager implements ProjectListener  {
 	 * @param projId the identifier of the project
 	 * @param res
 	 */ 
-	private SerializableDiagram deserializeDiagramResource(long projId,ProjectResource res) {
+	public SerializableDiagram deserializeDiagramResource(long projId,ProjectResource res) {
 		byte[] serializedObj = res.getData();
 		SerializableDiagram sd = null;
 		try{
@@ -1213,7 +1209,7 @@ public class ModelManager implements ProjectListener  {
 	 * @param projId the identifier of the project
 	 * @param res
 	 */ 
-	private ProcessFamily deserializeFamilyResource(long projId,ProjectResource res) {
+	public ProcessFamily deserializeFamilyResource(long projId,ProjectResource res) {
 		byte[] serializedObj = res.getData();
 		String json = new String(serializedObj);
 		log.debugf("%s.deserializeFamilyResource: json = %s",CLSS,json);

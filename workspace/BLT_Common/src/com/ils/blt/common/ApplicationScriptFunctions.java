@@ -435,6 +435,17 @@ public class ApplicationScriptFunctions   {
 		List<SerializableResourceDescriptor> result = handler.listResourceNodes();
 		return result;
 	}
+	/**
+	 * Execute the getAux extension function in Gateway scope, recursively from
+	 * a supplied root node.
+	 * @param projId project identifier
+	 * @param root the resourceId of an application to be refreshed
+	 * @param provider tag provider
+	 * @param db datasource
+	 */
+	public static void refreshAuxData(long projId,long root,String provider,String database) {
+		handler.refreshAuxData(projId,root, provider, database);
+	}
 	/** Update a single property for a block 
 	 * @param duuid diagram unique Id
 	 * @param buuid block unique Id
