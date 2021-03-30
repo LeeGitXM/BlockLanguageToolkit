@@ -47,7 +47,7 @@ public class ApplicationPropertyEditor extends AbstractPropertyEditor {
 		this.log = LogMaker.getLogger(this);
 		this.context = ctx;
 		this.application = app;
-		this.model = app.getAuxiliaryData().clone();
+		this.model = application.getAuxiliaryData().clone();
 		this.outputKeys = new SortedListModel<>();
 		buildOutputListModel();
 		initialize();
@@ -104,6 +104,7 @@ public class ApplicationPropertyEditor extends AbstractPropertyEditor {
 	// This class does not represent a panel. There is no save action. 
 	@Override
 	public void saveResource() {
+		application.setAuxiliaryData(model);
 		ObjectMapper mapper = new ObjectMapper();
 		try{
 			byte[] bytes = mapper.writeValueAsBytes(application);

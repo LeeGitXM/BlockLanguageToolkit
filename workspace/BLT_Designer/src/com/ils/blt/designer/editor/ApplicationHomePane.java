@@ -2,14 +2,12 @@ package com.ils.blt.designer.editor;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.util.List;
 
-import javax.swing.ButtonGroup;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -17,13 +15,11 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
-import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.UtilityFunctions;
 import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.log.ILSLogger;
@@ -31,7 +27,7 @@ import com.ils.common.log.LogMaker;
 
 import net.miginfocom.swing.MigLayout;
 
-public class ApplicationHomePane extends JPanel implements FocusListener {
+public class ApplicationHomePane extends JPanel implements ActionListener, FocusListener {
 	private final ApplicationPropertyEditor editor;
 	private final GeneralPurposeDataContainer model;
 	private static final long serialVersionUID = 2882399376824334427L;
@@ -88,10 +84,10 @@ public class ApplicationHomePane extends JPanel implements FocusListener {
 		mainPanel.add(scrollPane,"gaptop 2,aligny top,span,wrap");
 		
 		// Add the Managed check box
-		log.infof("Managed: %s", model.getProperties().get("Managed"));
 		mainPanel.add(new JLabel("Managed:"), "gap 10");
 		mainPanel.add(managedCheckBox, "wrap, align left");
 		managedCheckBox.setSelected(fcns.coerceToBoolean( model.getProperties().get("Managed")));
+		managedCheckBox.addActionListener(this);
 
 		// Set up the Message Queue Combo Box
 		mainPanel.add(new JLabel("Queue:"), "align right");
@@ -109,7 +105,7 @@ public class ApplicationHomePane extends JPanel implements FocusListener {
 			queueComboBox.setSelectedIndex(0);
 		}
 		queueComboBox.setPreferredSize(ApplicationPropertyEditor.COMBO_SIZE);
-		queueComboBox.addFocusListener(this);
+		queueComboBox.addActionListener(this);
 		mainPanel.add(queueComboBox, "wrap");
 
 		// Set up the Group Ramp Method Combo Box
@@ -121,7 +117,7 @@ public class ApplicationHomePane extends JPanel implements FocusListener {
 			}
 		}
 		groupRampMethodComboBox.setToolTipText("The Group Ramp Method that will be used for outputs in this application!");
-		groupRampMethodComboBox.addFocusListener(this);
+		groupRampMethodComboBox.addActionListener(this);
 		
 		String method = model.getProperties().get("GroupRampMethod");
 		if( method!=null ) groupRampMethodComboBox.setSelectedItem(method);
@@ -147,7 +143,7 @@ public class ApplicationHomePane extends JPanel implements FocusListener {
 			unitComboBox.setSelectedIndex(0);
 		}
 		unitComboBox.setPreferredSize(ApplicationPropertyEditor.COMBO_SIZE);
-		unitComboBox.addFocusListener(this);
+		unitComboBox.addActionListener(this);
 		mainPanel.add(unitComboBox, "wrap");
 		
 		mainPanel.add(nextButton,"cell 1 13,center");
@@ -166,6 +162,7 @@ public class ApplicationHomePane extends JPanel implements FocusListener {
 		model.getProperties().put("Unit",(String) unitComboBox.getSelectedItem());
 		
 		model.getProperties().put("Managed",(managedCheckBox.isSelected()?"1":"0"));
+		editor.saveResource();
 	}
 
 
@@ -176,6 +173,12 @@ public class ApplicationHomePane extends JPanel implements FocusListener {
 		editor.setSelectedPane(ApplicationPropertyEditor.HOME);
 	}
 	
+	// ============================================== Action listener ==========================================
+	@Override
+	public void actionPerformed(ActionEvent event) {
+		save();
+		editor.saveResource();
+	}	
 	// ============================================== Focus listener ==========================================
 	@Override
 	public void focusGained(FocusEvent event) {

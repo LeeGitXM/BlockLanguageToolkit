@@ -46,13 +46,12 @@ class TagSelectorPane extends JPanel {
 	public TagSelectorPane(ApplicationPropertyEditor editor,OutputEditorPane outputEditorPane) {
 		super(new BorderLayout(20, 30));
 		this.editor = editor;
-		System.out.println("In TagSelector pane constructor");
 		this.outputEditorPane = outputEditorPane;
 		this.context = editor.context;
 		
 		//JPanel mainPanel = new JPanel(new MigLayout("", "[right]"));
 		JPanel mainPanel = new JPanel(new BorderLayout());
-		setPreferredSize(editor.PANEL_SIZE);
+		setPreferredSize(ApplicationPropertyEditor.PANEL_SIZE);
 		
 		this.cellRenderer = new TagRenderer();
 		//setLayout(new BorderLayout());
@@ -112,7 +111,6 @@ class TagSelectorPane extends JPanel {
 			JOptionPane.showMessageDialog(TagSelectorPane.this, "Please select a tag.");
 			return;
 		}
-		
 		editor.setSelectedPane(ApplicationPropertyEditor.EDITOR);		
 	}
 }

@@ -7,6 +7,8 @@ package com.ils.blt.designer.editor;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 
@@ -24,8 +26,6 @@ import com.ils.blt.common.serializable.SerializableFamily;
 import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.log.ILSLogger;
 import com.ils.common.log.LogMaker;
-import com.inductiveautomation.ignition.common.execution.ExecutionManager;
-import com.inductiveautomation.ignition.common.execution.impl.BasicExecutionEngine;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
@@ -34,7 +34,7 @@ import net.miginfocom.swing.MigLayout;
 /**
  * Display a sliding pane in the property edit window to configure a Family node
  */
-public class FamilyPropertyEditor extends AbstractPropertyEditor implements FocusListener { 
+public class FamilyPropertyEditor extends AbstractPropertyEditor implements ActionListener, FocusListener { 
 	private final static String CLSS = "FamilyPropertyEditor";
 	private static final long serialVersionUID = 2882399376824334427L;
 	private static final Dimension COMBO_SIZE  = new Dimension(180,24);
@@ -121,9 +121,9 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor implements Focu
 		for(ActiveState s:ActiveState.values()) {
 			stateBox.addItem(s.name());
 		}
-		stateBox.setSelectedItem(family.getState());
+		stateBox.setSelectedItem(family.getState().name());
 		stateBox.setPreferredSize(COMBO_SIZE);
-		stateBox.addFocusListener(this);
+		stateBox.addActionListener(this);
 		panel.add(stateBox,"wrap 20");
 		return panel;
 	}
@@ -134,10 +134,10 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor implements Focu
 
 	// On save we get values from the widgets and place back into the model
 	private void save(){
-		log.infof("%s.save()",CLSS);
 		family.setState(ActiveState.valueOf(stateBox.getSelectedItem().toString()));
 		model.getProperties().put("Description",descriptionArea.getText());
 		model.getProperties().put("Priority", priorityField.getText());
+		log.infof("%s.save(): state = %s",CLSS,family.getState().name());
 	}
 	
 	@Override
@@ -158,7 +158,12 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor implements Focu
 			log.warnf("%s.run: Exception serializing family, resource %d (%s)",CLSS,resource.getResourceId(),jpe.getMessage());
 		}
 	}
-	
+	// ============================================== Action listener ==========================================
+	@Override
+	public void actionPerformed(ActionEvent event) {
+		save();
+		saveResource();
+	}	
 	// ============================================== Focus listener ==========================================
 	@Override
 	public void focusGained(FocusEvent event) {
