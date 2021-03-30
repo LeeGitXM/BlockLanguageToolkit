@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.block.annotation.ExecutableBlock;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagramState;
@@ -59,6 +61,7 @@ import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.Quality;
+import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.project.ProjectVersion;
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
@@ -1229,23 +1232,45 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * @param db datasource
 	 */
 	@Override
-	public void refreshAuxData(long projectId,long resid,String provider,String db) {
+	public synchronized void refreshAuxData(long projectId,long resid,String provider,String db) {
 		ProjectResource res = context.getProjectManager().getProject(projectId, ApplicationScope.GATEWAY,ProjectVersion.Staging).getResource(resid);
 		if( res!=null && res.getResourceType().equals(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
 			ProcessApplication app = controller.getDelegate().deserializeApplicationResource(projectId, res);
 			Script script = extensionManager.createExtensionScript(ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.GET_AUX_OPERATION, provider);
 			extensionManager.runScript(context.getScriptManager(), script, app.getSelf().toString(),app.getAuxiliaryData(),db);
+			saveResource(res,app,projectId);
 		}
 		else if( res!=null && res.getResourceType().equals(BLTProperties.FAMILY_RESOURCE_TYPE)) {
 			ProcessFamily fam = controller.getDelegate().deserializeFamilyResource(projectId, res);
 			Script script = extensionManager.createExtensionScript(ScriptConstants.FAMILY_CLASS_NAME, ScriptConstants.GET_AUX_OPERATION, provider);
 			extensionManager.runScript(context.getScriptManager(), script, fam.getSelf().toString(),fam.getAuxiliaryData(),db);
+			saveResource(res,fam,projectId);
 		}
 		else if( res!=null && res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
 			SerializableDiagram dia = controller.getDelegate().deserializeDiagramResource(projectId, res);
 			for(SerializableBlock block:dia.getBlocks()) {
 				block.getAuxData();
 			}
+			saveResource(res,dia,projectId);
+		}
+
+	}
+	// Save a resource update back into the project.
+	private void saveResource(ProjectResource resource,Object node,long projectId) {
+		ObjectMapper mapper = new ObjectMapper();
+		try{
+			byte[] bytes = mapper.writeValueAsBytes(node);
+			//log.tracef("%s.run JSON = %s",CLSS,new String(bytes));
+			resource.setData(bytes);
+			Project project = context.getProjectManager().getProject(projectId, ApplicationScope.GATEWAY, ProjectVersion.Staging);
+			project.putResource(resource);
+			context.getProjectManager().saveProject(project, null, null, "Updated aux structure", true);
+		}
+		catch(JsonProcessingException jpe) {
+			log.warnf("%s.run: Exception serializing application, resource %d (%s)",TAG,resource.getResourceId(),jpe.getMessage());
+		}
+		catch(Exception ex) {
+			log.warnf("%s.run: Exception saving project, resource %d (%s)",TAG,resource.getResourceId(),ex.getMessage());
 		}
 	}
 	/**

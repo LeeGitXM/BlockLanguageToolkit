@@ -432,8 +432,10 @@ public class GatewayRpcDispatcher   {
 	 * @param provider tag provider
 	 * @param db datasource
 	 */
-	public void refreshAuxData(long projId,long root,String provider,String db) {
-		requestHandler.refreshAuxData(projId,root, provider, db);
+	public void refreshAuxData(Long projId,Long root,String provider,String db) {
+		long projectId = projId.longValue();
+		long resourceId = root.longValue();
+		requestHandler.refreshAuxData(projectId,resourceId, provider, db);
 	}
 	/** Change the name of a block
 	 * 

@@ -1944,6 +1944,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		}
 		// This function is called recursively
 		private void refreshNode(AbstractResourceNavTreeNode node,long projectId,String tagp,String dsource) {
+			//log.infof("%s.refreshNode: %s, (%s,%s)",CLSS,node.getName(),provider,dsource);
 			ProjectResource pr = node.getProjectResource();
 			ApplicationScriptFunctions.refreshAuxData(projectId,pr.getResourceId(), tagp, dsource);
 			Enumeration<AbstractResourceNavTreeNode> childWalker = node.children();

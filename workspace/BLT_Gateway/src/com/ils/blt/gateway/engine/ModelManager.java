@@ -736,13 +736,13 @@ public class ModelManager implements ProjectListener  {
 							toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER));
 				Script script = extensionManager.createExtensionScript(ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.SAVE_OPERATION, provider);
 				extensionManager.runScript(context.getProjectManager().getProjectScriptManager(application.getProjectId()), 
-						script, node.getSelf().toString());
+						script, application.getSelf().toString());
 				String db = (application.getState().equals(DiagramState.ACTIVE) ? 
 						toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_DATABASE):
 							toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_DATABASE));
 
 				script = extensionManager.createExtensionScript(ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.SET_AUX_OPERATION, provider);
-				extensionManager.runScript(context.getScriptManager(), script, node.getSelf().toString(),application.getAuxiliaryData(),db);
+				extensionManager.runScript(context.getScriptManager(), script, application.getSelf().toString(),application.getAuxiliaryData(),db);
 			}
 
 		}
@@ -943,7 +943,7 @@ public class ModelManager implements ProjectListener  {
 							toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER));
 				Script script = extensionManager.createExtensionScript(ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.SAVE_OPERATION, provider);
 				extensionManager.runScript(context.getProjectManager().getProjectScriptManager(family.getProjectId()), 
-						script, node.getSelf().toString());
+						script, family.getSelf().toString());
 				String db = (family.getState().equals(DiagramState.ACTIVE) ? 
 						toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_DATABASE):
 							toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_DATABASE));

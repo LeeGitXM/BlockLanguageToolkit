@@ -935,7 +935,8 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * @param provider tag provider
 	 * @param db data source
 	 */
-	public void refreshAuxData(long projId,long root,String provider,String database) {
+	public synchronized void refreshAuxData(long projId,long root,String provider,String database) {
+		//log.infof("%s.refreshAuxData: proj %d, res %d, (%s,%s)",CLSS,projId,root,provider,database);
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 					BLTProperties.MODULE_ID, "refreshAuxData",projId,root,provider,database);
