@@ -93,7 +93,7 @@ public class ApplicationPropertyEditor extends AbstractPropertyEditor {
 		}
 	}
 	private void clearOutputKeyList(){
-		model.getMapLists().get("QuantOutputs").clear();
+		outputKeys.clear();
 	}
 	
 	public void refreshOutputs() {
