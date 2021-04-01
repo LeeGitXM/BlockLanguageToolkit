@@ -21,7 +21,6 @@ public interface NotificationChangeListener extends EventListener  {
 	 * @param state the state of the reporting block
 	 */
 	public void diagramStateChange(long resourceId,String state);
-	
 	/**
 	 * A property binding has changed
 	 */

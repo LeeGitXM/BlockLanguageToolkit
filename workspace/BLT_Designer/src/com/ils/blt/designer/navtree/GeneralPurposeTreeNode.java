@@ -1943,9 +1943,6 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				db       = (sap.getState().equals(DiagramState.ISOLATED)?requestHandler.getIsolationDatabase():requestHandler.getProductionDatabase());
 				provider = (sap.getState().equals(DiagramState.ISOLATED)?requestHandler.getIsolationTagProvider():requestHandler.getProductionTagProvider());
 				refreshNode(tnode,projectId,provider,db);
-				
-				sap = recursivelyDeserializeApplication(tnode);
-				logger.infof("%s.RefreshAction. refreshed %s",CLSS,sap.getName());
 			}	
 		}
 		// This function is called recursively

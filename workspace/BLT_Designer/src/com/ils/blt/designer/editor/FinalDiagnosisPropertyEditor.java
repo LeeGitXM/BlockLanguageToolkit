@@ -3,7 +3,6 @@
  */
 package com.ils.blt.designer.editor;
 
-
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Insets;
@@ -28,20 +27,26 @@ import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.block.ActiveState;
+import com.ils.blt.common.notification.NotificationChangeListener;
+import com.ils.blt.common.notification.NotificationKey;
+import com.ils.blt.designer.NotificationHandler;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.ils.common.GeneralPurposeDataContainer;
+import com.ils.common.log.ILSLogger;
+import com.ils.common.log.LogMaker;
 import com.ils.common.ui.DualListBox;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
+import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
 import net.miginfocom.swing.MigLayout;
@@ -52,9 +57,10 @@ import net.miginfocom.swing.MigLayout;
  * This dialog allows for the display and editing of auxiliary data in the proxy block. There is no extension
  * function interaction until the block is saved as part of a diagram-save.
  */
-public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor implements ActionListener,FocusListener, PropertyChangeListener {
+public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor implements ActionListener,FocusListener, NotificationChangeListener, PropertyChangeListener {
 	private static final long serialVersionUID = 7211480530910862375L;
 	private static final String CLSS = "FinalDiagnosisPanel";
+	private final NotificationHandler notificationHandler = NotificationHandler.getInstance();
 	private final int DIALOG_HEIGHT = 700;
 	private final int DIALOG_WIDTH = 300;
 	private final ProcessDiagramView diagram;
@@ -75,6 +81,8 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 	protected JCheckBox manualMoveAllowedCheckBox;
 	protected JTextArea explanationArea;
 	protected JTextArea commentArea;
+	private final String key;
+	protected final ILSLogger log;
 	protected static final Dimension EXPLANATIION_AREA_SIZE  = new Dimension(250,300);
 	protected static final Dimension TEXT_RECOMMENDATION_AREA_SIZE  = new Dimension(250,300);
 	protected static final Dimension COMMENT_AREA_SIZE  = new Dimension(250,300);
@@ -98,14 +106,19 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 	public FinalDiagnosisPropertyEditor(DesignerContext context,DiagramWorkspace wrkspc,ProcessBlockView blk) {
 		this.block = blk;
 		this.model = blk.getAuxiliaryData();
+		this.key = NotificationKey.keyForAuxData(block.getId().toString());
 		this.rb = ResourceBundle.getBundle("com.ils.blt.designer.designer");  // designer.properties
 		this.requestHandler = new ApplicationRequestHandler();
 		this.context = context;
         this.diagram = wrkspc.getActiveDiagram();
 		this.corePanel = new CorePropertyPanel(this,block);
-
+		this.log = LogMaker.getLogger(this);
 		this.setPreferredSize(new Dimension(DIALOG_WIDTH,DIALOG_HEIGHT));
         initialize();
+        setUI();
+		// Register for notifications
+		log.debugf("%s: adding listener %s",CLSS,key);
+		notificationHandler.addNotificationChangeListener(key,CLSS,this);
 	}
 
 	/**
@@ -129,7 +142,9 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		add(mainPanel,"grow,push");;
 	}
 	
-	public void shutdown() {}
+	public void shutdown() {
+		notificationHandler.removeNotificationChangeListener(key,CLSS);
+	}
 	
 	private BasicEditPanel createMainPanel() {	
 		// The internal panel has two panes
@@ -139,29 +154,14 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		mainPanel.setLayout(new MigLayout("ins 2,fill","[][]","[][growprio 60,150:150:2000][]"));
 		
 		mainPanel.addSeparator(mainPanel,"QuantOutputs");
-		
 		dual = new DualListBox();
-		List<String> q1 = model.getLists().get("OutputsInUse");
-		if( q1==null ) q1 = new ArrayList<>();
-		dual.setDestinationElements(q1);
-		// The outputs are ALL possibilities. Subtract 
-		// those already being used.
-		List<String> q0 = model.getLists().get("QuantOutputs");
-		if( q0!=null ) {
-			for( String inUse:q1) {
-				q0.remove(inUse);
-			}
-		}
-		else {
-			q0 = new ArrayList<>();
-		}
-		dual.setSourceElements(q0);
+
 		dual.addPropertyChangeListener(this);
 		mainPanel.add(dual, "gapx 5 5,grow,wrap");
 		mainPanel.add(createPropertiesPanel(),"grow,wrap");
 		return mainPanel;
 	}
-	
+
 	private BasicEditPanel createMainPanelNoData() {	
 		//setLayout(new BorderLayout());
 		mainPanel = new BasicEditPanel(this);
@@ -179,7 +179,6 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 	 *     label | value
 	 */
 	private JPanel createPropertiesPanel() {
-		Map<String,String> properties = model.getProperties();
 		JPanel panel = new JPanel();
 		final String columnConstraints = "para[][]";
 		final String layoutConstraints = "ins 2,gapy 1,gapx 5,fillx,filly";
@@ -187,109 +186,141 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		panel.setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));
 
 		panel.add(createLabel("FinalDiagnosis.Label"),"gaptop 2,aligny top");
-		String method = properties.get("FinalDiagnosisLabel");
-		if( method==null) method="";
-		finalDiagnosisLabelField = createTextField("FinalDiagnosis.Label.Desc",method);
+		finalDiagnosisLabelField = createTextField("FinalDiagnosis.Label.Desc","");
 		finalDiagnosisLabelField.addFocusListener(this);
 		
 		panel.add(finalDiagnosisLabelField,"growx,wrap");
 		
 		panel.add(createLabel("FinalDiagnosis.Comment"),"gaptop 2,aligny top");
-		String comment = (String)properties.get("Comment");
-		if( comment==null) comment="";
-		commentArea = createTextArea("FinalDiagnosis.Comment.Desc",comment);
+		commentArea = createTextArea("FinalDiagnosis.Comment.Desc","");
 		JScrollPane commentScrollPane = new JScrollPane(commentArea);
 		commentScrollPane.setPreferredSize(COMMENT_AREA_SIZE);
 		commentArea.addFocusListener(this);
 		panel.add(commentScrollPane,"growx,growy,wrap");
 		
 		panel.add(createLabel("FinalDiagnosis.Explanation"),"gaptop 2,aligny top");
-		String explanation = (String)properties.get("Explanation");
-		if( explanation==null) explanation="";
-		explanationArea = createTextArea("FinalDiagnosis.Explanation.Desc",explanation);
+		explanationArea = createTextArea("FinalDiagnosis.Explanation.Desc","");
 		JScrollPane explanationScrollPane = new JScrollPane(explanationArea);
 		explanationScrollPane.setPreferredSize(EXPLANATIION_AREA_SIZE);
 		explanationArea.addFocusListener(this);
 		panel.add(explanationScrollPane,"growx,growy,wrap");
 		
 		panel.add(createLabel("FinalDiagnosis.TextRecommendation"),"gaptop 2,aligny top");
-		String recommendation = (String)properties.get("TextRecommendation");
-		if( recommendation==null) recommendation="";
-		textRecommendationArea = createTextArea("FinalDiagnosis.TextRecommendation.Desc",recommendation);
+		textRecommendationArea = createTextArea("FinalDiagnosis.TextRecommendation.Desc","");
 		JScrollPane textRecommendationScrollPane = new JScrollPane(textRecommendationArea);
 		textRecommendationScrollPane.setPreferredSize(TEXT_RECOMMENDATION_AREA_SIZE);
 		textRecommendationArea.addFocusListener(this);
 		panel.add(textRecommendationScrollPane,"growx,growy,wrap");
 		
 		panel.add(createLabel("FinalDiagnosis.CalcMethod"),"gaptop 2,aligny top");
-		String calculationMethod = properties.get("CalculationMethod");
-		if( calculationMethod==null) calculationMethod="";
-		calculationMethodField = createTextField("FinalDiagnosis.CalcMethod.Desc",calculationMethod);
+		calculationMethodField = createTextField("FinalDiagnosis.CalcMethod.Desc","");
 		calculationMethodField.addFocusListener(this);
 		panel.add(calculationMethodField,"growx,wrap");
 
 		panel.add(createLabel("FinalDiagnosis.Priority"),"gaptop 2,aligny top");
-		String priority = (String)properties.get("Priority");
-		if( priority==null) priority="";
-		priorityField = createTextField("FinalDiagnosis.Priority.Desc",priority);
+		priorityField = createTextField("FinalDiagnosis.Priority.Desc","");
 		priorityField.setPreferredSize(NUMBER_BOX_SIZE);
 		priorityField.addFocusListener(this);
 		panel.add(priorityField,"wrap");
 		
 		panel.add(createLabel("FinalDiagnosis.RefreshRate"),"gaptop 2,aligny top");
-		String rate = (String)properties.get("RefreshRate");
-		if( rate==null) rate="";
-		refreshRateField = createTextField("FinalDiagnosis.RefreshRate.Desc",rate);
+		refreshRateField = createTextField("FinalDiagnosis.RefreshRate.Desc","");
 		refreshRateField.setPreferredSize(NUMBER_BOX_SIZE);
 		refreshRateField.addActionListener(this);
 		panel.add(refreshRateField,"wrap");
 		
 		panel.add(createLabel("FinalDiagnosis.PostProcessingCallback"),"gaptop 2,aligny top");
-		method = (String)properties.get("PostProcessingCallback");
-		if( method==null) method="";
-		postProcessingCallbackField = createTextField("FinalDiagnosis.PostProcessingCallback.Desc",method);
+		postProcessingCallbackField = createTextField("FinalDiagnosis.PostProcessingCallback.Desc","");
 		postProcessingCallbackField.addActionListener(this);
 		panel.add(postProcessingCallbackField,"growx,wrap");
 		
-		String constantValue = properties.get("Constant");
-		if( constantValue==null) constantValue="0";
-		constantCheckBox = createCheckBox("FinalDiagnosis.Constant.Desc",(constantValue.equalsIgnoreCase("1")));
+		constantCheckBox = createCheckBox("FinalDiagnosis.Constant.Desc",false);
 		constantCheckBox.addActionListener(this);
 		panel.add(constantCheckBox,"alignx right");
 		panel.add(createLabel("FinalDiagnosis.Constant"),"gaptop 2,aligny top,wrap");
 		
 		//panel.add(createLabel("FinalDiagnosis.PostTextRecommendation"),"gaptop 2,aligny top");
-		String postTextRec = (String)properties.get("PostTextRecommendation");
-		if( postTextRec==null) postTextRec="0";
-		postTextRecommendationCheckBox = createCheckBox("FinalDiagnosis.PostTextRecommendation.Desc",(postTextRec.equals("0")?false:true));
+		postTextRecommendationCheckBox = createCheckBox("FinalDiagnosis.PostTextRecommendation.Desc",false);
 		postTextRecommendationCheckBox.addActionListener(this);
 		panel.add(postTextRecommendationCheckBox,"alignx right");
 		panel.add(createLabel("FinalDiagnosis.PostTextRecommendation"),"gaptop 2, aligny top,wrap");
 		
-		String showExplanation = (String)properties.get("ShowExplanationWithRecommendation");
-		//log.errorf("showExplanation: "+showExplanation);
-		if( showExplanation==null) showExplanation="0";
-		showExplanationWithRecommendationCheckBox = createCheckBox("FinalDiagnosis.ShowExplanationWithRecommendation.Desc",(showExplanation.equals("0")?false:true));
+		showExplanationWithRecommendationCheckBox = createCheckBox("FinalDiagnosis.ShowExplanationWithRecommendation.Desc",false);
 		showExplanationWithRecommendationCheckBox.addActionListener(this);
 		panel.add(showExplanationWithRecommendationCheckBox,"alignx right");
 		panel.add(createLabel("FinalDiagnosis.ShowExplanationWithRecommendation"),"gaptop 2,aligny top,wrap");
 		
-		String manualMoveAllowed = properties.get("ManualMoveAllowed");
-		if( manualMoveAllowed==null) manualMoveAllowed="0";
-		manualMoveAllowedCheckBox = createCheckBox("FinalDiagnosis.ManualMoveAllowed.Desc",(manualMoveAllowed.equalsIgnoreCase("1")));
+		manualMoveAllowedCheckBox = createCheckBox("FinalDiagnosis.ManualMoveAllowed.Desc",false);
 		manualMoveAllowedCheckBox.addActionListener(this);
 		panel.add(manualMoveAllowedCheckBox,"alignx right");
 		panel.add(createLabel("FinalDiagnosis.ManualMoveAllowed"),"gaptop 2,aligny top,wrap");
 		
-		String tf = (String)properties.get("TrapInsignificantRecommendations");
-		if( tf==null) tf="0";
-		trapBox = createCheckBox("FinalDiagnosis.TrapInsignificant.Desc",(tf.equals("0")?false:true));
+		trapBox = createCheckBox("FinalDiagnosis.TrapInsignificant.Desc",false);
 		trapBox.addActionListener(this);
 		panel.add(trapBox,"alignx right");
 		panel.add(createLabel("FinalDiagnosis.TrapInsignificant"),"gaptop 2,aligny top");
 		return panel;
 	}
 
+	private void setUI() {
+		Map<String,String> properties = model.getProperties();
+		
+		List<String> q1 = model.getLists().get("OutputsInUse");
+		if( q1==null ) q1 = new ArrayList<>();
+		dual.setDestinationElements(q1);
+		// The outputs are ALL possibilities. Subtract 
+		// those already being used.
+		List<String> q0 = model.getLists().get("QuantOutputs");
+		if( q0!=null ) {
+			for( String inUse:q1) {
+				q0.remove(inUse);
+			}
+		}
+		else {
+			q0 = new ArrayList<>();
+		}
+		dual.setSourceElements(q0);
+		
+		String method = properties.get("FinalDiagnosisLabel");
+		if( method==null) method="";
+		finalDiagnosisLabelField.setText(method);
+		String comment = (String)properties.get("Comment");
+		if( comment==null) comment="";
+		commentArea .setText(comment);
+		String explanation = (String)properties.get("Explanation");
+		if( explanation==null) explanation="";
+		explanationArea.setText(explanation);
+		String recommendation = (String)properties.get("TextRecommendation");
+		if( recommendation==null) recommendation="";
+		textRecommendationArea.setText(recommendation);
+		String calculationMethod = properties.get("CalculationMethod");
+		if( calculationMethod==null) calculationMethod="";
+		calculationMethodField.setText(calculationMethod);
+		String priority = (String)properties.get("Priority");
+		if( priority==null) priority="";
+		priorityField.setText(priority);
+		String rate = (String)properties.get("RefreshRate");
+		if( rate==null) rate="";
+		refreshRateField.setText(rate);
+		method = (String)properties.get("PostProcessingCallback");
+		if( method==null) method="";
+		postProcessingCallbackField.setText(method);
+		String constantValue = properties.get("Constant");
+		if( constantValue==null) constantValue="0";
+		constantCheckBox.setSelected(constantValue.equalsIgnoreCase("1"));
+		String postTextRec = (String)properties.get("PostTextRecommendation");
+		if( postTextRec==null) postTextRec="0";
+		postTextRecommendationCheckBox.setSelected(postTextRec.equals("0")?false:true);
+		String showExplanation = (String)properties.get("ShowExplanationWithRecommendation");
+		if( showExplanation==null) showExplanation="0";
+		showExplanationWithRecommendationCheckBox.setSelected(showExplanation.equals("0")?false:true);
+		String manualMoveAllowed = properties.get("ManualMoveAllowed");
+		if( manualMoveAllowed==null) manualMoveAllowed="0";
+		manualMoveAllowedCheckBox.setSelected(manualMoveAllowed.equalsIgnoreCase("1"));
+		String tf = (String)properties.get("TrapInsignificantRecommendations");
+		if( tf==null) tf="0";
+		trapBox.setSelected(tf.equals("0")?false:true);
+	}
 	
 	/**
 	 * These properties are present in every block.
@@ -338,6 +369,7 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		
 		List<String> inUseList = dual.getDestinations();
 		model.getLists().put("OutputsInUse",inUseList);
+		notificationHandler.removeNotificationChangeListener(key,CLSS);
 	}
 	
 	/*
@@ -448,8 +480,13 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		}
 		return btn;
 	}
-	
-	// Focus listener
+	// ============================================== Action listener ==========================================
+	@Override
+	public void actionPerformed(ActionEvent event) {
+		save();
+		
+	}
+	// ============================================== Focus listener ==========================================
 	@Override
 	public void focusGained(FocusEvent event) {
 	}
@@ -458,18 +495,40 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		save();
 	}
 
-	@Override
-	public void actionPerformed(ActionEvent event) {
-		save();
-		
-	}
-
+	// ============================================== PropertyChange listener ==========================================
 	@Override
 	public void propertyChange(PropertyChangeEvent arg0) {
 		if (arg0.getPropertyName().equalsIgnoreCase(DualListBox.PROPERTY_CHANGE_UPDATE)) {
 			save();
 		}
-		
+
 	}	
-	
+	// ======================================= Notification Change Listener ===================================
+	@Override
+	public void bindingChange(String binding) {}
+	@Override
+	public void diagramStateChange(long resId, String state) {}
+	@Override
+	public void nameChange(String name) {}
+
+	// The value is the aux data of the application. Note that the method is not
+	// called on the Swing thread
+	@Override
+	public void valueChange(final QualifiedValue value) {
+		log.infof("%s.valueChange: new aux data for %s",CLSS,model.getProperties().get("Name"));
+		if( value==null ) return;
+		GeneralPurposeDataContainer container = (GeneralPurposeDataContainer)value.getValue();
+		if( container==null) return;
+		model.setLists(container.getLists());
+		model.setMapLists(container.getMapLists());
+		model.setProperties(container.getProperties());
+		SwingUtilities.invokeLater( new Runnable() {
+			public void run() {
+				setUI();
+			}
+		});
+	}
+	@Override
+	public void watermarkChange(String mark) {}
+
 }

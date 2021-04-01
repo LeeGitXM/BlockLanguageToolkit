@@ -1,5 +1,5 @@
 /**
- *   (c) 2013-2020  ILS Automation. All rights reserved.
+ *   (c) 2013-2021  ILS Automation. All rights reserved.
  *  
  */
 package com.ils.blt.designer;
@@ -99,6 +99,20 @@ public class NotificationHandler implements PushNotificationListener {
 						//		listener.getClass().getName(),payload.toString());
 						long resourceId = Long.parseLong(key.substring(2));
 						listener.diagramStateChange(resourceId, payload.toString());
+					}
+				}
+				else {
+					log.debugf("%s.receiveNotification: no receiver for key=%s,value=%s",CLSS,key,payload.toString());
+				}
+			}
+			// Auxiliary data have changed. These may be associated with a block, application or family
+			else if(NotificationKey.isAuxDataKey(key)) {
+				Map<String,NotificationChangeListener> listeners = changeListenerMap.get(key);
+				if( listeners != null ) {
+					for(NotificationChangeListener listener:listeners.values()) {
+						log.tracef("%s.receiveNotification: value %s=%s - notifying %s",CLSS,
+								key,((QualifiedValue)payload).getValue().toString(),listener.getClass().getName());
+						listener.valueChange((QualifiedValue)payload);
 					}
 				}
 				else {

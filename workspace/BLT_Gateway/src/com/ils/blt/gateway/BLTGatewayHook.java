@@ -111,15 +111,6 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 						res.getResourceId(),res.getName());
 				mmgr.analyzeResource(project.getId(),res,true);  // Flag implies startup
 			}
-			// When analyzing the resources on startup, we've already updated them for extension activity
-			/*
-			try {
-				context.getProjectManager().saveProject(project,null,null,"Update for Extensions",true);
-			}
-			catch(Exception ex) {
-				log.warnf("%s.startup - Error posting project %s update for extensions (%s)", CLSS, project.getName(),ex.getLocalizedMessage());
-			}
-			*/
 		}
 
 		controller.start(context);     // Lastly, start the controller

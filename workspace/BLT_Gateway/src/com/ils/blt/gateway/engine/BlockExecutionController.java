@@ -55,7 +55,7 @@ import com.inductiveautomation.ignition.gateway.model.GatewayContext;
  *  This class is a singleton for easy access throughout the application.
  */
 public class BlockExecutionController implements ExecutionController, Runnable {
-	private final static String TAG = "BlockExecutionController";
+	private final static String CLSS = "BlockExecutionController";
 	private static BlockExecutionController instance = null;
 	public final static String CONTROLLER_RUNNING_STATE = "running";
 	public final static String CONTROLLER_STOPPED_STATE = "stopped";
@@ -115,7 +115,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	 */
 	@Override
 	public void acceptBroadcastNotification(BroadcastNotification note) {
-		log.tracef("%s.acceptBroadcastNotification: %s (%s) %s", TAG,note.getDiagramId(),note.getSignal().getCommand(),
+		log.tracef("%s.acceptBroadcastNotification: %s (%s) %s", CLSS,note.getDiagramId(),note.getSignal().getCommand(),
 				(stopped?"REJECTED, controller stopped":""));
 		ProcessDiagram diagram = getDiagram(note.getDiagramId());
 		if( diagram!=null && !diagram.getState().equals(DiagramState.DISABLED)) {
@@ -134,7 +134,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		
 		ProcessBlock pb = inNote.getBlock();
 		if( log.isTraceEnabled() ) {
-			log.tracef("%s.run: processing incoming note from %s:%s = %s", TAG,pb.toString(),inNote.getPort(),inNote.getValue().toString());
+			log.tracef("%s.run: processing incoming note from %s:%s = %s", CLSS,pb.toString(),inNote.getPort(),inNote.getValue().toString());
 		}
 		// Send the push notification
 		sendConnectionNotification(pb.getBlockId().toString(),inNote.getPort(),inNote.getValue());
@@ -158,7 +158,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	@Override
 	public void acceptCompletionNotification(OutgoingNotification note) {
 		if( log.isTraceEnabled() && note!=null && note.getValue()!=null ) {
-			log.tracef("%s:acceptCompletionNotification: %s:%s = %s %s", TAG,note.getBlock().getBlockId().toString(),note.getPort(),
+			log.tracef("%s:acceptCompletionNotification: %s:%s = %s %s", CLSS,note.getBlock().getBlockId().toString(),note.getPort(),
 				note.getValue().toString(),
 				(stopped?"REJECTED, controller stopped":""));
 		}
@@ -177,7 +177,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	 */
 	@Override
 	public void acceptConnectionPostNotification(ConnectionPostNotification note) {
-		log.tracef("%s:acceptConnectionPostNotification: %s %s", TAG,note.getOriginName(),
+		log.tracef("%s:acceptConnectionPostNotification: %s %s", CLSS,note.getOriginName(),
 				(stopped?"REJECTED, controller stopped":""));
 		ProcessDiagram diagram = getDiagram(note.getDiagramId());
 		if( diagram!=null && diagram.getState().equals(DiagramState.ACTIVE)) {
@@ -240,7 +240,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 				isolationTimeFactor = Double.parseDouble(factor);
 			}
 			catch(NumberFormatException nfe) {
-				log.errorf("%s.getIsolationTimeFactor: Could not parse (%s) to a double value (%s)",TAG,factor,nfe.getMessage());
+				log.errorf("%s.getIsolationTimeFactor: Could not parse (%s) to a double value (%s)",CLSS,factor,nfe.getMessage());
 				isolationTimeFactor = 1.0;
 			}
 		}
@@ -265,11 +265,11 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	 * @param context the gateway context
 	 */
 	public synchronized void start(GatewayContext context) {
-		log.infof("%s: STARTED",TAG);
+		log.infof("%s: STARTED",CLSS);
 		if(!stopped) return;  
 		stopped = false;
 		this.notificationThread = new Thread(this, "BlockExecutionController");
-		log.debugf("%s START - notification thread %d ",TAG,notificationThread.hashCode());
+		log.debugf("%s START - notification thread %d ",CLSS,notificationThread.hashCode());
 		notificationThread.setDaemon(true);
 		notificationThread.start();
 		watchdogTimer.start();
@@ -292,7 +292,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	 * instance values to null to, hopefully, allow garbage collection.
 	 */
 	public synchronized void stop() {
-		log.infof("%s: STOPPING ...",TAG);
+		log.infof("%s: STOPPING ...",CLSS);
 		if(stopped) return;
 		stopped = true;
 		if(notificationThread!=null) {
@@ -303,7 +303,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		watchdogTimer.stop();
 		// Shutdown all of the blocks in the diagram.
 		modelManager.stopBlocks();
-		log.infof("%s: STOPPED",TAG);
+		log.infof("%s: STOPPED",CLSS);
 	}
 	public  void setDelegate(ModelManager resmgr) { this.modelManager = resmgr; }
 	public void triggerStatusNotifications() {
@@ -354,7 +354,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	// Tag change scripts fire before the modules are loaded ...
 	public ProcessDiagram getDiagram(UUID id) {
 		if( modelManager==null) {
-			log.infof("%s.getDiagram: ERROR called before controller has been initialized",TAG);
+			log.infof("%s.getDiagram: ERROR called before controller has been initialized",CLSS);
 			return null;
 		}
 		return modelManager.getDiagram(id);
@@ -433,10 +433,10 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 			block = modelManager.getBlock(diagram, blockId);
 			if( block!=null) {
 				block.reset();
-				log.debugf("%s.resetBlock: diagram:block %s:%s RESET",TAG,diagram.getName(),block.getName());
+				log.debugf("%s.resetBlock: diagram:block %s:%s RESET",CLSS,diagram.getName(),block.getName());
 			}
 		}
-		if(block==null) log.infof("%s.resetBlock: diagram:block %s:%s NOT FOUND",TAG,diagramId.toString(),blockId.toString());
+		if(block==null) log.infof("%s.resetBlock: diagram:block %s:%s NOT FOUND",CLSS,diagramId.toString(),blockId.toString());
 	}
 	/**
 	 * Reset all blocks on a diagram. Resetting blocks with
@@ -455,10 +455,10 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 			for(ProcessBlock block:diagram.getProcessBlocks() ) {
 				if( block.delayBlockStart() ) block.evaluate();
 			}
-			log.debugf("%s.resetBlock: diagram %s RESET",TAG,diagram.getName());
+			log.debugf("%s.resetBlock: diagram %s RESET",CLSS,diagram.getName());
 		}
 		else {
-			log.infof("%s.resetDiagram: diagram %s NOT FOUND",TAG,diagramId.toString());
+			log.infof("%s.resetDiagram: diagram %s NOT FOUND",CLSS,diagramId.toString());
 		}
 	}
 
@@ -498,7 +498,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	@Override
 	public QualifiedValue getTagValue(UUID diagramId,String path) {
 		if( tagReader==null ) {
-			log.warnf("%s.getTagValue: tagReader is null. Received read request for %s before controller was ready. Ignored.",TAG,(path==null?"NULL":path));
+			log.warnf("%s.getTagValue: tagReader is null. Received read request for %s before controller was ready. Ignored.",CLSS,(path==null?"NULL":path));
 			return null;
 		}
 		return tagReader.readTag(path);
@@ -564,7 +564,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 			tagWriter.write(tagPath,val.getValue().toString(),val.getTimestamp().getTime());
 		}
 		else {
-			log.infof("%s.updateTag %s REJECTED, diagram not active",TAG,tagPath);
+			log.infof("%s.updateTag %s REJECTED, diagram not active",CLSS,tagPath);
 		}
 	}
 	
@@ -583,7 +583,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 			result = tagValidator.validateTag(tagPath);
 		}
 		else {
-			log.infof("%s.validateTag %s, parent diagram not found or disabled",TAG,tagPath);
+			log.infof("%s.validateTag %s, parent diagram not found or disabled",CLSS,tagPath);
 		}
 		return result;
 	}
@@ -603,7 +603,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 					// Query the diagram to find out what's next
 					ProcessBlock pb = inNote.getBlock();
 					if( log.isTraceEnabled() ) {
-						log.tracef("%s.run: processing incoming note from %s:%s = %s", TAG,pb.toString(),inNote.getPort(),inNote.getValue().toString());
+						log.tracef("%s.run: processing incoming note from %s:%s = %s", CLSS,pb.toString(),inNote.getPort(),inNote.getValue().toString());
 					}
 					// Send the push notification
 					sendConnectionNotification(pb.getBlockId().toString(),inNote.getPort(),inNote.getValue());
@@ -619,7 +619,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 							Collection<SignalNotification> outgoing = dm.getOutgoingSignalNotifications(inNote);
 							// It is common for display blocks, for example, to be left unconnected.
 							// Don't get too worried about this.
-							if( outgoing.isEmpty() ) log.debugf("%s: no downstream blocks found ...",TAG);
+							if( outgoing.isEmpty() ) log.debugf("%s: no downstream blocks found ...",CLSS);
 							for(SignalNotification outNote:outgoing) {
 									threadPool.execute(new IncomingBroadcastTask(outNote.getBlock(),outNote));
 							}
@@ -628,23 +628,23 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 							Collection<IncomingNotification> outgoing = dm.getOutgoingNotifications(inNote);
 							// It is common for display blocks, for example, to be left unconnected.
 							// Don't get too worried about this.
-							if( outgoing.isEmpty() ) log.debugf("%s: no downstream connections found ...",TAG);
+							if( outgoing.isEmpty() ) log.debugf("%s: no downstream connections found ...",CLSS);
 							for(IncomingNotification outNote:outgoing) {
 								UUID outBlockId = outNote.getConnection().getTarget();
 								ProcessBlock outBlock = dm.getBlock(outBlockId);
 								if( outBlock!=null ) {
-									log.tracef("%s.run: sending outgoing notification: to %s:%s = %s", TAG,outBlock.toString(),
+									log.tracef("%s.run: sending outgoing notification: to %s:%s = %s", CLSS,outBlock.toString(),
 											  outNote.getConnection().getDownstreamPortName(),outNote.getValue().toString());
 									threadPool.execute(new IncomingValueChangeTask(outBlock,outNote));
 								}
 								else {
-									log.warnf("%s: run: target block %s not found in diagram map ",TAG,outBlockId.toString());
+									log.warnf("%s: run: target block %s not found in diagram map ",CLSS,outBlockId.toString());
 								}
 							}
 						}
 					}
 					else {
-						log.warnf("%s: run: diagram %s not found for value change notification",TAG,pb.getParentId().toString());
+						log.warnf("%s: run: diagram %s not found for value change notification",CLSS,pb.getParentId().toString());
 					}
 				}
 				else if( work instanceof BroadcastNotification) {
@@ -652,24 +652,24 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 					// Query the diagram to find out what's next. These are "unconnected" signals.
 					ProcessDiagram dm = modelManager.getDiagram(inNote.getDiagramId());
 					if( dm!=null) {
-						log.debugf("%s.run: processing broadcast to diagram %s (%s)", TAG,dm.getName(),inNote.getSignal().getCommand());
+						log.debugf("%s.run: processing broadcast to diagram %s (%s)", CLSS,dm.getName(),inNote.getSignal().getCommand());
 						Collection<SignalNotification> outgoing = dm.getBroadcastNotifications(inNote);
-						if( outgoing.isEmpty() ) log.warnf("%s: no broadcast recipients found ...",TAG);
+						if( outgoing.isEmpty() ) log.warnf("%s: no broadcast recipients found ...",CLSS);
 						for(SignalNotification outNote:outgoing) {
 							ProcessBlock outBlock = outNote.getBlock();
-							log.debugf("%s.run: sending signal to %s", TAG,outBlock.toString());
+							log.debugf("%s.run: sending signal to %s", CLSS,outBlock.toString());
 							threadPool.execute(new IncomingBroadcastTask(outBlock,outNote));
 							
 						}
 					}
 					// Note: This can legitimately happen if the diagram is deleted.
 					else {
-						log.warnf("%s.run: diagram %s not found in value change notification",TAG,
+						log.warnf("%s.run: diagram %s not found in value change notification",CLSS,
 								inNote.getDiagramId().toString());
 					}
 				}
 				else {
-					log.warnf("%s.run: Unexpected object in buffer (%s)",TAG,work.getClass().getName());
+					log.warnf("%s.run: Unexpected object in buffer (%s)",CLSS,work.getClass().getName());
 				}
 			}
 			catch( InterruptedException ie) {}
@@ -690,37 +690,53 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		}
 		catch(Exception ex) {
 			// Probably no receiver registered. This is to be expected if the designer is not running.
-			log.debugf("%s.sendAlertNotification: No notification receiver for %s (%s)",TAG,key,ex.getMessage());
+			log.debugf("%s.sendAlertNotification: No notification receiver for %s (%s)",CLSS,key,ex.getMessage());
 		}
 	}
-	
 	/**
 	 * Notify any notification listeners of changes to a block property. This is usually triggered by the 
-	 * block itself. The ultimate receiver is typically a block property in the UI in a ProcessBlockView.
+	 * block itself. The ultimate receiver is typically a block property in the UI, a ProcessBlockView.
 	 */
 	@Override
-	public void sendPropertyNotification(String blkid, String propertyName,QualifiedValue val) {
+	public void sendAuxDataNotification(String blkid,QualifiedValue val) {
 		if( val==null ) return;    
-		String key = NotificationKey.keyForProperty(blkid,propertyName);
-		log.tracef("%s.sendPropertyNotification: %s (%s)",TAG,key,val.toString());
+		String key = NotificationKey.keyForAuxData(blkid);
+		log.tracef("%s.sendAuxDataNotification: %s (%s)",CLSS,key,val.toString());
 		try {
 			sessionManager.sendNotification(ApplicationScope.DESIGNER, BLTProperties.MODULE_ID, key, val);
 		}
 		catch(Exception ex) {
 			// Probably no receiver registered. This is to be expected if the designer is not running.
-			log.debugf("%s.sendPropertyNotification: Error transmitting %s (%s)",TAG,key,ex.getMessage());
+			log.debugf("%s.sendAuxDataNotification: Error transmitting %s (%s)",CLSS,key,ex.getMessage());
+		}
+	}
+	/**
+	 * Notify any notification listeners of changes to a block property. This is usually triggered by the 
+	 * block itself. The ultimate receiver is typically a block property in the UI, a ProcessBlockView.
+	 */
+	@Override
+	public void sendPropertyNotification(String blkid, String propertyName,QualifiedValue val) {
+		if( val==null ) return;    
+		String key = NotificationKey.keyForProperty(blkid,propertyName);
+		log.tracef("%s.sendPropertyNotification: %s (%s)",CLSS,key,val.toString());
+		try {
+			sessionManager.sendNotification(ApplicationScope.DESIGNER, BLTProperties.MODULE_ID, key, val);
+		}
+		catch(Exception ex) {
+			// Probably no receiver registered. This is to be expected if the designer is not running.
+			log.debugf("%s.sendPropertyNotification: Error transmitting %s (%s)",CLSS,key,ex.getMessage());
 		}
 	}
 	@Override
 	public void sendNameChangeNotification(String blkid,String name) {
 		String key = NotificationKey.keyForBlockName(blkid);
-		log.tracef("%s.sendNameChangeNotification: %s (%s)",TAG,key,name);
+		log.tracef("%s.sendNameChangeNotification: %s (%s)",CLSS,key,name);
 		try {
 			sessionManager.sendNotification(ApplicationScope.DESIGNER, BLTProperties.MODULE_ID, key, name);
 		}
 		catch(Exception ex) {
 			// Probably no receiver registered. This is to be expected if the designer is not running.
-			log.debugf("%s.sendPropertyBindingNotification: Error transmitting %s (%s)",TAG,key,ex.getMessage());
+			log.debugf("%s.sendPropertyBindingNotification: Error transmitting %s (%s)",CLSS,key,ex.getMessage());
 		}
 	}
 	/**
@@ -731,13 +747,13 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	public void sendPropertyBindingNotification(String blkid, String propertyName,String binding) {
 		if( binding==null ) return;
 		String key = NotificationKey.keyForPropertyBinding(blkid,propertyName);
-		log.tracef("%s.sendPropertyBindingNotification: %s (%s)",TAG,key,binding);
+		log.tracef("%s.sendPropertyBindingNotification: %s (%s)",CLSS,key,binding);
 		try {
 			sessionManager.sendNotification(ApplicationScope.DESIGNER, BLTProperties.MODULE_ID, key, binding);
 		}
 		catch(Exception ex) {
 			// Probably no receiver registered. This is to be expected if the designer is not running.
-			log.debugf("%s.sendPropertyBindingNotification: Error transmitting %s (%s)",TAG,key,ex.getMessage());
+			log.debugf("%s.sendPropertyBindingNotification: Error transmitting %s (%s)",CLSS,key,ex.getMessage());
 		}
 	}
 	/**
@@ -756,7 +772,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		}
 		catch(Exception ex) {
 			// Probably no receiver registered. This is to be expected if the designer is not running.
-			log.debugf("%s.sendConnectionNotification: No notification receiver for %s (%s)",TAG,key,ex.getMessage());
+			log.debugf("%s.sendConnectionNotification: No notification receiver for %s (%s)",CLSS,key,ex.getMessage());
 		}
 	}
 	/**
@@ -773,7 +789,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		}
 		catch(Exception ex) {
 			// Probably no receiver registered. This is to be expected if the designer is not running.
-			log.debugf("%s.sendStateNotification: No notification receiver for %s (%s)",TAG,key,ex.getMessage());
+			log.debugf("%s.sendStateNotification: No notification receiver for %s (%s)",CLSS,key,ex.getMessage());
 		}
 	}
 	/**
@@ -790,7 +806,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		}
 		catch(Exception ex) {
 			// Probably no receiver registered. This is to be expected if the designer is not running.
-			log.debugf("%s.sendWatermarkNotification: Error transmitting %s (%s)",TAG,key,ex.getMessage());
+			log.debugf("%s.sendWatermarkNotification: Error transmitting %s (%s)",CLSS,key,ex.getMessage());
 		}
 	}
 	

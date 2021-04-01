@@ -6,8 +6,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.ils.blt.common.block.ActiveState;
 import com.ils.common.GeneralPurposeDataContainer;
 
-
-
 /**
  * Implement a plain-old-java-object representing a model diagram
  * that is serializable via a JSON serializer.

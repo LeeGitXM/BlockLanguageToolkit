@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.BLTProperties;
@@ -28,10 +27,10 @@ import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.SerializableFamily;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
-import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.persistence.ToolkitProperties;
 import com.ils.common.persistence.ToolkitRecordHandler;
 import com.inductiveautomation.ignition.common.model.ApplicationScope;
+import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.project.ProjectVersion;
@@ -733,7 +732,7 @@ public class ModelManager implements ProjectListener  {
 				String db = toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_DATABASE);
 				Script script = extensionManager.createExtensionScript(ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.GET_AUX_OPERATION, provider);
 				extensionManager.runScript(context.getScriptManager(), script, application.getSelf().toString(),application.getAuxiliaryData(),db);
-				//updateResource(res,projectId,application);
+				controller.sendAuxDataNotification(application.getSelf().toString(), new BasicQualifiedValue(application.getAuxiliaryData()));
 			}
 			else  {
 				String provider = (application.getState().equals(DiagramState.ACTIVE) ? 
@@ -859,7 +858,13 @@ public class ModelManager implements ProjectListener  {
 			if( startup ) {
 				// A diagram has no associated data. All we have to do is prepare the resource for updates because
 				// of the block getAux data
-				//updateResource(res,projectId,diagram);
+				if( diagram!=null )  {
+					for(ProcessBlock block:diagram.getProcessBlocks()) {
+						boolean hadData = block.getAuxiliaryData().containsData();
+						block.getAuxData(block.getAuxiliaryData());
+						if( hadData|| block.getAuxiliaryData().containsData()) controller.sendAuxDataNotification(block.getBlockId().toString(), new BasicQualifiedValue(block.getAuxiliaryData()));
+					}
+				}
 			}
 			else {
 				String provider = (diagram.getState().equals(DiagramState.ACTIVE) ? 
@@ -868,12 +873,6 @@ public class ModelManager implements ProjectListener  {
 				Script script = extensionManager.createExtensionScript(ScriptConstants.DIAGRAM_CLASS_NAME, ScriptConstants.SAVE_OPERATION, provider);
 				extensionManager.runScript(context.getProjectManager().getProjectScriptManager(diagram.getProjectId()), 
 						script, diagram.getSelf().toString());
-				String db = (diagram.getState().equals(DiagramState.ACTIVE) ? 
-						toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_DATABASE):
-							toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_DATABASE));
-
-				script = extensionManager.createExtensionScript(ScriptConstants.DIAGRAM_CLASS_NAME, ScriptConstants.SET_AUX_OPERATION, provider);
-				extensionManager.runScript(context.getScriptManager(), script, diagram.getSelf().toString(),diagram.getAuxiliaryData(),db);
 				for(ProcessBlock block:diagram.getProcessBlocks()) {
 					block.setAuxData(block.getAuxiliaryData());
 				}
@@ -1209,7 +1208,6 @@ public class ModelManager implements ProjectListener  {
 			log.warnf("%s.deserializeDiagramResource: exception (%s)",CLSS,ex.getLocalizedMessage(),ex);
 		}
 		return sd;
-
 	}
 	
 	/**
@@ -1287,25 +1285,6 @@ public class ModelManager implements ProjectListener  {
 			ProcessNode parent = nodesByUUID.get(orphan.getParent());
 			parent.addChild(orphan);
 			orphansByUUID.remove(orphan.getSelf());
-		}
-	}
-	/**
-	 * Update the contents of a project resource in preparation for a subsequent project save.
-	 * @param pr
-	 * @param object
-	 */
-	private synchronized void updateResource(ProjectResource pr,long projectId,Object object) {
-		log.infof("%s.updateResource: reconstituting %s resource %d",CLSS,pr.getResourceType(),pr.getResourceId());
-		ObjectMapper mapper = new ObjectMapper();
-		
-		try{
-			byte[] bytes = mapper.writeValueAsBytes(object);
-			pr.setData(bytes);
-			Project project = context.getProjectManager().getProject(projectId, ApplicationScope.GATEWAY, ProjectVersion.Staging);
-			project.putResource(pr);
-		}
-		catch(JsonProcessingException jpe) {
-			log.warnf("%s.updateResource: Exception serializing %s, resource %d (%s)",CLSS,pr.getResourceType(),pr.getResourceId(),jpe.getMessage());
 		}
 	}
 }

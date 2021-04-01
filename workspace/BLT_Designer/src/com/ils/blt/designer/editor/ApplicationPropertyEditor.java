@@ -39,6 +39,7 @@ public class ApplicationPropertyEditor extends AbstractPropertyEditor {
 	protected final DesignerContext context;
 	private final SerializableApplication application;
 	private final GeneralPurposeDataContainer model;           // Data container operated on by panels
+	private final ApplicationHomePane homePanel;
 	private final ILSLogger log;
 	private final SortedListModel<String> outputKeys;
 
@@ -48,6 +49,7 @@ public class ApplicationPropertyEditor extends AbstractPropertyEditor {
 		this.context = ctx;
 		this.application = app;
 		this.model = application.getAuxiliaryData().clone();
+		this.homePanel = new ApplicationHomePane(this);
 		this.outputKeys = new SortedListModel<>();
 		buildOutputListModel();
 		initialize();
@@ -57,7 +59,7 @@ public class ApplicationPropertyEditor extends AbstractPropertyEditor {
 	private void initialize() {
 		model.getProperties().put("Name", application.getName());   // Use as a key when fetching
 		// sub-panes added according to the indexes above:
-		add(new ApplicationHomePane(this));
+		add(homePanel);
 		OutputEditorPane outputEditor = new OutputEditorPane(this);
 		add(new OutputsPane(this,outputEditor));
 		add(outputEditor);
@@ -65,16 +67,16 @@ public class ApplicationPropertyEditor extends AbstractPropertyEditor {
 		add(new JPanel());  // a blank pane
 		setSelectedPane(HOME);
 	}
-
+	public SerializableApplication getApplication() { return application; }
 	public GeneralPurposeDataContainer getModel() { return this.model; }
 	public SortedListModel<String> getOutputKeys() { return this.outputKeys; }
 	
 	@Override
-	public void shutdown() {}
+	public void shutdown() {
+		homePanel.shutdown();
+	}
 
-	
-	public SerializableApplication getApplication() { return application; }
-	
+
 	/*
 	 * Guarantee that the structure of the output list model is in place. Create a sorted list model, 
 	 * a string for every output map. This allows us to iterate over lists in alphabetical order.

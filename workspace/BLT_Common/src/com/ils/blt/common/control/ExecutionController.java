@@ -47,6 +47,7 @@ public interface ExecutionController  {
 	public List<SerializableBlockStateDescriptor> listSourcesForSink(String diagramId,String blockName);
 	public QualifiedValue getTagValue(UUID diagramId,String path);
 	public void sendAlertNotification(long resid, String val);
+	public void sendAuxDataNotification(String id,QualifiedValue val);
 	public void sendConnectionNotification(String blockid, String port, QualifiedValue val);
 	public void sendNameChangeNotification(String blockid, String name);
 	public void sendPropertyBindingNotification(String id, String propertyName, String val);

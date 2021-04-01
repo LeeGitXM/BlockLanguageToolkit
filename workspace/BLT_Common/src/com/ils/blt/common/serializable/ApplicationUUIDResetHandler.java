@@ -5,10 +5,7 @@
 package com.ils.blt.common.serializable;
 
 import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
-
-
 
 /**
  *  This class provides the utility function of resetting the UUIDs

@@ -7,6 +7,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.ConcurrentModificationException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -33,6 +34,7 @@ import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.BlockPropertyChangeListener;
 import com.ils.blt.common.notification.IncomingNotification;
+import com.ils.blt.common.notification.NotificationChangeListener;
 import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.notification.Signal;
 import com.ils.blt.common.notification.SignalNotification;
@@ -59,7 +61,7 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
  * PLEASE NOTE --  BUILD & INSTALL - These are not transmitted via the module to the gateway, you need the full installer or copy jars directly
  * 
  */
-public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropertyChangeListener, WatchdogObserver {
+public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropertyChangeListener, NotificationChangeListener, WatchdogObserver {
 	protected final static int DEFAULT_ACTIVITY_BUFFER_SIZE = 10; 
 	protected final static String DEFAULT_FORMAT = "yyyy/MM/dd HH:mm:ss";
 	protected final static SimpleDateFormat dateFormatter = new SimpleDateFormat(DEFAULT_FORMAT);
@@ -1087,4 +1089,27 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	public boolean versionUpdateRequired() {
 		return (getBlockVersion() > instanceVersion);
 	}
+	
+	// ===================================== Notification Change Listener =======================================
+	// The only method implemented is value change. This is interpreted to be a change to aux data
+	@Override
+	public void diagramStateChange(long resId, String s) {}
+	@Override
+	public void bindingChange(String bindTo) {}
+	@Override
+	public void nameChange(String val) {}
+	/**
+	 * Update aux data based on a push notification. Note that this
+	 * triggers any change listeners on this property. These
+	 * notifications are currently NOT on the UI thread.
+	 */
+	@Override
+	public synchronized void valueChange(QualifiedValue val) {
+		//log.infof("%s(%d).valueChange %s now %s",TAG,hashCode(),getName(),val.getValue().toString());
+		if( val!=null && val.getValue()!=null) {
+			setAuxiliaryData((GeneralPurposeDataContainer)val.getValue());
+		}
+	}
+	@Override
+	public void watermarkChange(String val) {}
 }

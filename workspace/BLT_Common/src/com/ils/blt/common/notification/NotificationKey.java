@@ -20,6 +20,14 @@ public class NotificationKey
 	}
 	/**
 	 * @param blkid string version of the block's UUID
+	 * @return  a push-notification key for aux data. The Id is
+	 *         the block, or node Id.
+	 */
+	public static String keyForAuxData(String blkid) {
+		return String.format("X:%s",blkid);
+	}
+	/**
+	 * @param blkid string version of the block's UUID
 	 * @return  a push-notification key for a block.
 	 */
 	public static String keyForBlockName(String blkid) {
@@ -75,6 +83,14 @@ public class NotificationKey
 	 */
 	public static boolean isAlertKey(String key) {
 		return key.startsWith("A");
+	}
+	/**
+	 * Test a key for type.
+	 * @param key the key value 
+	 * @return  true if this is an aux data key.
+	 */
+	public static boolean isAuxDataKey(String key) {
+		return key.startsWith("X");
 	}
 	/**
 	 * Test a key for type.

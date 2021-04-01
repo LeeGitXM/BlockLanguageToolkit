@@ -1227,7 +1227,10 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		controller.propagateBlockState(diagramUUID, blockUUID);
 	}
 	/**
-	 * Execute the getAux extension function in Gateway scope for the supplied resource
+	 * Execute the getAux extension function in Gateway scope for the supplied resource.
+	 * The notifications and resource saves are pretty heavy weight. If the aux data
+	 * were and remain empty, forego the update.
+	 * Send notification to the designer of any changes.
 	 * @param projectId the project
 	 * @param resid the resourceId of an application to be refreshed
 	 * @param provider tag provider
@@ -1238,27 +1241,44 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		ProjectResource res = context.getProjectManager().getProject(projectId, ApplicationScope.GATEWAY,ProjectVersion.Staging).getResource(resid);
 		if( res!=null && res.getResourceType().equals(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
 			ProcessApplication app = controller.getDelegate().deserializeApplicationResource(projectId, res);
+			boolean hadData = app.getAuxiliaryData().containsData();
 			Script script = extensionManager.createExtensionScript(ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.GET_AUX_OPERATION, provider);
 			extensionManager.runScript(context.getScriptManager(), script, app.getSelf().toString(),app.getAuxiliaryData(),db);
-			saveResource(res,app,projectId);
+			if(hadData || app.getAuxiliaryData().containsData()) {
+				saveResource(res,app,projectId);
+				controller.sendAuxDataNotification(app.getSelf().toString(), new BasicQualifiedValue(app.getAuxiliaryData()));
+			}
 		}
 		else if( res!=null && res.getResourceType().equals(BLTProperties.FAMILY_RESOURCE_TYPE)) {
 			ProcessFamily fam = controller.getDelegate().deserializeFamilyResource(projectId, res);
+			boolean hadData = fam.getAuxiliaryData().containsData();
 			Script script = extensionManager.createExtensionScript(ScriptConstants.FAMILY_CLASS_NAME, ScriptConstants.GET_AUX_OPERATION, provider);
 			extensionManager.runScript(context.getScriptManager(), script, fam.getSelf().toString(),fam.getAuxiliaryData(),db);
-			saveResource(res,fam,projectId);
+			if(hadData || fam.getAuxiliaryData().containsData()) {
+				saveResource(res,fam,projectId);
+				controller.sendAuxDataNotification(fam.getSelf().toString(), new BasicQualifiedValue(fam.getAuxiliaryData()));
+			}
 		}
 		else if( res!=null && res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
 			SerializableDiagram dia = controller.getDelegate().deserializeDiagramResource(projectId, res);
+			boolean hadData = false;
 			for(SerializableBlock block:dia.getBlocks()) {
+				boolean blockHadData = block.getAuxiliaryData().containsData();
 				block.getAuxData();
+				if( block.getAuxiliaryData().containsData() ) blockHadData = true;
+				if( blockHadData )	controller.sendAuxDataNotification(block.getId().toString(), new BasicQualifiedValue(block.getAuxiliaryData()));
+				hadData  = hadData||blockHadData;
 			}
-			saveResource(res,dia,projectId);
+			// If any blocks have or had data there might have been a change.
+			if(hadData) {
+				saveResource(res,dia,projectId);
+			}
 		}
 
 	}
-	// Save a resource update back into the project.
-	private void saveResource(ProjectResource resource,Object node,long projectId) {
+	// Save a resource with aux data back into the project. Notify the client.
+	// Note: This triggers the ModelManager project change listener.
+	public void saveResource(ProjectResource resource,Object node,long projectId) {
 		ObjectMapper mapper = new ObjectMapper();
 		try{
 			byte[] bytes = mapper.writeValueAsBytes(node);
@@ -1269,9 +1289,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			log.infof("%s.saveResource: Saving, resource %s (%s)",TAG,resource.getName(),resource.getResourceType());
 			diff.putResource(resource);
 			context.getProjectManager().saveProject(diff, null, null, "Updated aux structure", true);
-			//Collection<Long> clxn = new ArrayList<>();
-			//clxn.add(resource.getResourceId());
-			//context.getProjectManager().publishSelected(projectId,clxn,null,null,"Resource saved in Gateway");
+
 		}
 		catch(JsonProcessingException jpe) {
 			log.warnf("%s.saveResource: Exception serializing application, resource %d (%s)",TAG,resource.getResourceId(),jpe.getMessage());

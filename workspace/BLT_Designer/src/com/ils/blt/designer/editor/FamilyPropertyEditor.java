@@ -18,14 +18,19 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.block.ActiveState;
+import com.ils.blt.common.notification.NotificationChangeListener;
+import com.ils.blt.common.notification.NotificationKey;
 import com.ils.blt.common.serializable.SerializableFamily;
+import com.ils.blt.designer.NotificationHandler;
 import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.log.ILSLogger;
 import com.ils.common.log.LogMaker;
+import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
@@ -34,15 +39,17 @@ import net.miginfocom.swing.MigLayout;
 /**
  * Display a sliding pane in the property edit window to configure a Family node
  */
-public class FamilyPropertyEditor extends AbstractPropertyEditor implements ActionListener, FocusListener { 
+public class FamilyPropertyEditor extends AbstractPropertyEditor implements ActionListener, FocusListener, NotificationChangeListener { 
 	private final static String CLSS = "FamilyPropertyEditor";
 	private static final long serialVersionUID = 2882399376824334427L;
+	private final NotificationHandler notificationHandler = NotificationHandler.getInstance();
 	private static final Dimension COMBO_SIZE  = new Dimension(180,24);
 	private static final Dimension DESCRIPTION_AREA_SIZE  = new Dimension(200,160);
 	private static final Dimension NUMBER_BOX_SIZE  = new Dimension(50,24);
 	private static final Dimension PANEL_SIZE = new Dimension(250,300);
 	protected final DesignerContext context;
 	private final SerializableFamily family;
+	private final String key;
 	protected final ILSLogger log;
 	private final GeneralPurposeDataContainer model;           // Data container operated on by panels
 	private JPanel mainPanel = null;
@@ -50,14 +57,20 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor implements Acti
 	private JTextArea descriptionArea;
 	private JTextField nameField;
 	private JTextField priorityField;
+	JTextField uuidField;
 	
 	public FamilyPropertyEditor(DesignerContext ctx,SerializableFamily fam,ProjectResource res) {
 		super(res);
 		this.context = ctx;
 		this.family = fam;
-		this.model = family.getAuxiliaryData();;
+		this.model = family.getAuxiliaryData();
+		this.key = NotificationKey.keyForAuxData(family.getId().toString());
 		this.log = LogMaker.getLogger(this);
         initialize();
+        setUI();
+		// Register for notifications
+		log.debugf("%s: adding listener %s",CLSS,key);
+		notificationHandler.addNotificationChangeListener(key,CLSS,this);
 	}
 	/**
 	 * The super class takes care of making a central tabbed pane --- but
@@ -73,7 +86,10 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor implements Acti
 		validate();
 	}
 
-	public void shutdown() {}
+	public void shutdown() {
+		notificationHandler.removeNotificationChangeListener(key,CLSS);
+	}
+	
 	/**
 	 * Create the main data pane as a grid 4 columns wide:
 	 *     label | value | label | value
@@ -88,30 +104,26 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor implements Acti
 		panel.setPreferredSize(PANEL_SIZE);
 
 		panel.add(new JLabel("Name"),"");
-		nameField = new JTextField(family.getName());
+		nameField = new JTextField();
 		nameField.setEditable(false);
 		nameField.addFocusListener(this);
 		panel.add(nameField,"span,growx,wrap");
 
 		panel.add(new JLabel("UUID"),"gaptop 2,aligny top");
-		JTextField uuidField = new JTextField(family.getId().toString());
+		uuidField = new JTextField();
 		uuidField.setEditable(false);
 		uuidField.addFocusListener(this);
 		panel.add(uuidField,"span,growx,wrap");
 		
 		panel.add(new JLabel("Description"),"gaptop 2,aligny top");
-		String description = model.getProperties().get("Description");
-		if( description==null) description="";
-		descriptionArea = new JTextArea(description);
+		descriptionArea = new JTextArea();
 		descriptionArea.addFocusListener(this);
 		JScrollPane scrollPane = new JScrollPane(descriptionArea);
 		scrollPane.setPreferredSize(DESCRIPTION_AREA_SIZE);
 		panel.add(scrollPane,"gaptop 2,aligny top,spanx,growx,growy,wrap");
 
 		panel.add(new JLabel("Priority"),"gaptop 2,aligny top");
-		String priority = model.getProperties().get("Priority");
-		if( priority==null) priority="0.0";
-		priorityField = new JTextField(priority);
+		priorityField = new JTextField();
 		priorityField.setPreferredSize(NUMBER_BOX_SIZE);
 		priorityField.addFocusListener(this);
 		panel.add(priorityField,"");
@@ -132,6 +144,18 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor implements Acti
 	 */
 	public SerializableFamily getFamily() { return family; }
 
+	// Fill widgets with current values
+	private void setUI() {
+		nameField.setText(family.getName());
+		uuidField.setText(family.getId().toString());
+		String description = model.getProperties().get("Description");
+		if( description==null) description="";
+		descriptionArea.setText(description);
+		String priority = model.getProperties().get("Priority");
+		if( priority==null) priority="0.0";
+		priorityField.setText(priority);;
+	}
+	
 	// On save we get values from the widgets and place back into the model
 	private void save(){
 		family.setState(ActiveState.valueOf(stateBox.getSelectedItem().toString()));
@@ -153,6 +177,7 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor implements Acti
 			else {
 				log.infof("%s.save: Failed to lock resource",CLSS);
 			}
+			saveResource();
 		}
 		catch(JsonProcessingException jpe) {
 			log.warnf("%s.run: Exception serializing family, resource %d (%s)",CLSS,resource.getResourceId(),jpe.getMessage());
@@ -162,7 +187,6 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor implements Acti
 	@Override
 	public void actionPerformed(ActionEvent event) {
 		save();
-		saveResource();
 	}	
 	// ============================================== Focus listener ==========================================
 	@Override
@@ -171,7 +195,32 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor implements Acti
 	@Override
 	public void focusLost(FocusEvent event) {
 		save();
-		saveResource();
 	}
+	// ======================================= Notification Change Listener ===================================
+	@Override
+	public void bindingChange(String binding) {}
+	@Override
+	public void diagramStateChange(long resId, String state) {}
+	@Override
+	public void nameChange(String name) {}
 
+	// The value is the aux data of the application. Note that the method is not
+	// called on the Swing thread
+	@Override
+	public void valueChange(final QualifiedValue value) {
+		log.infof("%s.valueChange: new aux data for %s",CLSS,model.getProperties().get("Name"));
+		if( value==null ) return;
+		GeneralPurposeDataContainer container = (GeneralPurposeDataContainer)value.getValue();
+		if( container==null) return;
+		model.setLists(container.getLists());
+		model.setMapLists(container.getMapLists());
+		model.setProperties(container.getProperties());
+		SwingUtilities.invokeLater( new Runnable() {
+			public void run() {
+				setUI();
+			}
+		});
+	}
+	@Override
+	public void watermarkChange(String mark) {}
 }
