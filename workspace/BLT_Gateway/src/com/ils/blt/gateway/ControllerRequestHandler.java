@@ -226,7 +226,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	@Override
 	public String getApplicationName(String uuid) {
 		ProcessApplication app = pyHandler.getApplication(uuid);
-		return (app==null?"NO_APP":app.getName());
+		return (app==null?"UNDEFINED":app.getName());
 	}
 	@Override
 	public String getBlockId(String diagramId, String blockName) {
@@ -509,8 +509,10 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	}
 	@Override
 	public String getFamilyName(String uuid) {
+		String name = "UNDEFINED";
 		ProcessFamily fam = pyHandler.getFamily(uuid);
-		return fam.getName();
+		if( fam!=null ) name = fam.getName();
+		return name;
 	}
 	/**
 	 * Use the UUID of this block to signify that this is the source.
@@ -1263,14 +1265,19 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			//log.tracef("%s.run JSON = %s",CLSS,new String(bytes));
 			resource.setData(bytes);
 			Project project = context.getProjectManager().getProject(projectId, ApplicationScope.GATEWAY, ProjectVersion.Staging);
-			project.putResource(resource);
-			context.getProjectManager().saveProject(project, null, null, "Updated aux structure", true);
+			Project diff = project.getEmptyCopy();
+			log.infof("%s.saveResource: Saving, resource %s (%s)",TAG,resource.getName(),resource.getResourceType());
+			diff.putResource(resource);
+			context.getProjectManager().saveProject(diff, null, null, "Updated aux structure", true);
+			//Collection<Long> clxn = new ArrayList<>();
+			//clxn.add(resource.getResourceId());
+			//context.getProjectManager().publishSelected(projectId,clxn,null,null,"Resource saved in Gateway");
 		}
 		catch(JsonProcessingException jpe) {
-			log.warnf("%s.run: Exception serializing application, resource %d (%s)",TAG,resource.getResourceId(),jpe.getMessage());
+			log.warnf("%s.saveResource: Exception serializing application, resource %d (%s)",TAG,resource.getResourceId(),jpe.getMessage());
 		}
 		catch(Exception ex) {
-			log.warnf("%s.run: Exception saving project, resource %d (%s)",TAG,resource.getResourceId(),ex.getMessage());
+			log.warnf("%s.saveResource: Exception saving project, resource %d (%s)",TAG,resource.getResourceId(),ex.getMessage());
 		}
 	}
 	/**

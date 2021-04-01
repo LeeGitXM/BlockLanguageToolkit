@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.BLTProperties;
@@ -27,6 +28,7 @@ import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.SerializableFamily;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
+import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.persistence.ToolkitProperties;
 import com.ils.common.persistence.ToolkitRecordHandler;
 import com.inductiveautomation.ignition.common.model.ApplicationScope;
@@ -504,6 +506,7 @@ public class ModelManager implements ProjectListener  {
 		List<SerializableResourceDescriptor> result = new ArrayList<SerializableResourceDescriptor>();
 		for( Long projectId:root.allProjects() ) {
 			for(ProcessNode node: root.allNodesForProject(projectId)) {
+				if(node==null) continue;
 				SerializableResourceDescriptor sd = new SerializableResourceDescriptor();
 				sd.setName(node.getName());
 				sd.setProjectId(projectId.longValue());
@@ -724,11 +727,13 @@ public class ModelManager implements ProjectListener  {
 			// Invoke extension script on application save or startup
 			// The SAVE script is smart enough to do an insert if application is new
 			if( startup ) {
-				// On startup, we only read aux data from the production database. There is no SAVE
+				// On startup, we only read aux data from the production database. There is no SAVE.
+				// However we do update the project resource, for a subsequent save
 				String provider = toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER);
 				String db = toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_DATABASE);
 				Script script = extensionManager.createExtensionScript(ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.GET_AUX_OPERATION, provider);
 				extensionManager.runScript(context.getScriptManager(), script, application.getSelf().toString(),application.getAuxiliaryData(),db);
+				//updateResource(res,projectId,application);
 			}
 			else  {
 				String provider = (application.getState().equals(DiagramState.ACTIVE) ? 
@@ -842,7 +847,7 @@ public class ModelManager implements ProjectListener  {
 			if( diagram!=null )  {
 				for(ProcessBlock block:diagram.getProcessBlocks()) {
 					if( startup ) {
-						block.getAuxiliaryData();
+						block.setAuxiliaryData(block.getAuxiliaryData());
 					}
 					else {
 						block.onSave();
@@ -852,7 +857,9 @@ public class ModelManager implements ProjectListener  {
 			// Invoke extension script for the diagram itself
 			// The SAVE script is smart enough to do an insert if diagram is new
 			if( startup ) {
-				// A diagram has no associated data. There is nothing needed on startup.
+				// A diagram has no associated data. All we have to do is prepare the resource for updates because
+				// of the block getAux data
+				//updateResource(res,projectId,diagram);
 			}
 			else {
 				String provider = (diagram.getState().equals(DiagramState.ACTIVE) ? 
@@ -936,6 +943,7 @@ public class ModelManager implements ProjectListener  {
 				String db = toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_DATABASE);
 				Script script = extensionManager.createExtensionScript(ScriptConstants.FAMILY_CLASS_NAME, ScriptConstants.GET_AUX_OPERATION, provider);
 				extensionManager.runScript(context.getScriptManager(), script, family.getSelf().toString(),family.getAuxiliaryData(),db);
+				//updateResource(res,projectId,family);
 			}
 			else {
 				String provider = (family.getState().equals(DiagramState.ACTIVE) ? 
@@ -1279,6 +1287,25 @@ public class ModelManager implements ProjectListener  {
 			ProcessNode parent = nodesByUUID.get(orphan.getParent());
 			parent.addChild(orphan);
 			orphansByUUID.remove(orphan.getSelf());
+		}
+	}
+	/**
+	 * Update the contents of a project resource in preparation for a subsequent project save.
+	 * @param pr
+	 * @param object
+	 */
+	private synchronized void updateResource(ProjectResource pr,long projectId,Object object) {
+		log.infof("%s.updateResource: reconstituting %s resource %d",CLSS,pr.getResourceType(),pr.getResourceId());
+		ObjectMapper mapper = new ObjectMapper();
+		
+		try{
+			byte[] bytes = mapper.writeValueAsBytes(object);
+			pr.setData(bytes);
+			Project project = context.getProjectManager().getProject(projectId, ApplicationScope.GATEWAY, ProjectVersion.Staging);
+			project.putResource(pr);
+		}
+		catch(JsonProcessingException jpe) {
+			log.warnf("%s.updateResource: Exception serializing %s, resource %d (%s)",CLSS,pr.getResourceType(),pr.getResourceId(),jpe.getMessage());
 		}
 	}
 }

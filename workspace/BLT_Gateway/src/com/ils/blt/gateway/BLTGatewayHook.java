@@ -94,32 +94,41 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 
 	@Override
 	public void startup(LicenseState licenseState) {
-	    
-	    // Look for all block resources and inform the execution controller
-		BlockExecutionController controller = BlockExecutionController.getInstance();
-	    mmgr = new ModelManager(context);
-	    controller.setDelegate(mmgr);
-	    
-	    // Load existing projects - skip the global project and any that are disabled.
-	    List<Project> projects = context.getProjectManager().getProjectsFull(ProjectVersion.Staging);
-	    for( Project project:projects ) {
-	    	if( !project.isEnabled() || project.getId()==-1 ) continue;
-	    	List<ProjectResource> resources = project.getResources();
-	    	for( ProjectResource res:resources ) {
-	    		// Model manager ignores resources that are not of interest to it.
-	    		log.infof("%s.startup - loading %s resource, %d = %s", CLSS,res.getResourceType(),
-	    				res.getResourceId(),res.getName());
-	    		mmgr.analyzeResource(project.getId(),res,true);  // Flag implies startup
-	    	}
-	    }
-	    
-	    controller.start(context);     // Lastly, start the controller
 
-	    // Register for changes to our permanent settings
-	    ToolkitRecord.META.addRecordListener(recordListener);
-	    
-	    context.getProjectManager().addProjectListener(mmgr);  
-	    log.infof("%s: Startup complete.",CLSS);
+		// Look for all block resources and inform the execution controller
+		BlockExecutionController controller = BlockExecutionController.getInstance();
+		mmgr = new ModelManager(context);
+		controller.setDelegate(mmgr);
+
+		// Load existing projects - skip the global project and any that are disabled.
+		List<Project> projects = context.getProjectManager().getProjectsFull(ProjectVersion.Staging);
+		for( Project project:projects ) {
+			if( !project.isEnabled() || project.getId()==-1 ) continue;
+			List<ProjectResource> resources = project.getResources();
+			for( ProjectResource res:resources ) {
+				// Model manager ignores resources that are not of interest to it.
+				log.infof("%s.startup - loading %s resource, %d = %s", CLSS,res.getResourceType(),
+						res.getResourceId(),res.getName());
+				mmgr.analyzeResource(project.getId(),res,true);  // Flag implies startup
+			}
+			// When analyzing the resources on startup, we've already updated them for extension activity
+			/*
+			try {
+				context.getProjectManager().saveProject(project,null,null,"Update for Extensions",true);
+			}
+			catch(Exception ex) {
+				log.warnf("%s.startup - Error posting project %s update for extensions (%s)", CLSS, project.getName(),ex.getLocalizedMessage());
+			}
+			*/
+		}
+
+		controller.start(context);     // Lastly, start the controller
+
+		// Register for changes to our permanent settings
+		ToolkitRecord.META.addRecordListener(recordListener);
+
+		context.getProjectManager().addProjectListener(mmgr);  
+		log.infof("%s: Startup complete.",CLSS);
 	}
 
 	@Override

@@ -380,13 +380,16 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	@Override
 	public void projectResourceModified(ProjectResource res, ProjectChangeListener.ResourceModification changeType) {
 		// Take care of any special status before invoking the super-class method.
-		logger.debugf("%s.projectResourceModified.%s: %s(%d), res %s(%d)",CLSS,changeType.name(),getName(),this.resourceId,res.getName(),res.getResourceId()); 
+		if( ProjectChangeListener.ResourceModification.Updated.equals(changeType) &&
+			res.getResourceId()==this.getResourceId() ) {
+			logger.infof("%s.projectResourceModified: %s(%s))",CLSS, getName(),res.getResourceType());
+		}
 		super.projectResourceModified(res, changeType);
 	}
 
 	@Override
 	public void projectUpdated(Project diff) {
-		logger.debugf("%s.projectUpdated ...",CLSS);
+		logger.infof("%s.projectUpdated ...",CLSS);
 		super.projectUpdated(diff);
 	}
 
@@ -1940,6 +1943,9 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				db       = (sap.getState().equals(DiagramState.ISOLATED)?requestHandler.getIsolationDatabase():requestHandler.getProductionDatabase());
 				provider = (sap.getState().equals(DiagramState.ISOLATED)?requestHandler.getIsolationTagProvider():requestHandler.getProductionTagProvider());
 				refreshNode(tnode,projectId,provider,db);
+				
+				sap = recursivelyDeserializeApplication(tnode);
+				logger.infof("%s.RefreshAction. refreshed %s",CLSS,sap.getName());
 			}	
 		}
 		// This function is called recursively
