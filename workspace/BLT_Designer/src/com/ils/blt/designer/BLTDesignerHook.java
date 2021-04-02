@@ -10,6 +10,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.io.IOException;
 import java.util.Enumeration;
+import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -45,6 +46,7 @@ import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.licensing.LicenseState;
 import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
+import com.inductiveautomation.ignition.common.project.ProjectVersion;
 import com.inductiveautomation.ignition.common.script.ScriptManager;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
 import com.inductiveautomation.ignition.designer.gui.IconUtil;
@@ -62,7 +64,7 @@ import com.inductiveautomation.vision.api.designer.palette.PaletteItemGroup;
 import com.jidesoft.docking.DockingManager;
 
 public class BLTDesignerHook extends AbstractDesignerModuleHook  {
-	private static final String TAG = "BLTDesignerHook";
+	private static final String CLSS = "BLTDesignerHook";
 	private static final String INTERFACE_MENU_TITLE  = "External Interface Configuration";
 	private static final String VALIDATION_MENU_TITLE = "Validate Diagrams";
 	public static String BLOCK_BUNDLE_NAME   = "block";        // Properties file is block.properties
@@ -174,7 +176,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 
 			}
 			else {
-				log.infof("%s: Group not a DefaultPaletteItemGroup, is %s",TAG,group.getClass().getName());
+				log.infof("%s: Group not a DefaultPaletteItemGroup, is %s",CLSS,group.getClass().getName());
 			}
 			JavaBeanPaletteItem jbpi = null;
 			try {
@@ -190,10 +192,8 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 				group.addPaletteItem(jbpi);
 			}
 			catch(Exception ie ) {
-				log.warnf("%s: Error creating vision palette entries (%s)",TAG,ie.getMessage());
+				log.warnf("%s: Error creating vision palette entries (%s)",CLSS,ie.getMessage());
 			}
-			// Make sure extension script manager knows about context
-			ScriptExtensionManager.getInstance().setContext(context);
 		}
 		
 		// Setup the diagram workspace
@@ -217,12 +217,12 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	// serialized into project resources.
 	@Override
 	public void notifyProjectSaveStart(SaveContext save) {
-		log.infof("%s: NotifyProjectSaveStart",TAG);
+		log.infof("%s: NotifyProjectSaveStart",CLSS);
 		
 		// check if problems with save, just notify for now.  Can do save.abort() if it's serious
 		String msg = rootNode.scanForNameConflicts(rootNode);
 		if (msg != null && msg.length() > 1) {
-			log.infof("%s: Workspace error, please correct before saving:  %s",TAG, msg);
+			log.infof("%s: Workspace error, please correct before saving:  %s",CLSS, msg);
 			ErrorUtil.showError(msg, "Save Workspace Error, save aborted");
 			save.abort(new Throwable(msg));
 		} 
@@ -248,13 +248,13 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 				name.equalsIgnoreCase("Palette - Collapsible")  ||
 				name.equalsIgnoreCase("Palette - Tabbed")          ) {
 				dockManager.hideFrame(name);
-				log.infof("%s: Hiding frame=%s",TAG,name);
+				log.infof("%s: Hiding frame=%s",CLSS,name);
 			}
 			else {
-				log.infof("%s: Leaving frame=%s",TAG,name);
+				log.infof("%s: Leaving frame=%s",CLSS,name);
 			}
 		}
-		log.infof("%s: Workspace=%s",TAG,dockManager.getWorkspace().getName());
+		log.infof("%s: Workspace=%s",CLSS,dockManager.getWorkspace().getName());
 		//Workspace wksp = dockManager.getWorkspace();
 		// There is only 1 child of the workspace - the workspace mananger
 	}
@@ -299,12 +299,12 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
     					if( menu.getName().equalsIgnoreCase(WellKnownMenuConstants.TOOLS_MENU_NAME)) {
     						int nitems = menu.getItemCount();
     						int jndex = 0;
-    						log.tracef("%s: found VIEW menu",TAG);
+    						log.tracef("%s: found VIEW menu",CLSS);
     						while(jndex<nitems ) {
     							JMenuItem item = menu.getItem(jndex);
     							if( item!=null ) {
     								String name = item.getText();
-        							log.tracef("%s: found %s",TAG,name);
+        							log.tracef("%s: found %s",CLSS,name);
         							if( title.equalsIgnoreCase(name)) return true;
     							}
     							jndex++;
@@ -328,7 +328,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
     private class SetupDialogRunner implements Runnable {
 
         public void run() {
-            log.debugf("%s.Launching setup dialog...",TAG);
+            log.debugf("%s.Launching setup dialog...",CLSS);
             ExternalInterfaceConfigurationDialog setup = new ExternalInterfaceConfigurationDialog(context);
             setup.pack();
             setup.setVisible(true);
@@ -341,7 +341,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
     private class ValidationDialogRunner implements Runnable {
 
         public void run() {
-            log.debugf("%s.Launching setup dialog...",TAG);
+            log.debugf("%s.Launching setup dialog...",CLSS);
             ValidationDialog validator = new ValidationDialog(context);
             validator.pack();
             validator.setVisible(true);
@@ -365,7 +365,8 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 				ProjectResource bob = node.getProjectResource();
 				ret = app;
 			}
-		} else {
+		}
+		else {
 			if (node.getProjectResource() != null && node.getProjectResource().getResourceType().equals(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
 				app = node;
 			}
@@ -418,7 +419,6 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 						ret += "Duplicate " + pbv.getClassName() + " block named " + pbv.getName() + " found in diagram " + diagram.getName() + "\r\n";
 					}
 				}
-			
 			}
 		} 
 		else {

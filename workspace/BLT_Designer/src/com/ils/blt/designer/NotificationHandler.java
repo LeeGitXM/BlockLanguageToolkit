@@ -110,7 +110,7 @@ public class NotificationHandler implements PushNotificationListener {
 				Map<String,NotificationChangeListener> listeners = changeListenerMap.get(key);
 				if( listeners != null ) {
 					for(NotificationChangeListener listener:listeners.values()) {
-						log.tracef("%s.receiveNotification: value %s=%s - notifying %s",CLSS,
+						log.infof("%s.receiveNotification: value %s=%s - notifying %s",CLSS,
 								key,((QualifiedValue)payload).getValue().toString(),listener.getClass().getName());
 						listener.valueChange((QualifiedValue)payload);
 					}
@@ -285,7 +285,7 @@ public class NotificationHandler implements PushNotificationListener {
 	 *               is sent immediately.
 	 */
 	public void addNotificationChangeListener(String key,String source,NotificationChangeListener listener,boolean update) {
-		log.debugf("%s.addNotificationChangeListener: source=%s key=%s (%s)",CLSS,source,key,listener.getClass().getName());
+		log.infof("%s.addNotificationChangeListener: source=%s key=%s (%s)",CLSS,source,key,listener.getClass().getName());
 		Map<String,NotificationChangeListener> listeners = changeListenerMap.get(key);
 		if( listeners==null) {
 			listeners = new HashMap<>();
@@ -296,7 +296,8 @@ public class NotificationHandler implements PushNotificationListener {
 		// Make an immediate update 
 		Object payload = payloadMap.get(key);
 		if( update && payload!=null ) {
-			if( NotificationKey.isNameChangeKey(key)) listener.nameChange(payload.toString());
+			if( NotificationKey.isAuxDataKey(key))         listener.valueChange((QualifiedValue)payload);
+			else if( NotificationKey.isNameChangeKey(key)) listener.nameChange(payload.toString());
 			else if(NotificationKey.isPropertyBindingKey(key)) listener.bindingChange(payload.toString());
 			else if(NotificationKey.isPropertyValueKey(key))    listener.valueChange((QualifiedValue)payload);
 			else if(NotificationKey.isWatermarkKey(key)) listener.watermarkChange(payload.toString());

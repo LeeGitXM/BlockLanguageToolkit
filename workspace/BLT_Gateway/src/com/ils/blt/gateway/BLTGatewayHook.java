@@ -99,6 +99,7 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 		BlockExecutionController controller = BlockExecutionController.getInstance();
 		mmgr = new ModelManager(context);
 		controller.setDelegate(mmgr);
+		controller.start(context);     // Start the controller
 
 		// Load existing projects - skip the global project and any that are disabled.
 		List<Project> projects = context.getProjectManager().getProjectsFull(ProjectVersion.Staging);
@@ -107,13 +108,13 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 			List<ProjectResource> resources = project.getResources();
 			for( ProjectResource res:resources ) {
 				// Model manager ignores resources that are not of interest to it.
-				log.infof("%s.startup - loading %s resource, %d = %s", CLSS,res.getResourceType(),
-						res.getResourceId(),res.getName());
+				//log.infof("%s.startup - loading %s resource, %d = %s", CLSS,res.getResourceType(),
+				//		res.getResourceId(),res.getName());
 				mmgr.analyzeResource(project.getId(),res,true);  // Flag implies startup
 			}
 		}
 
-		controller.start(context);     // Lastly, start the controller
+
 
 		// Register for changes to our permanent settings
 		ToolkitRecord.META.addRecordListener(recordListener);
