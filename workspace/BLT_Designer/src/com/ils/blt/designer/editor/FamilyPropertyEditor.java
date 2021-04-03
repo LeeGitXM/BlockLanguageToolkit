@@ -7,8 +7,6 @@ package com.ils.blt.designer.editor;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 
@@ -22,6 +20,7 @@ import javax.swing.SwingUtilities;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.block.ActiveState;
 import com.ils.blt.common.notification.NotificationChangeListener;
 import com.ils.blt.common.notification.NotificationKey;
@@ -39,7 +38,7 @@ import net.miginfocom.swing.MigLayout;
 /**
  * Display a sliding pane in the property edit window to configure a Family node
  */
-public class FamilyPropertyEditor extends AbstractPropertyEditor implements ActionListener, FocusListener, NotificationChangeListener { 
+public class FamilyPropertyEditor extends AbstractPropertyEditor implements FocusListener, NotificationChangeListener { 
 	private final static String CLSS = "FamilyPropertyEditor";
 	private static final long serialVersionUID = 2882399376824334427L;
 	private final NotificationHandler notificationHandler = NotificationHandler.getInstance();
@@ -51,7 +50,10 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor implements Acti
 	private final SerializableFamily family;
 	private final String key;
 	protected final ILSLogger log;
+	private final String provider;
+	private final String database;
 	private final GeneralPurposeDataContainer model;           // Data container operated on by panels
+	private final ApplicationRequestHandler requestHandler;
 	private JPanel mainPanel = null;
 	private JComboBox<String> stateBox;
 	private JTextArea descriptionArea;
@@ -65,7 +67,10 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor implements Acti
 		this.family = fam;
 		this.model = family.getAuxiliaryData();
 		this.key = NotificationKey.keyForAuxData(family.getId().toString());
+		this.requestHandler = new ApplicationRequestHandler();
 		this.log = LogMaker.getLogger(this);
+		this.database = requestHandler.getProductionDatabase();
+		this.provider = requestHandler.getProductionTagProvider();
         initialize();
         setUI();
 		// Register for notifications
@@ -83,6 +88,7 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor implements Acti
 		model.getProperties().put("Name", family.getName());   // Use as a key when fetching
 		mainPanel = createMainPanel();
 		add(mainPanel,BorderLayout.CENTER);
+		mainPanel.addFocusListener(this);
 		validate();
 	}
 
@@ -105,19 +111,16 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor implements Acti
 
 		panel.add(new JLabel("Name"),"");
 		nameField = new JTextField();
-		nameField.setEditable(false);
-		nameField.addFocusListener(this);
+		nameField.setEditable(false);;
 		panel.add(nameField,"span,growx,wrap");
 
 		panel.add(new JLabel("UUID"),"gaptop 2,aligny top");
 		uuidField = new JTextField();
 		uuidField.setEditable(false);
-		uuidField.addFocusListener(this);
 		panel.add(uuidField,"span,growx,wrap");
 		
 		panel.add(new JLabel("Description"),"gaptop 2,aligny top");
 		descriptionArea = new JTextArea();
-		descriptionArea.addFocusListener(this);
 		JScrollPane scrollPane = new JScrollPane(descriptionArea);
 		scrollPane.setPreferredSize(DESCRIPTION_AREA_SIZE);
 		panel.add(scrollPane,"gaptop 2,aligny top,spanx,growx,growy,wrap");
@@ -125,7 +128,6 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor implements Acti
 		panel.add(new JLabel("Priority"),"gaptop 2,aligny top");
 		priorityField = new JTextField();
 		priorityField.setPreferredSize(NUMBER_BOX_SIZE);
-		priorityField.addFocusListener(this);
 		panel.add(priorityField,"");
 		
 		panel.add(new JLabel("State"),"gapleft 20");
@@ -135,7 +137,6 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor implements Acti
 		}
 		stateBox.setSelectedItem(family.getState().name());
 		stateBox.setPreferredSize(COMBO_SIZE);
-		stateBox.addActionListener(this);
 		panel.add(stateBox,"wrap 20");
 		return panel;
 	}
@@ -177,24 +178,25 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor implements Acti
 			else {
 				log.infof("%s.save: Failed to lock resource",CLSS);
 			}
-			saveResource();
 		}
 		catch(JsonProcessingException jpe) {
 			log.warnf("%s.run: Exception serializing family, resource %d (%s)",CLSS,resource.getResourceId(),jpe.getMessage());
 		}
-	}
-	// ============================================== Action listener ==========================================
-	@Override
-	public void actionPerformed(ActionEvent event) {
-		save();
 	}	
 	// ============================================== Focus listener ==========================================
 	@Override
 	public void focusGained(FocusEvent event) {
+		if(event.getSource().equals(mainPanel)) {
+			log.infof("%s.focusGained: ... for %s",CLSS,model.getProperties().get("Name"));
+			requestHandler.refreshAuxData(context.getProject().getId(),getResource().getResourceId(), provider, database);
+		}
 	}
 	@Override
 	public void focusLost(FocusEvent event) {
-		save();
+		if(event.getSource().equals(mainPanel)) {
+			log.infof("%s.focusLost: ... for %s",CLSS,model.getProperties().get("Name"));
+			save();
+		};
 	}
 	// ======================================= Notification Change Listener ===================================
 	@Override

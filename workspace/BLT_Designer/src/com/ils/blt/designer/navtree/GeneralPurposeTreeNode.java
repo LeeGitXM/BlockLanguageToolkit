@@ -361,8 +361,6 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			logger.infof("%s.onSelected: selected application %s (%d)",CLSS,sap.getName(),resourceId);
 			ApplicationPropertyEditor appEditor = new ApplicationPropertyEditor(context,sap,resource);
 			workspace.getPropertyEditorFrame().setEditor(appEditor) ;
-			//workspace.getPropertyEditorFrame().refreshPropertyEditor();
-			
 		} 
 		else if(resource.getResourceType().equalsIgnoreCase(BLTProperties.FAMILY_RESOURCE_TYPE)) {
 			SerializableFamily sfam = recursivelyDeserializeFamily(this);
@@ -509,7 +507,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		else if(getProjectResource().getResourceType().equalsIgnoreCase(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
 			ApplicationExportAction applicationExportAction = new ApplicationExportAction(menu.getRootPane(),this);
 			FamilyCreateAction familyAction = new FamilyCreateAction(this);
-			RefreshAction refreshAction = new RefreshAction(this);
+			//RefreshAction refreshAction = new RefreshAction(this);
 			treeSaveAction = new TreeSaveAction(this,PREFIX+".SaveApplication");
 
 			menu.add(familyAction);
@@ -522,7 +520,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			setStateMenu.add(ssaDisable);
 			setStateMenu.add(ssaIsolated);
 			menu.add(setStateMenu);
-			menu.add(refreshAction);
+			//menu.add(refreshAction);
 			menu.addSeparator();
 			menu.add(copyBranchAction);
 			menu.add(pasteBranchAction);
@@ -1922,6 +1920,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			}
 		}
 	}
+	/**
 	// Navigate the NavTree for this application and beneath. Call GetAux on each node.
 	private class RefreshAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
@@ -1957,7 +1956,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			}
 		}
 	}
-	
+	**/
 	// Save the entire Application hierarchy.
 	private class SaveAllAction extends BaseAction {
 		private static final long serialVersionUID = 1L;

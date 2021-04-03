@@ -285,7 +285,7 @@ public class NotificationHandler implements PushNotificationListener {
 	 *               is sent immediately.
 	 */
 	public void addNotificationChangeListener(String key,String source,NotificationChangeListener listener,boolean update) {
-		log.infof("%s.addNotificationChangeListener: source=%s key=%s (%s)",CLSS,source,key,listener.getClass().getName());
+		//log.infof("%s.addNotificationChangeListener: source=%s key=%s (%s)",CLSS,source,key,listener.getClass().getName());
 		Map<String,NotificationChangeListener> listeners = changeListenerMap.get(key);
 		if( listeners==null) {
 			listeners = new HashMap<>();

@@ -68,6 +68,7 @@ public class ApplicationPropertyEditor extends AbstractPropertyEditor {
 		setSelectedPane(HOME);
 	}
 	public SerializableApplication getApplication() { return application; }
+	public DesignerContext getContext() { return this.context; }
 	public GeneralPurposeDataContainer getModel() { return this.model; }
 	public SortedListModel<String> getOutputKeys() { return this.outputKeys; }
 	

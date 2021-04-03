@@ -57,10 +57,11 @@ import net.miginfocom.swing.MigLayout;
  * This dialog allows for the display and editing of auxiliary data in the proxy block. There is no extension
  * function interaction until the block is saved as part of a diagram-save.
  */
-public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor implements ActionListener,FocusListener, NotificationChangeListener, PropertyChangeListener {
+public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor implements FocusListener, NotificationChangeListener, PropertyChangeListener {
 	private static final long serialVersionUID = 7211480530910862375L;
 	private static final String CLSS = "FinalDiagnosisPanel";
 	private final NotificationHandler notificationHandler = NotificationHandler.getInstance();
+	private final ApplicationRequestHandler requestHandler;
 	private final int DIALOG_HEIGHT = 700;
 	private final int DIALOG_WIDTH = 300;
 	private final ProcessDiagramView diagram;
@@ -81,6 +82,8 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 	protected JCheckBox manualMoveAllowedCheckBox;
 	protected JTextArea explanationArea;
 	protected JTextArea commentArea;
+	private final String provider;
+	private final String database;
 	private final String key;
 	protected final ILSLogger log;
 	protected static final Dimension EXPLANATIION_AREA_SIZE  = new Dimension(250,300);
@@ -97,7 +100,6 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 	protected static final Dimension DESCRIPTION_AREA_SIZE  = new Dimension(250,160);
 	protected static final Dimension NAME_BOX_SIZE  = new Dimension(280,24);
 	protected static final Dimension NUMBER_BOX_SIZE  = new Dimension(50,24);
-	protected final ApplicationRequestHandler requestHandler;
 	private final UtilityFunctions fcns = new UtilityFunctions();
 	protected JTextField nameField;
 
@@ -113,6 +115,8 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
         this.diagram = wrkspc.getActiveDiagram();
 		this.corePanel = new CorePropertyPanel(this,block);
 		this.log = LogMaker.getLogger(this);
+		this.database = requestHandler.getProductionDatabase();
+		this.provider = requestHandler.getProductionTagProvider();
 		this.setPreferredSize(new Dimension(DIALOG_WIDTH,DIALOG_HEIGHT));
         initialize();
         setUI();
@@ -187,7 +191,6 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 
 		panel.add(createLabel("FinalDiagnosis.Label"),"gaptop 2,aligny top");
 		finalDiagnosisLabelField = createTextField("FinalDiagnosis.Label.Desc","");
-		finalDiagnosisLabelField.addFocusListener(this);
 		
 		panel.add(finalDiagnosisLabelField,"growx,wrap");
 		
@@ -195,68 +198,56 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		commentArea = createTextArea("FinalDiagnosis.Comment.Desc","");
 		JScrollPane commentScrollPane = new JScrollPane(commentArea);
 		commentScrollPane.setPreferredSize(COMMENT_AREA_SIZE);
-		commentArea.addFocusListener(this);
 		panel.add(commentScrollPane,"growx,growy,wrap");
 		
 		panel.add(createLabel("FinalDiagnosis.Explanation"),"gaptop 2,aligny top");
 		explanationArea = createTextArea("FinalDiagnosis.Explanation.Desc","");
 		JScrollPane explanationScrollPane = new JScrollPane(explanationArea);
 		explanationScrollPane.setPreferredSize(EXPLANATIION_AREA_SIZE);
-		explanationArea.addFocusListener(this);
 		panel.add(explanationScrollPane,"growx,growy,wrap");
 		
 		panel.add(createLabel("FinalDiagnosis.TextRecommendation"),"gaptop 2,aligny top");
 		textRecommendationArea = createTextArea("FinalDiagnosis.TextRecommendation.Desc","");
 		JScrollPane textRecommendationScrollPane = new JScrollPane(textRecommendationArea);
 		textRecommendationScrollPane.setPreferredSize(TEXT_RECOMMENDATION_AREA_SIZE);
-		textRecommendationArea.addFocusListener(this);
 		panel.add(textRecommendationScrollPane,"growx,growy,wrap");
 		
 		panel.add(createLabel("FinalDiagnosis.CalcMethod"),"gaptop 2,aligny top");
 		calculationMethodField = createTextField("FinalDiagnosis.CalcMethod.Desc","");
-		calculationMethodField.addFocusListener(this);
 		panel.add(calculationMethodField,"growx,wrap");
 
 		panel.add(createLabel("FinalDiagnosis.Priority"),"gaptop 2,aligny top");
 		priorityField = createTextField("FinalDiagnosis.Priority.Desc","");
 		priorityField.setPreferredSize(NUMBER_BOX_SIZE);
-		priorityField.addFocusListener(this);
 		panel.add(priorityField,"wrap");
 		
 		panel.add(createLabel("FinalDiagnosis.RefreshRate"),"gaptop 2,aligny top");
 		refreshRateField = createTextField("FinalDiagnosis.RefreshRate.Desc","");
 		refreshRateField.setPreferredSize(NUMBER_BOX_SIZE);
-		refreshRateField.addActionListener(this);
 		panel.add(refreshRateField,"wrap");
 		
 		panel.add(createLabel("FinalDiagnosis.PostProcessingCallback"),"gaptop 2,aligny top");
 		postProcessingCallbackField = createTextField("FinalDiagnosis.PostProcessingCallback.Desc","");
-		postProcessingCallbackField.addActionListener(this);
 		panel.add(postProcessingCallbackField,"growx,wrap");
 		
 		constantCheckBox = createCheckBox("FinalDiagnosis.Constant.Desc",false);
-		constantCheckBox.addActionListener(this);
 		panel.add(constantCheckBox,"alignx right");
 		panel.add(createLabel("FinalDiagnosis.Constant"),"gaptop 2,aligny top,wrap");
 		
 		//panel.add(createLabel("FinalDiagnosis.PostTextRecommendation"),"gaptop 2,aligny top");
 		postTextRecommendationCheckBox = createCheckBox("FinalDiagnosis.PostTextRecommendation.Desc",false);
-		postTextRecommendationCheckBox.addActionListener(this);
 		panel.add(postTextRecommendationCheckBox,"alignx right");
 		panel.add(createLabel("FinalDiagnosis.PostTextRecommendation"),"gaptop 2, aligny top,wrap");
 		
 		showExplanationWithRecommendationCheckBox = createCheckBox("FinalDiagnosis.ShowExplanationWithRecommendation.Desc",false);
-		showExplanationWithRecommendationCheckBox.addActionListener(this);
 		panel.add(showExplanationWithRecommendationCheckBox,"alignx right");
 		panel.add(createLabel("FinalDiagnosis.ShowExplanationWithRecommendation"),"gaptop 2,aligny top,wrap");
 		
 		manualMoveAllowedCheckBox = createCheckBox("FinalDiagnosis.ManualMoveAllowed.Desc",false);
-		manualMoveAllowedCheckBox.addActionListener(this);
 		panel.add(manualMoveAllowedCheckBox,"alignx right");
 		panel.add(createLabel("FinalDiagnosis.ManualMoveAllowed"),"gaptop 2,aligny top,wrap");
 		
 		trapBox = createCheckBox("FinalDiagnosis.TrapInsignificant.Desc",false);
-		trapBox.addActionListener(this);
 		panel.add(trapBox,"alignx right");
 		panel.add(createLabel("FinalDiagnosis.TrapInsignificant"),"gaptop 2,aligny top");
 		return panel;
@@ -480,19 +471,23 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		}
 		return btn;
 	}
-	// ============================================== Action listener ==========================================
-	@Override
-	public void actionPerformed(ActionEvent event) {
-		save();
-		
-	}
+
 	// ============================================== Focus listener ==========================================
 	@Override
 	public void focusGained(FocusEvent event) {
+		if(event.getSource().equals(mainPanel)) {
+			log.infof("%s.focusGained: ... for %s",CLSS,model.getProperties().get("Name"));
+			mainPanel.addFocusListener(this);
+			requestHandler.refreshAuxData(context.getProject().getId(),diagram.getResourceId(), provider, database);
+		}
 	}
 	@Override
 	public void focusLost(FocusEvent event) {
-		save();
+		if(event.getSource().equals(mainPanel)) {
+			log.infof("%s.focusLost: ... for %s",CLSS,model.getProperties().get("Name"));
+			mainPanel.removeFocusListener(this);
+			save();
+		};
 	}
 
 	// ============================================== PropertyChange listener ==========================================

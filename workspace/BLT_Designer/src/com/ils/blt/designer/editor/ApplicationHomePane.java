@@ -6,9 +6,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.util.Date;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -22,13 +20,9 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import javax.swing.event.ChangeEvent;
 
-import com.ils.blt.common.TimeUtility;
+import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.UtilityFunctions;
-import com.ils.blt.common.block.BindingType;
-import com.ils.blt.common.block.BlockProperty;
-import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.notification.NotificationChangeListener;
 import com.ils.blt.common.notification.NotificationKey;
 import com.ils.blt.designer.NotificationHandler;
@@ -39,10 +33,11 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 import net.miginfocom.swing.MigLayout;
 
-public class ApplicationHomePane extends JPanel implements ActionListener, FocusListener, NotificationChangeListener {
+public class ApplicationHomePane extends JPanel implements FocusListener, NotificationChangeListener {
 	private static String CLSS = "ApplicationHomePane";
 	private final NotificationHandler notificationHandler = NotificationHandler.getInstance();
 	private final ApplicationPropertyEditor editor;
+	private final ApplicationRequestHandler requestHandler;
 	private final GeneralPurposeDataContainer model;
 	private static final long serialVersionUID = 2882399376824334427L;
 	
@@ -60,6 +55,8 @@ public class ApplicationHomePane extends JPanel implements ActionListener, Focus
 	private final JButton nextButton = new JButton("Outputs", nextIcon);;
 	private final UtilityFunctions fcns = new UtilityFunctions();
 	protected final ILSLogger log;
+	private final String provider;
+	private final String database;
 
 	// Don't add an Apply button because then I need to manage getting the id's of any quant outputs they create 
 	// back from the extension manager.
@@ -68,8 +65,11 @@ public class ApplicationHomePane extends JPanel implements ActionListener, Focus
 	public ApplicationHomePane(ApplicationPropertyEditor editor) {
 		super(new BorderLayout());
 		this.editor = editor;
+		this.requestHandler = new ApplicationRequestHandler();
 		this.model = editor.getModel();
 		this.log = LogMaker.getLogger(this);
+		this.database = requestHandler.getProductionDatabase();
+		this.provider = requestHandler.getProductionTagProvider();
 		this.key = NotificationKey.keyForAuxData(editor.getApplication().getId().toString());
 		
 		mainPanel = new JPanel(new MigLayout());
@@ -88,7 +88,6 @@ public class ApplicationHomePane extends JPanel implements ActionListener, Focus
 		descriptionTextArea.setLineWrap(true);
 		descriptionTextArea.setWrapStyleWord(true);
 		descriptionTextArea.setToolTipText("Optional description of this application");
-		descriptionTextArea.addFocusListener(this);
 		descriptionTextArea.setPreferredSize(AREA_SIZE);
 		
 		JScrollPane scrollPane = new JScrollPane(descriptionTextArea);
@@ -98,7 +97,6 @@ public class ApplicationHomePane extends JPanel implements ActionListener, Focus
 		// Add the Managed check box
 		mainPanel.add(new JLabel("Managed:"), "gap 10");
 		mainPanel.add(managedCheckBox, "wrap, align left");
-		managedCheckBox.addActionListener(this);
 
 		// Set up the Message Queue Combo Box
 		mainPanel.add(new JLabel("Queue:"), "align right");
@@ -110,7 +108,6 @@ public class ApplicationHomePane extends JPanel implements ActionListener, Focus
 		}
 		queueComboBox.setToolTipText("The message queue where messages for this application will be posted!");
 		queueComboBox.setPreferredSize(ApplicationPropertyEditor.COMBO_SIZE);
-		queueComboBox.addActionListener(this);
 		mainPanel.add(queueComboBox, "wrap");
 
 		// Set up the Group Ramp Method Combo Box
@@ -122,7 +119,6 @@ public class ApplicationHomePane extends JPanel implements ActionListener, Focus
 			}
 		}
 		groupRampMethodComboBox.setToolTipText("The Group Ramp Method that will be used for outputs in this application!");
-		groupRampMethodComboBox.addActionListener(this);
 		groupRampMethodComboBox.setPreferredSize(ApplicationPropertyEditor.COMBO_SIZE);
 		mainPanel.add(groupRampMethodComboBox, "wrap");
 		
@@ -136,7 +132,6 @@ public class ApplicationHomePane extends JPanel implements ActionListener, Focus
 		}
 		unitComboBox.setToolTipText("The unit associated with this application!");
 		unitComboBox.setPreferredSize(ApplicationPropertyEditor.COMBO_SIZE);
-		unitComboBox.addActionListener(this);
 		mainPanel.add(unitComboBox, "wrap");
 		
 		mainPanel.add(nextButton,"cell 1 13,center");
@@ -147,8 +142,8 @@ public class ApplicationHomePane extends JPanel implements ActionListener, Focus
 		
 		setUI();
 		// Register for notifications
-		log.debugf("%s: adding listener %s",CLSS,key);
-		notificationHandler.addNotificationChangeListener(key,CLSS,this);
+		log.infof("%s: adding listener %s",CLSS,key);
+		mainPanel.addFocusListener(this);
 	}
 
 	// Fill widgets with current values
@@ -184,30 +179,30 @@ public class ApplicationHomePane extends JPanel implements ActionListener, Focus
 		
 		model.getProperties().put("Managed",(managedCheckBox.isSelected()?"1":"0"));
 		editor.saveResource();
-		
 	}
-
 
 	protected void doNext() {
 		editor.setSelectedPane(ApplicationPropertyEditor.OUTPUTS);
 	}
 	public void shutdown() {
+		log.infof("%s: removing listener %s",CLSS,key);
 		notificationHandler.removeNotificationChangeListener(key,CLSS);
 	}
 	
-	// ============================================== Action listener ==========================================
-	@Override
-	public void actionPerformed(ActionEvent event) {
-		save();
-		editor.saveResource();
-	}	
 	// ============================================== Focus listener ==========================================
 	@Override
 	public void focusGained(FocusEvent event) {
+		if(event.getSource().equals(mainPanel)) {
+			log.infof("%s.focusGained: ... for %s",CLSS,model.getProperties().get("Name"));
+			requestHandler.refreshAuxData(editor.getContext().getProject().getId(),editor.getResource().getResourceId(), provider, database);
+		}
 	}
 	@Override
 	public void focusLost(FocusEvent event) {
-		save();
+		if(event.getSource().equals(mainPanel)) {
+			log.infof("%s.focusLost: ... for %s",CLSS,model.getProperties().get("Name"));
+			save();
+		};
 	}
 
 	// ======================================= Notification Change Listener ===================================
