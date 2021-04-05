@@ -1245,7 +1245,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			Script script = extensionManager.createExtensionScript(ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.GET_AUX_OPERATION, provider);
 			extensionManager.runScript(context.getScriptManager(), script, app.getSelf().toString(),app.getAuxiliaryData(),db);
 			if(hadData || app.getAuxiliaryData().containsData()) {
-				saveResource(res,app,projectId);
+				//saveResource(res,app,projectId);
 				controller.sendAuxDataNotification(app.getSelf().toString(), new BasicQualifiedValue(app.getAuxiliaryData()));
 			}
 		}
@@ -1255,7 +1255,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			Script script = extensionManager.createExtensionScript(ScriptConstants.FAMILY_CLASS_NAME, ScriptConstants.GET_AUX_OPERATION, provider);
 			extensionManager.runScript(context.getScriptManager(), script, fam.getSelf().toString(),fam.getAuxiliaryData(),db);
 			if(hadData || fam.getAuxiliaryData().containsData()) {
-				saveResource(res,fam,projectId);
+				//saveResource(res,fam,projectId);
 				controller.sendAuxDataNotification(fam.getSelf().toString(), new BasicQualifiedValue(fam.getAuxiliaryData()));
 			}
 		}
@@ -1271,7 +1271,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			}
 			// If any blocks have or had data there might have been a change.
 			if(hadData) {
-				saveResource(res,dia,projectId);
+				//saveResource(res,dia,projectId);
 			}
 		}
 

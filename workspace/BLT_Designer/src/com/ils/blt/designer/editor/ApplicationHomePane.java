@@ -4,8 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.util.List;
 
 import javax.swing.Icon;
@@ -33,7 +31,7 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 import net.miginfocom.swing.MigLayout;
 
-public class ApplicationHomePane extends JPanel implements FocusListener, NotificationChangeListener {
+public class ApplicationHomePane extends JPanel implements  NotificationChangeListener {
 	private static String CLSS = "ApplicationHomePane";
 	private final NotificationHandler notificationHandler = NotificationHandler.getInstance();
 	private final ApplicationPropertyEditor editor;
@@ -98,38 +96,19 @@ public class ApplicationHomePane extends JPanel implements FocusListener, Notifi
 		mainPanel.add(new JLabel("Managed:"), "gap 10");
 		mainPanel.add(managedCheckBox, "wrap, align left");
 
-		// Set up the Message Queue Combo Box
+		// Create up the Message Queue Combo Box
 		mainPanel.add(new JLabel("Queue:"), "align right");
-		List<String> mqueues = model.getLists().get("MessageQueues");
-		if(mqueues!=null ) {
-			for(String q : mqueues) {
-				queueComboBox.addItem(q);
-			}
-		}
 		queueComboBox.setToolTipText("The message queue where messages for this application will be posted!");
 		queueComboBox.setPreferredSize(ApplicationPropertyEditor.COMBO_SIZE);
 		mainPanel.add(queueComboBox, "wrap");
 
-		// Set up the Group Ramp Method Combo Box
+		// Create up the Group Ramp Method Combo Box
 		mainPanel.add(new JLabel("Ramp Method:"),"align right");
-		List<String> methods = model.getLists().get("GroupRampMethods");
-		if( methods!=null ) {
-			for(String o : methods) {
-				groupRampMethodComboBox.addItem(o);
-			}
-		}
 		groupRampMethodComboBox.setToolTipText("The Group Ramp Method that will be used for outputs in this application!");
 		groupRampMethodComboBox.setPreferredSize(ApplicationPropertyEditor.COMBO_SIZE);
 		mainPanel.add(groupRampMethodComboBox, "wrap");
 		
-		// Set up the Unit Combo Box
-		mainPanel.add(new JLabel("Unit:"),"align right");
-		List<String> units = model.getLists().get("Units");
-		if( units!=null ) {
-			for(String o : units) {
-				unitComboBox.addItem(o);
-			}
-		}
+		// Create the unit combo box
 		unitComboBox.setToolTipText("The unit associated with this application!");
 		unitComboBox.setPreferredSize(ApplicationPropertyEditor.COMBO_SIZE);
 		mainPanel.add(unitComboBox, "wrap");
@@ -142,8 +121,9 @@ public class ApplicationHomePane extends JPanel implements FocusListener, Notifi
 		
 		setUI();
 		// Register for notifications
-		log.infof("%s: adding listener %s",CLSS,key);
-		mainPanel.addFocusListener(this);
+		log.infof("%s: adding change listener %s",CLSS,key);
+		notificationHandler.addNotificationChangeListener(key,CLSS,this);
+		requestHandler.refreshAuxData(editor.getContext().getProject().getId(),editor.getResource().getResourceId(), provider, database);
 	}
 
 	// Fill widgets with current values
@@ -153,15 +133,42 @@ public class ApplicationHomePane extends JPanel implements FocusListener, Notifi
 		if( description==null) description="";
 		descriptionTextArea.setText(description);
 		managedCheckBox.setSelected(fcns.coerceToBoolean( model.getProperties().get("Managed")));
+		
+		// Setup the Queue Combo box
+		List<String> mqueues = model.getLists().get("MessageQueues");
+		queueComboBox.removeAllItems();
+		if(mqueues!=null ) {
+			for(String q : mqueues) {
+				queueComboBox.addItem(q);
+			}
+		}
 		String queue = model.getProperties().get("MessageQueue");
 		if( queue!=null ) queueComboBox.setSelectedItem(queue);
 		else if( queueComboBox.getItemCount()>0) {
 			queueComboBox.setSelectedIndex(0);
 		}
+		
+		// Set up the method combo box
+		List<String> methods = model.getLists().get("GroupRampMethods");
+		groupRampMethodComboBox.removeAllItems();
+		if( methods!=null ) {
+			for(String o : methods) {
+				groupRampMethodComboBox.addItem(o);
+			}
+		}
 		String method = model.getProperties().get("GroupRampMethod");
 		if( method!=null ) groupRampMethodComboBox.setSelectedItem(method);
 		else if( groupRampMethodComboBox.getItemCount()>0) {
 			groupRampMethodComboBox.setSelectedIndex(0);
+		}
+		
+		// Set up the Unit Combo Box
+		List<String> units = model.getLists().get("Units");
+		unitComboBox.removeAllItems();
+		if( units!=null ) {
+			for(String o : units) {
+				unitComboBox.addItem(o);
+			}
 		}
 		String unit = model.getProperties().get("Unit");
 		if( unit!=null ) unitComboBox.setSelectedItem(unit);
@@ -185,24 +192,9 @@ public class ApplicationHomePane extends JPanel implements FocusListener, Notifi
 		editor.setSelectedPane(ApplicationPropertyEditor.OUTPUTS);
 	}
 	public void shutdown() {
-		log.infof("%s: removing listener %s",CLSS,key);
+		log.infof("%s: removing change listener %s",CLSS,key);
 		notificationHandler.removeNotificationChangeListener(key,CLSS);
-	}
-	
-	// ============================================== Focus listener ==========================================
-	@Override
-	public void focusGained(FocusEvent event) {
-		if(event.getSource().equals(mainPanel)) {
-			log.infof("%s.focusGained: ... for %s",CLSS,model.getProperties().get("Name"));
-			requestHandler.refreshAuxData(editor.getContext().getProject().getId(),editor.getResource().getResourceId(), provider, database);
-		}
-	}
-	@Override
-	public void focusLost(FocusEvent event) {
-		if(event.getSource().equals(mainPanel)) {
-			log.infof("%s.focusLost: ... for %s",CLSS,model.getProperties().get("Name"));
-			save();
-		};
+		save();
 	}
 
 	// ======================================= Notification Change Listener ===================================

@@ -234,7 +234,6 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		panel.add(constantCheckBox,"alignx right");
 		panel.add(createLabel("FinalDiagnosis.Constant"),"gaptop 2,aligny top,wrap");
 		
-		//panel.add(createLabel("FinalDiagnosis.PostTextRecommendation"),"gaptop 2,aligny top");
 		postTextRecommendationCheckBox = createCheckBox("FinalDiagnosis.PostTextRecommendation.Desc",false);
 		panel.add(postTextRecommendationCheckBox,"alignx right");
 		panel.add(createLabel("FinalDiagnosis.PostTextRecommendation"),"gaptop 2, aligny top,wrap");
@@ -360,7 +359,6 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		
 		List<String> inUseList = dual.getDestinations();
 		model.getLists().put("OutputsInUse",inUseList);
-		notificationHandler.removeNotificationChangeListener(key,CLSS);
 	}
 	
 	/*

@@ -7,8 +7,6 @@ package com.ils.blt.designer.editor;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -38,7 +36,7 @@ import net.miginfocom.swing.MigLayout;
 /**
  * Display a sliding pane in the property edit window to configure a Family node
  */
-public class FamilyPropertyEditor extends AbstractPropertyEditor implements FocusListener, NotificationChangeListener { 
+public class FamilyPropertyEditor extends AbstractPropertyEditor implements  NotificationChangeListener { 
 	private final static String CLSS = "FamilyPropertyEditor";
 	private static final long serialVersionUID = 2882399376824334427L;
 	private final NotificationHandler notificationHandler = NotificationHandler.getInstance();
@@ -88,7 +86,6 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor implements Focu
 		model.getProperties().put("Name", family.getName());   // Use as a key when fetching
 		mainPanel = createMainPanel();
 		add(mainPanel,BorderLayout.CENTER);
-		mainPanel.addFocusListener(this);
 		validate();
 	}
 
@@ -172,32 +169,21 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor implements Focu
 			byte[] bytes = mapper.writeValueAsBytes(family);
 			//log.tracef("%s.run JSON = %s",CLSS,new String(bytes));
 			resource.setData(bytes);
+			/*
 			if( context.requestLockQuietly(resource.getResourceId()) )  {
 				context.updateResource(resource.getResourceId(),resource.getData());   // Force an update
+				context.releaseLock(resource.getResourceId());
 			}
 			else {
 				log.infof("%s.save: Failed to lock resource",CLSS);
 			}
+			*/
 		}
 		catch(JsonProcessingException jpe) {
 			log.warnf("%s.run: Exception serializing family, resource %d (%s)",CLSS,resource.getResourceId(),jpe.getMessage());
 		}
 	}	
-	// ============================================== Focus listener ==========================================
-	@Override
-	public void focusGained(FocusEvent event) {
-		if(event.getSource().equals(mainPanel)) {
-			log.infof("%s.focusGained: ... for %s",CLSS,model.getProperties().get("Name"));
-			requestHandler.refreshAuxData(context.getProject().getId(),getResource().getResourceId(), provider, database);
-		}
-	}
-	@Override
-	public void focusLost(FocusEvent event) {
-		if(event.getSource().equals(mainPanel)) {
-			log.infof("%s.focusLost: ... for %s",CLSS,model.getProperties().get("Name"));
-			save();
-		};
-	}
+
 	// ======================================= Notification Change Listener ===================================
 	@Override
 	public void bindingChange(String binding) {}

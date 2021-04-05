@@ -77,7 +77,6 @@ public class ApplicationPropertyEditor extends AbstractPropertyEditor {
 		homePanel.shutdown();
 	}
 
-
 	/*
 	 * Guarantee that the structure of the output list model is in place. Create a sorted list model, 
 	 * a string for every output map. This allows us to iterate over lists in alphabetical order.
@@ -113,12 +112,6 @@ public class ApplicationPropertyEditor extends AbstractPropertyEditor {
 			byte[] bytes = mapper.writeValueAsBytes(application);
 			//log.tracef("%s.run JSON = %s",CLSS,new String(bytes));
 			resource.setData(bytes);
-			if( context.requestLockQuietly(resource.getResourceId()) )  {
-				context.updateResource(resource.getResourceId(),resource.getData());   // Force an update
-			}
-			else {
-				log.infof("%s.save: Failed to lock resource",CLSS);
-			}
 		}
 		catch(JsonProcessingException jpe) {
 			log.warnf("%s.run: Exception serializing application, resource %d (%s)",CLSS,resource.getResourceId(),jpe.getMessage());
