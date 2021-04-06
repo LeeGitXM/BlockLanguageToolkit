@@ -57,7 +57,7 @@ public class ApplicationPropertyEditor extends AbstractPropertyEditor {
 	
 	// Add all the tabs to the sliding pane. The controller holds the model data.
 	private void initialize() {
-		model.getProperties().put("Name", application.getName());   // Use as a key when fetching
+		model.getProperties().put("ApplicationName", application.getName());   // Use as a key when fetching
 		// sub-panes added according to the indexes above:
 		add(homePanel);
 		OutputEditorPane outputEditor = new OutputEditorPane(this);

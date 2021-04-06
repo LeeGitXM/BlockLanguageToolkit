@@ -109,6 +109,7 @@ public class ApplicationHomePane extends JPanel implements  NotificationChangeLi
 		mainPanel.add(groupRampMethodComboBox, "wrap");
 		
 		// Create the unit combo box
+		mainPanel.add(new JLabel("Unit:"),"align right");
 		unitComboBox.setToolTipText("The unit associated with this application!");
 		unitComboBox.setPreferredSize(ApplicationPropertyEditor.COMBO_SIZE);
 		mainPanel.add(unitComboBox, "wrap");
@@ -128,7 +129,7 @@ public class ApplicationHomePane extends JPanel implements  NotificationChangeLi
 
 	// Fill widgets with current values
 	private void setUI() {
-		nameField.setText(model.getProperties().get("Name"));
+		nameField.setText(model.getProperties().get("ApplicationName"));
 		String description = model.getProperties().get("Description");
 		if( description==null) description="";
 		descriptionTextArea.setText(description);

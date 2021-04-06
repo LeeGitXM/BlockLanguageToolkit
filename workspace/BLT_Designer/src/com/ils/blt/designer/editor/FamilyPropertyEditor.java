@@ -83,7 +83,7 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor implements  Not
 	 * 2) Python hook definitions.
 	 */
 	private void initialize() {
-		model.getProperties().put("Name", family.getName());   // Use as a key when fetching
+		model.getProperties().put("FamilyName", family.getName());   // Use as a key when fetching
 		mainPanel = createMainPanel();
 		add(mainPanel,BorderLayout.CENTER);
 		validate();
