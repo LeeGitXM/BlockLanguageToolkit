@@ -23,6 +23,7 @@ import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
+import com.ils.common.GeneralPurposeDataContainer;
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -426,16 +427,15 @@ public class GatewayRpcDispatcher   {
 		return  requestHandler.listBlocksInDiagram(diagId);
 	}
 	/**
-	 * Execute the getAux extension function in Gateway scope, recursively from
-	 * a supplied root node.
-	 * @param root the resourceId of an application to be refreshed
+	 * Execute the getAux extension function in Gateway scope for the indicated resource.
+	 * @param resid the resourceId of an application to be refreshed
 	 * @param provider tag provider
 	 * @param db datasource
 	 */
-	public void refreshAuxData(Long projId,Long root,String provider,String db) {
+	public void readAuxData(Long projId,Long resid,String nodeId,String provider,String db) {
 		long projectId = projId.longValue();
-		long resourceId = root.longValue();
-		requestHandler.refreshAuxData(projectId,resourceId, provider, db);
+		long resourceId = resid.longValue();
+		requestHandler.readAuxData(projectId,resourceId, nodeId,provider, db);
 	}
 	/** Change the name of a block
 	 * 
@@ -691,5 +691,16 @@ public class GatewayRpcDispatcher   {
 			blockUUID = UUID.nameUUIDFromBytes(blockId.getBytes());
 		}
 		return blockUUID;
+	}
+	/**
+	 * Execute the setAux extension function in Gateway scope for the indicated resource.
+	 * @param resid the resourceId of an application to be refreshed
+	 * @param provider tag provider
+	 * @param db datasource
+	 */
+	public void writeAuxData(Long projId,Long resid,String nodeId,GeneralPurposeDataContainer container,String provider,String db) {
+		long projectId = projId.longValue();
+		long resourceId = resid.longValue();
+		requestHandler.writeAuxData(projectId,resourceId, nodeId,container,provider, db);
 	}
 }

@@ -476,7 +476,7 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		if(event.getSource().equals(mainPanel)) {
 			log.infof("%s.focusGained: ... for %s",CLSS,model.getProperties().get("Name"));
 			mainPanel.addFocusListener(this);
-			requestHandler.refreshAuxData(context.getProject().getId(),diagram.getResourceId(), provider, database);
+			requestHandler.readAuxData(context.getProject().getId(),diagram.getResourceId(), block.getId().toString(), provider, database);
 		}
 	}
 	@Override

@@ -92,7 +92,7 @@ public class SerializableBlock {
 		}
 	}
 	public void setAuxiliaryData(GeneralPurposeDataContainer data) {if(data!=null) this.auxiliaryData = data;}
-	public void setAuxData() {}  // Set aux data via external script
+	public void setAuxData(GeneralPurposeDataContainer data) {}  // Set aux data via external script
 	public void setBackground(int background) {this.background = background;}
 	public void setClassName(String className) {this.className = className;}
 	public void setDirty(boolean dirty) {this.dirty = dirty;}

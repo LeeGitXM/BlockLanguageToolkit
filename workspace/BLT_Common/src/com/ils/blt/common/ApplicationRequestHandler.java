@@ -19,6 +19,7 @@ import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
+import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.log.ILSLogger;
 import com.ils.common.log.LogMaker;
 import com.ils.common.persistence.ToolkitProperties;
@@ -927,21 +928,21 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		}
 	}
 	/**
-	 * Execute the getAux extension function in Gateway scope, recursively from
-	 * a supplied root node.
+	 * Execute the getAux extension function in Gateway scope, for the specified resource.
 	 * @param projId project identifier
-	 * @param root the resourceId of an application to be refreshed
+	 * @param resid the resourceId of a node to be read
+	 * @param nodeId node identifier
 	 * @param provider tag provider
 	 * @param db data source
 	 */
-	public synchronized void refreshAuxData(long projId,long root,String provider,String database) {
-		//log.infof("%s.refreshAuxData: proj %d, res %d, (%s,%s)",CLSS,projId,root,provider,database);
+	public synchronized void readAuxData(long projId,long resid,String nodeId,String provider,String database) {
+		//log.infof("%s.readAuxData: proj %d, res %d, (%s,%s)",CLSS,projId,root,provider,database);
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "refreshAuxData",projId,root,provider,database);
+					BLTProperties.MODULE_ID, "readAuxData",projId,resid,nodeId,provider,database);
 		}
 		catch(Exception ge) {
-			log.infof("%s.refreshAuxData: GatewayException (%s)",CLSS,ge.getMessage());
+			log.infof("%s.readAuxData: GatewayException (%s)",CLSS,ge.getMessage());
 		}
 	}
 	/** Change the name of a block 
@@ -1415,6 +1416,25 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		catch(Exception ge) {
 			log.infof("%s.setBlockProperties: GatewayException (%s)",CLSS,ge.getMessage());
 		}
-		
+	}
+	/**
+	 * Execute the setAux extension function in Gateway scope, for the specified resource.
+	 * @param projId project identifier
+	 * @param resid the resourceId of a node to be written
+	 * @param nodeId
+	 * @param container
+	 * @param provider tag provider
+	 * @param db data source
+	 */
+	@Override
+	public synchronized void writeAuxData(long projId,long resid,String nodeId,GeneralPurposeDataContainer container,String provider,String database) {
+		//log.infof("%s.writeAuxData: proj %d, res %d, (%s,%s)",CLSS,projId,root,provider,database);
+		try {
+			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "writeAuxData",projId,resid,nodeId,container,provider,database);
+		}
+		catch(Exception ge) {
+			log.infof("%s.writeAuxData: GatewayException (%s)",CLSS,ge.getMessage());
+		}
 	}
 }

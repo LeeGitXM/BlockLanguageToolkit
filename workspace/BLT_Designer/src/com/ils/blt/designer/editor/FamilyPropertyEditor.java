@@ -7,6 +7,8 @@ package com.ils.blt.designer.editor;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -36,7 +38,7 @@ import net.miginfocom.swing.MigLayout;
 /**
  * Display a sliding pane in the property edit window to configure a Family node
  */
-public class FamilyPropertyEditor extends AbstractPropertyEditor implements  NotificationChangeListener { 
+public class FamilyPropertyEditor extends AbstractPropertyEditor implements NotificationChangeListener { 
 	private final static String CLSS = "FamilyPropertyEditor";
 	private static final long serialVersionUID = 2882399376824334427L;
 	private final NotificationHandler notificationHandler = NotificationHandler.getInstance();
@@ -74,6 +76,7 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor implements  Not
 		// Register for notifications
 		log.debugf("%s: adding listener %s",CLSS,key);
 		notificationHandler.addNotificationChangeListener(key,CLSS,this);
+		requestHandler.readAuxData(context.getProject().getId(),getResource().getResourceId(),family.getId().toString(), provider, database);
 	}
 	/**
 	 * The super class takes care of making a central tabbed pane --- but
@@ -90,6 +93,7 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor implements  Not
 	}
 
 	public void shutdown() {
+		save();
 		notificationHandler.removeNotificationChangeListener(key,CLSS);
 	}
 	
@@ -154,12 +158,13 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor implements  Not
 		priorityField.setText(priority);;
 	}
 	
-	// On save we get values from the widgets and place back into the model
+	// On save we get values from the widgets and place back into the model and database (for external functions).
 	private void save(){
 		family.setState(ActiveState.valueOf(stateBox.getSelectedItem().toString()));
 		model.getProperties().put("Description",descriptionArea.getText());
 		model.getProperties().put("Priority", priorityField.getText());
-		log.infof("%s.save(): state = %s",CLSS,family.getState().name());
+		log.infof("%s.save():  state = %s",CLSS,family.getState().name());
+		requestHandler.writeAuxData(context.getProject().getId(),getResource().getResourceId(),family.getId().toString(),model,provider, database);
 	}
 	
 	@Override
@@ -169,15 +174,7 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor implements  Not
 			byte[] bytes = mapper.writeValueAsBytes(family);
 			//log.tracef("%s.run JSON = %s",CLSS,new String(bytes));
 			resource.setData(bytes);
-			/*
-			if( context.requestLockQuietly(resource.getResourceId()) )  {
-				context.updateResource(resource.getResourceId(),resource.getData());   // Force an update
-				context.releaseLock(resource.getResourceId());
-			}
-			else {
-				log.infof("%s.save: Failed to lock resource",CLSS);
-			}
-			*/
+
 		}
 		catch(JsonProcessingException jpe) {
 			log.warnf("%s.run: Exception serializing family, resource %d (%s)",CLSS,resource.getResourceId(),jpe.getMessage());

@@ -12,6 +12,7 @@ import javax.swing.JPanel;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.serializable.SerializableApplication;
 import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.SortedListModel;
@@ -103,7 +104,8 @@ public class ApplicationPropertyEditor extends AbstractPropertyEditor {
 		buildOutputListModel();
 	}
 	
-	// This class does not represent a panel. There is no save action. 
+	// This class does not represent a panel. This serializes the model 
+	// callable from all panels.
 	@Override
 	public void saveResource() {
 		application.setAuxiliaryData(model);

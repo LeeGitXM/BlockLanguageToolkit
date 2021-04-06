@@ -14,6 +14,7 @@ import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
+import com.ils.common.GeneralPurposeDataContainer;
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 
 /**
@@ -380,14 +381,15 @@ public interface ToolkitRequestHandler  {
 	 */
 	public void propagateBlockState(String diagramId,String blockId) ;
 	/**
-	 * Execute the getAux extension function in Gateway scope, recursively from
-	 * a supplied root node.
+	 * Execute the getAux extension function in Gateway scope for the indicated node.
+	 * Inform the designer of the results via a notification
 	 * @param projectId project identifier
-	 * @param root the resourceId of an application to be refreshed
+	 * @param resid the resourceId of an application to be refreshed
+	 * @param nodeId identifier of the node to be 
 	 * @param provider tag provider
 	 * @param db datasource
 	 */
-	public void refreshAuxData(long projectId,long root,String provider,String database);
+	public void readAuxData(long projectId,long resid,String nodeId,String provider,String db);
 	/** Update a single property for a block 
 	 * @param duuid diagram unique Id
 	 * @param buuid block unique Id
@@ -541,5 +543,15 @@ public interface ToolkitRequestHandler  {
 	 * @param anchors  a pre-provided list of anchors that will be augmented by this call
 	 */
 	public void updateBlockAnchors(UUID duuid,UUID buuid, Collection<SerializableAnchor> anchors ) ;
+	/**
+	 * Execute the setAux extension function in Gateway scope for the indicated node
+	 * @param projectId project identifier
+	 * @param resid the resourceId of an application to be refreshed
+	 * @param nodeId identifier of node or block affected.
+	 * @param container the new auxiliary data
+	 * @param provider tag provider
+	 * @param db datasource
+	 */
+	public void writeAuxData(long projectId,long resid,String nodeId,GeneralPurposeDataContainer container,String provider,String db);
 
 }

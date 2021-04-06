@@ -51,6 +51,7 @@ import com.ils.blt.gateway.engine.ProcessNode;
 import com.ils.blt.gateway.proxy.ProxyHandler;
 import com.ils.blt.gateway.tag.TagHandler;
 import com.ils.common.ClassList;
+import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.help.HelpRecordProxy;
 import com.ils.common.persistence.ToolkitProperties;
 import com.ils.common.persistence.ToolkitRecordHandler;
@@ -1233,48 +1234,34 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * Send notification to the designer of any changes.
 	 * @param projectId the project
 	 * @param resid the resourceId of an application to be refreshed
+	 * @param nodeId identifier of specified node
 	 * @param provider tag provider
 	 * @param db datasource
 	 */
 	@Override
-	public synchronized void refreshAuxData(long projectId,long resid,String provider,String db) {
+	public synchronized void readAuxData(long projectId,long resid,String nodeId,String provider,String db) {
 		ProjectResource res = context.getProjectManager().getProject(projectId, ApplicationScope.GATEWAY,ProjectVersion.Staging).getResource(resid);
+		GeneralPurposeDataContainer container = new GeneralPurposeDataContainer();
 		if( res!=null && res.getResourceType().equals(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
-			ProcessApplication app = controller.getDelegate().deserializeApplicationResource(projectId, res);
-			boolean hadData = app.getAuxiliaryData().containsData();
 			Script script = extensionManager.createExtensionScript(ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.GET_AUX_OPERATION, provider);
-			extensionManager.runScript(context.getScriptManager(), script, app.getSelf().toString(),app.getAuxiliaryData(),db);
-			if(hadData || app.getAuxiliaryData().containsData()) {
-				//saveResource(res,app,projectId);
-				controller.sendAuxDataNotification(app.getSelf().toString(), new BasicQualifiedValue(app.getAuxiliaryData()));
-			}
+			extensionManager.runScript(context.getScriptManager(), script, nodeId,container,db);
+			controller.sendAuxDataNotification(nodeId, new BasicQualifiedValue(container));
 		}
 		else if( res!=null && res.getResourceType().equals(BLTProperties.FAMILY_RESOURCE_TYPE)) {
-			ProcessFamily fam = controller.getDelegate().deserializeFamilyResource(projectId, res);
-			boolean hadData = fam.getAuxiliaryData().containsData();
 			Script script = extensionManager.createExtensionScript(ScriptConstants.FAMILY_CLASS_NAME, ScriptConstants.GET_AUX_OPERATION, provider);
-			extensionManager.runScript(context.getScriptManager(), script, fam.getSelf().toString(),fam.getAuxiliaryData(),db);
-			if(hadData || fam.getAuxiliaryData().containsData()) {
-				//saveResource(res,fam,projectId);
-				controller.sendAuxDataNotification(fam.getSelf().toString(), new BasicQualifiedValue(fam.getAuxiliaryData()));
-			}
+			extensionManager.runScript(context.getScriptManager(), script, nodeId,container,db);
+			controller.sendAuxDataNotification(nodeId, new BasicQualifiedValue(container));
 		}
 		else if( res!=null && res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
 			SerializableDiagram dia = controller.getDelegate().deserializeDiagramResource(projectId, res);
-			boolean hadData = false;
 			for(SerializableBlock block:dia.getBlocks()) {
-				boolean blockHadData = block.getAuxiliaryData().containsData();
-				block.getAuxData();
-				if( block.getAuxiliaryData().containsData() ) blockHadData = true;
-				if( blockHadData )	controller.sendAuxDataNotification(block.getId().toString(), new BasicQualifiedValue(block.getAuxiliaryData()));
-				hadData  = hadData||blockHadData;
-			}
-			// If any blocks have or had data there might have been a change.
-			if(hadData) {
-				//saveResource(res,dia,projectId);
+				if( block.getId().toString().equalsIgnoreCase(nodeId)) {
+					container = block.getAuxData();
+					controller.sendAuxDataNotification(block.getId().toString(), new BasicQualifiedValue(container));
+					break;
+				}
 			}
 		}
-
 	}
 	// Save a resource with aux data back into the project. Notify the client.
 	// Note: This triggers the ModelManager project change listener.
@@ -1810,6 +1797,38 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		}
 		// inform the designer of the change
 		controller.sendPropertyNotification(block.getBlockId().toString(), newProperty.getName(), new BasicQualifiedValue(newProperty.getValue()));
+	}
+	/**
+	 * Execute the setAux extension function in Gateway scope for the supplied resource.
+	 * No notifications are sent
+	 * Send notification to the designer of any changes.
+	 * @param projectId the project
+	 * @param resid the resourceId of an application to be refreshed
+	 * @param provider tag provider
+	 * @param db datasource
+	 */
+	@Override
+	public synchronized void writeAuxData(long projectId,long resid,String nodeId,GeneralPurposeDataContainer container,String provider,String db) {
+		ProjectResource res = context.getProjectManager().getProject(projectId, ApplicationScope.GATEWAY,ProjectVersion.Staging).getResource(resid);
+		if( res!=null && res.getResourceType().equals(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
+			Script script = extensionManager.createExtensionScript(ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.SET_AUX_OPERATION, provider);
+			extensionManager.runScript(context.getScriptManager(), script, nodeId,container,db);
+		}
+		else if( res!=null && res.getResourceType().equals(BLTProperties.FAMILY_RESOURCE_TYPE)) {
+			Script script = extensionManager.createExtensionScript(ScriptConstants.FAMILY_CLASS_NAME, ScriptConstants.SET_AUX_OPERATION, provider);
+			extensionManager.runScript(context.getScriptManager(), script, nodeId,container,db);
+			controller.sendAuxDataNotification(nodeId, new BasicQualifiedValue(container));
+		}
+		else if( res!=null && res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
+			SerializableDiagram dia = controller.getDelegate().deserializeDiagramResource(projectId, res);
+			boolean hadData = false;
+			for(SerializableBlock block:dia.getBlocks()) {
+				if( block.getId().toString().equalsIgnoreCase(nodeId)) {
+					block.setAuxData(container);
+					break;
+				}
+			}
+		}
 	}
 }
 

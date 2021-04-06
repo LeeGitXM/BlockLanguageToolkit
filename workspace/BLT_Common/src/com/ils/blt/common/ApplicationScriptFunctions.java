@@ -10,6 +10,7 @@ import java.util.List;
 import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
+import com.ils.common.GeneralPurposeDataContainer;
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 
 
@@ -436,15 +437,14 @@ public class ApplicationScriptFunctions   {
 		return result;
 	}
 	/**
-	 * Execute the getAux extension function in Gateway scope, recursively from
-	 * a supplied root node.
+	 * Execute the getAux extension function in Gateway scope for the specified resource
 	 * @param projId project identifier
-	 * @param root the resourceId of an application to be refreshed
+	 * @param resid the resourceId of an application to be refreshed
 	 * @param provider tag provider
 	 * @param db datasource
 	 */
-	public static void refreshAuxData(long projId,long root,String provider,String database) {
-		handler.refreshAuxData(projId,root, provider, database);
+	public static void readAuxData(long projId,long resid,String nodeId,String provider,String database) {
+		handler.readAuxData(projId,resid, nodeId,provider, database);
 	}
 	/** Update a single property for a block 
 	 * @param duuid diagram unique Id
@@ -628,5 +628,17 @@ public class ApplicationScriptFunctions   {
 	 */
 	public static void triggerStatusNotifications() {
 		handler.triggerStatusNotifications();
+	}
+	/**
+	 * Execute the setAux extension function in Gateway scope for the specified resource
+	 * @param projId project identifier
+	 * @param resid the resourceId of a node to be saved
+	 * @param id
+	 * @param container
+	 * @param provider tag provider
+	 * @param db datasource
+	 */
+	public static void writeAuxData(long projId,long resid,String id,GeneralPurposeDataContainer container,String provider,String database) {
+		handler.writeAuxData(projId,resid, id,container, provider, database);
 	}
 }

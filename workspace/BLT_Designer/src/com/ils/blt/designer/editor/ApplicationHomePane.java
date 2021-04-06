@@ -121,10 +121,11 @@ public class ApplicationHomePane extends JPanel implements  NotificationChangeLi
 		});
 		
 		setUI();
+		
 		// Register for notifications
 		log.infof("%s: adding change listener %s",CLSS,key);
 		notificationHandler.addNotificationChangeListener(key,CLSS,this);
-		requestHandler.refreshAuxData(editor.getContext().getProject().getId(),editor.getResource().getResourceId(), provider, database);
+		requestHandler.readAuxData(editor.getContext().getProject().getId(),editor.getResource().getResourceId(),editor.getApplication().getId().toString(), provider, database);
 	}
 
 	// Fill widgets with current values
@@ -187,6 +188,9 @@ public class ApplicationHomePane extends JPanel implements  NotificationChangeLi
 		
 		model.getProperties().put("Managed",(managedCheckBox.isSelected()?"1":"0"));
 		editor.saveResource();
+		// Write Aux data to the database.
+		requestHandler.writeAuxData(editor.getContext().getProject().getId(),editor.getResource().getResourceId(), 
+				editor.getApplication().getId().toString(),model,provider, database);
 	}
 
 	protected void doNext() {
