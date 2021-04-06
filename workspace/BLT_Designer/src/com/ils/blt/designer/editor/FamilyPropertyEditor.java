@@ -55,7 +55,6 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor implements Noti
 	private final GeneralPurposeDataContainer model;           // Data container operated on by panels
 	private final ApplicationRequestHandler requestHandler;
 	private JPanel mainPanel = null;
-	private JComboBox<String> stateBox;
 	private JTextArea descriptionArea;
 	private JTextField nameField;
 	private JTextField priorityField;
@@ -74,7 +73,6 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor implements Noti
         initialize();
         setUI();
 		// Register for notifications
-		log.debugf("%s: adding listener %s",CLSS,key);
 		notificationHandler.addNotificationChangeListener(key,CLSS,this);
 		requestHandler.readAuxData(context.getProject().getId(),getResource().getResourceId(),family.getId().toString(), provider, database);
 	}
@@ -130,15 +128,6 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor implements Noti
 		priorityField = new JTextField();
 		priorityField.setPreferredSize(NUMBER_BOX_SIZE);
 		panel.add(priorityField,"");
-		
-		panel.add(new JLabel("State"),"gapleft 20");
-		stateBox = new JComboBox<String>();
-		for(ActiveState s:ActiveState.values()) {
-			stateBox.addItem(s.name());
-		}
-		stateBox.setSelectedItem(family.getState().name());
-		stateBox.setPreferredSize(COMBO_SIZE);
-		panel.add(stateBox,"wrap 20");
 		return panel;
 	}
 	/**
@@ -160,7 +149,6 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor implements Noti
 	
 	// On save we get values from the widgets and place back into the model and database (for external functions).
 	private void save(){
-		family.setState(ActiveState.valueOf(stateBox.getSelectedItem().toString()));
 		model.getProperties().put("Description",descriptionArea.getText());
 		model.getProperties().put("Priority", priorityField.getText());
 		log.infof("%s.save():  state = %s",CLSS,family.getState().name());
