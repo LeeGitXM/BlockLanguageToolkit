@@ -148,6 +148,8 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 	public void shutdown() {
 		notificationHandler.removeNotificationChangeListener(key,CLSS);
 		save();
+		requestHandler.writeAuxData(context.getProject().getId(),diagram.getResourceId(),block.getId().toString(),model,provider, database);
+		log.infof("%s.save: writing aux data",CLSS);
 	}
 	
 	private BasicEditPanel createMainPanel() {	
@@ -359,8 +361,6 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		
 		List<String> inUseList = dual.getDestinations();
 		model.getLists().put("OutputsInUse",inUseList);
-		requestHandler.writeAuxData(context.getProject().getId(),diagram.getResourceId(),block.getId().toString(),model,provider, database);
-		log.infof("%s.save: writing aux data",CLSS);
 	}
 	
 	/*

@@ -127,7 +127,7 @@ public class Callback {
 		if( localsMap == null ) throw new IllegalArgumentException("Locals map must be initialized before variables can be added.");
 
 		localsMap.__setitem__(localVariables[index],value);
-		log.debugf("%s.setLocalVariable: %s to %s",TAG,localVariables[index],value.toString());
+		log.tracef("%s.setLocalVariable: %s to %s",TAG,localVariables[index],value.toString());
 	}
 }
 

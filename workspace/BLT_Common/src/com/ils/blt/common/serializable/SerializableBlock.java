@@ -51,10 +51,7 @@ public class SerializableBlock {
 	public SerializableBlock() {
 		this.anchors = new SerializableAnchor[0];
 	}
-	public SerializableAnchor[] getAnchors() { 
-//		System.out.println("EREIAM jh - serializable get anchors");
-		return anchors; 
-		}
+	public SerializableAnchor[] getAnchors() { return anchors; }
 	public GeneralPurposeDataContainer getAuxiliaryData() {return auxiliaryData;}
 	public GeneralPurposeDataContainer getAuxData() {return auxiliaryData;}  // Used to trigger external script
 	public int getBackground() {return background;}

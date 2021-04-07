@@ -1253,14 +1253,9 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			controller.sendAuxDataNotification(nodeId, new BasicQualifiedValue(container));
 		}
 		else if( res!=null && res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
-			SerializableDiagram dia = controller.getDelegate().deserializeDiagramResource(projectId, res);
-			for(SerializableBlock block:dia.getBlocks()) {
-				if( block.getId().toString().equalsIgnoreCase(nodeId)) {
-					container = block.getAuxData();
-					controller.sendAuxDataNotification(block.getId().toString(), new BasicQualifiedValue(container));
-					break;
-				}
-			}
+			ProcessBlock block = controller.getDelegate().getBlock(projectId, resid, UUID.fromString(nodeId));
+			block.getAuxData(container);
+			controller.sendAuxDataNotification(nodeId, new BasicQualifiedValue(container));
 		}
 	}
 	// Save a resource with aux data back into the project. Notify the client.
@@ -1820,14 +1815,8 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			controller.sendAuxDataNotification(nodeId, new BasicQualifiedValue(container));
 		}
 		else if( res!=null && res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
-			SerializableDiagram dia = controller.getDelegate().deserializeDiagramResource(projectId, res);
-			boolean hadData = false;
-			for(SerializableBlock block:dia.getBlocks()) {
-				if( block.getId().toString().equalsIgnoreCase(nodeId)) {
-					block.setAuxData(container);
-					break;
-				}
-			}
+			ProcessBlock block = controller.getDelegate().getBlock(projectId, resid, UUID.fromString(nodeId));
+			block.setAuxData(container);
 		}
 	}
 }
