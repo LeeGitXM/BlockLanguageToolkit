@@ -8,8 +8,6 @@ import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.NumberFormat;
@@ -57,7 +55,7 @@ import net.miginfocom.swing.MigLayout;
  * This dialog allows for the display and editing of auxiliary data in the proxy block. There is no extension
  * function interaction until the block is saved as part of a diagram-save.
  */
-public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor implements FocusListener, NotificationChangeListener, PropertyChangeListener {
+public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor implements NotificationChangeListener, PropertyChangeListener {
 	private static final long serialVersionUID = 7211480530910862375L;
 	private static final String CLSS = "FinalDiagnosisPanel";
 	private final NotificationHandler notificationHandler = NotificationHandler.getInstance();
@@ -121,8 +119,9 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
         initialize();
         setUI();
 		// Register for notifications
-		log.debugf("%s: adding listener %s",CLSS,key);
+		log.infof("%s: adding notification listener %s",CLSS,key);
 		notificationHandler.addNotificationChangeListener(key,CLSS,this);
+		requestHandler.readAuxData(context.getProject().getId(),diagram.getResourceId(),block.getId().toString(), provider, database);
 	}
 
 	/**
@@ -148,6 +147,7 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 	
 	public void shutdown() {
 		notificationHandler.removeNotificationChangeListener(key,CLSS);
+		save();
 	}
 	
 	private BasicEditPanel createMainPanel() {	
@@ -359,6 +359,8 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		
 		List<String> inUseList = dual.getDestinations();
 		model.getLists().put("OutputsInUse",inUseList);
+		requestHandler.writeAuxData(context.getProject().getId(),diagram.getResourceId(),block.getId().toString(),model,provider, database);
+		log.infof("%s.save: writing aux data",CLSS);
 	}
 	
 	/*
@@ -470,28 +472,10 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		return btn;
 	}
 
-	// ============================================== Focus listener ==========================================
-	@Override
-	public void focusGained(FocusEvent event) {
-		if(event.getSource().equals(mainPanel)) {
-			log.infof("%s.focusGained: ... for %s",CLSS,model.getProperties().get("Name"));
-			mainPanel.addFocusListener(this);
-			requestHandler.readAuxData(context.getProject().getId(),diagram.getResourceId(), block.getId().toString(), provider, database);
-		}
-	}
-	@Override
-	public void focusLost(FocusEvent event) {
-		if(event.getSource().equals(mainPanel)) {
-			log.infof("%s.focusLost: ... for %s",CLSS,model.getProperties().get("Name"));
-			mainPanel.removeFocusListener(this);
-			save();
-		};
-	}
-
 	// ============================================== PropertyChange listener ==========================================
 	@Override
-	public void propertyChange(PropertyChangeEvent arg0) {
-		if (arg0.getPropertyName().equalsIgnoreCase(DualListBox.PROPERTY_CHANGE_UPDATE)) {
+	public void propertyChange(PropertyChangeEvent event) {
+		if (event.getPropertyName().equalsIgnoreCase(DualListBox.PROPERTY_CHANGE_UPDATE)) {
 			save();
 		}
 

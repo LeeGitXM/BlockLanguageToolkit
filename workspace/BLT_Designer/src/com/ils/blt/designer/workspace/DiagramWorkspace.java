@@ -20,8 +20,7 @@ import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
+import java.awt.event.FocusEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Path2D;
@@ -40,7 +39,6 @@ import java.util.List;
 import java.util.UUID;
 
 import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
@@ -52,7 +50,6 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JRootPane;
-import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -86,6 +83,7 @@ import com.ils.blt.designer.config.BlockExplanationViewer;
 import com.ils.blt.designer.config.BlockInternalsViewer;
 import com.ils.blt.designer.config.BlockPropertiesSelector;
 import com.ils.blt.designer.config.ForceValueSettingsDialog;
+import com.ils.blt.designer.editor.AbstractPropertyEditor;
 import com.ils.blt.designer.editor.BlockEditConstants;
 import com.ils.blt.designer.editor.PropertyEditorFrame;
 import com.ils.blt.designer.navtree.DiagramTreeNode;
@@ -154,7 +152,7 @@ import com.jidesoft.swing.JideButton;
  */
 public class DiagramWorkspace extends AbstractBlockWorkspace 
 							  implements ResourceWorkspace, DesignableWorkspaceListener,
-							  			ChangeListener                                   {
+							  			ChangeListener                                  {
 	private static final String ALIGN_MENU_TEXT = "Align Blocks";
 	private static final String CLSS = "DiagramWorkspace";
 	private static final long serialVersionUID = 4627016159409031941L;
@@ -2176,30 +2174,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
                 Component c = e.getComponent();
                 zoomPopup.show(c, e.getX(), e.getY());
             }
-        }
-    }
-    
-    private class KeystrokeListener implements KeyListener {
-
-        @Override
-        public void keyTyped(KeyEvent e) {
-			logger.errorf("DiagramWorkspace keyTyped :%s: Modifiers :%s:",e.getKeyChar(), e.getModifiers());
-			System.out.println("EREIAM J = 1");
-        }
-
-        @Override
-        public void keyPressed(KeyEvent e) {
-			System.out.println("EREIAM J = 2");
-			logger.errorf("DiagramWorkspace keyPressed :%s: Modifiers :%s:",e.getKeyChar(), e.getModifiers());
-            if ((e.getKeyCode() == KeyEvent.VK_A) && ((e.getModifiers() & KeyEvent.CTRL_MASK) != 0)) {
-                selectAllBlocks();
-            }
-        }
-
-        @Override
-        public void keyReleased(KeyEvent e) {
-			System.out.println("EREIAM J = 3");
-			logger.errorf("DiagramWorkspace keyReleased :%s: Modifiers :%s:",e.getKeyChar(), e.getModifiers());
         }
     }
    
