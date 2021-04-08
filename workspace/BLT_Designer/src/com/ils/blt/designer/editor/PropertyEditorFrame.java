@@ -106,7 +106,6 @@ public class PropertyEditorFrame extends DockableFrame implements ResourceWorksp
 				log.infof("%s: DiagramWorkspaceListener.itemSelectionChanged: selected a %s",CLSS,selection.getClass().getName());
 				// KLUDGE ALERT: There should be a way to not hard code this.
 				if( selection instanceof BlockComponent ) {
-					if( editor!=null ) editor.shutdown();
 					BlockComponent bc = ( BlockComponent)selection;
 					ProcessBlockView blk = (ProcessBlockView)bc.getBlock();
 					if( blk.getClassName().contains("FinalDiagnosis")) {

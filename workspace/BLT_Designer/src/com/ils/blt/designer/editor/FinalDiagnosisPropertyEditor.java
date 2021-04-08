@@ -149,7 +149,7 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		notificationHandler.removeNotificationChangeListener(key,CLSS);
 		save();
 		requestHandler.writeAuxData(context.getProject().getId(),diagram.getResourceId(),block.getId().toString(),model,provider, database);
-		log.infof("%s.save: writing aux data",CLSS);
+		log.infof("%s.shutdown: writing aux data",CLSS);
 	}
 	
 	private BasicEditPanel createMainPanel() {	
