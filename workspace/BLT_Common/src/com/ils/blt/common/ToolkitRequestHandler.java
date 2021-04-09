@@ -388,8 +388,9 @@ public interface ToolkitRequestHandler  {
 	 * @param nodeId identifier of the node to be 
 	 * @param provider tag provider
 	 * @param db datasource
+	 * @return the auxiliary data as stored in the database
 	 */
-	public void readAuxData(long projectId,long resid,String nodeId,String provider,String db);
+	public GeneralPurposeDataContainer readAuxData(long projectId,long resid,String nodeId,String provider,String db);
 	/** Update a single property for a block 
 	 * @param duuid diagram unique Id
 	 * @param buuid block unique Id

@@ -431,11 +431,12 @@ public class GatewayRpcDispatcher   {
 	 * @param resid the resourceId of an application to be refreshed
 	 * @param provider tag provider
 	 * @param db datasource
+	 * @return aux data from database
 	 */
-	public void readAuxData(Long projId,Long resid,String nodeId,String provider,String db) {
+	public GeneralPurposeDataContainer readAuxData(Long projId,Long resid,String nodeId,String provider,String db) {
 		long projectId = projId.longValue();
 		long resourceId = resid.longValue();
-		requestHandler.readAuxData(projectId,resourceId, nodeId,provider, db);
+		return requestHandler.readAuxData(projectId,resourceId, nodeId,provider, db);
 	}
 	/** Change the name of a block
 	 * 

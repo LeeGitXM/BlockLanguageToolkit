@@ -934,16 +934,19 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * @param nodeId node identifier
 	 * @param provider tag provider
 	 * @param db data source
+	 * @return auxiliary data as read from the database
 	 */
-	public synchronized void readAuxData(long projId,long resid,String nodeId,String provider,String database) {
+	public synchronized GeneralPurposeDataContainer readAuxData(long projId,long resid,String nodeId,String provider,String database) {
 		//log.infof("%s.readAuxData: proj %d, res %d, (%s,%s)",CLSS,projId,root,provider,database);
+		GeneralPurposeDataContainer container = new GeneralPurposeDataContainer();
 		try {
-			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+			container = (GeneralPurposeDataContainer)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 					BLTProperties.MODULE_ID, "readAuxData",projId,resid,nodeId,provider,database);
 		}
 		catch(Exception ge) {
 			log.infof("%s.readAuxData: GatewayException (%s)",CLSS,ge.getMessage());
 		}
+		return container;
 	}
 	/** Change the name of a block 
 	 * @param duuid diagram unique Id

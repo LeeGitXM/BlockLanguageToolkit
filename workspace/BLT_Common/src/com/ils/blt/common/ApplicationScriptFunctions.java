@@ -443,8 +443,8 @@ public class ApplicationScriptFunctions   {
 	 * @param provider tag provider
 	 * @param db datasource
 	 */
-	public static void readAuxData(long projId,long resid,String nodeId,String provider,String database) {
-		handler.readAuxData(projId,resid, nodeId,provider, database);
+	public static GeneralPurposeDataContainer readAuxData(long projId,long resid,String nodeId,String provider,String database) {
+		return handler.readAuxData(projId,resid, nodeId,provider, database);
 	}
 	/** Update a single property for a block 
 	 * @param duuid diagram unique Id

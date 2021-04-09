@@ -1,5 +1,5 @@
 /**
- *   (c) 2020  ILS Automation. All rights reserved.
+ *   (c) 2020-2021  ILS Automation. All rights reserved.
  *   http://docs.oracle.com/javase/tutorial/displayCode.html?code=http://docs.oracle.com/javase/tutorial/uiswing/examples/components/SharedModelDemoProject/src/components/SharedModelDemo.java
  */
 package com.ils.blt.designer.editor;
@@ -7,6 +7,7 @@ package com.ils.blt.designer.editor;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -38,12 +39,13 @@ public class SourceEditPanel extends BasicEditPanel {
 	private final static String TAG = "SourceEditPanel";
 	private static final long serialVersionUID = 1L;
 	//private final JLabel headingLabel;
-	private final List<SerializableBlockStateDescriptor> sinks;
+	private List<SerializableBlockStateDescriptor> sinks;
 	private JTable table;
 
 	public SourceEditPanel(final BlockPropertyEditor editor) {
 		super(editor);
 		sinks = editor.getRequestHandler().listBlocksOfClass(BlockConstants.BLOCK_CLASS_SINK);
+		if( sinks==null) sinks = new ArrayList<>();
 		Collections.sort(sinks);
 		setLayout(new BorderLayout());
 		//Create the edit panel - it has two panes

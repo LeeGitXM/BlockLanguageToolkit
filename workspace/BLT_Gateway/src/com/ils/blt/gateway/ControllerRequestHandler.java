@@ -1237,9 +1237,10 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * @param nodeId identifier of specified node
 	 * @param provider tag provider
 	 * @param db datasource
+	 * @return auxiliary data read from the database
 	 */
 	@Override
-	public synchronized void readAuxData(long projectId,long resid,String nodeId,String provider,String db) {
+	public synchronized GeneralPurposeDataContainer readAuxData(long projectId,long resid,String nodeId,String provider,String db) {
 		ProjectResource res = context.getProjectManager().getProject(projectId, ApplicationScope.GATEWAY,ProjectVersion.Staging).getResource(resid);
 		GeneralPurposeDataContainer container = new GeneralPurposeDataContainer();
 		if( res!=null && res.getResourceType().equals(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
@@ -1257,6 +1258,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			block.getAuxData(container);
 			controller.sendAuxDataNotification(nodeId, new BasicQualifiedValue(container));
 		}
+		return container;
 	}
 	// Save a resource with aux data back into the project. Notify the client.
 	// Note: This triggers the ModelManager project change listener.

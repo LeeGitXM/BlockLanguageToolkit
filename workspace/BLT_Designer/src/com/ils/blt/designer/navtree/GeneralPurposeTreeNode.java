@@ -70,6 +70,7 @@ import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.log.ILSLogger;
 import com.ils.common.log.LogMaker;
+import com.inductiveautomation.ignition.client.gateway_interface.GatewayException;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.client.util.action.BaseAction;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
@@ -80,8 +81,10 @@ import com.inductiveautomation.ignition.common.model.ApplicationScope;
 import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.ProjectChangeListener;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
+import com.inductiveautomation.ignition.designer.IgnitionDesigner;
 import com.inductiveautomation.ignition.designer.UndoManager;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
+import com.inductiveautomation.ignition.designer.gateway.DTGatewayInterface;
 import com.inductiveautomation.ignition.designer.gui.IconUtil;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractNavTreeNode;
@@ -482,6 +485,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				ClearAction clearAction = new ClearAction();
 				DebugAction debugAction = new DebugAction();
 				SaveAllAction saveAllAction = new SaveAllAction(this);
+				SynchronizeAction synchronizeAction = new SynchronizeAction(this);
 				if( requestHandler.isControllerRunning() ) {
 					startAction.setEnabled(false);
 					clearAction.setEnabled(false);
@@ -499,6 +503,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				menu.addSeparator();
 				menu.add(clearAction);
 				menu.add(debugAction);
+				menu.add(synchronizeAction);
 			}
 		}
 		else if( getProjectResource()==null ) {
@@ -507,7 +512,6 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		else if(getProjectResource().getResourceType().equalsIgnoreCase(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
 			ApplicationExportAction applicationExportAction = new ApplicationExportAction(menu.getRootPane(),this);
 			FamilyCreateAction familyAction = new FamilyCreateAction(this);
-			//RefreshAction refreshAction = new RefreshAction(this);
 			treeSaveAction = new TreeSaveAction(this,PREFIX+".SaveApplication");
 
 			menu.add(familyAction);
@@ -1920,43 +1924,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			}
 		}
 	}
-	/**
-	// Navigate the NavTree for this application and beneath. Call GetAux on each node.
-	private class RefreshAction extends BaseAction {
-		private static final long serialVersionUID = 1L;
-		private final AbstractResourceNavTreeNode tnode;
-		private String db;
-		private String provider;
-		
 
-		public RefreshAction(AbstractResourceNavTreeNode tn)  {
-			super(PREFIX+".Refresh",IconUtil.getIcon("refresh")); 
-			this.tnode = tn;
-		}
 
-		public void actionPerformed(ActionEvent e) {
-			long projectId = context.getProject().getId();
-			ProjectResource pr = tnode.getProjectResource();
-			if( pr.getResourceType().equalsIgnoreCase(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
-				SerializableApplication sap = recursivelyDeserializeApplication(tnode);
-				db       = (sap.getState().equals(DiagramState.ISOLATED)?requestHandler.getIsolationDatabase():requestHandler.getProductionDatabase());
-				provider = (sap.getState().equals(DiagramState.ISOLATED)?requestHandler.getIsolationTagProvider():requestHandler.getProductionTagProvider());
-				refreshNode(tnode,projectId,provider,db);
-			}	
-		}
-		// This function is called recursively
-		private void refreshNode(AbstractResourceNavTreeNode node,long projectId,String tagp,String dsource) {
-			//log.infof("%s.refreshNode: %s, (%s,%s)",CLSS,node.getName(),provider,dsource);
-			ProjectResource pr = node.getProjectResource();
-			ApplicationScriptFunctions.readAuxData(projectId,pr.getResourceId(), tagp, dsource);
-			Enumeration<AbstractResourceNavTreeNode> childWalker = node.children();
-			while(childWalker.hasMoreElements()) {
-				AbstractResourceNavTreeNode child = childWalker.nextElement();
-				refreshNode(child,projectId,tagp,dsource);
-			}
-		}
-	}
-	**/
 	// Save the entire Application hierarchy.
 	private class SaveAllAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
@@ -2055,7 +2024,95 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			}
 		}
 	}
+	// Navigate the NavTree from the top. Call GetAux on each application, family or block
+	// serializing the resource then save the project. Always execute for production database
+	// and tag provider.
+	private class SynchronizeAction extends BaseAction {
+		private static final long serialVersionUID = 1L;
+		private final AbstractResourceNavTreeNode root;
+		private String db;
+		private String provider;
+		private Project diff;
+		
 
+		public SynchronizeAction(AbstractResourceNavTreeNode tnode)  {
+			super(PREFIX+".Synchronize",IconUtil.getIcon("refresh")); 
+			this.root = tnode;
+			this.diff = context.getProject().getEmptyCopy();
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			long projectId = context.getProject().getId();
+			db       = requestHandler.getProductionDatabase();
+			provider = requestHandler.getProductionTagProvider();
+			synchronizeNode(root,projectId,provider,db);
+			// Update the project
+			try {
+				DTGatewayInterface.getInstance().saveProject(IgnitionDesigner.getFrame(), diff, false, "Committing ...");  // Don't publish
+			}
+			catch(GatewayException ge) {
+				logger.warnf("%s.run: Exception saving diff %d (%s)",CLSS,diff.getName(),ge.getMessage());
+			}
+			Project project = context.getProject();
+			project.applyDiff(diff,false);
+		}	
+		
+		// This function is called recursively
+		private void synchronizeNode(AbstractResourceNavTreeNode node,long projectId,String tagp,String dsource) {
+			//log.infof("%s.refreshNode: %s, (%s,%s)",CLSS,node.getName(),provider,dsource);
+			ProjectResource pr = node.getProjectResource();
+			if(pr==null || pr.getResourceType()==null) return;
+			GeneralPurposeDataContainer container = null;
+			ObjectMapper mapper = new ObjectMapper();
+			mapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL,true);
+			try {
+				if( pr.getResourceType().equalsIgnoreCase(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
+					SerializableApplication sa = deserializeApplication(pr);
+					container = ApplicationScriptFunctions.readAuxData(projectId,pr.getResourceId(),sa.getId().toString(),tagp, dsource);
+					sa.setAuxiliaryData(container);
+					String json = mapper.writeValueAsString(sa);
+					pr.setData(json.getBytes());
+					context.updateResource(pr);   // Force an update
+					diff.putResource(pr, true);
+				}
+				else if( pr.getResourceType().equalsIgnoreCase(BLTProperties.FAMILY_RESOURCE_TYPE)) {
+					SerializableFamily sf = deserializeFamily(pr);
+					container = ApplicationScriptFunctions.readAuxData(projectId,pr.getResourceId(),sf.getId().toString(),tagp, dsource);
+					sf.setAuxiliaryData(container);
+					String json = mapper.writeValueAsString(sf);
+					pr.setData(json.getBytes());
+					context.updateResource(pr);   // Force an update
+					diff.putResource(pr, true);
+				}
+				else if( pr.getResourceType().equalsIgnoreCase(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
+					SerializableDiagram dia = deserializeDiagram(pr);
+					dia.setDirty(true);    // Dirty because gateway doesn't know about it yet
+					for(SerializableBlock blk:dia.getBlocks()) {
+						container = ApplicationScriptFunctions.readAuxData(projectId,pr.getResourceId(),blk.getId().toString(),tagp, dsource);
+						blk.setAuxiliaryData(container);
+					}
+					String json = mapper.writeValueAsString(dia);
+					pr.setData(json.getBytes());
+					context.updateResource(pr);   // Force an update
+					diff.putResource(pr, true);    // Mark as dirty for our controller as resource listener
+				}
+				else if( pr.getResourceType().equalsIgnoreCase(BLTProperties.FOLDER_RESOURCE_TYPE) ) {
+					;
+				}
+				return;  // Non BLT type, not interested
+			}
+			catch(JsonProcessingException jpe) {
+				logger.warnf("%s.synchronizeNode: Exception parsing JSON for resource %s (%s)",CLSS,pr.getName(),jpe.getMessage());
+			}
+			
+			Enumeration<AbstractResourceNavTreeNode> childWalker = node.children();
+			while(childWalker.hasMoreElements()) {
+				AbstractResourceNavTreeNode child = childWalker.nextElement();
+				synchronizeNode(child,projectId,tagp,dsource);
+			}
+		}
+	}
+	
 	// Save this node and all its descendants.
 	private class TreeSaveAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
@@ -2083,7 +2140,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		// check if root node is a Application
 		if (node.getProjectResource() != null && node.getProjectResource().getResourceType().equals(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
 			ret = ((GeneralPurposeTreeNode)node).scanApplicationForDuplicateDiagnosisNames();  // ereiam jh todo come back
-		} else {
+		} 
+		else {
 			Enumeration<AbstractResourceNavTreeNode> enumer = node.children();
 			while(enumer.hasMoreElements()) {
 				AbstractResourceNavTreeNode theNode = enumer.nextElement();
