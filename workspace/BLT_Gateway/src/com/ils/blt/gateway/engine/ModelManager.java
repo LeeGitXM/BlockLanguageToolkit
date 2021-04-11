@@ -27,6 +27,7 @@ import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.SerializableFamily;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
+import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.persistence.ToolkitProperties;
 import com.ils.common.persistence.ToolkitRecordHandler;
 import com.inductiveautomation.ignition.common.model.ApplicationScope;
@@ -860,9 +861,11 @@ public class ModelManager implements ProjectListener  {
 				// of the block getAux data
 				if( diagram!=null )  {
 					for(ProcessBlock block:diagram.getProcessBlocks()) {
-						boolean hadData = block.getAuxiliaryData().containsData();
-						block.getAuxData(block.getAuxiliaryData());
-						if( hadData|| block.getAuxiliaryData().containsData()) controller.sendAuxDataNotification(block.getBlockId().toString(), new BasicQualifiedValue(block.getAuxiliaryData()));
+						GeneralPurposeDataContainer aux = block.getAuxiliaryData();
+						log.infof("%s.addModifyDiagramResource: block %s %s (%s)", CLSS,block.getName(),block.getClassName(),aux.toString());
+						boolean hadData = aux.containsData();
+						block.getAuxData(aux);
+						if( hadData|| aux.containsData()) controller.sendAuxDataNotification(block.getBlockId().toString(), new BasicQualifiedValue(block.getAuxiliaryData()));
 					}
 				}
 			}

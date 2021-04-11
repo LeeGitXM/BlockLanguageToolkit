@@ -185,7 +185,7 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	 */
 	@Override
 	public synchronized  void getAuxData(GeneralPurposeDataContainer container) { 
-		delegate.getAuxData(context.getProjectManager().getProjectScriptManager(getProjectId()),getPythonBlock());
+		delegate.getAuxData(context.getProjectManager().getProjectScriptManager(getProjectId()),getPythonBlock(),container);
 		requestHandler.postAlertingStatus(this);
 	}
 	

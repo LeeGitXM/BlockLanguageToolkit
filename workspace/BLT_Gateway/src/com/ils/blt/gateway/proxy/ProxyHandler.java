@@ -212,8 +212,7 @@ public class ProxyHandler   {
 			evaluateCallback.execute(mgr);
 		}
 	}
-	public GeneralPurposeDataContainer getAuxData(ScriptManager mgr,PyObject block) {
-		GeneralPurposeDataContainer container = new GeneralPurposeDataContainer();
+	public GeneralPurposeDataContainer getAuxData(ScriptManager mgr,PyObject block,GeneralPurposeDataContainer container) {
 		log.debugf("%s.getAuxData ... ",CLSS);
 		if( getAuxDataCallback.compileScript() ) {
 			synchronized(getAuxDataCallback) {
