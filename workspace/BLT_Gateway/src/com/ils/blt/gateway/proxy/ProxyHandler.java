@@ -216,12 +216,12 @@ public class ProxyHandler   {
 		log.debugf("%s.getAuxData ... ",CLSS);
 		if( getAuxDataCallback.compileScript() ) {
 			synchronized(getAuxDataCallback) {
-				PyList pylist = new PyList();  // Empty
+				PyList pylist = toPythonTranslator.dataContainerToPy(container);
 				getAuxDataCallback.initializeLocalsMap(mgr);
 				getAuxDataCallback.setLocalVariable(0,block);
 				getAuxDataCallback.setLocalVariable(1,pylist);
 				getAuxDataCallback.execute(mgr);
-				log.debug(CLSS+".getAuxiliaryData returned "+ pylist);   // Should now be updated
+				log.infof("%s.getAuxData returned %s",CLSS,pylist.toString());   // Should now be updated
 				// Contents of list are Hashtable<String,?>
 				// We're looking for a single string entry in the list
 				toJavaTranslator.updateDataContainerFromPython(container, pylist);

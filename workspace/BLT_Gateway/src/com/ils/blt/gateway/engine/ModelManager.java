@@ -862,7 +862,6 @@ public class ModelManager implements ProjectListener  {
 				if( diagram!=null )  {
 					for(ProcessBlock block:diagram.getProcessBlocks()) {
 						GeneralPurposeDataContainer aux = block.getAuxiliaryData();
-						log.infof("%s.addModifyDiagramResource: block %s %s (%s)", CLSS,block.getName(),block.getClassName(),aux.toString());
 						boolean hadData = aux.containsData();
 						block.getAuxData(aux);
 						if( hadData|| aux.containsData()) controller.sendAuxDataNotification(block.getBlockId().toString(), new BasicQualifiedValue(block.getAuxiliaryData()));
