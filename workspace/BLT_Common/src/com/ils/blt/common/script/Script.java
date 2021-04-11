@@ -150,7 +150,7 @@ public class Script {
 	
 	@Override
 	public String toString() {
-		return this.pythonPackage+"."+this.module;
+		return (pythonPackage==null?"module path unset":this.pythonPackage+"."+this.module);
 	}
 }
 
