@@ -2026,7 +2026,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	}
 	// Navigate the NavTree from the top. Call GetAux on each application, family or block
 	// serializing the resource then save the project. Always execute for production database
-	// and tag provider.
+	// and tag provider. A similar exercise is performed by the Gateway hook on startup.
 	private class SynchronizeAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
 		private final AbstractResourceNavTreeNode root;
