@@ -29,6 +29,7 @@ import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
+import com.ils.blt.gateway.tag.SetName;
 import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.JavaToPython;
 import com.ils.common.PythonToJava;
@@ -152,7 +153,7 @@ public class ProxyHandler   {
 	}
 
 	
-	public ProxyBlock createBlockInstance(String classNm,UUID parentId,UUID blockId,long projectId) {
+	public ProxyBlock createBlockInstance(String classNm,UUID parentId,UUID blockId,long projectId,String name) {
 		String className = removeXomFromClassName(classNm);  // EREIAM JH - temporary fix for existing XOM projects.
 		ProxyBlock block = new ProxyBlock(context,className,parentId,blockId);
 		log.debugf("%s.createBlockInstance --- python proxy for %s, project %d",CLSS,className,projectId); 
@@ -163,7 +164,8 @@ public class ProxyHandler   {
 				createBlockCallback.setLocalVariable(0,new PyString(className));
 				createBlockCallback.setLocalVariable(1,new PyString(parentId.toString()));
 				createBlockCallback.setLocalVariable(2,new PyString(blockId.toString()));
-				createBlockCallback.setLocalVariable(3,pyDictionary);
+				createBlockCallback.setLocalVariable(3,new PyString(name));
+				createBlockCallback.setLocalVariable(4,pyDictionary);
 				log.debugf("%s.createBlockInstance --- executing create script for %s",CLSS,className); 
 				createBlockCallback.execute(context.getProjectManager().getProjectScriptManager(projectId));
 

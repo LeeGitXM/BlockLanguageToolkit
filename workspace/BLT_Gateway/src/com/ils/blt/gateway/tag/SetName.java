@@ -1,7 +1,9 @@
 /**
  *   (c) 2021  ILS Automation. All rights reserved. 
  */
-package com.ils.blt.gateway.proxy;
+package com.ils.blt.gateway.tag;
+
+import com.ils.blt.gateway.proxy.Callback;
 
 /**
  * Define the python module that handles block creation. 

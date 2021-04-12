@@ -188,7 +188,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			ProcessDiagram diagram = controller.getDiagram(parentId);
 			if( diagram!=null ) {
 				long projectId = diagram.getProjectId();
-				block = ph.createBlockInstance(className,parentId,blockId,projectId);
+				block = ph.createBlockInstance(className,parentId,blockId,projectId,"");
 			}
 		}
 		catch( InstantiationException ie ) {

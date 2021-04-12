@@ -80,8 +80,8 @@ public class BlockFactory  {
 			log.warnf("%s.blockFromSerializable %s: Three argument constructor not found (%s)",TAG,className,nsme.getMessage()); 
 		}
 		catch( ClassNotFoundException cnf ) {
-			log.debugf("%s.blockFromSerializable: No java class %s ... trying Python",TAG,className); 
-			block = proxyHandler.createBlockInstance(className,parentId,blockId,projectId);
+			log.debugf("%s.blockFromSerializable: No java class %s ... %s trying Python",TAG,className,sb.getName()); 
+			block = proxyHandler.createBlockInstance(className,parentId,blockId,projectId,sb.getName());
 		}
 		catch( InstantiationException ie ) {
 			log.warnf("%s.blockFromSerializable: Error instantiating %s (%s)",TAG,className,ie.getLocalizedMessage()); 
