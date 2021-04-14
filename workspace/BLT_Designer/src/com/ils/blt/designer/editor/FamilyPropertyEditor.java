@@ -7,10 +7,7 @@ package com.ils.blt.designer.editor;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 
-import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -21,7 +18,6 @@ import javax.swing.SwingUtilities;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.ApplicationRequestHandler;
-import com.ils.blt.common.block.ActiveState;
 import com.ils.blt.common.notification.NotificationChangeListener;
 import com.ils.blt.common.notification.NotificationKey;
 import com.ils.blt.common.serializable.SerializableFamily;
@@ -42,7 +38,6 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor implements Noti
 	private final static String CLSS = "FamilyPropertyEditor";
 	private static final long serialVersionUID = 2882399376824334427L;
 	private final NotificationHandler notificationHandler = NotificationHandler.getInstance();
-	private static final Dimension COMBO_SIZE  = new Dimension(180,24);
 	private static final Dimension DESCRIPTION_AREA_SIZE  = new Dimension(200,160);
 	private static final Dimension NUMBER_BOX_SIZE  = new Dimension(50,24);
 	private static final Dimension PANEL_SIZE = new Dimension(250,300);
@@ -158,14 +153,23 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor implements Noti
 	@Override
 	public void saveResource() {
 		ObjectMapper mapper = new ObjectMapper();
-		try{
-			byte[] bytes = mapper.writeValueAsBytes(family);
-			//log.tracef("%s.run JSON = %s",CLSS,new String(bytes));
-			resource.setData(bytes);
-
+		try{		
+			if( context.requestLock(resource.getResourceId()) ) {
+				synchronized(this) {
+					byte[] bytes = mapper.writeValueAsBytes(family);
+					//log.tracef("%s.run JSON = %s",CLSS,new String(bytes));
+					resource.setData(bytes);
+					context.updateResource(resource);
+					context.updateLock(resource.getResourceId());
+					context.releaseLock(resource.getResourceId());
+				}
+			}
+			else {
+				log.warnf("%s.saveResource: Failed to obtain lock on resource save (%s)",CLSS,resource.getName());
+			}
 		}
 		catch(JsonProcessingException jpe) {
-			log.warnf("%s.run: Exception serializing family, resource %d (%s)",CLSS,resource.getResourceId(),jpe.getMessage());
+			log.warnf("%s.saveResource: Exception serializing application, resource %d (%s)",CLSS,resource.getResourceId(),jpe.getMessage());
 		}
 	}	
 

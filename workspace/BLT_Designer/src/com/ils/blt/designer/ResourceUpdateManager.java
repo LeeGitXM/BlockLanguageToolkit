@@ -128,6 +128,9 @@ public class ResourceUpdateManager implements Runnable {
 					context.releaseLock(res.getResourceId());
 					if(DEBUG) log.infof("%s.run: released lock",CLSS);
 				}
+				else {
+					log.warnf("%s.run: Updating resource %s, failed to obtain lock (aborted)",CLSS,res.getName());
+				}
 			}
 			catch(IllegalArgumentException iae) {
 				log.warnf("%s.run: Updating resource %d, it has been deleted (%s)",CLSS,res.getResourceId(),iae.getMessage());

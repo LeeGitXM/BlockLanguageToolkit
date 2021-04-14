@@ -130,7 +130,7 @@ public class ApplicationHomePane extends JPanel implements  NotificationChangeLi
 
 	// Fill widgets with current values
 	private void setUI() {
-		nameField.setText(model.getProperties().get("ApplicationName"));
+		nameField.setText(editor.getApplication().getName());
 		String description = model.getProperties().get("Description");
 		if( description==null) description="";
 		descriptionTextArea.setText(description);
@@ -214,10 +214,10 @@ public class ApplicationHomePane extends JPanel implements  NotificationChangeLi
 	// called on the Swing thread
 	@Override
 	public void valueChange(final QualifiedValue value) {
-		log.infof("%s.valueChange: new aux data for %s",CLSS,model.getProperties().get("Name"));
 		if( value==null ) return;
 		GeneralPurposeDataContainer container = (GeneralPurposeDataContainer)value.getValue();
 		if( container==null) return;
+		log.infof("%s.valueChange: new aux data %s for %s",CLSS,container.toString(),editor.getApplication().getName());
 		model.setLists(container.getLists());
 		model.setMapLists(container.getMapLists());
 		model.setProperties(container.getProperties());

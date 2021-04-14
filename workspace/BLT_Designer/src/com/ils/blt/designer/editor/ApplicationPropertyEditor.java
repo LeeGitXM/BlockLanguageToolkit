@@ -14,6 +14,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.serializable.SerializableApplication;
+import com.ils.blt.designer.ResourceUpdateManager;
 import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.SortedListModel;
 import com.ils.common.log.ILSLogger;
@@ -49,7 +50,7 @@ public class ApplicationPropertyEditor extends AbstractPropertyEditor {
 		this.log = LogMaker.getLogger(this);
 		this.context = ctx;
 		this.application = app;
-		this.model = application.getAuxiliaryData().clone();
+		this.model = application.getAuxiliaryData();
 		this.homePanel = new ApplicationHomePane(this);
 		this.outputKeys = new SortedListModel<>();
 		buildOutputListModel();
@@ -105,18 +106,29 @@ public class ApplicationPropertyEditor extends AbstractPropertyEditor {
 	}
 	
 	// This class does not represent a panel. This serializes the model 
-	// callable from all panels.
+	// callable from all panels. Write to the project resource without
+	// updating the entire project. Trigger a notification.
 	@Override
 	public void saveResource() {
 		application.setAuxiliaryData(model);
 		ObjectMapper mapper = new ObjectMapper();
-		try{
-			byte[] bytes = mapper.writeValueAsBytes(application);
-			//log.tracef("%s.run JSON = %s",CLSS,new String(bytes));
-			resource.setData(bytes);
+		try{		
+			if( context.requestLock(resource.getResourceId()) ) {
+				synchronized(this) {
+					byte[] bytes = mapper.writeValueAsBytes(application);
+					//log.tracef("%s.run JSON = %s",CLSS,new String(bytes));
+					resource.setData(bytes);
+					context.updateResource(resource);
+					context.updateLock(resource.getResourceId());
+					context.releaseLock(resource.getResourceId());
+				}
+			}
+			else {
+				log.warnf("%s.saveResource: Failed to obtain lock on resource save (%s)",CLSS,resource.getName());
+			}
 		}
 		catch(JsonProcessingException jpe) {
-			log.warnf("%s.run: Exception serializing application, resource %d (%s)",CLSS,resource.getResourceId(),jpe.getMessage());
+			log.warnf("%s.saveResource: Exception serializing application, resource %d (%s)",CLSS,resource.getResourceId(),jpe.getMessage());
 		}
 	}
 }

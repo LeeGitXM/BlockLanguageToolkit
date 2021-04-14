@@ -748,6 +748,7 @@ public class ModelManager implements ProjectListener  {
 
 				script = extensionManager.createExtensionScript(ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.SET_AUX_OPERATION, provider);
 				extensionManager.runScript(context.getScriptManager(), script, application.getSelf().toString(),application.getAuxiliaryData(),db);
+				controller.sendAuxDataNotification(application.getSelf().toString(), new BasicQualifiedValue(application.getAuxiliaryData()));
 			}
 
 		}
