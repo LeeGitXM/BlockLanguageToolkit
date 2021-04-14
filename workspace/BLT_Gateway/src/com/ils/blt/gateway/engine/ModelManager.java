@@ -856,10 +856,9 @@ public class ModelManager implements ProjectListener  {
 				}
 			}
 			// Invoke extension script for the diagram itself
-			// The SAVE script is smart enough to do an insert if diagram is new
+			// The SAVE script is smart enough to do an insert if diagram is new.
 			if( startup ) {
-				// A diagram has no associated data. All we have to do is prepare the resource for updates because
-				// of the block getAux data
+				// A diagram has no associated data. Prepare the resource for updates or eventual save.
 				if( diagram!=null )  {
 					for(ProcessBlock block:diagram.getProcessBlocks()) {
 						GeneralPurposeDataContainer aux = block.getAuxiliaryData();
@@ -876,9 +875,11 @@ public class ModelManager implements ProjectListener  {
 				Script script = extensionManager.createExtensionScript(ScriptConstants.DIAGRAM_CLASS_NAME, ScriptConstants.SAVE_OPERATION, provider);
 				extensionManager.runScript(context.getProjectManager().getProjectScriptManager(diagram.getProjectId()), 
 						script, diagram.getSelf().toString());
+				/*
 				for(ProcessBlock block:diagram.getProcessBlocks()) {
 					block.setAuxData(block.getAuxiliaryData());
 				}
+				*/
 			}
 		}
 		else {

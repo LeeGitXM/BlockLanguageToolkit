@@ -1,5 +1,5 @@
 /**
- *   (c) 2014-2021  ILS Automation. All rights reserved. 
+ *   (c) 2014-2021  ILS Automation. All rights reserv {ed. 
  */
 package com.ils.blt.gateway;
 
@@ -105,17 +105,27 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 		List<Project> projects = context.getProjectManager().getProjectsFull(ProjectVersion.Staging);
 		for( Project project:projects ) {
 			if( !project.isEnabled() || project.getId()==-1 ) continue;
+			// Do these in order of Application, Family and Diagrams
 			List<ProjectResource> resources = project.getResources();
 			for( ProjectResource res:resources ) {
-				// Model manager ignores resources that are not of interest to it.
-				//log.infof("%s.startup - loading %s resource, %d = %s", CLSS,res.getResourceType(),
-				//		res.getResourceId(),res.getName());
-				mmgr.analyzeResource(project.getId(),res,true);  // Flag implies startup
+				if( res.getResourceType().equalsIgnoreCase(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
+					mmgr.analyzeResource(project.getId(),res,true);  // Flag implies startup
+				}
+			}
+			resources = project.getResources();
+			for( ProjectResource res:resources ) {
+				if( res.getResourceType().equalsIgnoreCase(BLTProperties.FAMILY_RESOURCE_TYPE)) {
+					mmgr.analyzeResource(project.getId(),res,true);  // Flag implies startup
+				}
+			}
+			resources = project.getResources();
+			for( ProjectResource res:resources ) {
+				if( res.getResourceType().equalsIgnoreCase(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
+					mmgr.analyzeResource(project.getId(),res,true);  // Flag implies startup
+				}
 			}
 		}
-
-
-
+		
 		// Register for changes to our permanent settings
 		ToolkitRecord.META.addRecordListener(recordListener);
 
