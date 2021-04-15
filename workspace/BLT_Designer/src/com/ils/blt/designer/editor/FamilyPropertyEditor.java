@@ -147,6 +147,7 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor implements Noti
 		model.getProperties().put("Description",descriptionArea.getText());
 		model.getProperties().put("Priority", priorityField.getText());
 		log.infof("%s.save():  state = %s",CLSS,family.getState().name());
+		saveResource();
 		requestHandler.writeAuxData(context.getProject().getId(),getResource().getResourceId(),family.getId().toString(),model,provider, database);
 	}
 	
