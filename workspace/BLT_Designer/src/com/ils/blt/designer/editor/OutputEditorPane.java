@@ -55,7 +55,7 @@ public class OutputEditorPane extends JPanel implements ActionListener,FocusList
 	final JComboBox<String> feedbackMethodComboBox = new JComboBox<String>();
 	private static Icon previousIcon = new ImageIcon(OutputEditorPane.class.getResource("/images/arrow_left_green.png"));
 	final JButton homeButton = new JButton(previousIcon);
-	final JButton cancelButton = new JButton("Cancel");
+	//final JButton cancelButton = new JButton("Cancel");
 	private static Icon tagBrowserIcon = new ImageIcon(OutputEditorPane.class.getResource("/images/arrow_right_green.png"));
 	final JButton tagButton = new JButton("Tags", tagBrowserIcon);
 	private final UtilityFunctions fcns = new UtilityFunctions();
@@ -168,7 +168,7 @@ public class OutputEditorPane extends JPanel implements ActionListener,FocusList
 				editor.setSelectedPane(ApplicationPropertyEditor.OUTPUTS);
 			}
 		});
-		bottomPanel.add(cancelButton);
+		//bottomPanel.add(cancelButton);
 		
 	}
 
