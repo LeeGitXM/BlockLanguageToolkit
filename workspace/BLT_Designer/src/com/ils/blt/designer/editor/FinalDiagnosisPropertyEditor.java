@@ -134,14 +134,16 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 	private void initialize() {
 		setLayout(new MigLayout("top,flowy,ins 2,gapy 0:10:15","","[top]0[]"));
 		add(corePanel,"grow,push");
-   
-		if(diagram.getState().equals(DiagramState.ACTIVE) ||
-		   diagram.getState().equals(DiagramState.ISOLATED) ) {
-			mainPanel = createMainPanel();
-		} 
-		else {
-			mainPanel = createMainPanelNoData();
-		}
+		
+		/*
+		 * Previously, if the diagram was disabled, then it would build a panel without data even though 
+		 * every other block on the diagram could be configured.   I think there was some confusion about
+		 * which database to use if the diagram is disabled.  There are 3 states: ACTIVE, ISOLATED, and DISABLED.
+		 * Use the production database if the diagram is DISABLED.  Configuring a FD really has nothing to 
+		 * do with the state of the diagram.  (Pete - 4/28/2021) 
+		 */
+		
+		mainPanel = createMainPanel();
 		add(mainPanel,"grow,push");;
 	}
 	
@@ -165,14 +167,6 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		dual.addPropertyChangeListener(this);
 		mainPanel.add(dual, "gapx 5 5,grow,wrap");
 		mainPanel.add(createPropertiesPanel(),"grow,wrap");
-		return mainPanel;
-	}
-
-	private BasicEditPanel createMainPanelNoData() {	
-		//setLayout(new BorderLayout());
-		mainPanel = new BasicEditPanel(this);
-		mainPanel.setLayout(new MigLayout("ins 1,fill","[]","[growprio 60,150:150:2000][]"));
-		mainPanel.addSeparator(mainPanel,"Editing restricted - Diagram disabled or no database");
 		return mainPanel;
 	}
 	
