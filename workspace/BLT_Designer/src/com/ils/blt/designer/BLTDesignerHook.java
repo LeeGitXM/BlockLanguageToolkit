@@ -10,7 +10,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.io.IOException;
 import java.util.Enumeration;
-import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -27,7 +26,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.ApplicationScriptFunctions;
 import com.ils.blt.common.BLTProperties;
-import com.ils.blt.common.script.ScriptExtensionManager;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.designer.navtree.GeneralPurposeTreeNode;
 import com.ils.blt.designer.search.BLTSearchProvider;
@@ -46,7 +44,6 @@ import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.licensing.LicenseState;
 import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
-import com.inductiveautomation.ignition.common.project.ProjectVersion;
 import com.inductiveautomation.ignition.common.script.ScriptManager;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
 import com.inductiveautomation.ignition.designer.gui.IconUtil;
@@ -62,6 +59,9 @@ import com.inductiveautomation.vision.api.designer.palette.JavaBeanPaletteItem;
 import com.inductiveautomation.vision.api.designer.palette.Palette;
 import com.inductiveautomation.vision.api.designer.palette.PaletteItemGroup;
 import com.jidesoft.docking.DockingManager;
+
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
 
 public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	private static final String CLSS = "BLTDesignerHook";
@@ -207,6 +207,9 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		NotificationHandler.getInstance().setHook(this);
 		// Query the gateway for latest notifications from all blocks
 		appRequestHandler.triggerStatusNotifications();
+		
+		ILSLogger root = LogMaker.getLogger(Logger.ROOT_LOGGER_NAME);
+		root.setLevel(Level.INFO);
 	}
 	
 	public NodeStatusManager getNavTreeStatusManager() { return nodeStatusManager; }

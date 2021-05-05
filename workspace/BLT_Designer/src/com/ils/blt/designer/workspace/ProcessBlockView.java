@@ -72,10 +72,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 	private String iconPath="";                   // Path to icon that is the entire block
 	private boolean ctypeEditable=false;          // Can we globally change our connection types
 	private boolean locked = false;
-	private String name = null;                   // Text to display on the block
-	private boolean nameDisplayed = false;
-	private int nameOffsetX = 0;     // When displayed as an attribute
-	private int nameOffsetY = 0;     // When displayed as an attribute
+	private String name = null;                   // Text to display on the blockddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
 	private Point location = new Point(0,0);
 	private final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
 	private int preferredHeight = 0;              // Size the view to "natural" size
@@ -114,9 +111,6 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 		this.state = TruthValue.UNSET;
 		this.statusText = "";
 		this.style = descriptor.getStyle();
-		this.nameDisplayed  = descriptor.isNameDisplayed();
-		this.nameOffsetX    = descriptor.getNameOffsetX();
-		this.nameOffsetY    = descriptor.getNameOffsetY();
 		this.badgeChar      = descriptor.getBadgeChar();
 //		this.receiveEnabled = descriptor.isReceiveEnabled();
 //		this.transmitEnabled= descriptor.isTransmitEnabled();
@@ -156,10 +150,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 		this.preferredHeight = sb.getPreferredHeight();
 		this.preferredWidth = sb.getPreferredWidth();
 		this.style = sb.getStyle();
-		this.name = sb.getName();
-		this.nameDisplayed = sb.isNameDisplayed();
-		this.nameOffsetX   = sb.getNameOffsetX();
-		this.nameOffsetY   = sb.getNameOffsetY();
+		this.name = sb.getName();;
 		this.state = sb.getState();
 		this.statusText = sb.getStatusText();
 		this.badgeChar      = sb.getBadgeChar();
@@ -217,9 +208,6 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 		result.setIconPath(getIconPath());
 		result.setLocked(isLocked());
 		result.setName(getName());
-		result.setNameDisplayed(isNameDisplayed());
-		result.setNameOffsetX(getNameOffsetX());
-		result.setNameOffsetY(getNameOffsetY());
 		result.setPreferredHeight(getPreferredHeight());
 		result.setPreferredWidth(getPreferredWidth());
 		result.setState(getState());
@@ -381,8 +369,6 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 		return result;
 	}
 	public String getName() {return name;}
-	public int getNameOffsetX() { return nameOffsetX; }
-	public int getNameOffsetY() { return nameOffsetY; }
 	public int getPreferredHeight() {return preferredHeight;}
 	public int getPreferredWidth() {return preferredWidth;}
 	public String getBackgroundColor() {return backgroundColor;}
@@ -402,7 +388,6 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 	public boolean isDirty() {return dirty;}
 	public boolean isEncapsulation() {return encapsulation;}
 	public boolean isLocked() {return locked;}
-	public boolean isNameDisplayed() { return nameDisplayed; }
 //	public boolean isReceiveEnabled() {return receiveEnabled;}
 	public boolean isSignalAnchorDisplayed() {
 		for(ProcessAnchorDescriptor pad:anchors.values()) {
@@ -435,9 +420,6 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 	public void setIconPath(String iconPath) {this.iconPath = iconPath;}
 	public void setLocked(boolean flag) {this.locked = flag;}
 	public void setName(String label) {this.name = label; fireStateChanged(); }
-	public void setNameDisplayed(boolean showName) {this.nameDisplayed = showName;}
-	public void setNameOffsetX(int nameOffsetX) {this.nameOffsetX = nameOffsetX;}
-	public void setNameOffsetY(int nameOffsetY) {this.nameOffsetY = nameOffsetY;}
 	@Override
 	public void setLocation(Point loc) {
 		location = loc;

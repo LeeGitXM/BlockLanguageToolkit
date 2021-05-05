@@ -67,16 +67,9 @@ public class DiagramContainer extends BlockDesignableContainer {
 		// Paint "displayed" properties.
 		for(Block blk:getModel().getBlocks() ) {
 			
-			// EREIAM JH - TODO somehow we need to update properties here
-			// property panel always seems to be in synch, using processBlockView, why is this Wrong?
-			
-			
 			ProcessBlockView pbv = (ProcessBlockView)blk;
 			float xpos = pbv.getLocation().x;
 			float ypos = pbv.getLocation().y;
-			if(pbv.isNameDisplayed() ) {
-				paintTextAt(g,pbv.getName(),xpos+pbv.getNameOffsetX(),ypos+pbv.getNameOffsetY(),Color.DARK_GRAY,12);
-			}
 			
 			for(BlockProperty bp:pbv.getProperties()) {
 				if(bp.isDisplayed() && bp.getValue()!=null) {

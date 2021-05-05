@@ -33,9 +33,6 @@ public class BlockDescriptor {
 	private boolean encapsulation=false;  // Is this block is an encapsulation
 	private boolean externallyAugmented  = false;     // True if this block uses auxiliary getters/setters
 	private String iconPath = null;       // Icon to use for an icon-only block
-	private boolean nameDisplayed = false;
-	private int nameOffsetX = 0;     // When displayed as an attribute
-	private int nameOffsetY = 0;     // When displayed as an attribute
 	private int preferredHeight = 0;      // Size block to its "natural" size
 	private int preferredWidth  = 0;
 	private boolean receiveEnabled  = false;       // Whether or not this block can receive signals
@@ -90,15 +87,12 @@ public class BlockDescriptor {
 	public String getEmbeddedIcon() {return embeddedIcon;}
 	public String getEmbeddedLabel() {return embeddedLabel;}
 	public String getIconPath() {return iconPath;}
-	public int getNameOffsetX() {return nameOffsetX;}
-	public int getNameOffsetY() {return nameOffsetY;}
 	public int getPreferredHeight() {return preferredHeight;}
 	public int getPreferredWidth() {return preferredWidth;}
 	public BlockStyle getStyle() { return style; }
 	public boolean isExternallyAugmented()      { return externallyAugmented; }
 	public boolean isCtypeEditable() {return ctypeEditable;}
 	public boolean isEncapsulation() {return encapsulation;}
-	public boolean isNameDisplayed() {return nameDisplayed;}
 	public String getBadgeChar() {return badgeChar;}
 	public boolean isReceiveEnabled() {return receiveEnabled;}
 //	public boolean isTransmitEnabled() {return transmitEnabled;}
@@ -114,9 +108,6 @@ public class BlockDescriptor {
 	public void setEmbeddedLabel(String embeddedLabel) {this.embeddedLabel = embeddedLabel;}
 	public void setEncapsulation(boolean encapsulation) {this.encapsulation = encapsulation;}
 	public void setIconPath(String iconPath) {this.iconPath = iconPath;}
-	public void setNameDisplayed(boolean showName) {this.nameDisplayed = showName;}
-	public void setNameOffsetX(int nameOffsetX) {this.nameOffsetX = nameOffsetX;}
-	public void setNameOffsetY(int nameOffsetY) {this.nameOffsetY = nameOffsetY;}
 	public void setPreferredHeight(int preferredHeight) {this.preferredHeight = preferredHeight;}
 	public void setPreferredWidth(int preferredWidth) {this.preferredWidth = preferredWidth;}
 	public void setReceiveEnabled(boolean receiveEnabled) {this.receiveEnabled = receiveEnabled;}

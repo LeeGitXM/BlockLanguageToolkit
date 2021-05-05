@@ -36,7 +36,6 @@ public class BlockPropertyEditor extends AbstractPropertyEditor   {
 	private final MainPanel          mainPanel;       		// display the properties for a block
 	private final ConfigurationPanel configPanel;     		// configure a single block property
 	private final ListEditPanel      listEditPanel;   		// configure a property that is a list of strings
-	private final NameEditPanel      nameEditPanel;   		// configure a block's name
 	private final TagBrowserPanel    tagPanel;        		// configure tag for a bound value
 	private final SourceMainPanel     sourceMainPanel;		// Special case editor for SourceConnection 
 	private final SourceEditPanel     sourceEditPanel;		// configure an editor for lists of source blocks
@@ -59,7 +58,6 @@ public class BlockPropertyEditor extends AbstractPropertyEditor   {
         this.mainPanel = new MainPanel(context,this,block, wksp);
         this.configPanel = new ConfigurationPanel(this);
         this.listEditPanel = new ListEditPanel(this);
-        this.nameEditPanel = new NameEditPanel(this);
         this.tagPanel = new TagBrowserPanel(context,this);
         this.sourceMainPanel = new SourceMainPanel(context,this,block, wksp);
         this.sourceEditPanel = new SourceEditPanel(this);
@@ -82,7 +80,6 @@ public class BlockPropertyEditor extends AbstractPropertyEditor   {
 		}
 		add(configPanel);                     // CONFIGURATION_PANEL
 		add(listEditPanel);                   // LIST_EDIT_PANEL
-		add(nameEditPanel);                   // NAME_EDIT_PANEL
 		add(tagPanel);                        // TAG_BROWSER_PANEL
 		add(sourceEditPanel);                 // SOURCE_EDIT_PANEL
 		setSelectedPane(BlockEditConstants.HOME_PANEL);
@@ -161,9 +158,6 @@ public class BlockPropertyEditor extends AbstractPropertyEditor   {
 	
 	public void updateCorePanel(int panelIndex,ProcessBlockView blk) {
 		switch(panelIndex) {
-		case BlockEditConstants.NAME_EDIT_PANEL:
-			nameEditPanel.updateForBlock(blk);
-			break;
 		case BlockEditConstants.HOME_PANEL: 
 			MainPanel mp = this.mainPanel;
 			if( block.getClassName().equals(BlockConstants.BLOCK_CLASS_SOURCE)) mp = sourceMainPanel;
@@ -191,7 +185,6 @@ public class BlockPropertyEditor extends AbstractPropertyEditor   {
 		case BlockEditConstants.TAG_BROWSER_PANEL:
 			tagPanel.updateForProperty(prop);
 			break;
-		case BlockEditConstants.NAME_EDIT_PANEL:
 		default:
 			break;
 		}

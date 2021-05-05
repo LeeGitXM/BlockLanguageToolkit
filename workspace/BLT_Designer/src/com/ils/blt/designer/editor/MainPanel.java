@@ -1,5 +1,5 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved.
+ *   (c) 2014-2021  ILS Automation. All rights reserved.
  */
 package com.ils.blt.designer.editor;
 
@@ -7,6 +7,8 @@ import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,13 +21,21 @@ import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import com.ils.blt.common.ApplicationRequestHandler;
+import com.ils.blt.common.BusinessRules;
+import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.block.BindingType;
+import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.PropertyType;
+import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
+import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
+import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
+import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
 import net.miginfocom.swing.MigLayout;
@@ -111,7 +121,7 @@ public class MainPanel extends BasicEditPanel {
 	 * These properties are present in every block.
 	 * class, label, state, statusText.
 	 */
-	private class CorePropertyPanel extends JPanel implements ChangeListener {
+	private class CorePropertyPanel extends JPanel implements ChangeListener,FocusListener  {
 		private static final String columnConstraints = "[para]0[]0[]";
 		private static final String layoutConstraints = "ins 2";
 		private static final String rowConstraints = "[para]0[]0[]";
@@ -122,8 +132,9 @@ public class MainPanel extends BasicEditPanel {
 			addSeparator(this,"Core");
 			add(createLabel("Name"),"skip");
 			nameField = createTextField(blk.getName());
+			nameField.setEditable(true);
+			nameField.addFocusListener(this);
 			add(nameField,"growx,pushx");
-			add(createNameEditButton(blk),"w :25:");
 			add(createLabel("Class"),"newline,skip");
 			add(createTextField(blk.getClassName()),"span,growx");
 			add(createLabel("UUID"),"skip");
@@ -133,6 +144,57 @@ public class MainPanel extends BasicEditPanel {
 			block.addChangeListener(this);
 		}
 		
+		public void saveName() {
+			block.setName(nameField.getText());
+			// For Sinks we update the associated tag path
+			if( block.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK) ) {
+				BlockProperty prop = block.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
+				String path = prop.getBinding();
+				ApplicationRequestHandler handler = bpe.getRequestHandler();
+				// If the tag is is in the standard location, rename it
+				// otherwise, create a new one. Name must be a legal tag path element.
+				if( !BusinessRules.isStandardConnectionsFolder(path) ) {
+					String provider = getProvider();
+					path = String.format("[%s]%s/%s",provider,BlockConstants.SOURCE_SINK_TAG_FOLDER,nameField.getText());
+					handler.createTag(DataType.String,path);
+				}
+				else {
+					handler.renameTag(nameField.getText(), path);
+					path = renamePath(nameField.getText(), path);
+				}
+				prop.setBinding(path);
+				
+				// Perform similar modification on connected sources
+				// Use the scripting interface to handle diagrams besides the current
+				// The block name has already changed.
+				ProcessDiagramView diagram = bpe.getDiagram();
+				for(SerializableBlockStateDescriptor desc:handler.listSourcesForSink(diagram.getId().toString(),block.getId().toString())) {
+					SerializableResourceDescriptor rd = handler.getDiagramForBlock(desc.getIdString());
+					if( rd==null ) continue;
+					log.infof("NameEditPanel.actionPerformed: sink connected to %s",desc.getName());
+					handler.setBlockPropertyBinding(rd.getId(), desc.getIdString(),BlockConstants.BLOCK_PROPERTY_TAG_PATH,path);
+					handler.renameBlock(rd.getId(), desc.getIdString(), nameField.getText());
+					bpe.saveDiagram(rd.getResourceId());
+				}
+			}
+		}
+		// return the name of the appropriate tag provider
+		private String getProvider() {
+			DiagramState state = bpe.getDiagram().getState();
+			String provider = (state.equals(DiagramState.ISOLATED)?
+					bpe.getRequestHandler().getIsolationTagProvider():
+					bpe.getRequestHandler().getIsolationTagProvider());
+			return provider;
+		}
+		// Replace the last element of path with name
+		private String renamePath(String name,String path) {
+			int index = path.lastIndexOf("/");
+			if( index>0 ) {
+				path = path.substring(0, index+1);
+				path = path + name;
+			}
+			return path;
+		}
 		public void updatePanelForBlock(ProcessBlockView pbv) {
 			nameField.setText(pbv.getName());
 		}
@@ -151,6 +213,14 @@ public class MainPanel extends BasicEditPanel {
 		@Override
 		public void stateChanged(ChangeEvent e) {
 			nameField.setText(block.getName());
+		}
+		// ============================================== Focus listener ==========================================
+		@Override
+		public void focusGained(FocusEvent event) {
+		}
+		@Override
+		public void focusLost(FocusEvent event) {
+			saveName();
 		}
 	}
 	
@@ -226,37 +296,6 @@ public class MainPanel extends BasicEditPanel {
 		}
 		else {
 			log.warnf("%s.editButton Unable to load image for %s (%s)",TAG,prop.getName(),ICON_PATH);
-		}
-		return btn;
-	}
-	
-	/**
-	 * Create a button that navigates to the proper editor for
-	 * a block's name.
-	 */
-	private JButton createNameEditButton(final ProcessBlockView blk) {
-		JButton btn = new JButton();
-		final String ICON_PATH  = "Block/icons/editor/pencil.png";
-		Image img = ImageLoader.getInstance().loadImage(ICON_PATH ,BlockEditConstants.BUTTON_SIZE);
-		if( img !=null) {
-			Icon icon = new ImageIcon(img);
-			btn.setIcon(icon);
-			btn.setMargin(new Insets(0,0,0,0));
-			btn.setOpaque(false);
-			btn.setBorderPainted(false);
-			btn.setBackground(getBackground());
-			btn.setBorder(null);
-			btn.setPreferredSize(BlockEditConstants.BUTTON_SIZE);
-			btn.addActionListener(new ActionListener() {
-				// Determine the correct panel, depending on the property type
-				public void actionPerformed(ActionEvent e){
-					bpe.updateCorePanel(BlockEditConstants.NAME_EDIT_PANEL,blk);
-					setSelectedPane(BlockEditConstants.NAME_EDIT_PANEL);
-				}
-			});
-		}
-		else {
-			log.warnf("%s.createNameEditButton icon not found(%s)",TAG,ICON_PATH);
 		}
 		return btn;
 	}	
