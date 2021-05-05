@@ -31,9 +31,6 @@ public class SerializableBlock {
 	private String iconPath="";           // Path to icon that is the entire block
 	private boolean locked = false;
 	private String name;
-	private boolean nameDisplayed = false;
-	private int nameOffsetX = 0;     // When displayed as an attribute
-	private int nameOffsetY = 0;     // When displayed as an attribute
 	private UUID originalId = null;       // Id of block from which this was cloned
 	private int preferredHeight = 0;
 	private int preferredWidth  = 0;
@@ -63,8 +60,6 @@ public class SerializableBlock {
 	public String getIconPath() {return iconPath;}
 	public UUID getId() { return uuid; }
 	public String getName() { return name; }
-	public int getNameOffsetX() {return nameOffsetX;}
-	public int getNameOffsetY() {return nameOffsetY;}
 	public UUID getOriginalId() { return originalId; }
 	public int getPreferredHeight() {return preferredHeight;}
 	public int getPreferredWidth() {return preferredWidth;}
@@ -78,7 +73,6 @@ public class SerializableBlock {
 	
 	public boolean isDirty() {return dirty;}
 	public boolean isLocked() {return locked;}
-	public boolean isNameDisplayed() {return nameDisplayed;}
 //	public boolean isReceiveEnabled() {return receiveEnabled;}
 //	public boolean isTransmitEnabled() {return transmitEnabled;}
 	public String getBadgeChar() {return badgeChar;}
@@ -101,9 +95,6 @@ public class SerializableBlock {
 	public void setId(UUID id) { uuid = id; }
 	public void setLocked(boolean flag) { this.locked = flag; }
 	public void setName(String label) { this.name = label; }
-	public void setNameDisplayed(boolean showName) {this.nameDisplayed = showName;}
-	public void setNameOffsetX(int nameOffsetX) {this.nameOffsetX = nameOffsetX;}
-	public void setNameOffsetY(int nameOffsetY) {this.nameOffsetY = nameOffsetY;}
 	public void setOriginalId(UUID id) { originalId = id; }
 	public void setPreferredHeight(int preferredHeight) {this.preferredHeight = preferredHeight;}
 	public void setPreferredWidth(int preferredWidth) {this.preferredWidth = preferredWidth;}

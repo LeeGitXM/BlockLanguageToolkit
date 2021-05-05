@@ -1,5 +1,5 @@
 /**
- *   (c) 2013-2019  ILS Automation. All rights reserved. 
+ *   (c) 2013-2021  ILS Automation. All rights reserved. 
  */
 package com.ils.blt.common;
 
@@ -12,8 +12,6 @@ import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.block.TruthValue;
-import com.ils.blt.common.connection.ProcessConnection;
-import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.BlockPropertyChangeListener;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.SignalNotification;

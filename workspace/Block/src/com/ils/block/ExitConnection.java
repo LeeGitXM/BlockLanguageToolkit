@@ -92,8 +92,5 @@ public class ExitConnection extends AbstractProcessBlock implements ProcessBlock
 		desc.setBackground(new Color(127,127,127).getRGB()); // Dark gray
 		desc.setStyle(BlockStyle.ARROW);
 		desc.setCtypeEditable(true);
-		desc.setNameDisplayed(true);
-		desc.setNameOffsetX(25);
-		desc.setNameOffsetY(45);
 	}
 }

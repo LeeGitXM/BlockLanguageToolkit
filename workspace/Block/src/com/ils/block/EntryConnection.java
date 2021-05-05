@@ -1,5 +1,5 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved. 
+ *   (c) 2014-2021  ILS Automation. All rights reserved. 
  */
 package com.ils.block;
 
@@ -96,8 +96,5 @@ public class EntryConnection extends AbstractProcessBlock implements ProcessBloc
 		desc.setBackground(new Color(127,127,127).getRGB()); // Dark gray
 		desc.setStyle(BlockStyle.ARROW);
 		desc.setCtypeEditable(true);
-		desc.setNameDisplayed(true);
-		desc.setNameOffsetX(25);
-		desc.setNameOffsetY(45);
 	}
 }
