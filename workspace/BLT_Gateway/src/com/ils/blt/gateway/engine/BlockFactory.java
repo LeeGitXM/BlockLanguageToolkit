@@ -65,13 +65,16 @@ public class BlockFactory  {
 	public ProcessBlock blockFromSerializable(UUID parentId,SerializableBlock sb,long projectId) {
 		String className = sb.getClassName();
 		UUID blockId = sb.getId();
-		log.debugf("%s.blockFromSerializable: Create instance of %s (%s)",TAG,className,blockId.toString());   // Should be updated
+		log.infof("%s.blockFromSerializable: Create instance of %s (%s)",TAG,className,blockId.toString());   // Should be updated
 		ProcessBlock block = null;
 		// If we can't create a Java class, try python ...
 		try {
 			Class<?> clss = Class.forName(className);
+			log.infof("A");
 			Constructor<?> ctor = clss.getDeclaredConstructor(new Class[] {ExecutionController.class,UUID.class,UUID.class});
+			log.infof("B");
 			block = (ProcessBlock)ctor.newInstance(BlockExecutionController.getInstance(),parentId,sb.getId());
+			log.infof("C");
 		}
 		catch(InvocationTargetException ite ) {
 			log.warnf("%s.blockFromSerializable %s: Invocation failed (%s)",TAG,className,ite.getMessage()); 
@@ -105,7 +108,9 @@ public class BlockFactory  {
 	 * @param sb serializable block, the source
 	 */
 	public void updateBlockFromSerializable(ProcessBlock pb,SerializableBlock sb) {
+		log.infof("In updateBlockFromSerializable, setting the name...");
 		pb.setName(sb.getName());
+		log.infof("...the name has been set...");
 		// Update anchors first.  We do this because in some blocks property update behavior depends
 		// on the datatype of the anchors.
 		SerializableAnchor[] sanchors = sb.getAnchors();
@@ -127,10 +132,13 @@ public class BlockFactory  {
 			log.infof("%s.updateBlockFromSerializable: No anchors found in process block",TAG);
 		}
 		
+		log.infof("setting properties...");
+		log.infof("     ...available properties are: %s",pb.getPropertyNames().toString()); 
 		BlockProperty[] properties = sb.getProperties();
 		if( properties!=null ) {
 			for( BlockProperty bp:properties) {
 				if( bp==null || bp.getName()==null) continue;
+				log.infof("   Processing property: %s", bp.getName());
 				BlockProperty property = pb.getProperty(bp.getName());
 				if( property!=null ) {
 					// Use the property change interface so as to properly trigger
@@ -180,6 +188,7 @@ public class BlockFactory  {
 		else {
 			log.errorf("%s.updateBlockFromSerializable: No properties found in process block",TAG);
 		}
+		log.infof("...done setting properties!");
 		// Update Aux data
 		pb.setAuxiliaryData(sb.getAuxiliaryData());
 	}

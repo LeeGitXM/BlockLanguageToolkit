@@ -1,6 +1,10 @@
 /**
  *   (c) 2014  ILS Automation. All rights reserved.
  *   http://docs.oracle.com/javase/tutorial/displayCode.html?code=http://docs.oracle.com/javase/tutorial/uiswing/examples/components/SharedModelDemoProject/src/components/SharedModelDemo.java
+ *   
+ *   This class implements a swing dialog that provides a table of all of the properties of the originating block.
+ *   The first column is a check box whose state is set based on whether or not there is already a corresponding readout for the property;
+ *   i.e., was one previously created.  Checking or unchecking the checkbox automatically creates or deletes the readout.
  */
 package com.ils.blt.designer.config;
 
@@ -100,14 +104,6 @@ public class BlockPropertiesSelector extends JDialog implements TableModelListen
 				dispose();
 			}
 		});
-		// The Refresh button acquires more data
-		JButton refreshButton = new JButton("Refresh");
-		buttonPanel.add(refreshButton, "");
-		refreshButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				refresh();
-			}
-		});
 	}
 
 	private void queryBlock() {
@@ -136,11 +132,9 @@ public class BlockPropertiesSelector extends JDialog implements TableModelListen
 		internalPanel.repaint();
 	}
 
-	private void refresh() {
-		queryBlock();
-		updateInformation();
-	}
-
+	/*
+	 * This is called then they check or uncheck a row in the table.
+	 */
 	public void tableChanged(TableModelEvent e) {
 		if (e.getType() == TableModelEvent.UPDATE) {
 			int row = e.getFirstRow();
@@ -192,6 +186,7 @@ public class BlockPropertiesSelector extends JDialog implements TableModelListen
 								block.setDirty(true);
 
 							} else {
+								// The designer UN-checked a box so there must be a readout so delete it
 								String linkedIdStr = prop.getDisplayedBlockUUID();
 								UUID linkedId = UUID.fromString(linkedIdStr);
 								prop.setShowProperty(false);
@@ -206,7 +201,6 @@ public class BlockPropertiesSelector extends JDialog implements TableModelListen
 						}
 					}
 				}
-//	    		refresh();
 			}
 		}
 	}
@@ -220,8 +214,8 @@ public class BlockPropertiesSelector extends JDialog implements TableModelListen
 		table = new JTable();
 		outerPanel.setLayout(new MigLayout("ins 2,fillx,filly", "", ""));
 		String PRE = PREFIX + ".ViewInternals.Col.";
-		String[] columnNames = { "Shown", BundleUtil.get().getString(PRE + "Name"),
-				BundleUtil.get().getString(PRE + "Value") };
+		//String[] columnNames = { "Shown", BundleUtil.get().getString(PRE + "Name"), BundleUtil.get().getString(PRE + "Value") };
+		String[] columnNames = { "Shown", BundleUtil.get().getString(PRE + "Name") };
 		DefaultTableModel dataModel = new DefaultTableModel(columnNames, 0) {
 			private static final long serialVersionUID = 1L;
 
@@ -237,8 +231,8 @@ public class BlockPropertiesSelector extends JDialog implements TableModelListen
 				Object[] row = new Object[3];
 				row[0] = new Boolean(prop.isShowProperty());
 				row[1] = prop.getName();
-				String text = "" + prop.getValue();
-				row[2] = text;
+				//String text = "" + prop.getValue();
+				//row[2] = text;
 				dataModel.addRow(row);
 			}
 		}

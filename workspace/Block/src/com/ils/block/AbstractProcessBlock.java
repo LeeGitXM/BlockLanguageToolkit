@@ -98,6 +98,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 *              is also used when deserializing. Properties are restored after this initialization.
 	 */
 	public AbstractProcessBlock() {
+		log.infof("In AbstractProcessBlock constructor for a pallette instance");
 		propertyMap = new HashMap<>();
 		anchors = new ArrayList<AnchorPrototype>();
 		activities = new FixedSizeQueue<Activity>(DEFAULT_ACTIVITY_BUFFER_SIZE);
@@ -114,9 +115,11 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 */
 	public AbstractProcessBlock(ExecutionController ec, UUID parent, UUID block) {
 		this();
+		log.infof("In AbstractProcessBlock constructor for a real block");
 		this.controller = ec;
 		this.blockId = block;
 		this.parentId = parent;
+		log.infof("...done constructing!");
 	}
 	
 	/**
@@ -127,6 +130,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 * If you update any of these block properties, make sure to add version check and update code into the start() method. 
 	 */
 	private void initialize() {
+		log.infof("Initializing...");
 		this.state = TruthValue.UNSET;
 		AnchorPrototype sig = new AnchorPrototype(BlockConstants.SIGNAL_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.SIGNAL);
 		sig.setHidden(true);
@@ -135,6 +139,12 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		// Define a property that holds the size of the activity buffer. This applies to all blocks.
 		BlockProperty bufferSize = new BlockProperty(BlockConstants.BLOCK_PROPERTY_ACTIVITY_BUFFER_SIZE,new Integer(activities.getBufferSize()),PropertyType.INTEGER,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_ACTIVITY_BUFFER_SIZE, bufferSize);
+		
+		// Define a property that holds the name of the block. This applies to all blocks.
+		BlockProperty nameProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_NAME, name, PropertyType.STRING, true);
+		setProperty(BlockConstants.BLOCK_PROPERTY_NAME, nameProperty);
+		
+		log.infof("...done initializing!");
 	}
 	
 
@@ -264,7 +274,21 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		}
 	}
 	@Override
-	public void setName(String lbl) {this.name = lbl;}
+	public void setName(String lbl) {
+		this.name = lbl;
+		log.infof("Over here setting the name to %s", lbl);
+		log.infof("     ...available properties are: %s", getPropertyNames().toString()); 
+		if (getPropertyNames().contains(BlockConstants.BLOCK_PROPERTY_NAME.toUpperCase())){
+			log.infof("The Block property NAME exists!");
+		}
+		else {
+			log.infof("The Block property NAME DOES NOT exist, creating one!");
+			// Define a property that holds the name of the block. This applies to all blocks.
+			BlockProperty nameProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_NAME, name, PropertyType.STRING, true);
+			setProperty(BlockConstants.BLOCK_PROPERTY_NAME, nameProperty);
+		}
+		getProperty(BlockConstants.BLOCK_PROPERTY_NAME).setValue(lbl);
+	}
 	@Override
 	public String getStatusText() {return statusText;}
 	@Override

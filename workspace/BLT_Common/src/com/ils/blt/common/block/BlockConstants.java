@@ -26,7 +26,7 @@ public interface BlockConstants   {
 		
 	// These are block property names that used in multiple block definitions
 	public static final String BLOCK_PROPERTY_ACTIVITY_BUFFER_SIZE 	= "ActivityBufferSize";
-	public static final String BLOCK_PROPERTY_BACKGROUND_COLOR     	= "BackgoundColor";
+	public static final String BLOCK_PROPERTY_BACKGROUND_COLOR     	= "BackgroundColor";
 	public static final String BLOCK_PROPERTY_CLEAR_ON_RESET       	= "ClearOnReset";
 	public static final String BLOCK_PROPERTY_COMMAND              	= "Command";
 	public static final String BLOCK_PROPERTY_DEADBAND             	= "Deadband";
@@ -46,6 +46,7 @@ public interface BlockConstants   {
 	public static final String BLOCK_PROPERTY_LIMIT         		= "Limit";
 	public static final String BLOCK_PROPERTY_LIMIT_TYPE    		= "LimitType";
 	public static final String BLOCK_PROPERTY_MEAN          		= "Mean";
+	public static final String BLOCK_PROPERTY_NAME          		= "Name";
 	public static final String BLOCK_PROPERTY_OFFSET        		= "Offset";
 	public static final String BLOCK_PROPERTY_PROPERTY      		= "Property";            // Property name
 	public static final String BLOCK_PROPERTY_SAMPLE_SIZE   		= "SampleSize";
