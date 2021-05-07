@@ -102,15 +102,6 @@ public class ConfigurationPanel extends BasicEditPanel {
 			public void actionPerformed(ActionEvent e) {
 				if(property!=null) {
 					property.setBindingType(BindingType.valueOf(bindingTypeCombo.getSelectedItem().toString()));
-					property.setDisplayed(annotationCheckBox.isSelected());
-					try {
-						property.setDisplayOffsetX(Integer.parseInt(xfield.getText()));
-						property.setDisplayOffsetY(Integer.parseInt(yfield.getText()));
-					}
-					catch(NumberFormatException nfe) {
-						JOptionPane.showMessageDialog(ConfigurationPanel.this, String.format("ConfigurationPanel: Bad entry for display offset (%s)",nfe.getLocalizedMessage()));
-						property.setDisplayed(false);
-					}
 				}
 				editor.saveDiagramClean();  
 				editor.updatePanelForProperty(BlockEditConstants.HOME_PANEL,property);
@@ -142,13 +133,6 @@ public class ConfigurationPanel extends BasicEditPanel {
 			connectedId.setText("display block UUID:" + prop.getDisplayedBlockUUID().toString());
 		} else {
 			connectedId.setText("No connected display block");
-		}
-		// delete this next section - obsolete
-		annotationCheckBox.setSelected(prop.isDisplayed());
-		xfield.setText(String.valueOf(prop.getDisplayOffsetX()));
-		yfield.setText(String.valueOf(prop.getDisplayOffsetY()));
-		if (prop.isDisplayed()) {  // if it is displayed then allow it to be turned off, but not back on (obsolete feature)
-			annotationCheckBox.setEnabled(true);
 		}
 
 	}

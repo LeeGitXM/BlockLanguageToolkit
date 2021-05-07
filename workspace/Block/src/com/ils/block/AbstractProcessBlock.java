@@ -273,21 +273,22 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 			//log.infof("%s.setState: %s",name,this.state.name());
 		}
 	}
+	// Set the name in both the member and BlockProperty.
 	@Override
 	public void setName(String lbl) {
 		this.name = lbl;
 		log.infof("Over here setting the name to %s", lbl);
 		log.infof("     ...available properties are: %s", getPropertyNames().toString()); 
-		if (getPropertyNames().contains(BlockConstants.BLOCK_PROPERTY_NAME.toUpperCase())){
-			log.infof("The Block property NAME exists!");
-		}
-		else {
+		BlockProperty nameProperty = getProperty(BlockConstants.BLOCK_PROPERTY_NAME);
+		if( nameProperty==null ) {
 			log.infof("The Block property NAME DOES NOT exist, creating one!");
-			// Define a property that holds the name of the block. This applies to all blocks.
-			BlockProperty nameProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_NAME, name, PropertyType.STRING, true);
+			nameProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_NAME, name, PropertyType.STRING, true);
 			setProperty(BlockConstants.BLOCK_PROPERTY_NAME, nameProperty);
 		}
-		getProperty(BlockConstants.BLOCK_PROPERTY_NAME).setValue(lbl);
+		else {
+			log.infof("The Block property NAME exists!");
+		}
+		nameProperty.setValue(lbl);   // Notifies change listeners
 	}
 	@Override
 	public String getStatusText() {return statusText;}
@@ -375,7 +376,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	}
 	
 	/**
-	 * @return a list of the attribute names required by this class.
+	 * @return a list of the property names.
 	 */
 	@Override
 	public Set<String> getPropertyNames() {

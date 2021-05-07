@@ -99,9 +99,6 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 		setProperty(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW, windowProperty);
 		BlockProperty ratioProperty = new BlockProperty(BLOCK_PROPERTY_RATIO,new Double(0.0),PropertyType.DOUBLE,false);
 		ratioProperty.setBindingType(BindingType.ENGINE);
-		ratioProperty.setDisplayed(true);
-		ratioProperty.setDisplayOffsetX(25);
-		ratioProperty.setDisplayOffsetY(45);
 		setProperty(BLOCK_PROPERTY_RATIO, ratioProperty);
 
 		// Define a single input and output

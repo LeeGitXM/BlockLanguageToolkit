@@ -64,20 +64,6 @@ public class DiagramContainer extends BlockDesignableContainer {
 			paintTextAt(g,watermark,0,0, Color.LIGHT_GRAY,size); 
 			g.setTransform(save);
 		}
-		// Paint "displayed" properties.
-		for(Block blk:getModel().getBlocks() ) {
-			
-			ProcessBlockView pbv = (ProcessBlockView)blk;
-			float xpos = pbv.getLocation().x;
-			float ypos = pbv.getLocation().y;
-			
-			for(BlockProperty bp:pbv.getProperties()) {
-				if(bp.isDisplayed() && bp.getValue()!=null) {
-					String val = fncs.coerceToString(bp.getValue());
-					paintTextAt(g,val,xpos+bp.getDisplayOffsetX(),ypos+bp.getDisplayOffsetY(),Color.DARK_GRAY,12);
-				}
-			}
-		}
 	}
 	
 	/**

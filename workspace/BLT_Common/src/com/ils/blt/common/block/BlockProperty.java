@@ -38,8 +38,6 @@ public class BlockProperty implements NotificationChangeListener {
 	private boolean displayed  = false;
 	private boolean showProperty  = false;
 	private String displayedBlockUUID = "";  // parent is used if this property is displayed.  This way we know what block to update
-	private int displayOffsetX = BlockConstants.DEFAULT_ATTRIBUTE_OFFSET_X;
-	private int displayOffsetY = BlockConstants.DEFAULT_ATTRIBUTE_OFFSET_Y;
 
 	private String name = "UNSET-NAME";
 	private Object value = "UNSET-VALUE";
@@ -119,12 +117,6 @@ public class BlockProperty implements NotificationChangeListener {
 	public void setShowProperty(boolean shown) {this.showProperty = shown;}
 	public String getDisplayedBlockUUID() {return displayedBlockUUID;}
 	public void setDisplayedBlockUUID(String displayedBlockUUID) {this.displayedBlockUUID = displayedBlockUUID;	}
-	public boolean isDisplayed() {return displayed;}
-	public void setDisplayed(boolean shown) {this.displayed = shown;}
-	public int getDisplayOffsetX() {return displayOffsetX;}
-	public void setDisplayOffsetX(int externalOffsetX) {this.displayOffsetX = externalOffsetX;}
-	public int getDisplayOffsetY() {return displayOffsetY;}
-	public void setDisplayOffsetY(int externalOffsetY) {this.displayOffsetY = externalOffsetY;}
 	public BindingType getBindingType() { return bindingType; }
 	public void setBindingType(BindingType type) { 
 		if(type!=null) this.bindingType = type; 
@@ -190,11 +182,8 @@ public class BlockProperty implements NotificationChangeListener {
 	public BlockProperty clone() {
 		BlockProperty clone = new BlockProperty(getName(),getValue(),getType(),isEditable());
 		clone.setBinding(getBinding());
-		clone.setDisplayed(isDisplayed());
 		clone.setShowProperty(isShowProperty());
 		clone.setDisplayedBlockUUID(getDisplayedBlockUUID());
-		clone.setDisplayOffsetX(getDisplayOffsetX());
-		clone.setDisplayOffsetY(getDisplayOffsetY());
 		clone.setBindingType(getBindingType());
 		return clone;
 	}

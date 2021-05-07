@@ -150,8 +150,8 @@ public class MainPanel extends BasicEditPanel {
 			// The block has a name and a name property - this keeps them in sync
 			BlockProperty nameProp = block.getProperty(BlockConstants.BLOCK_PROPERTY_NAME);
 			nameProp.setValue(nameField.getText());
-			MainPanel.this.saveDiagramClean();    // Update property directly, immediately
-			bpe.saveDiagram(workspace.getActiveDiagram().getResourceId());
+			bpe.saveDiagramClean();    // Update property directly, immediately
+			// bpe.saveDiagram(workspace.getActiveDiagram().getResourceId());
 			
 			// For Sinks we update the associated tag path
 			if( block.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK) ) {
