@@ -53,7 +53,8 @@ public class BlockPropertyDisplay extends AbstractProcessBlock implements Proces
 		desc.setEditorClass("com.ils.blt.designer.config.BlockPropertyEditor");
 	}
 
-
+	@Override
+	public boolean delayBlockStart() { return true; }
 	@Override
 	public void propagate() {}
 	/**
