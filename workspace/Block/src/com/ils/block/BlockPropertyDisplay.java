@@ -24,10 +24,13 @@ public class BlockPropertyDisplay extends AbstractProcessBlock implements Proces
 	public static final int DEFAULT_WIDTH = 120;
 	public static final int DEFAULT_HEIGHT = 15;
 	protected BlockProperty text = null;
+	
+	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
+	 * This may not be used because this does not exist on a palette - the only way to make one of these is via the 
+	 * Property Display select dialog by right-clicking on a block.
 	 */
-	
 	public BlockPropertyDisplay() {
 		initialize();
 		initializePrototype();
@@ -88,8 +91,7 @@ public class BlockPropertyDisplay extends AbstractProcessBlock implements Proces
 		prototype.setPaletteLabel("PropertyDisplay");
 		*/
 		prototype.setTooltipText("Single property of a block");
-		prototype.setTabName(BlockConstants.PALETTE_TAB_MISC);
-		
+		prototype.setTabName(BlockConstants.PALETTE_TAB_NONE);
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setBlockClass(getClass().getCanonicalName());

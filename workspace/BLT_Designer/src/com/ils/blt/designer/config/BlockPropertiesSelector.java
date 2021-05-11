@@ -134,6 +134,7 @@ public class BlockPropertiesSelector extends JDialog implements TableModelListen
 
 	/*
 	 * This is called then they check or uncheck a row in the table.
+	 * As a result of that we create or delete a readout.
 	 */
 	public void tableChanged(TableModelEvent e) {
 		if (e.getType() == TableModelEvent.UPDATE) {
