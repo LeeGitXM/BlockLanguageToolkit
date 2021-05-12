@@ -115,7 +115,7 @@ public class BlockPropertyEditor extends AbstractPropertyEditor   {
 	 */
 	public void saveDiagramClean() {
 		saveDiagram();
-		diagram.setDirty(false);
+		diagram.setDirty(false);	
 	}
 	/**
 	 * Modify a tag path to account for global production/isolation providers

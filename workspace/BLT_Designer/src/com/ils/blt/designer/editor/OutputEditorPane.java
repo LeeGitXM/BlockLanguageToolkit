@@ -35,7 +35,7 @@ import net.miginfocom.swing.MigLayout;
  * Handle editing Quant Outputs for an application. This panel handles details for 
  * a single named output.
  */
-public class OutputEditorPane extends JPanel implements ActionListener,FocusListener  {
+public class OutputEditorPane extends JPanel implements ActionListener  {
 	private static final long serialVersionUID = -5387165467458025431L;
 	private final static String CLSS = "OutputEditorPane";
 	private static final Insets insets = new Insets(0,0,0,0);
@@ -242,13 +242,4 @@ public class OutputEditorPane extends JPanel implements ActionListener,FocusList
 		save();
 		editor.saveResource();
 	}	
-	// ============================================== Focus listener ==========================================
-	@Override
-	public void focusGained(FocusEvent event) {
-	}
-	@Override
-	public void focusLost(FocusEvent event) {
-		save();
-		editor.saveResource();
-	}
 }
