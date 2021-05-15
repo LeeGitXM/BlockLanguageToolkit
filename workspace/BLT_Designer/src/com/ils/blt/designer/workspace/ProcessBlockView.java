@@ -21,6 +21,7 @@ import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockStyle;
+import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.notification.NotificationChangeListener;
@@ -71,21 +72,18 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 	private final UIFactory factory = new UIFactory() ;
 	private String iconPath="";                   // Path to icon that is the entire block
 	private boolean ctypeEditable=false;          // Can we globally change our connection types
-	private boolean locked = false;
-	private String name = null;                   // Text to display on the blockddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+	private boolean locked = false; 
 	private Point location = new Point(0,0);
 	private final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
 	private int preferredHeight = 0;              // Size the view to "natural" size
 	private int preferredWidth  = 0;              // Size the view to "natural" size
 	private String backgroundColor  = "GREY";
 	private Collection<BlockProperty> properties;
-//	private boolean receiveEnabled = false;
 	private TruthValue state = TruthValue.UNSET;
 	private String badgeChar = null;
 	private String statusText;                    // Auxiliary text to display
 	private UUID subworkspaceId = null;           // Encapsulated diagram if encapsulation block
 	private BlockStyle style = BlockStyle.SQUARE;
-//	private boolean transmitEnabled = false;
 	private AbstractUIView ui = null;
 	private UUID uuid = null;
 	
@@ -112,8 +110,6 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 		this.statusText = "";
 		this.style = descriptor.getStyle();
 		this.badgeChar      = descriptor.getBadgeChar();
-//		this.receiveEnabled = descriptor.isReceiveEnabled();
-//		this.transmitEnabled= descriptor.isTransmitEnabled();
 
 		this.anchors = new HashMap<>();
 		int order = 0;
@@ -150,12 +146,9 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 		this.preferredHeight = sb.getPreferredHeight();
 		this.preferredWidth = sb.getPreferredWidth();
 		this.style = sb.getStyle();
-		this.name = sb.getName();;
 		this.state = sb.getState();
 		this.statusText = sb.getStatusText();
 		this.badgeChar      = sb.getBadgeChar();
-//		this.receiveEnabled  = sb.isReceiveEnabled();
-//		this.transmitEnabled = sb.isTransmitEnabled();
 		this.subworkspaceId = sb.getSubworkspaceId();
 		this.anchors = new HashMap<>();
 		if(sb.getAnchors()!=null ) {
@@ -175,6 +168,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 				properties.add(bp);
 			} 
 		}
+		// this.setName(sb.getName()); // There should already be a name property
 		this.location = new Point(sb.getX(),sb.getY());
 		log.debugf("%s: %s created %s %s (%s) view from serializable block", TAG, sb.getName(),className, sb.getId().toString(),style.toString());
 	}
@@ -368,7 +362,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 		}
 		return result;
 	}
-	public String getName() {return name;}
+	public String getName() {return getProperty(BlockConstants.BLOCK_PROPERTY_NAME).getValue().toString();}
 	public int getPreferredHeight() {return preferredHeight;}
 	public int getPreferredWidth() {return preferredWidth;}
 	public String getBackgroundColor() {return backgroundColor;}
@@ -419,7 +413,15 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 	public void setEmbeddedLabel(String embeddedLabel) {this.embeddedLabel = embeddedLabel;}
 	public void setIconPath(String iconPath) {this.iconPath = iconPath;}
 	public void setLocked(boolean flag) {this.locked = flag;}
-	public void setName(String label) {this.name = label; fireStateChanged(); }
+	public void setName(String name) {
+		BlockProperty nameProperty = getProperty(BlockConstants.BLOCK_PROPERTY_NAME);
+		if(nameProperty==null ) {
+			nameProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_NAME,name,PropertyType.STRING,true);
+			properties.add(nameProperty);
+		}
+		nameProperty.setValue(name);   // Notifies change listeners
+		fireStateChanged(); 
+	}
 	@Override
 	public void setLocation(Point loc) {
 		location = loc;
@@ -451,9 +453,6 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 	public void setStatusText(String statusText) { this.statusText = statusText; }
 	public void setStyle(BlockStyle s) { if( style!=null )this.style = s; }
 	public void setSubworkspaceId(UUID subworkspaceId) {this.subworkspaceId = subworkspaceId;}
-//	public void setTransmitEnabled(boolean transmitEnabled) {this.transmitEnabled = transmitEnabled;}
-	
-	
 	
 	/**
 	 * Create a name that is highly likely to be unique within the diagram.
@@ -464,7 +463,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 		String root = className;
 		int pos = className.lastIndexOf(".");
 		if( pos>=0 )  root = className.substring(pos+1);
-		name = String.format("%s-%d", root.toUpperCase(),random.nextInt(1000));
+		setName(String.format("%s-%d", root.toUpperCase(),random.nextInt(1000)));
 	}
 	
 	/**
@@ -473,7 +472,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 	 * use the block's UUID.
 	 */
 	public void createPseudoRandomNameExtension() {
-		name = String.format("%s-%d",name,random.nextInt(1000));
+		setName(String.format("%s-%d",getName(),random.nextInt(1000)));
 	}
 	
 	/**

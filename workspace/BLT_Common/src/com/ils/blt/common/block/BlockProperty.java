@@ -73,7 +73,7 @@ public class BlockProperty implements NotificationChangeListener {
 	private void notifyChangeListeners() {
 		ChangeEvent event = new ChangeEvent(this);
 		for(ChangeListener l: changeListeners) {
-			log.infof("%s.notifying ... %s of %s",TAG,l.getClass().getName(),value.toString());
+			//log.infof("%s.notifying ... %s of %s",TAG,l.getClass().getName(),value.toString());
 			l.stateChanged(event);
 		}
 	}

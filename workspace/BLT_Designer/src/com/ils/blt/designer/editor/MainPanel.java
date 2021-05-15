@@ -141,7 +141,7 @@ public class MainPanel extends BasicEditPanel {
 			add(createTextField(blk.getId().toString()),"span,growx");
 			
 			// Listen on block name changes
-			block.addChangeListener(this);
+			block.getProperty(BlockConstants.BLOCK_PROPERTY_NAME).addChangeListener(this);
 		}
 		
 		public void saveName() {
@@ -216,6 +216,7 @@ public class MainPanel extends BasicEditPanel {
 
 		@Override
 		public void stateChanged(ChangeEvent e) {
+			log.infof("CorePropertyPanel.stateChanged: name now %s (was? %s)",e.getSource().getClass().getCanonicalName(),block.getName());
 			nameField.setText(block.getName());
 		}
 		// ============================================== Focus listener ==========================================

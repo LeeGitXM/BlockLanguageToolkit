@@ -252,7 +252,6 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		return explanation;
 	}
 	@Override
-	//public String getName() {return name;}
 	public String getName() {return getProperty(BlockConstants.BLOCK_PROPERTY_NAME).getValue().toString();}
 	@Override
 	public long getProjectId() {return projectId;}
@@ -278,20 +277,9 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	// Set the name in both the member and BlockProperty.
 	@Override
 	public void setName(String lbl) {
-//		this.name = lbl;
 		log.infof("Over here setting the name to %s", lbl);
 		log.infof("     ...available properties are: %s", getPropertyNames().toString()); 
 		BlockProperty nameProperty = getProperty(BlockConstants.BLOCK_PROPERTY_NAME);
-		/*  The constructor will create the BLOCK_PROPERTY_NAME so it has to be there 
-		if( nameProperty==null ) {
-			log.infof("The Block property NAME DOES NOT exist, creating one!");
-			nameProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_NAME, name, PropertyType.STRING, true);
-			setProperty(BlockConstants.BLOCK_PROPERTY_NAME, nameProperty);
-		}
-		else {
-			log.infof("The Block property NAME exists!");
-		}
-		*/
 		nameProperty.setValue(lbl);   // Notifies change listeners
 	}
 	@Override
