@@ -70,7 +70,6 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	private UUID parentId;
 	private long projectId = -1;    // This is the global project
 	private GeneralPurposeDataContainer auxiliaryData = new GeneralPurposeDataContainer();
-	//private String name = ".";
 	protected QualifiedValue lastValue = null;  // Most recently propagated value.
 	protected String statusText;
 	protected PalettePrototype prototype = null;
@@ -141,7 +140,6 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		setProperty(BlockConstants.BLOCK_PROPERTY_ACTIVITY_BUFFER_SIZE, bufferSize);
 		
 		// Define a property that holds the name of the block. This applies to all blocks.
-		//BlockProperty nameProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_NAME, name, PropertyType.STRING, true);  PETE
 		BlockProperty nameProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_NAME, ".", PropertyType.STRING, true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_NAME, nameProperty);
 		
@@ -157,7 +155,6 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		BlockDescriptor blockDescriptor = prototype.getBlockDescriptor();
 		blockDescriptor.setAnchors(anchors);
 		blockDescriptor.setReceiveEnabled(isReceiver());
-//		blockDescriptor.setTransmitEnabled(isTransmitter());
 		
 		// Currently this refers to a path in /images of the BLT_Designer source area.
 		prototype.setPaletteIconPath("Block/icons/palette/unknown.png");

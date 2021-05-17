@@ -362,7 +362,14 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 		}
 		return result;
 	}
-	public String getName() {return getProperty(BlockConstants.BLOCK_PROPERTY_NAME).getValue().toString();}
+	public String getName() {
+		BlockProperty nameProperty = getProperty(BlockConstants.BLOCK_PROPERTY_NAME);
+		if(nameProperty==null ) {
+			nameProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_NAME,"",PropertyType.STRING,true);
+				properties.add(nameProperty);
+		}
+		return nameProperty.getValue().toString();
+	}
 	public int getPreferredHeight() {return preferredHeight;}
 	public int getPreferredWidth() {return preferredWidth;}
 	public String getBackgroundColor() {return backgroundColor;}
@@ -382,7 +389,6 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 	public boolean isDirty() {return dirty;}
 	public boolean isEncapsulation() {return encapsulation;}
 	public boolean isLocked() {return locked;}
-//	public boolean isReceiveEnabled() {return receiveEnabled;}
 	public boolean isSignalAnchorDisplayed() {
 		for(ProcessAnchorDescriptor pad:anchors.values()) {
 			if(pad.getDisplay().equals(BlockConstants.SIGNAL_PORT_NAME)) {
@@ -391,7 +397,6 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 		}
 		return false;
 	}
-//	public boolean isTransmitEnabled() {return transmitEnabled;}
 	public void recordLatestValue(String port,QualifiedValue qv) {
 		if( qv==null || qv.getValue()==null) return;
 		log.tracef("%s.recordLatestValue: %s (%s) port %s (%s)",TAG,getName(),getId().toString(),port,qv.getValue().toString());
