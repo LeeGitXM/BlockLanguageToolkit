@@ -4,10 +4,10 @@
 package com.ils.blt.designer.editor;
 
 import java.awt.Dimension;
-import java.awt.Image;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.NumberFormat;
@@ -16,9 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
@@ -30,11 +27,13 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
 import com.ils.blt.common.ApplicationRequestHandler;
+import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.block.ActiveState;
 import com.ils.blt.common.notification.NotificationChangeListener;
 import com.ils.blt.common.notification.NotificationKey;
+import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.NotificationHandler;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
@@ -43,7 +42,7 @@ import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.log.ILSLogger;
 import com.ils.common.log.LogMaker;
 import com.ils.common.ui.DualListBox;
-import com.inductiveautomation.ignition.client.images.ImageLoader;
+import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
@@ -134,14 +133,16 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 	private void initialize() {
 		setLayout(new MigLayout("top,flowy,ins 2,gapy 0:10:15","","[top]0[]"));
 		add(corePanel,"grow,push");
-   
-		if(diagram.getState().equals(DiagramState.ACTIVE) ||
-		   diagram.getState().equals(DiagramState.ISOLATED) ) {
-			mainPanel = createMainPanel();
-		} 
-		else {
-			mainPanel = createMainPanelNoData();
-		}
+		
+		/*
+		 * Previously, if the diagram was disabled, then it would build a panel without data even though 
+		 * every other block on the diagram could be configured.   I think there was some confusion about
+		 * which database to use if the diagram is disabled.  There are 3 states: ACTIVE, ISOLATED, and DISABLED.
+		 * Use the production database if the diagram is DISABLED.  Configuring a FD really has nothing to 
+		 * do with the state of the diagram.  (Pete - 4/28/2021) 
+		 */
+		
+		mainPanel = createMainPanel();
 		add(mainPanel,"grow,push");;
 	}
 	
@@ -165,14 +166,6 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		dual.addPropertyChangeListener(this);
 		mainPanel.add(dual, "gapx 5 5,grow,wrap");
 		mainPanel.add(createPropertiesPanel(),"grow,wrap");
-		return mainPanel;
-	}
-
-	private BasicEditPanel createMainPanelNoData() {	
-		//setLayout(new BorderLayout());
-		mainPanel = new BasicEditPanel(this);
-		mainPanel.setLayout(new MigLayout("ins 1,fill","[]","[growprio 60,150:150:2000][]"));
-		mainPanel.addSeparator(mainPanel,"Editing restricted - Diagram disabled or no database");
 		return mainPanel;
 	}
 	
@@ -318,7 +311,7 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 	 * These properties are present in every block.
 	 * class, label, state, statusText
 	 */
-	public class CorePropertyPanel extends BasicEditPanel {
+	public class CorePropertyPanel extends BasicEditPanel implements FocusListener {
 		private static final long serialVersionUID = -7849105885687872683L;
 		private static final String columnConstraints = "[para]0[]0[]";
 		private static final String layoutConstraints = "ins 2";
@@ -331,14 +324,39 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 			add(new JLabel("Name"),"skip");
 			nameField = createTextField(blk.getName());
 			add(nameField,"growx,pushx");
-			add(createNameEditButton(blk),"w :25:");
+			nameField.setEditable(true);
+			nameField.addFocusListener(this);
 			add(new JLabel("Class"),"newline,skip");
 			add(createTextField(blk.getClassName()),"span,growx");
 			add(new JLabel("UUID"),"skip");
 			add(createTextField(blk.getId().toString()),"span,growx");
 		}
+		
+		// FinalDiagnoses must have unique names.
+		public void saveName() {
+			if( !nameField.getText().equalsIgnoreCase(block.getName()) ) {
+				BLTDesignerHook hook = (BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID);
+				String msg = hook.scanForDiagnosisNameConflicts(diagram, nameField.getText());// send name and block
+				if (msg != null && msg.length() > 1) {
+					log.infof("Naming error: " + msg);
+					ErrorUtil.showError("Naming error, duplicate diagnosis name: " + msg);
+					return;  // abort save
+					
+				}
+				block.setName(nameField.getText());
+			}
+		}
+		
 		public void updateCorePanel(int tab,ProcessBlockView blk) {
 			
+		}
+		// ============================================== Focus listener ==========================================
+		@Override
+		public void focusGained(FocusEvent event) {
+		}
+		@Override
+		public void focusLost(FocusEvent event) {
+			saveName();
 		}
 	}
 	
@@ -443,34 +461,6 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		return label;
 	}
 	
-
-	/**
-	 * Create a button that navigates to the proper editor for
-	 * a block's name.
-	 */
-	private JButton createNameEditButton(final ProcessBlockView blk) {
-		JButton btn = new JButton();
-		final String ICON_PATH  = "Block/icons/editor/pencil.png";
-		Image img = ImageLoader.getInstance().loadImage(ICON_PATH ,BlockEditConstants.BUTTON_SIZE);
-		if( img !=null) {
-			Icon icon = new ImageIcon(img);
-			btn.setIcon(icon);
-			btn.setMargin(new Insets(0,0,0,0));
-			btn.setOpaque(false);
-			btn.setBorderPainted(false);
-			btn.setBackground(getBackground());
-			btn.setBorder(null);
-			btn.setPreferredSize(BlockEditConstants.BUTTON_SIZE);
-			btn.addActionListener(new ActionListener() {
-				// Determine the correct panel, depending on the property type
-				public void actionPerformed(ActionEvent e){
-					//CorePropertyPanel.this.updateCorePanel(BlockEditConstants.NAME_EDIT_PANEL,blk);
-					setSelectedPane(BlockEditConstants.NAME_EDIT_PANEL);
-				}
-			});
-		}
-		return btn;
-	}
 
 	// ============================================== PropertyChange listener ==========================================
 	@Override
