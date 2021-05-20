@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.BLTProperties;
@@ -23,6 +24,7 @@ import com.ils.blt.common.script.Script;
 import com.ils.blt.common.script.ScriptConstants;
 import com.ils.blt.common.script.ScriptExtensionManager;
 import com.ils.blt.common.serializable.SerializableApplication;
+import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.SerializableFamily;
@@ -575,22 +577,53 @@ public class ModelManager implements ProjectListener  {
 	/**
 	 * We don't care if the new project is a staging or published version.
 	 * Analyze only the staging project resources and update the controller.
+	 * Call this on startup to update resources for aux data.
 	 */
-	@Override
-	public void projectAdded(Project staging, Project published) {
+	public void projectAtStartup(Project staging) {
 		if( staging!=null ) {
 			if( staging.isEnabled() && staging.getId()!=-1 ) {
 				long projectId = staging.getId();
 				uuidByProjectId.put(new Long(projectId), staging.getUuid());
 				List<ProjectResource> resources = staging.getResources();
+				// The resource is modified by a scripting query to getAuxData()
 				for( ProjectResource res:resources ) {
-					log.infof("%s.projectAdded: resource %d.%d %s (%s)", CLSS,projectId,res.getResourceId(),res.getName(),
+					if(isBLTResource(res.getResourceType())) {
+						log.infof("%s.projectAtStartup: resource %d.%d %s (%s)", CLSS,projectId,res.getResourceId(),res.getName(),
 							res.getResourceType());
-					analyzeResource(projectId,res,false);
+						analyzeResource(projectId,res,true);
+						staging.putResource(res);
+					}
+				}
+				// This crashes the module ...
+				try {
+					context.getProjectManager().saveProject(staging, null, null, "Updated aux structure", true);
+				}
+				catch(Exception ex) {
+					log.warnf("%s.projectAtStartup: Exception saving project %s(%s)",CLSS,staging.getName(),ex.getMessage());
 				}
 			}
 		}
 	}
+    /**
+     * We don't care if the new project is a staging or published version.
+     * Analyze only the staging project resources and update the controller.
+     */
+    @Override
+    public void projectAdded(Project staging, Project published) {
+        if( staging!=null ) {
+            if( staging.isEnabled() && staging.getId()!=-1 ) {
+                long projectId = staging.getId();
+                uuidByProjectId.put(new Long(projectId), staging.getUuid());
+                List<ProjectResource> resources = staging.getResources();
+                for( ProjectResource res:resources ) {
+                    log.infof("%s.projectAdded: resource %d.%d %s (%s)", CLSS,projectId,res.getResourceId(),res.getName(),
+                            res.getResourceType());
+                    analyzeResource(projectId,res,false);
+                }
+            }
+        }
+    }
+	
 	/**
 	 * Assume that the project resources are already gone. This is a cleanup step.
 	 * We have confirmed that push notifications are already closed to any open designer/client.
@@ -635,11 +668,13 @@ public class ModelManager implements ProjectListener  {
 			List<ProjectResource> resources = diff.getResources();
 			Long pid = new Long(projectId);
 			for( ProjectResource res:resources ) {
-				//log.infof("%s.projectUpdated: add/update resource %d.%d %s (%s) %s %s", CLSS,projectId,res.getResourceId(),res.getName(),
-				//		res.getResourceType(),(diff.isResourceDirty(res)?"dirty":"clean"),(res.isLocked()?"locked":"unlocked"));
-				//if(res.isLocked()) res.setLocked(false);
-				analyzeResource(pid,res,false);  // Not startup
-				if( isBLTResource(res.getResourceType()) || res.getResourceType().equalsIgnoreCase("Window") ) countOfInteresting++;
+				if( isBLTResource(res.getResourceType()) || res.getResourceType().equalsIgnoreCase("Window") ) {
+					log.infof("%s.projectUpdated: add/update resource %d.%d %s (%s) %s %s", CLSS,projectId,res.getResourceId(),res.getName(),
+							res.getResourceType(),(diff.isResourceDirty(res)?"dirty":"clean"),(res.isLocked()?"locked":"unlocked"));
+					if(res.isLocked()) res.setLocked(false);
+					analyzeResource(pid,res,false);  // Not startup
+					countOfInteresting++;
+				}
 			}
 
 			Set<Long> deleted = diff.getDeletedResources();
@@ -681,14 +716,20 @@ public class ModelManager implements ProjectListener  {
 	 * Add or update an application in the model from a ProjectResource.
 	 * This is essentially just a tree node. Use presence in the node map
 	 * to determine whether or not this is a new resource or an update.
+	 * If the startup flag is set, the resource 
+	 * is modified to include aux data from the extension script.
 	 * @param projectId the identity of a project
 	 * @param res the project resource containing the diagram
 	 * @param startup true if called from the gateway hook
 	 */
 	private void addModifyApplicationResource(long projectId,ProjectResource res,boolean startup) {
 		log.debugf("%s.addModifyApplicationResource: %s(%d)",CLSS,res.getName(),res.getResourceId());
-		ProcessApplication application = deserializeApplicationResource(projectId,res);
-		if( application!=null ) {
+		SerializableApplication sa = deserializeApplicationResource(projectId,res);
+		if(sa!=null ) {
+			ProcessApplication application = new ProcessApplication(sa,res.getParentUuid());
+			application.setResourceId(res.getResourceId());
+			application.setProjectId(projectId);
+			application.setAuxiliaryData(sa.getAuxiliaryData());
 			UUID self = application.getSelf();
 			ProcessNode node = nodesByUUID.get(self);
 			if( node==null ) {
@@ -725,7 +766,7 @@ public class ModelManager implements ProjectListener  {
 				}
 			}
 			// Invoke extension script on application save or startup
-			// The SAVE script is smart enough to do an insert if application is new
+			// On startup we need to update the project resource with AuxData
 			if( startup ) {
 				// On startup, we only read aux data from the production database. There is no SAVE.
 				// However we do update the project resource, for a subsequent save
@@ -734,6 +775,15 @@ public class ModelManager implements ProjectListener  {
 				Script script = extensionManager.createExtensionScript(ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.GET_AUX_OPERATION, provider);
 				extensionManager.runScript(context.getScriptManager(), script, application.getSelf().toString(),application.getAuxiliaryData(),db);
 				controller.sendAuxDataNotification(application.getSelf().toString(), new BasicQualifiedValue(application.getAuxiliaryData()));
+				sa.setAuxiliaryData(application.getAuxiliaryData());
+				ObjectMapper mapper = new ObjectMapper();
+				try {
+					byte[] bytes = mapper.writeValueAsBytes(sa);
+					res.setData(bytes);  // Now auxData are in the resource
+				}
+				catch(JsonProcessingException jpe) {
+					log.warnf("%s.addModifyApplicationResource: failed to serialize %s(%d)",CLSS,res.getName(),res.getResourceId());
+				}
 			}
 			else  {
 				String provider = (application.getState().equals(DiagramState.ACTIVE) ? 
@@ -758,8 +808,9 @@ public class ModelManager implements ProjectListener  {
 	}
 	/**
 	 * Add or update a diagram in the model from a ProjectResource. The state of the 
-	 * disgram is as it was serialized. There is a one-one correspondence 
-	 * between a model-project and diagram.
+	 * diagram is as it was serialized. There is a one-one correspondence 
+	 * between a model-project and diagram. If the startup flag is set, the resource 
+	 * is modified to include aux data from the extension script.
 	 * @param projectId the identity of a project
 	 * @param res the project resource containing the diagram
 	 * @param startup
@@ -859,19 +910,27 @@ public class ModelManager implements ProjectListener  {
 			// The SAVE script is smart enough to do an insert if diagram is new.
 			if( startup ) {
 				// A diagram has no associated data. Prepare the resource for updates or eventual save.
-				if( diagram!=null )  {
-					for(ProcessBlock block:diagram.getProcessBlocks()) {
+				if( sd!=null )  {
+					for(SerializableBlock block:sd.getBlocks()) {
 						GeneralPurposeDataContainer aux = block.getAuxiliaryData();
 						boolean hadData = aux.containsData();
-						block.getAuxData(aux);
-						if( hadData|| aux.containsData()) controller.sendAuxDataNotification(block.getBlockId().toString(), new BasicQualifiedValue(block.getAuxiliaryData()));
+						block.setAuxiliaryData(aux);
+						if( hadData|| aux.containsData()) controller.sendAuxDataNotification(block.getId().toString(), new BasicQualifiedValue(aux));
+					}
+					ObjectMapper mapper = new ObjectMapper();
+					try {
+						byte[] bytes = mapper.writeValueAsBytes(sd);
+						res.setData(bytes);  // Now auxData are in the resource
+					}
+					catch(JsonProcessingException jpe) {
+						log.warnf("%s.addModifyDiagramResource: failed to serialize %s(%d)",CLSS,res.getName(),res.getResourceId());
 					}
 				}
 			}
 			else {
 				String provider = (diagram.getState().equals(DiagramState.ACTIVE) ? 
 						toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER):
-							toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER));
+						toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER));
 				Script script = extensionManager.createExtensionScript(ScriptConstants.DIAGRAM_CLASS_NAME, ScriptConstants.SAVE_OPERATION, provider);
 				extensionManager.runScript(context.getProjectManager().getProjectScriptManager(diagram.getProjectId()), 
 						script, diagram.getSelf().toString());
@@ -888,16 +947,21 @@ public class ModelManager implements ProjectListener  {
 	}	
 	
 	/**
-	 * Add or update an application in the model from a ProjectResource.
-	 * This is essentially just a tree node.
+	 * Add or update a family in the model from a ProjectResource.
+	 * This is essentially just a tree node. If the startup flag is set, the resource 
+	 * is modified to include aux data from the extension script.
 	 * @param projectId the identity of a project
 	 * @param res the project resource containing the diagram
 	 * @param startup
 	 */
 	private void addModifyFamilyResource(long projectId,ProjectResource res,boolean startup) {
 		log.debugf("%s.addModifyFamilyResource: %s(%d)",CLSS,res.getName(),res.getResourceId());
-		ProcessFamily family = deserializeFamilyResource(projectId,res);
-		if( family!=null ) {
+		SerializableFamily sf = deserializeFamilyResource(projectId,res);
+		if( sf!=null ) {
+			ProcessFamily family = new ProcessFamily(sf,res.getParentUuid());
+			family.setResourceId(res.getResourceId());
+			family.setProjectId(projectId);
+			family.setAuxiliaryData(sf.getAuxiliaryData());
 			UUID self = family.getSelf();
 			ProcessNode node = nodesByUUID.get(self);
 			if( node==null ) {
@@ -946,12 +1010,21 @@ public class ModelManager implements ProjectListener  {
 				String db = toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_DATABASE);
 				Script script = extensionManager.createExtensionScript(ScriptConstants.FAMILY_CLASS_NAME, ScriptConstants.GET_AUX_OPERATION, provider);
 				extensionManager.runScript(context.getScriptManager(), script, family.getSelf().toString(),family.getAuxiliaryData(),db);
+				sf.setAuxiliaryData(family.getAuxiliaryData());
+				ObjectMapper mapper = new ObjectMapper();
+				try {
+					byte[] bytes = mapper.writeValueAsBytes(sf);
+					res.setData(bytes);  // Now auxData are in the resource
+				}
+				catch(JsonProcessingException jpe) {
+					log.warnf("%s.addModifyFamilyResource: failed to serialize %s(%d)",CLSS,res.getName(),res.getResourceId());
+				}
 			}
 			else {
 				String provider = (family.getState().equals(DiagramState.ACTIVE) ? 
 						toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER):
 							toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER));
-				Script script = extensionManager.createExtensionScript(ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.SAVE_OPERATION, provider);
+				Script script = extensionManager.createExtensionScript(ScriptConstants.FAMILY_CLASS_NAME, ScriptConstants.SAVE_OPERATION, provider);
 				extensionManager.runScript(context.getProjectManager().getProjectScriptManager(family.getProjectId()), 
 						script, family.getSelf().toString());
 				String db = (family.getState().equals(DiagramState.ACTIVE) ? 
@@ -1154,21 +1227,18 @@ public class ModelManager implements ProjectListener  {
 	 * @param projId the identifier of the project
 	 * @param res
 	 */ 
-	public ProcessApplication deserializeApplicationResource(long projId,ProjectResource res) {
+	public SerializableApplication deserializeApplicationResource(long projId,ProjectResource res) {
 		byte[] serializedObj = res.getData();
 		String json = new String(serializedObj);
 		log.debugf("%s.deserializeApplicationResource: json = %s",CLSS,json);
-		ProcessApplication application = null;
+		SerializableApplication sa = null;
 		try{
 			ObjectMapper mapper = new ObjectMapper();
-			SerializableApplication sa = mapper.readValue(json, SerializableApplication.class);
+			sa = mapper.readValue(json, SerializableApplication.class);
 			if( sa!=null ) {
 				sa.setName(res.getName());
 				log.debugf("%s.deserializeApplicationResource: Successfully deserialized application %s",CLSS,sa.getName());
-				application = new ProcessApplication(sa,res.getParentUuid());
-				application.setResourceId(res.getResourceId());
-				application.setProjectId(projId);
-				application.setAuxiliaryData(sa.getAuxiliaryData());
+				
 			}
 			else {
 				log.warnf("%s.deserializeApplicationResource: deserialization failed",CLSS);
@@ -1178,7 +1248,7 @@ public class ModelManager implements ProjectListener  {
 		catch( Exception ex) {
 			log.warnf("%s.deserializeApplicationResource: exception (%s)",CLSS,ex.getLocalizedMessage(),ex);
 		}
-		return application;
+		return sa;
 	}
 	/**
 	 *  We've discovered a changed model resource. Deserialize and return.
@@ -1214,25 +1284,21 @@ public class ModelManager implements ProjectListener  {
 	}
 	
 	/**
-	 * We've discovered a changed model resource. Deserialize and convert into a ProcessFamily.
+	 * We've discovered a changed model resource. Deserialize and convert into a SerializableFamily.
 	 * @param projId the identifier of the project
 	 * @param res
 	 */ 
-	public ProcessFamily deserializeFamilyResource(long projId,ProjectResource res) {
+	public SerializableFamily deserializeFamilyResource(long projId,ProjectResource res) {
 		byte[] serializedObj = res.getData();
 		String json = new String(serializedObj);
 		log.debugf("%s.deserializeFamilyResource: json = %s",CLSS,json);
-		ProcessFamily family = null;
+		SerializableFamily sf = null;
 		try{
 			ObjectMapper mapper = new ObjectMapper();
-			SerializableFamily sf = mapper.readValue(json, SerializableFamily.class);
+			sf = mapper.readValue(json, SerializableFamily.class);
 			if( sf!=null ) {
 				sf.setName(res.getName());     // Resource is the source of the name.
 				log.debugf("%s.deserializeFamilyResource: Successfully deserialized family %s",CLSS,sf.getName());
-				family = new ProcessFamily(sf,res.getParentUuid());
-				family.setResourceId(res.getResourceId());
-				family.setProjectId(projId);
-				family.setAuxiliaryData(sf.getAuxiliaryData());
 			}
 			else {
 				log.warnf("%s: deserializeFamilyResource: deserialization failed",CLSS);
@@ -1242,7 +1308,7 @@ public class ModelManager implements ProjectListener  {
 		catch( Exception ex) {
 			log.warnf("%s.deserializeFamilyResource: exception (%s)",CLSS,ex.getLocalizedMessage(),ex);
 		}
-		return family;
+		return sf;
 	}
 
 	private boolean isBLTResource(String type) {

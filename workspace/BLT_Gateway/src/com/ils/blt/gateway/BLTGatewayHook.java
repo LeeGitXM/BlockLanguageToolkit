@@ -19,10 +19,10 @@ import com.ils.blt.gateway.wicket.ToolkitStatusPanel;
 import com.ils.common.log.ILSLogger;
 import com.ils.common.log.LogMaker;
 import com.ils.common.persistence.ToolkitRecord;
+import com.ils.common.persistence.ToolkitRecordHandler;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.licensing.LicenseState;
 import com.inductiveautomation.ignition.common.project.Project;
-import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.project.ProjectVersion;
 import com.inductiveautomation.ignition.common.script.ScriptManager;
 import com.inductiveautomation.ignition.gateway.clientcomm.ClientReqSession;
@@ -51,6 +51,7 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	private ToolkitRecord record = null;
 	private final ControllerRequestHandler requestHandler;
 	private ToolkitRecordListener recordListener;
+	private ToolkitRecordHandler toolkitHandler;
 	
 	
 	public static BLTGatewayHook get(GatewayContext ctx) { 
@@ -94,41 +95,25 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 
 	@Override
 	public void startup(LicenseState licenseState) {
-
+		this.toolkitHandler = new ToolkitRecordHandler(context);
 		// Look for all block resources and inform the execution controller
 		BlockExecutionController controller = BlockExecutionController.getInstance();
 		mmgr = new ModelManager(context);
 		controller.setDelegate(mmgr);
 		controller.start(context);     // Start the controller
 
-		// Load existing projects - skip the global project and any that are disabled.
+		// Analyze existing projects - skip the global project and any that are disabled.
 		List<Project> projects = context.getProjectManager().getProjectsFull(ProjectVersion.Staging);
 		for( Project project:projects ) {
 			if( !project.isEnabled() || project.getId()==-1 ) continue;
-			// Do these in order of Application, Family and Diagrams
-			List<ProjectResource> resources = project.getResources();
-			for( ProjectResource res:resources ) {
-				if( res.getResourceType().equalsIgnoreCase(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
-					mmgr.analyzeResource(project.getId(),res,true);  // Flag implies startup
-				}
-			}
-			resources = project.getResources();
-			for( ProjectResource res:resources ) {
-				if( res.getResourceType().equalsIgnoreCase(BLTProperties.FAMILY_RESOURCE_TYPE)) {
-					mmgr.analyzeResource(project.getId(),res,true);  // Flag implies startup
-				}
-			}
-			resources = project.getResources();
-			for( ProjectResource res:resources ) {
-				if( res.getResourceType().equalsIgnoreCase(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
-					mmgr.analyzeResource(project.getId(),res,true);  // Flag implies startup
-				}
-			}
+				mmgr.projectAtStartup(project); 
 		}
-		
+
 		// Register for changes to our permanent settings
 		ToolkitRecord.META.addRecordListener(recordListener);
 
+		// It's important that the ModuleManager not be registered as a Project listener
+		// before the initial getAux functions are complete.
 		context.getProjectManager().addProjectListener(mmgr);  
 		log.infof("%s: Startup complete.",CLSS);
 	}

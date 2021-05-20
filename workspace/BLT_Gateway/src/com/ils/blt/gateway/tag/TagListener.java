@@ -452,6 +452,11 @@ public class TagListener implements TagChangeListener   {
 				log.errorf("%s.updatePropertyValueDirectlyFromTag: Failed. (%s unknown to provider)",TAG,tp.toStringFull());
 			}
 		}
+        catch(IllegalArgumentException iae ) {
+            Quality q = new BasicQuality("Illegal tag format",Quality.Level.Bad);
+            value = new BasicQualifiedValue(null,q);
+            log.errorf("%s.updatePropertyValueDirectlyFromTag: Failed for %s. (%s)",TAG,tagPath,iae.getMessage());
+        }
 		catch(IOException ioe ) {
 			Quality q = new BasicQuality("Tag returned a null",Quality.Level.Bad);
 			value = new BasicQualifiedValue(null,q);
