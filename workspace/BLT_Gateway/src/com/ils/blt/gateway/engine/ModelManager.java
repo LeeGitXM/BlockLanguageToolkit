@@ -575,8 +575,6 @@ public class ModelManager implements ProjectListener  {
 	
 	// ====================== Project Listener Interface ================================
 	/**
-	 * We don't care if the new project is a staging or published version.
-	 * Analyze only the staging project resources and update the controller.
 	 * Call this on startup to update resources for aux data.
 	 */
 	public void projectAtStartup(Project staging) {

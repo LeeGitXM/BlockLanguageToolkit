@@ -2,7 +2,6 @@ package com.ils.blt.designer.editor;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -38,7 +37,6 @@ import net.miginfocom.swing.MigLayout;
 public class OutputEditorPane extends JPanel implements ActionListener,FocusListener  {
 	private static final long serialVersionUID = -5387165467458025431L;
 	private final static String CLSS = "OutputEditorPane";
-	private static final Insets insets = new Insets(0,0,0,0);
 	private final ApplicationPropertyEditor editor;
 	private final JPanel mainPanel;
 	private final GeneralPurposeDataContainer model;
@@ -55,7 +53,6 @@ public class OutputEditorPane extends JPanel implements ActionListener,FocusList
 	final JComboBox<String> feedbackMethodComboBox = new JComboBox<String>();
 	private static Icon previousIcon = new ImageIcon(OutputEditorPane.class.getResource("/images/arrow_left_green.png"));
 	final JButton homeButton = new JButton(previousIcon);
-	final JButton cancelButton = new JButton("Cancel");
 	private static Icon tagBrowserIcon = new ImageIcon(OutputEditorPane.class.getResource("/images/arrow_right_green.png"));
 	final JButton tagButton = new JButton("Tags", tagBrowserIcon);
 	private final UtilityFunctions fcns = new UtilityFunctions();
@@ -167,9 +164,7 @@ public class OutputEditorPane extends JPanel implements ActionListener,FocusList
 			public void actionPerformed(ActionEvent e) {
 				editor.setSelectedPane(ApplicationPropertyEditor.OUTPUTS);
 			}
-		});
-		bottomPanel.add(cancelButton);
-		
+		});	
 	}
 
 	/**
