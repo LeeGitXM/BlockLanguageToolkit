@@ -52,7 +52,6 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	private final ControllerRequestHandler requestHandler;
 	private ToolkitRecordListener recordListener;
 	
-	
 	public static BLTGatewayHook get(GatewayContext ctx) { 
 		return (BLTGatewayHook)ctx.getModule(BLTProperties.MODULE_ID);
 	}
@@ -106,7 +105,7 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 		List<Project> projects = context.getProjectManager().getProjectsFull(ProjectVersion.Staging);
 		for( Project project:projects ) {
 			if( !project.isEnabled() || project.getId()==-1 ) continue;
-				mmgr.projectAdded(project,null); 
+				mmgr.projectAtStartup(project); 
 		}
 
 		// Register for changes to our permanent settings

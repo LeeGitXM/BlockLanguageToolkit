@@ -575,12 +575,9 @@ public class ModelManager implements ProjectListener  {
 	
 	// ====================== Project Listener Interface ================================
 	/**
-	 * We don't care if the new project is a staging or published version.
-	 * Analyze only the staging project resources and update the controller.
-	 * Call this on startup to update resources for aux data
+	 * Call this on startup to update resources for aux data.
 	 */
-	@Override
-	public void projectAdded(Project staging, Project published) {
+	public void projectAtStartup(Project staging) {
 		if( staging!=null ) {
 			if( staging.isEnabled() && staging.getId()!=-1 ) {
 				long projectId = staging.getId();
@@ -592,8 +589,8 @@ public class ModelManager implements ProjectListener  {
 				// The resource is modified by a scripting query to getAuxData()
 				for( ProjectResource res:resources ) {
 					if(isBLTResource(res.getResourceType())) {
-						log.infof("%s.projectAdded: resource %d.%d %s (%s)", CLSS,projectId,res.getResourceId(),res.getName(),
-							res.getResourceType());
+						log.infof("%s.projectAtStartup: resource %d.%d %s (%s)", CLSS,projectId,res.getResourceId(),res.getName(),
+								res.getResourceType());
 						analyzeResource(projectId,res,true);
 						staging.putResource(res);
 					}
@@ -603,11 +600,32 @@ public class ModelManager implements ProjectListener  {
 					context.getProjectManager().saveProject(staging, null, null, "Updated aux structure", true);
 				}
 				catch(Exception ex) {
-					log.warnf("%s.projectAdded: Exception saving project %s(%s)",CLSS,staging.getName(),ex.getMessage());
+
+					log.warnf("%s.projectAtStartup: Exception saving project %s(%s)",CLSS,staging.getName(),ex.getMessage());
 				}
 			}
 		}
 	}
+	/**
+     * We don't care if the new project is a staging or published version.
+     * Analyze only the staging project resources and update the controller.
+     */
+    @Override
+    public void projectAdded(Project staging, Project published) {
+        if( staging!=null ) {
+            if( staging.isEnabled() && staging.getId()!=-1 ) {
+                long projectId = staging.getId();
+                uuidByProjectId.put(new Long(projectId), staging.getUuid());
+                List<ProjectResource> resources = staging.getResources();
+                for( ProjectResource res:resources ) {
+                    log.infof("%s.projectAdded: resource %d.%d %s (%s)", CLSS,projectId,res.getResourceId(),res.getName(),
+                            res.getResourceType());
+                    analyzeResource(projectId,res,false);
+                }
+            }
+        }
+    }
+	
 	/**
 	 * Assume that the project resources are already gone. This is a cleanup step.
 	 * We have confirmed that push notifications are already closed to any open designer/client.
