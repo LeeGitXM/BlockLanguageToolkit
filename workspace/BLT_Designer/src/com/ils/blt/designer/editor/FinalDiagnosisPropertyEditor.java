@@ -120,7 +120,6 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		// Register for notifications
 		log.infof("%s: adding notification listener %s",CLSS,key);
 		notificationHandler.addNotificationChangeListener(key,CLSS,this);
-		requestHandler.readAuxData(context.getProject().getId(),diagram.getResourceId(),block.getId().toString(), provider, database);
 	}
 
 	/**
@@ -482,7 +481,7 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 	// called on the Swing thread
 	@Override
 	public void valueChange(final QualifiedValue value) {
-		log.infof("%s.valueChange: new aux data for %s",CLSS,model.getProperties().get("Name"));
+		log.infof("%s.valueChange: new aux data for %s",CLSS,block.getName());
 		if( value==null ) return;
 		GeneralPurposeDataContainer container = (GeneralPurposeDataContainer)value.getValue();
 		if( container==null) return;
