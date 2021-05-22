@@ -105,14 +105,12 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 		List<Project> projects = context.getProjectManager().getProjectsFull(ProjectVersion.Staging);
 		for( Project project:projects ) {
 			if( !project.isEnabled() || project.getId()==-1 ) continue;
-				mmgr.projectAtStartup(project); 
+				mmgr.projectAdded(project,null); 
 		}
 
 		// Register for changes to our permanent settings
 		ToolkitRecord.META.addRecordListener(recordListener);
 
-		// It's important that the ModuleManager not be registered as a Project listener
-		// before the initial getAux functions are complete.
 		context.getProjectManager().addProjectListener(mmgr);  
 		log.infof("%s: Startup complete.",CLSS);
 	}

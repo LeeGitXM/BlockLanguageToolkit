@@ -122,10 +122,9 @@ public class ApplicationHomePane extends JPanel implements  NotificationChangeLi
 		
 		setUI();
 		
-		// Register for notifications
+		// Register for notifications - returns the current setting
 		log.infof("%s: adding change listener %s",CLSS,key);
 		notificationHandler.addNotificationChangeListener(key,CLSS,this);
-		requestHandler.readAuxData(editor.getContext().getProject().getId(),editor.getResource().getResourceId(),editor.getApplication().getId().toString(), provider, database);
 	}
 
 	// Fill widgets with current values
@@ -188,9 +187,9 @@ public class ApplicationHomePane extends JPanel implements  NotificationChangeLi
 		
 		model.getProperties().put("Managed",(managedCheckBox.isSelected()?"1":"0"));
 		editor.saveResource();
-		// Write Aux data to the database.
-		requestHandler.writeAuxData(editor.getContext().getProject().getId(),editor.getResource().getResourceId(), 
-				editor.getApplication().getId().toString(),model,provider, database);
+		// Writing Aux data to the database gets taken care of during the save.
+		//requestHandler.writeAuxData(editor.getContext().getProject().getId(),editor.getResource().getResourceId(), 
+		//		editor.getApplication().getId().toString(),model,provider, database);
 	}
 
 	protected void doNext() {
@@ -211,7 +210,7 @@ public class ApplicationHomePane extends JPanel implements  NotificationChangeLi
 	public void nameChange(String name) {}
 
 	// The value is the aux data of the application. Note that the method is not
-	// called on the Swing thread
+	// called on the Swing thread. It gets triggereed as soon as the panel is displayed.
 	@Override
 	public void valueChange(final QualifiedValue value) {
 		if( value==null ) return;

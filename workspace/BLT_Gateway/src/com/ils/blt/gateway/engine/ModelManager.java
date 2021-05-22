@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.BLTProperties;
@@ -24,12 +23,10 @@ import com.ils.blt.common.script.Script;
 import com.ils.blt.common.script.ScriptConstants;
 import com.ils.blt.common.script.ScriptExtensionManager;
 import com.ils.blt.common.serializable.SerializableApplication;
-import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.SerializableFamily;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
-import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.persistence.ToolkitProperties;
 import com.ils.common.persistence.ToolkitRecordHandler;
 import com.inductiveautomation.ignition.common.model.ApplicationScope;
@@ -575,38 +572,6 @@ public class ModelManager implements ProjectListener  {
 	
 	// ====================== Project Listener Interface ================================
 	/**
-	 * Call this on startup to update resources for aux data.
-	 */
-	public void projectAtStartup(Project staging) {
-		if( staging!=null ) {
-			if( staging.isEnabled() && staging.getId()!=-1 ) {
-				long projectId = staging.getId();
-				uuidByProjectId.put(new Long(projectId), staging.getUuid());
-				ObjectMapper mapper = new ObjectMapper();
-				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-				mapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL,true);
-				List<ProjectResource> resources = staging.getResources();
-				// The resource is modified by a scripting query to getAuxData()
-				for( ProjectResource res:resources ) {
-					if(isBLTResource(res.getResourceType())) {
-						log.infof("%s.projectAtStartup: resource %d.%d %s (%s)", CLSS,projectId,res.getResourceId(),res.getName(),
-								res.getResourceType());
-						analyzeResource(projectId,res,true);
-						staging.putResource(res);
-					}
-				}
-				// This crashes the module ...
-				try {
-					context.getProjectManager().saveProject(staging, null, null, "Updated aux structure", true);
-				}
-				catch(Exception ex) {
-
-					log.warnf("%s.projectAtStartup: Exception saving project %s(%s)",CLSS,staging.getName(),ex.getMessage());
-				}
-			}
-		}
-	}
-	/**
      * We don't care if the new project is a staging or published version.
      * Analyze only the staging project resources and update the controller.
      */
@@ -760,34 +725,17 @@ public class ModelManager implements ProjectListener  {
 				addToHierarchy(projectId,processApp);
 			}
 			else  {
-				// Update attributes
+				// Update attributes for application stored in tree.
 				node.setName(res.getName());
 				if(node instanceof ProcessApplication )  {
 					ProcessApplication processApp = (ProcessApplication)node;
 					processApp.setState(application.getState());
+					processApp.setAuxiliaryData(sa.getAuxiliaryData());;
 				}
 			}
-			// Invoke extension script on application save or startup
+			// Invoke extension script on application save except on startup
 			// On startup we need to update the project resource with AuxData
-			if( startup ) {
-				// On startup, we only read aux data from the production database. There is no SAVE.
-				// However we do update the project resource, for a subsequent save
-				String provider = toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER);
-				String db = toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_DATABASE);
-				Script script = extensionManager.createExtensionScript(ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.GET_AUX_OPERATION, provider);
-				extensionManager.runScript(context.getScriptManager(), script, application.getSelf().toString(),application.getAuxiliaryData(),db);
-				controller.sendAuxDataNotification(application.getSelf().toString(), new BasicQualifiedValue(application.getAuxiliaryData()));
-				sa.setAuxiliaryData(application.getAuxiliaryData());
-				ObjectMapper mapper = new ObjectMapper();
-				try {
-					byte[] bytes = mapper.writeValueAsBytes(sa);
-					res.setData(bytes);  // Now auxData are in the resource
-				}
-				catch(JsonProcessingException jpe) {
-					log.warnf("%s.addModifyApplicationResource: failed to serialize %s(%d)",CLSS,res.getName(),res.getResourceId());
-				}
-			}
-			else  {
+			if( !startup ) {
 				String provider = (application.getState().equals(DiagramState.ACTIVE) ? 
 						toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER):
 							toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER));
@@ -800,9 +748,9 @@ public class ModelManager implements ProjectListener  {
 
 				script = extensionManager.createExtensionScript(ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.SET_AUX_OPERATION, provider);
 				extensionManager.runScript(context.getScriptManager(), script, application.getSelf().toString(),application.getAuxiliaryData(),db);
-				controller.sendAuxDataNotification(application.getSelf().toString(), new BasicQualifiedValue(application.getAuxiliaryData()));
+				
 			}
-
+			controller.sendAuxDataNotification(application.getSelf().toString(), new BasicQualifiedValue(application.getAuxiliaryData()));
 		}
 		else {
 			log.warnf("%s.addModifyApplicationResource: failed to deserialize %s(%d)",CLSS,res.getName(),res.getResourceId());
@@ -910,37 +858,13 @@ public class ModelManager implements ProjectListener  {
 			}
 			// Invoke extension script for the diagram itself
 			// The SAVE script is smart enough to do an insert if diagram is new.
-			if( startup ) {
-				// A diagram has no associated data. Prepare the resource for updates or eventual save.
-				if( sd!=null )  {
-					for(SerializableBlock block:sd.getBlocks()) {
-						GeneralPurposeDataContainer aux = block.getAuxiliaryData();
-						boolean hadData = aux.containsData();
-						block.setAuxiliaryData(aux);
-						if( hadData|| aux.containsData()) controller.sendAuxDataNotification(block.getId().toString(), new BasicQualifiedValue(aux));
-					}
-					ObjectMapper mapper = new ObjectMapper();
-					try {
-						byte[] bytes = mapper.writeValueAsBytes(sd);
-						res.setData(bytes);  // Now auxData are in the resource
-					}
-					catch(JsonProcessingException jpe) {
-						log.warnf("%s.addModifyDiagramResource: failed to serialize %s(%d)",CLSS,res.getName(),res.getResourceId());
-					}
-				}
-			}
-			else {
+			if( !startup ) {
 				String provider = (diagram.getState().equals(DiagramState.ACTIVE) ? 
 						toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER):
 						toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER));
 				Script script = extensionManager.createExtensionScript(ScriptConstants.DIAGRAM_CLASS_NAME, ScriptConstants.SAVE_OPERATION, provider);
 				extensionManager.runScript(context.getProjectManager().getProjectScriptManager(diagram.getProjectId()), 
 						script, diagram.getSelf().toString());
-				/*
-				for(ProcessBlock block:diagram.getProcessBlocks()) {
-					block.setAuxData(block.getAuxiliaryData());
-				}
-				*/
 			}
 		}
 		else {
@@ -1004,25 +928,8 @@ public class ModelManager implements ProjectListener  {
 					processFam.setState(family.getState());
 				}
 			}
-			// Invoke extension script on family save
-			// The SAVE script is smart enough to do an insert if family is new
-			if( startup ) {
-				// On startup, we only read aux data from the production database. There is no save.
-				String provider = toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER);
-				String db = toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_DATABASE);
-				Script script = extensionManager.createExtensionScript(ScriptConstants.FAMILY_CLASS_NAME, ScriptConstants.GET_AUX_OPERATION, provider);
-				extensionManager.runScript(context.getScriptManager(), script, family.getSelf().toString(),family.getAuxiliaryData(),db);
-				sf.setAuxiliaryData(family.getAuxiliaryData());
-				ObjectMapper mapper = new ObjectMapper();
-				try {
-					byte[] bytes = mapper.writeValueAsBytes(sf);
-					res.setData(bytes);  // Now auxData are in the resource
-				}
-				catch(JsonProcessingException jpe) {
-					log.warnf("%s.addModifyFamilyResource: failed to serialize %s(%d)",CLSS,res.getName(),res.getResourceId());
-				}
-			}
-			else {
+			// Invoke extension script on family save except on startup
+			if( !startup ) {
 				String provider = (family.getState().equals(DiagramState.ACTIVE) ? 
 						toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER):
 							toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER));

@@ -182,14 +182,14 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor implements Noti
 	@Override
 	public void nameChange(String name) {}
 
-	// The value is the aux data of the application. Note that the method is not
-	// called on the Swing thread
+	// The value is the aux data of the family. Note that the method is not
+	// called on the Swing thread. It is called immediately on display of the editor.
 	@Override
 	public void valueChange(final QualifiedValue value) {
-		log.infof("%s.valueChange: new aux data for %s",CLSS,model.getProperties().get("Name"));
 		if( value==null ) return;
 		GeneralPurposeDataContainer container = (GeneralPurposeDataContainer)value.getValue();
 		if( container==null) return;
+		log.infof("%s.valueChange: new aux data for family %s",CLSS,family.getName());
 		model.setLists(container.getLists());
 		model.setMapLists(container.getMapLists());
 		model.setProperties(container.getProperties());

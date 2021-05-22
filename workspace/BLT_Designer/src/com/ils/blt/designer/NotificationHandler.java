@@ -116,7 +116,7 @@ public class NotificationHandler implements PushNotificationListener {
 					}
 				}
 				else {
-					log.debugf("%s.receiveNotification: no receiver for key=%s,value=%s",CLSS,key,payload.toString());
+					log.infof("%s.receiveNotification: no receiver for key=%s,value=%s",CLSS,key,payload.toString());
 				}
 			}
 			// Notify an open diagram of a state change
