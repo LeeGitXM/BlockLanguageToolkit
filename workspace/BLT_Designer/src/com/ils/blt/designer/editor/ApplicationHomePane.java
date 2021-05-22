@@ -187,9 +187,6 @@ public class ApplicationHomePane extends JPanel implements  NotificationChangeLi
 		
 		model.getProperties().put("Managed",(managedCheckBox.isSelected()?"1":"0"));
 		editor.saveResource();
-		// Writing Aux data to the database gets taken care of during the save.
-		//requestHandler.writeAuxData(editor.getContext().getProject().getId(),editor.getResource().getResourceId(), 
-		//		editor.getApplication().getId().toString(),model,provider, database);
 	}
 
 	protected void doNext() {

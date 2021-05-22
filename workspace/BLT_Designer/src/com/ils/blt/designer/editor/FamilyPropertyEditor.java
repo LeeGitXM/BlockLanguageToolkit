@@ -25,8 +25,12 @@ import com.ils.blt.designer.NotificationHandler;
 import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.log.ILSLogger;
 import com.ils.common.log.LogMaker;
+import com.inductiveautomation.ignition.client.gateway_interface.GatewayException;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
+import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
+import com.inductiveautomation.ignition.designer.IgnitionDesigner;
+import com.inductiveautomation.ignition.designer.gateway.DTGatewayInterface;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
 import net.miginfocom.swing.MigLayout;
@@ -69,7 +73,6 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor implements Noti
         setUI();
 		// Register for notifications
 		notificationHandler.addNotificationChangeListener(key,CLSS,this);
-		requestHandler.readAuxData(context.getProject().getId(),getResource().getResourceId(),family.getId().toString(), provider, database);
 	}
 	/**
 	 * The super class takes care of making a central tabbed pane --- but
@@ -122,7 +125,7 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor implements Noti
 		panel.add(new JLabel("Priority"),"gaptop 2,aligny top");
 		priorityField = new JTextField();
 		priorityField.setPreferredSize(NUMBER_BOX_SIZE);
-		panel.add(priorityField,"");
+		panel.add(priorityField,"span,wrap");
 		return panel;
 	}
 	/**
@@ -139,7 +142,7 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor implements Noti
 		descriptionArea.setText(description);
 		String priority = model.getProperties().get("Priority");
 		if( priority==null) priority="0.0";
-		priorityField.setText(priority);;
+		priorityField.setText(priority);
 	}
 	
 	// On save we get values from the widgets and place back into the model and database (for external functions).
@@ -154,7 +157,8 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor implements Noti
 	@Override
 	public void saveResource() {
 		ObjectMapper mapper = new ObjectMapper();
-		try{		
+		Project proj = context.getProject();
+		try{	
 			if( context.requestLock(resource.getResourceId()) ) {
 				synchronized(this) {
 					byte[] bytes = mapper.writeValueAsBytes(family);
@@ -168,6 +172,11 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor implements Noti
 			else {
 				log.warnf("%s.saveResource: Failed to obtain lock on resource save (%s)",CLSS,resource.getName());
 			}
+			// Update the project
+			DTGatewayInterface.getInstance().saveProject(IgnitionDesigner.getFrame(), proj, false, "Committing ...");  // Don't publish	
+		}
+		catch(GatewayException ge) {
+			log.warnf("%s.run: Exception saving project %d (%s)",CLSS,proj.getName(),ge.getMessage());
 		}
 		catch(JsonProcessingException jpe) {
 			log.warnf("%s.saveResource: Exception serializing application, resource %d (%s)",CLSS,resource.getResourceId(),jpe.getMessage());

@@ -130,7 +130,6 @@ public class ApplicationPropertyEditor extends AbstractPropertyEditor {
 				log.warnf("%s.saveResource: Failed to obtain lock on resource save (%s)",CLSS,resource.getName());
 			}
 			// Update the project
-			
 			DTGatewayInterface.getInstance().saveProject(IgnitionDesigner.getFrame(), proj, false, "Committing ...");  // Don't publish				
 		}
 		catch(GatewayException ge) {

@@ -926,6 +926,7 @@ public class ModelManager implements ProjectListener  {
 				if( node instanceof ProcessFamily ) {
 					ProcessFamily processFam = (ProcessFamily)node;
 					processFam.setState(family.getState());
+					processFam.setAuxiliaryData(sf.getAuxiliaryData());;
 				}
 			}
 			// Invoke extension script on family save except on startup
@@ -943,6 +944,7 @@ public class ModelManager implements ProjectListener  {
 				script = extensionManager.createExtensionScript(ScriptConstants.FAMILY_CLASS_NAME, ScriptConstants.SET_AUX_OPERATION, provider);
 				extensionManager.runScript(context.getScriptManager(), script, family.getSelf().toString(),family.getAuxiliaryData(),db);
 			}
+			controller.sendAuxDataNotification(family.getSelf().toString(), new BasicQualifiedValue(family.getAuxiliaryData()));
 		}
 		else {
 			log.warnf("%s.addModifyFamilyResource: failed to deserialize %s(%d)",CLSS,res.getName(),res.getResourceId());
