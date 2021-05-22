@@ -271,7 +271,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 			//log.infof("%s.setState: %s",name,this.state.name());
 		}
 	}
-	// Set the name in both the member and BlockProperty.
+	// Set the name in the name BlockProperty. Name is not a separate attribute
 	@Override
 	public void setName(String lbl) {
 		log.infof("Over here setting the name to %s", lbl);

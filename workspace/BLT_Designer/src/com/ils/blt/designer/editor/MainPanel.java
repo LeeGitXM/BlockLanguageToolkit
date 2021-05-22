@@ -76,6 +76,7 @@ public class MainPanel extends BasicEditPanel {
 		for(BlockProperty property:block.getProperties()) {
 			// We have gotten null from serialization problems ...
 			if( property==null || property.getName()==null) continue;
+			if( property.getName().equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_NAME)) continue;  // Edit name in CoreProperty panel
 			propertyPanel = new PropertyPanel(context,this,block,property,workspace);
 			add(propertyPanel,"skip,growx,push,gaptop 0,gapbottom 0");
 			panelMap.put(property.getName(), propertyPanel);
@@ -145,9 +146,8 @@ public class MainPanel extends BasicEditPanel {
 		}
 		
 		public void saveName() {
-			// The block has a name and a name property - this keeps them in sync
-			BlockProperty nameProp = block.getProperty(BlockConstants.BLOCK_PROPERTY_NAME);
-			nameProp.setValue(nameField.getText());
+			// The block has a name property, but we simply use the setter
+			block.setName(nameField.getText());
 			bpe.saveDiagramClean();    // Update property directly, immediately
 			
 			// For Sinks we update the associated tag path
