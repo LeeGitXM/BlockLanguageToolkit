@@ -19,6 +19,7 @@ import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.BusinessRules;
 import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.block.AnchorDirection;
+import com.ils.blt.common.block.AttributeDisplay;
 import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
@@ -56,8 +57,9 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	// Use TAG as the "source" identifier when registering for notifications from Gateway
 	private static final String TAG = "ProcessDiagramView";
 	private final ApplicationRequestHandler appRequestHandler;
-	private final Map<UUID,ProcessBlockView> blockMap = new HashMap<UUID,ProcessBlockView>();
-	private List<Connection> connections = new ArrayList<Connection>();
+	private final Map<UUID,ProcessBlockView> blockMap = new HashMap<>();
+	private List<Connection> connections = new ArrayList<>();
+	private List<ProcessAttributeDisplay> attributeDisplays = new ArrayList<>();
 	private static final int MIN_WIDTH = 200;
 	private static final int MIN_HEIGHT = 200;
 	private Dimension diagramSize = new Dimension(MIN_WIDTH,MIN_HEIGHT);
@@ -118,6 +120,12 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 				else {
 					log.warnf("%s.createDiagramView: Connection %s missing one or more anchor points",TAG,scxn.toString());
 				}
+			}
+			
+			for( AttributeDisplay pad:diagram.getAttributeDisplays() ) {
+				ProcessAttributeDisplay view = new ProcessAttributeDisplay(pad);
+				addDisplayView(view);
+				view.startup(); 
 			}
 			suppressStateChangeNotification = false;
 		}  // -- end synchronized
@@ -266,7 +274,9 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		else {
 			log.warnf("%s.addConnection - rejected attempt to add a connection with null anchor",TAG);
 		}
-
+	}
+	public void addDisplayView(ProcessAttributeDisplay view) {
+		attributeDisplays.add(view);
 	}
 	// NOTE: This does not set connection type
 	private SerializableConnection convertConnectionToSerializable(Connection cxn) {
@@ -420,6 +430,9 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			}
 		}
 		if(!success) log.warnf("%s.deleteConnection: failed to find match to existing",TAG);
+	}
+	public List<ProcessAttributeDisplay> getAttributeDisplays() {
+		return attributeDisplays;
 	}
 	/**
 	 * @return a background color appropriate for the current state

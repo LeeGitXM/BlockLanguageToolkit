@@ -38,4 +38,5 @@ public interface DiagnosticDiagram  {
 	 *         attached to all its linked "Sinks"
 	 */
 	public List<ProcessBlock> getUpstreamBlocksCrossingConnections(ProcessBlock root);
+	
 }

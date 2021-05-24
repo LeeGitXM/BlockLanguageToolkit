@@ -81,7 +81,7 @@ import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.ResourceUpdateManager;
 import com.ils.blt.designer.config.BlockExplanationViewer;
 import com.ils.blt.designer.config.BlockInternalsViewer;
-import com.ils.blt.designer.config.BlockPropertiesSelector;
+import com.ils.blt.designer.config.AttributeDisplaySelector;
 import com.ils.blt.designer.config.ForceValueSettingsDialog;
 import com.ils.blt.designer.editor.AbstractPropertyEditor;
 import com.ils.blt.designer.editor.BlockEditConstants;
@@ -517,7 +517,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		
 		// Display the internals viewer
 		public void actionPerformed(final ActionEvent e) {
-			final JDialog viewer = (JDialog)new BlockPropertiesSelector(context.getFrame(),diagram,block, workspace);
+			final JDialog viewer = (JDialog)new AttributeDisplaySelector(context.getFrame(),diagram,block, workspace);
 			
 			Object source = e.getSource();
 			if( source instanceof Component) {

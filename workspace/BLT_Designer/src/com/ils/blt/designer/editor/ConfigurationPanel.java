@@ -40,7 +40,6 @@ public class ConfigurationPanel extends BasicEditPanel {
 	private final JLabel headingLabel;
 	private final JComboBox<String> bindingTypeCombo;
 	private final JComboBox<String> propertyTypeCombo;
-	private final JLabel connectedId;
 	// delete the next 3 lines - obsolete
 	private final JCheckBox annotationCheckBox;
 	private final JTextField xfield;
@@ -87,10 +86,6 @@ public class ConfigurationPanel extends BasicEditPanel {
 		displayPanel.add(xfield,"");
 		displayPanel.add(createLabel("Y offset"),"gapbefore 15");
 		displayPanel.add(yfield,"wrap");
-
-		addSeparator(displayPanel,"Connected Property Display Block Info");
-		connectedId = createLabel("Not Set");
-		displayPanel.add(connectedId, "");
 		interiorPanel.add(displayPanel,"");
 
 		// The OK button copies data from the components and sets the property properties.
@@ -129,12 +124,6 @@ public class ConfigurationPanel extends BasicEditPanel {
 		bindingTypeCombo.setEnabled(prop.getBindingType().equals(BindingType.NONE)||
 				                    prop.getBindingType().equals(BindingType.TAG_MONITOR));
 		propertyTypeCombo.setSelectedItem(prop.getType().toString());
-		if (prop.isShowProperty()) {
-			connectedId.setText("display block UUID:" + prop.getDisplayedBlockUUID().toString());
-		} else {
-			connectedId.setText("No connected display block");
-		}
-
 	}
 
 	/**

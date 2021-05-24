@@ -35,9 +35,6 @@ public class BlockProperty implements NotificationChangeListener {
 	private PropertyType type = PropertyType.STRING;
 	private String binding = "";
 	private BindingType bindingType = BindingType.NONE;
-	private boolean displayed  = false;
-	private boolean showProperty  = false;
-	private String displayedBlockUUID = "";  // parent is used if this property is displayed.  This way we know what block to update
 
 	private String name = "UNSET-NAME";
 	private Object value = "UNSET-VALUE";
@@ -113,10 +110,6 @@ public class BlockProperty implements NotificationChangeListener {
 	}
 	public String getName() {return name;}
 	public void setName(String name) {this.name = name;}
-	public boolean isShowProperty() {return showProperty;}
-	public void setShowProperty(boolean shown) {this.showProperty = shown;}
-	public String getDisplayedBlockUUID() {return displayedBlockUUID;}
-	public void setDisplayedBlockUUID(String displayedBlockUUID) {this.displayedBlockUUID = displayedBlockUUID;	}
 	public BindingType getBindingType() { return bindingType; }
 	public void setBindingType(BindingType type) { 
 		if(type!=null) this.bindingType = type; 
@@ -182,8 +175,6 @@ public class BlockProperty implements NotificationChangeListener {
 	public BlockProperty clone() {
 		BlockProperty clone = new BlockProperty(getName(),getValue(),getType(),isEditable());
 		clone.setBinding(getBinding());
-		clone.setShowProperty(isShowProperty());
-		clone.setDisplayedBlockUUID(getDisplayedBlockUUID());
 		clone.setBindingType(getBindingType());
 		return clone;
 	}

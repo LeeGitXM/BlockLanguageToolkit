@@ -56,5 +56,4 @@ public interface ExecutionController  {
 	public void sendWatermarkNotification(String diagramid, String val);
 	public void updateTag(UUID diagramId,String path,QualifiedValue val);
 	public String validateTag(UUID diagramId,String tagPath);
-	void sendPropertyUpdateNotification(OutgoingNotification note, String blockId); 
 }

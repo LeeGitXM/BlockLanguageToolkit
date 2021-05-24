@@ -503,21 +503,6 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		if( prop!=null && value!=null ) {
 			recordActivity(Activity.ACTIVITY_PROPERTY,name,value.toString());
 			prop.setValue(value);
-			
-			// check if this property is displayed in a DisplayPropertyBlock and update it.
-			if (prop.isShowProperty() && prop.getDisplayedBlockUUID() != null && prop.getDisplayedBlockUUID().length() > 1) {  // so, there is a small chance that this could result in an infinite update loop
-
-				// need to have a way to inject this into the notification buffer of the execution controller.  Add a signal connection if none exist
-				// the destination block won't have an input defined, so no line will be drawn
-
-				Signal siggy = new Signal(BlockConstants.COMMAND_CONFIGURE, BlockConstants.BLOCK_PROPERTY_TEXT, value.toString());  // this should always be a string anyway.
-				QualifiedValue qv = new TestAwareQualifiedValue(timer,siggy);
-				
-				OutgoingNotification note = new OutgoingNotification(this,BlockConstants.SIGNAL_PORT_NAME, qv);
-				
-				controller.sendPropertyUpdateNotification(note, prop.getDisplayedBlockUUID());
-				
-			}
 		}
 	}
 	/**
@@ -617,27 +602,6 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 			}
 		}
 	}
-
-	// NOTE: AttributeDisplays - ERROR - called by start(), too early if properties changed after 
-	private void updatePropertyDisplays() {
-		for (BlockProperty prop:propertyMap.values()) {
-			if (prop.isShowProperty() && prop.getDisplayedBlockUUID() != null && prop.getDisplayedBlockUUID().length() > 1) {  // so, there is a small chance that this could result in an infinite update loop
-		
-				// need to have a way to inject this into the notification buffer of the execution controller.  Add a signal connection if none exist
-				// the destination block won't have an input defined, so no line will be drawn
-		
-				Signal siggy = new Signal(BlockConstants.COMMAND_CONFIGURE, BlockConstants.BLOCK_PROPERTY_TEXT, prop.getValue().toString());  // this should always be a string anyway.
-				QualifiedValue qv = new TestAwareQualifiedValue(timer,siggy);
-				
-				OutgoingNotification note = new OutgoingNotification(this,BlockConstants.SIGNAL_PORT_NAME, qv);
-				
-				controller.sendPropertyUpdateNotification(note, prop.getDisplayedBlockUUID());
-				
-			}
-		}
-	}
-	
-	
 	
 	/**
 	 * Start any active monitoring or processing within the block.
@@ -650,7 +614,6 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		this.lastValue = null;
 		recordActivity(Activity.ACTIVITY_START,"");
 		this.stateChangeTimestamp = new Date(timer.getTestTime());
-		updatePropertyDisplays();
 	}
 	/**
 	 * Terminate any active operations within the block.

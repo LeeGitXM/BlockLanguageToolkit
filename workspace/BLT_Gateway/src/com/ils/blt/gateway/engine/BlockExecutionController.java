@@ -1,5 +1,5 @@
 /**
- *   (c) 2014-2016  ILS Automation. All rights reserved.
+ *   (c) 2014-2021  ILS Automation. All rights reserved.
  *  
  *   The block controller is designed to be called from the client
  *   via RPC. All methods must be thread safe,
@@ -127,27 +127,6 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 				
 			}
 		}
-	}
-	
-	@Override
-	public void sendPropertyUpdateNotification(OutgoingNotification inNote, String destId) {  // this bypasses the normal execution buffer
-		
-		ProcessBlock pb = inNote.getBlock();
-		if( log.isTraceEnabled() ) {
-			log.tracef("%s.run: processing incoming note from %s:%s = %s", CLSS,pb.toString(),inNote.getPort(),inNote.getValue().toString());
-		}
-		// Send the push notification
-		sendConnectionNotification(pb.getBlockId().toString(),inNote.getPort(),inNote.getValue());
-		ProcessDiagram dm = modelManager.getDiagram(pb.getParentId());
-		if( dm!=null && inNote!=null && inNote.getValue()!=null) {
-			ProcessBlock destBlock = dm.getBlock(UUID.fromString(destId));
-
-			SignalNotification vcn = new SignalNotification(destBlock,inNote.getValue());
-			
-			threadPool.execute(new IncomingBroadcastTask(vcn.getBlock(),vcn));
-		}
-		
-		
 	}
 	
 	/**
