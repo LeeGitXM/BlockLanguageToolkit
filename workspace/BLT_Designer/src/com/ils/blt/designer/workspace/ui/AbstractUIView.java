@@ -32,6 +32,7 @@ import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.designer.workspace.BasicAnchorPoint;
 import com.ils.blt.designer.workspace.ProcessAnchorDescriptor;
+import com.ils.blt.designer.workspace.ProcessAttributeDisplay;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.WorkspaceConstants;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
@@ -82,7 +83,7 @@ public abstract class AbstractUIView extends JComponent
 	 */
 	public AbstractUIView(ProcessBlockView view,int defaultWidth,int defaultHeight) {
 		this.block = view;
-		this.block.addChangeListener(this);
+		block.addChangeListener(this);
 		setOpaque(true);
 		int preferredHeight = view.getPreferredHeight();
 		if( preferredHeight<=0 ) preferredHeight = defaultHeight;
@@ -90,6 +91,22 @@ public abstract class AbstractUIView extends JComponent
 		if( preferredWidth<=0 ) preferredWidth = defaultWidth;
 		setPreferredSize(new Dimension(preferredWidth,preferredHeight)); 
 		anchorPoints = new ArrayList<AnchorPoint>();
+	}
+	
+	/**
+	 * From the standpoint of painting this view, the block is unknown.
+	 * @param view
+	 * @param defaultWidth
+	 * @param defaultHeight
+	 */
+	public AbstractUIView(ProcessAttributeDisplay view,int defaultWidth,int defaultHeight) {
+		setOpaque(true);
+		int preferredHeight = view.getPreferredHeight();
+		if( preferredHeight<=0 ) preferredHeight = defaultHeight;
+		int preferredWidth = view.getPreferredWidth();
+		if( preferredWidth<=0 ) preferredWidth = defaultWidth;
+		setPreferredSize(new Dimension(preferredWidth,preferredHeight)); 
+		anchorPoints = new ArrayList<AnchorPoint>();  // There are no anchor points
 	}
 
 	/**
@@ -138,8 +155,6 @@ public abstract class AbstractUIView extends JComponent
 		Collections.sort(anchs, Comparator.comparing(ProcessAnchorDescriptor::getSortOrder));  // I don't think sortOrder is actually used - CJL
 		
 		for(ProcessAnchorDescriptor desc:anchs) {
-			
-			
 			if( desc.isHidden()) hiddenIndex = index;
 			PlacementHint hint = desc.getHint();
 			if(hint==null) hint = PlacementHint.UNSPECIFIED;

@@ -1,5 +1,5 @@
 /**
- *  Copyright (c) 2014  ILS Automation. All rights reserved. 
+ *  Copyright (c) 2021  ILS Automation. All rights reserved. 
  *  
  *  This replaces what was known as an attribute display in the old system.
  *  It is a dynamic text string that automatically updates when the property in the linked
@@ -22,16 +22,14 @@ import javax.swing.event.ChangeListener;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.PropertyType;
-import com.ils.blt.designer.workspace.ProcessBlockView;
+import com.ils.blt.designer.workspace.ProcessAttributeDisplay;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
-import com.inductiveautomation.ignition.common.util.LogUtil;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockComponent;
 
 /** Draw a free-form text (or html) note in a box. */
 @SuppressWarnings("serial")
-public class PropertyDisplayUIView extends AbstractUIView implements BlockViewUI, ChangeListener {
-	private final LoggerEx log;
+public class AttributeDisplayUIView extends AbstractUIView implements BlockViewUI, ChangeListener {
+
 	private JLabel label = new JLabel();
 	private BlockProperty nameProperty;	//PETE
 	private BlockProperty textProperty;
@@ -41,13 +39,12 @@ public class PropertyDisplayUIView extends AbstractUIView implements BlockViewUI
 	private BlockProperty suffixProperty;
 	private BlockProperty backgroundColorProperty;
 	
-	public PropertyDisplayUIView(ProcessBlockView view) {
+	public AttributeDisplayUIView(ProcessAttributeDisplay view) {
 		super(view,0,0);
-		this.log = LogUtil.getLogger(getClass().getPackage().getName());
-		this.log.infof("Initializing a PropertyDisplayUIView for %s a %s", view.getName(), view.getClassName());
+		this.log.infof("Initializing a AttributeDisplayUIView for block %s (%s)", view.getBlockId(),view.getPropertyName());
 		setOpaque(false);
 		initProperties();
-		label.setHorizontalAlignment(SwingConstants.CENTER);
+		label.setHorizontalAlignment(SwingConstants.LEFT);
 	}
 
 	@Override
@@ -66,7 +63,6 @@ public class PropertyDisplayUIView extends AbstractUIView implements BlockViewUI
 		boolean hasHeight= false;
 		boolean hasPrefix= false;
 		boolean hasSuffix= false;
-//		boolean hasProperty= false;
 		boolean hasBackgroundColor= false;
 		
 		/*

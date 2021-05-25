@@ -208,8 +208,6 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 		result.setStatusText(getStatusText());
 		result.setStyle(getStyle());
 		result.setSubworkspaceId(subworkspaceId);
-//		result.setReceiveEnabled(isReceiveEnabled());
-//		result.setTransmitEnabled(isTransmitEnabled());
 		result.setBadgeChar(getBadgeChar());
 		result.setX(getLocation().x);
 		result.setY(getLocation().y);
@@ -264,19 +262,17 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
     	}
     }
 
+	/*		This doesn't make a lot of sense.  Why does ignition pass
+	 *      in a list of blocks selected when this only returns a single
+	 *      block?  Very odd.  Not sure what to do with the rest of them
+	 */
 	@Override
 	public Block copy(Map<UUID, UUID> arg0) {
-		
-		//		This doesn't make a lot of sense.  Why does ignition pass
-		//      in a list of blocks selected when this only returns a single
-		//      block?  Very odd.  Not sure what to do with the rest of them
-		
 		ProcessBlockView newBlock = null;
 		for (UUID me:arg0.values()) {  
 			newBlock = new ProcessBlockView(this.convertToSerializable());
 			newBlock.uuid = me;
 		}
-		
 		return newBlock;
 	}
 	
@@ -434,7 +430,6 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 	}
 	public void setPreferredHeight(int preferredHeight) {this.preferredHeight = preferredHeight;}
 	public void setPreferredWidth(int preferredWidth) {this.preferredWidth = preferredWidth;}
-	public void setPreferredWidth(String backgroundColor) {this.backgroundColor = backgroundColor;}
 	public void setProperties(Collection<BlockProperty> props) { 
 		if( props!=null ) {
 			this.properties = props; 

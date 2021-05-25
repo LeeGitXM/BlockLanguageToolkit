@@ -97,7 +97,6 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 *              is also used when deserializing. Properties are restored after this initialization.
 	 */
 	public AbstractProcessBlock() {
-		log.infof("In AbstractProcessBlock constructor for a pallette instance");
 		propertyMap = new HashMap<>();
 		anchors = new ArrayList<AnchorPrototype>();
 		activities = new FixedSizeQueue<Activity>(DEFAULT_ACTIVITY_BUFFER_SIZE);
@@ -114,7 +113,6 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 */
 	public AbstractProcessBlock(ExecutionController ec, UUID parent, UUID block) {
 		this();
-		log.infof("In AbstractProcessBlock constructor for a real block");
 		this.controller = ec;
 		this.blockId = block;
 		this.parentId = parent;

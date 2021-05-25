@@ -2,22 +2,21 @@ package com.ils.blt.designer.workspace.ui;
 
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.designer.workspace.ProcessBlockView;
-import com.inductiveautomation.ignition.common.util.LogUtil;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
+import com.ils.common.log.ILSLogger;
+import com.ils.common.log.LogMaker;
 
 
 /**
  * Create a proper UI rendering class given the block style.
  */
 public class UIFactory {
-	private final static String TAG = "UIFactory";
-	private final LoggerEx log;
+	private final static String CLSS = "UIFactory";
+	private final ILSLogger log;
 	public UIFactory() {
-		log = LogUtil.getLogger(getClass().getPackage().getName());
+		log = LogMaker.getLogger(getClass().getPackage().getName());
 	}
 	
-	public AbstractUIView getUI(BlockStyle style,ProcessBlockView block) {
-      
+	public AbstractUIView getUI(BlockStyle style,ProcessBlockView block) {   
 		AbstractUIView ui = null;
 		switch(style) {
 			case ARROW:
@@ -59,14 +58,11 @@ public class UIFactory {
 			case NOTE:
 				ui= new NoteUIView(block);   
 				break;
-			case PROPERTY_DISPLAY:
-				ui= new PropertyDisplayUIView(block);   
-				break;
 			default:
-				log.warnf("%s: getUI: Unrecognized style (%s)",TAG,style.toString());
+				log.warnf("%s: getUI: Unrecognized style (%s)",CLSS,style.toString());
 				ui= new SquareUIView(block);
 		}
-		log.tracef("%s: getUI: Created style (%s)",TAG,style.toString());
+		log.tracef("%s: getUI: Created style (%s)",CLSS,style.toString());
 		return ui;
 	}
 }

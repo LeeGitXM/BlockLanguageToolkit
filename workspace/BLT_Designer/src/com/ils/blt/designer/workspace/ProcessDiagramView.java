@@ -140,8 +140,13 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		for(ProcessBlockView blk:blockMap.values()) {
 			if( blk.getLocation().getX()+blk.getPreferredWidth()>maxX ) maxX = blk.getLocation().getX()+blk.getPreferredWidth();
 			if( blk.getLocation().getY()+blk.getPreferredHeight()>maxY) maxY = blk.getLocation().getY()+blk.getPreferredHeight();
-			//log.infof("%s.Constructor: Sizing %s (%f,%f)",TAG,blk.getName(),blk.getLocation().getX(),blk.getLocation().getY());
 		}
+		// Account for attribute displays as well
+		for(ProcessAttributeDisplay display:getAttributeDisplays()) {
+			if( display.getLocation().getX()+display.getPreferredWidth()>maxX ) maxX = display.getLocation().getX()+display.getPreferredWidth();
+			if( display.getLocation().getY()+display.getPreferredHeight()>maxY) maxY = display.getLocation().getY()+display.getPreferredHeight();
+		}
+		
 		diagramSize =  new Dimension((int)(maxX*1.05),(int)(maxY*1.25));
 		this.setDiagramSize(diagramSize);
 	}
