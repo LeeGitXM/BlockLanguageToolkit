@@ -41,7 +41,7 @@ public class AttributeDisplayUIView extends AbstractUIView implements BlockViewU
 	
 	public AttributeDisplayUIView(ProcessAttributeDisplay view) {
 		super(view,0,0);
-		this.log.infof("Initializing a AttributeDisplayUIView for block %s (%s)", view.getBlockId(),view.getPropertyName());
+		this.log.infof("Initializing an AttributeDisplayUIView for block %s (%s)", view.getBlockId(),view.getPropertyName());
 		setOpaque(false);
 		initProperties();
 		label.setHorizontalAlignment(SwingConstants.LEFT);

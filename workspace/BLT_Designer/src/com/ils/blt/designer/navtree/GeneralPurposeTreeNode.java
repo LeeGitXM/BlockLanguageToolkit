@@ -43,6 +43,7 @@ import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.ApplicationScriptFunctions;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagramState;
+import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.script.Script;
 import com.ils.blt.common.script.ScriptConstants;
 import com.ils.blt.common.script.ScriptExtensionManager;
@@ -2058,6 +2059,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		}	
 		
 		// This function is called recursively
+		@SuppressWarnings("unchecked")
 		private void synchronizeNode(AbstractResourceNavTreeNode node,long projectId,String tagp,String dsource) {
 			//log.infof("%s.refreshNode: %s, (%s,%s)",CLSS,node.getName(),provider,dsource);
 			ProjectResource pr = node.getProjectResource();
@@ -2133,40 +2135,48 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		}
 	}
 	
-	// This feels like it doesn't belong here.  The Node shouldn't know about the tree structure
-	public String scanForNameConflicts(AbstractResourceNavTreeNode node) {
-		String ret = "";
-		
-		// check if root node is a Application
+	/**
+	 * FinalDiagnoses must have unique names within an application. If the current node is an application
+	 * scan it. Otherwise check its children.
+	 * @param node
+	 * @return error message. Empty string implies a successful scan.
+	 */
+	@SuppressWarnings("unchecked")
+	public void scanForNameConflicts(AbstractResourceNavTreeNode node, StringBuffer buf) {
+		// Check if subject node is an Application. If so, scan its tree for duplicate names of FinalDiagnoses
 		if (node.getProjectResource() != null && node.getProjectResource().getResourceType().equals(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
-			ret = ((GeneralPurposeTreeNode)node).scanApplicationForDuplicateDiagnosisNames();  // ereiam jh todo come back
+			StringBuffer msg = ((GeneralPurposeTreeNode)node).scanApplicationForDuplicateDiagnosisNames(node);
+			if( msg.length()>1 ) {
+				buf.append(node.getName());
+				buf.append(":\n");
+				buf.append(msg);
+			}
 		} 
-		else {
-			Enumeration<AbstractResourceNavTreeNode> enumer = node.children();
-			while(enumer.hasMoreElements()) {
-				AbstractResourceNavTreeNode theNode = enumer.nextElement();
-				ret += scanForNameConflicts(theNode);
+		// Look in recursively in tree for applications
+		else {	
+			Enumeration<AbstractResourceNavTreeNode> nodeWalker = node.children();
+			while(nodeWalker.hasMoreElements()) {
+				AbstractResourceNavTreeNode theNode = nodeWalker.nextElement();
+				scanForNameConflicts(theNode,buf);
 			}
 		}
-		return ret;
 	}
 
-	public String scanApplicationForDuplicateDiagnosisNames() {
-		String ret = "";
-		HashMap<String,String> names = new HashMap<String,String>();
+	private StringBuffer scanApplicationForDuplicateDiagnosisNames(AbstractResourceNavTreeNode appNode) {
+		StringBuffer buf = new StringBuffer();
+		List<String> nameList = new ArrayList<>();  // Names in this application
 		
-		Enumeration<AbstractResourceNavTreeNode> enumer = children();
-		while(enumer.hasMoreElements()) {
-			AbstractResourceNavTreeNode theNode = enumer.nextElement();
-			ret += parseChildForConflicts(names, theNode); 
+		Enumeration<AbstractResourceNavTreeNode> nodeWalker = appNode.children();
+		while(nodeWalker.hasMoreElements()) {
+			AbstractResourceNavTreeNode theNode = nodeWalker.nextElement();
+			parseNodeForConflicts(nameList, theNode, buf); 
 		}
-		return ret;
+		return buf;
 	}
 
-	public String parseChildForConflicts(HashMap<String, String> names, AbstractResourceNavTreeNode theNode) {
-		String ret = "";
+	@SuppressWarnings("unchecked")
+	private void parseNodeForConflicts(List<String> nameList, AbstractResourceNavTreeNode theNode, StringBuffer buf) {
 		if (theNode.getProjectResource().getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
-
 			ProjectResource res = context.getProject().getResource(theNode.getProjectResource().getResourceId());	
 			String json = new String(res.getData());
 			SerializableDiagram sd = null;
@@ -2179,39 +2189,52 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				// state changed since it was serialized
 				sd.setName(res.getName());
 				sd.setState(statusManager.getResourceState(resourceId));
+				
+				// For a small number of blocks on Pete's system, we've removed the name attribute and re-instated.
+				// The correct name may be in the property
+				ProcessDiagramView diagram = new ProcessDiagramView(res.getResourceId(),sd, context);
+				for( Block blk:diagram.getBlocks()) {
+					ProcessBlockView pbv = (ProcessBlockView)blk;
+					// Re-instate name from property, if necessary
+					if(pbv.getName().equals(BlockConstants.DEFAULT_BLOCK_NAME) && pbv.getProperty(BlockConstants.BLOCK_PROPERTY_NAME)!=null) {
+						pbv.setName(pbv.getProperty(BlockConstants.BLOCK_PROPERTY_NAME).getValue().toString());
+					}
+					// For now only check final diagnosis blocks
+					if (pbv.isDiagnosis()) {
+						String key = (pbv.getClassName() + pbv.getName()).toLowerCase();
+						if (nameList.contains(key)) {
+							buf.append( "Duplicate " + pbv.getClassName() + " block named " + pbv.getName() + " found in diagram " + diagram.getName() + "\n");
+						} 
+						else {
+							nameList.add(key);
+						}
+					}
+				}
 			} 
 			catch (JsonParseException jpe) {
+				buf.append(jpe.getLocalizedMessage());
+				buf.append("\n");
 				logger.warnf("%s: open parse exception (%s)",CLSS,jpe.getLocalizedMessage());
 			} 
 			catch (JsonMappingException jme) {
+				buf.append(jme.getLocalizedMessage());
+				buf.append("\n");
 				logger.warnf("%s: open mapping exception (%s)",CLSS,jme.getLocalizedMessage());
 			} 
 			catch (IOException ioe) {
+				buf.append(ioe.getLocalizedMessage());
+				buf.append("\n");
 				logger.warnf("%s: open io exception (%s)",CLSS,ioe.getLocalizedMessage());
 			}
-			ProcessDiagramView diagram = new ProcessDiagramView(res.getResourceId(),sd, context);
-			for( Block blk:diagram.getBlocks()) {
-				ProcessBlockView pbv = (ProcessBlockView)blk;
-				if (pbv.isDiagnosis()) {
-					String key = (pbv.getClassName() + pbv.getName()).toLowerCase();
-					if (names.containsKey(key)) {
-						String diagramName = names.get(key);
-						ret += "Duplicate " + pbv.getClassName() + " block named " + pbv.getName() + " found in diagram " + diagramName + "\r\n";
-					} else {
-						names.put(key, diagram.getDiagramName());
-					}
-				}
 			
-			}
-		} else {
-			Enumeration<AbstractResourceNavTreeNode> enumer = theNode.children();
-			while(enumer.hasMoreElements()) {
-				AbstractResourceNavTreeNode aNode = enumer.nextElement();
-				ret += parseChildForConflicts(names, aNode);
+		}
+		// Not-a-diagram
+		else {
+			Enumeration<AbstractResourceNavTreeNode> nodeWalker = theNode.children();
+			while(nodeWalker.hasMoreElements()) {
+				AbstractResourceNavTreeNode aNode = nodeWalker.nextElement();
+				parseNodeForConflicts(nameList, aNode, buf);
 			}
 		}
-		return ret;
 	}
-
-
 }

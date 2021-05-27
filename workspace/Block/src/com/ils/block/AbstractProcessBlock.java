@@ -138,7 +138,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		setProperty(BlockConstants.BLOCK_PROPERTY_ACTIVITY_BUFFER_SIZE, bufferSize);
 		
 		// Define a property that holds the name of the block. This applies to all blocks.
-		BlockProperty nameProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_NAME, ".", PropertyType.STRING, true);
+		BlockProperty nameProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_NAME, BlockConstants.DEFAULT_BLOCK_NAME, PropertyType.STRING, true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_NAME, nameProperty);
 		
 		log.infof("...done initializing!");

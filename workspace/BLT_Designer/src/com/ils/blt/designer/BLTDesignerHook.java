@@ -223,11 +223,12 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		log.infof("%s: NotifyProjectSaveStart",CLSS);
 		
 		// check if problems with save, just notify for now.  Can do save.abort() if it's serious
-		String msg = rootNode.scanForNameConflicts(rootNode);
-		if (msg != null && msg.length() > 1) {
+		StringBuffer msg = new StringBuffer();
+		rootNode.scanForNameConflicts(rootNode,msg);
+		if (msg.length() > 1) {
 			log.infof("%s: Workspace error, please correct before saving:  %s",CLSS, msg);
-			ErrorUtil.showError(msg, "Save Workspace Error, save aborted");
-			save.abort(new Throwable(msg));
+			ErrorUtil.showError(msg.toString(), "Save Workspace Error, save aborted");
+			save.abort(new Throwable(msg.toString()));
 		} 
 		else {
 			ResourceSaveManager saver = new ResourceSaveManager(getWorkspace(),rootNode);

@@ -17,6 +17,7 @@ public interface BlockConstants   {
 	
 	// Use these when there is only a single input and/or output
 	// Note that send and receive ports are not affected by type change actions
+	public static final String DEFAULT_BLOCK_NAME = ".";         // Name set when block is created. Should be overridden
 	public static final String IN_PORT_NAME    = "in";
 	public static final String OUT_PORT_NAME = "out";
 	public static final String BROADCAST_PORT_NAME = "send";     // Send
