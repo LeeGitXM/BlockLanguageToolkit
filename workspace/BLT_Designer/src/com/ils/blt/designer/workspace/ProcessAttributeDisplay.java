@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.ils.blt.common.block.AttributeDisplay;
-import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.notification.NotificationChangeListener;
 import com.ils.blt.common.notification.NotificationKey;
 import com.ils.blt.designer.NotificationHandler;
