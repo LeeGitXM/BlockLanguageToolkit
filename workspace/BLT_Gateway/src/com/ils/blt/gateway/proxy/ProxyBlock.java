@@ -21,8 +21,8 @@ import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 /**
  * A proxy block is a stand-in for a block written in python. It's methods are all
  * delegated to the python layer, but callable from Java. It also holds the Python 
- * object to provide persistence. 
- *  
+ * object to provide persistence. Nothing referenced in Python is permanent, nothing
+ * is serialized.
  */
 public class ProxyBlock extends AbstractProcessBlock  {
 	private static final String TAG = "ProxyBlock";
@@ -243,14 +243,6 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	public synchronized void setAuxData(GeneralPurposeDataContainer container) { 
 		delegate.setAuxData(context.getProjectManager().getProjectScriptManager(getProjectId()),getPythonBlock(),container); 
 		setAuxiliaryData(container);
-		requestHandler.postAlertingStatus(this);
-	}
-	/**
-	 * Rename the block.
-	 */
-	@Override
-	public synchronized void setName(String name) { 
-		delegate.setName(context.getProjectManager().getProjectScriptManager(getProjectId()),getPythonBlock(),name); 
 		requestHandler.postAlertingStatus(this);
 	}
 }

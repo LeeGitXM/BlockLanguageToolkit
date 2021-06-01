@@ -74,7 +74,6 @@ public class ProxyHandler   {
 	private final Callback setAuxDataCallback;
 	private final Callback setBlockPropertyCallback;
 	private final Callback setBlockStateCallback;
-	private final Callback setNameCallback;
 
 	/**
 	 * Initialize with instances of the classes to be controlled.
@@ -99,7 +98,6 @@ public class ProxyHandler   {
 		setAuxDataCallback = new SetAuxData();
 		setBlockPropertyCallback = new SetBlockProperty();
 		setBlockStateCallback = new SetBlockState();
-		setNameCallback = new SetName();
 	}
 
 	/**
@@ -539,18 +537,7 @@ public class ProxyHandler   {
 			}
 		}
 	}
-	
-	public void setName(ScriptManager mgr,PyObject block,String name ){
-		if( block==null || name!=null ) return;
-		if( setNameCallback.compileScript() ) {
-			synchronized(setNameCallback) {
-				setNameCallback.initializeLocalsMap(mgr);
-				setNameCallback.setLocalVariable(0,block);
-				setNameCallback.setLocalVariable(1,new PyString(name));
-				setNameCallback.execute(mgr);
-			}
-		}
-	}
+
 	public void setBlockProperty(ScriptManager mgr,ProxyBlock block,BlockProperty prop) {
 		if( block==null || prop==null ) return;
 		log.debugf("%s.setBlockProperty --- %s:%s",CLSS,block.getClass(),prop.getName()); 
