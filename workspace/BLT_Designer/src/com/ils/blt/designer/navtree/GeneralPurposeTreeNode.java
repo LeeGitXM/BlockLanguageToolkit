@@ -643,7 +643,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			ObjectMapper mapper = new ObjectMapper();
 			mapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL,true);
 			sd = mapper.readValue(new String(bytes), SerializableDiagram.class);
-			sd.setName(res.getName());   // Sync the SerializableApplication name w/ res
+			sd.setName(res.getName());   // Sync the SerializableDiagram name w/ res
 			statusManager.setResourceState(resourceId, sd.getState(),false);
 		}
 		catch(Exception ex) {

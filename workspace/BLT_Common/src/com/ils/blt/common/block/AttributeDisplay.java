@@ -12,7 +12,8 @@ import java.util.UUID;
  * These are serializable and therefore can be instantiated in any scope.
  */
 public class AttributeDisplay implements Serializable {
-	private static final String TAG = "AttributeDisplay";
+	private static final long serialVersionUID = -1802235810478552377L;
+	private static final String CLSS = "AttributeDisplay";
 	public static final int DEFAULT_WIDTH = 120;
 	public static final int DEFAULT_HEIGHT = 15;
 	private final String blockId;

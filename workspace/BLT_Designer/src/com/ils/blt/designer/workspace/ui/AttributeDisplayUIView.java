@@ -22,11 +22,13 @@ import javax.swing.event.ChangeListener;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.PropertyType;
-import com.ils.blt.designer.workspace.ProcessAttributeDisplay;
+import com.ils.blt.designer.workspace.AttributeDisplayView;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockComponent;
 
-/** Draw a free-form text (or html) note in a box. */
+/** 
+ * This is the renderer for an AttributeDisplayView. It shows the value of a single property. 
+ */
 @SuppressWarnings("serial")
 public class AttributeDisplayUIView extends AbstractUIView implements BlockViewUI, ChangeListener {
 
@@ -39,9 +41,9 @@ public class AttributeDisplayUIView extends AbstractUIView implements BlockViewU
 	private BlockProperty suffixProperty;
 	private BlockProperty backgroundColorProperty;
 	
-	public AttributeDisplayUIView(ProcessAttributeDisplay view) {
+	public AttributeDisplayUIView(AttributeDisplayView view) {
 		super(view,0,0);
-		this.log.infof("Initializing an AttributeDisplayUIView for block %s (%s)", view.getBlockId(),view.getPropertyName());
+		this.log.infof("Initializing an AttributeDisplayUIView for block %s (%s)", view.getBlock().getId().toString(),view.getPropertyName());
 		setOpaque(false);
 		initProperties();
 		label.setHorizontalAlignment(SwingConstants.LEFT);
@@ -69,7 +71,6 @@ public class AttributeDisplayUIView extends AbstractUIView implements BlockViewU
 		 * The following chunk of code might be some work towards the goal of automatically updating blocks
 		 * when properties are added - perhaps only for properties that every block MUST have  
 		 */
-		
 		for(BlockProperty property: properties ) {
 			if(property.getName().equals(BlockConstants.BLOCK_PROPERTY_TEXT))        hasText = true;
 			else if(property.getName().equals(BlockConstants.BLOCK_PROPERTY_WIDTH))  hasWidth= true;
@@ -84,12 +85,11 @@ public class AttributeDisplayUIView extends AbstractUIView implements BlockViewU
 		 * BTW - I don't think we ever get into any of this code because I don't think any of these are qualified values.
 		 * In the event we somehow get into these, I think they will throw an error - Pete 5/6/21
 		 */
-//		if(!hasProperty) properties.add(new BlockProperty(BlockConstants.BLOCK_PROPERTY_PROPERTY,new BasicQualifiedValue(""),PropertyType.STRING,true));
-		if(!hasText) properties.add(new BlockProperty(BlockConstants.BLOCK_PROPERTY_TEXT,new BasicQualifiedValue(""),PropertyType.STRING,true));
-		if(!hasWidth) properties.add(new BlockProperty(BlockConstants.BLOCK_PROPERTY_WIDTH,new BasicQualifiedValue(new Integer(block.getPreferredWidth())),PropertyType.INTEGER,true));
-		if(!hasHeight) properties.add(new BlockProperty(BlockConstants.BLOCK_PROPERTY_HEIGHT,new BasicQualifiedValue(new Integer(block.getPreferredHeight())),PropertyType.INTEGER,true));
-		if(!hasPrefix) properties.add(new BlockProperty(BlockConstants.BLOCK_PROPERTY_PREFIX,new BasicQualifiedValue(""),PropertyType.STRING,true));
-		if(!hasSuffix) properties.add(new BlockProperty(BlockConstants.BLOCK_PROPERTY_SUFFIX,new BasicQualifiedValue(""),PropertyType.STRING,true));
+		if(!hasText) properties.add(new BlockProperty(BlockConstants.BLOCK_PROPERTY_TEXT,"",PropertyType.STRING,true));
+		if(!hasWidth) properties.add(new BlockProperty(BlockConstants.BLOCK_PROPERTY_WIDTH,new Integer(block.getPreferredWidth()),PropertyType.INTEGER,true));
+		if(!hasHeight) properties.add(new BlockProperty(BlockConstants.BLOCK_PROPERTY_HEIGHT,new Integer(block.getPreferredHeight()),PropertyType.INTEGER,true));
+		if(!hasPrefix) properties.add(new BlockProperty(BlockConstants.BLOCK_PROPERTY_PREFIX,"",PropertyType.STRING,true));
+		if(!hasSuffix) properties.add(new BlockProperty(BlockConstants.BLOCK_PROPERTY_SUFFIX,"",PropertyType.STRING,true));
 		if(!hasBackgroundColor) properties.add(new BlockProperty(BlockConstants.BLOCK_PROPERTY_BACKGROUND_COLOR,new BasicQualifiedValue(new Integer(block.getBackgroundColor())),PropertyType.COLOR,true));
 		if(!hasNameProperty) properties.add(new BlockProperty(BlockConstants.BLOCK_PROPERTY_NAME, "",PropertyType.STRING,true));
 		
@@ -120,7 +120,7 @@ public class AttributeDisplayUIView extends AbstractUIView implements BlockViewU
 				backgroundColorProperty = property;
 				backgroundColorProperty.addChangeListener(this);
 			}
-			else if(property.getName().equals(BlockConstants.BLOCK_PROPERTY_NAME)) {  //PETE
+			else if(property.getName().equals(BlockConstants.BLOCK_PROPERTY_NAME)) {
 				nameProperty = property;	// PETE1
 				nameProperty.addChangeListener(this);  // PETE
 			}

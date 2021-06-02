@@ -55,7 +55,7 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.impl.Ab
  *       when the diagram is opened.
  */
 public class ProcessBlockView extends AbstractBlock implements ChangeListener, NotificationChangeListener {
-	private static final String TAG = "ProcessBlockView";
+	private static final String CLSS = "ProcessBlockView";
 	private final static Random random = new Random();
 	private Map<String,ProcessAnchorDescriptor> anchors;
 	private final EventListenerList listenerList;
@@ -114,7 +114,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 		this.anchors = new HashMap<>();
 		int order = 0;
 		for( AnchorPrototype ap:descriptor.getAnchors() ) {
-			log.debugf("%s: Creating anchor descriptor %s", TAG,ap.getName());
+			log.debugf("%s: Creating anchor descriptor %s", CLSS,ap.getName());
 			ap.setSortOrder(order);  // let's preserve the order these were in.
 			ProcessAnchorDescriptor pad = new ProcessAnchorDescriptor((ap.getAnchorDirection()==AnchorDirection.INCOMING?AnchorType.Terminus:AnchorType.Origin),
 					ap.getConnectionType(),UUID.randomUUID(),ap.getName(),ap.getAnnotation(),ap.getHint(),ap.isMultiple(), ap.getSortOrder());
@@ -123,7 +123,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 			anchors.put(ap.getName(), pad);
 		}
 		this.properties = new ArrayList<BlockProperty>();
-		log.debugf("%s: Created %s (%s) view from descriptor (%d anchors)", TAG, className, style.toString(),anchors.size());
+		log.debugf("%s: Created %s (%s) view from descriptor (%d anchors)", CLSS, className, style.toString(),anchors.size());
 		createPseudoRandomName();
 	}
 	
@@ -153,7 +153,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 		this.anchors = new HashMap<>();
 		if(sb.getAnchors()!=null ) {
 			for( SerializableAnchor sa:sb.getAnchors() ) {
-				log.debugf("%s: %s creating serializable anchor %s (%s)", TAG,sb.getName(),sa.getDisplay(),sa.getConnectionType().name());
+				log.debugf("%s: %s creating serializable anchor %s (%s)", CLSS,sb.getName(),sa.getDisplay(),sa.getConnectionType().name());
 				ProcessAnchorDescriptor pad = new ProcessAnchorDescriptor((sa.getDirection()==AnchorDirection.INCOMING?AnchorType.Terminus:AnchorType.Origin),
 						sa.getConnectionType(),sa.getId(),sa.getDisplay(),sa.getAnnotation(),sa.getHint(),sa.isMultiple(), sa.getSortOrder());
 				pad.setHidden(sa.isHidden());
@@ -164,13 +164,13 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 		if(sb.getProperties()!=null ) {
 			for(BlockProperty bp:sb.getProperties()) {
 				if(bp==null) continue;
-				log.debugf("%s: %s creating property %s", TAG,sb.getName(),bp.getName());
+				log.debugf("%s: %s creating property %s", CLSS,sb.getName(),bp.getName());
 				properties.add(bp);
 			} 
 		}
 		// this.setName(sb.getName()); // There should already be a name property
 		this.location = new Point(sb.getX(),sb.getY());
-		log.debugf("%s: %s created %s %s (%s) view from serializable block", TAG, sb.getName(),className, sb.getId().toString(),style.toString());
+		log.debugf("%s: %s created %s %s (%s) view from serializable block", CLSS, sb.getName(),className, sb.getId().toString(),style.toString());
 	}
 	
 	// NOTE: The most recent values on each port are stored in the connection anchor point
@@ -218,12 +218,12 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 		}
 		result.setAnchors(ancs.toArray(new SerializableAnchor[ancs.size()]));
 		if( getProperties()!=null ) {
-			log.tracef("%s.convertToSerializable: %s has %d properties",TAG,getClassName(),getProperties().size());
+			log.tracef("%s.convertToSerializable: %s has %d properties",CLSS,getClassName(),getProperties().size());
 			//log.trace(getProperties().toString());
 			result.setProperties(getProperties().toArray(new BlockProperty[getProperties().size()]));
 		}
 		else {
-			log.warnf("%s.convertToSerializable: %s has no properties",TAG,getClassName());
+			log.warnf("%s.convertToSerializable: %s has no properties",CLSS,getClassName());
 		}
 		
 		return result;
@@ -338,7 +338,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 			qv = pad.getLastValue();
 		}
 		else {
-			log.warnf("%s.getLastValueForPort: %s, unknown port specified (%s)",TAG,getName(),port);
+			log.warnf("%s.getLastValueForPort: %s, unknown port specified (%s)",CLSS,getName(),port);
 		}
 		return qv;
 	}
@@ -395,13 +395,13 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 	}
 	public void recordLatestValue(String port,QualifiedValue qv) {
 		if( qv==null || qv.getValue()==null) return;
-		log.tracef("%s.recordLatestValue: %s (%s) port %s (%s)",TAG,getName(),getId().toString(),port,qv.getValue().toString());
+		log.tracef("%s.recordLatestValue: %s (%s) port %s (%s)",CLSS,getName(),getId().toString(),port,qv.getValue().toString());
 		ProcessAnchorDescriptor pad = anchors.get(port);
 		if( pad!=null ) {
 			pad.setLastValue(qv);
 		}
 		else {
-			log.warnf("%s.recordLatestValue: Uknown port (%s)",TAG,port);
+			log.warnf("%s.recordLatestValue: Uknown port (%s)",CLSS,port);
 		}
 	}
 	public void setAuxiliaryData(GeneralPurposeDataContainer auxiliaryData) {this.auxiliaryData = auxiliaryData;}
@@ -435,7 +435,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 			this.properties = props; 
 		}
 		else {
-			log.warnf("%s.setProperties: WARNING: attempt to set %s properties to null",TAG,getName());
+			log.warnf("%s.setProperties: WARNING: attempt to set %s properties to null",CLSS,getName());
 		}
 	}
 //	public void setReceiveEnabled(boolean receiveEnabled) {this.receiveEnabled = receiveEnabled;}

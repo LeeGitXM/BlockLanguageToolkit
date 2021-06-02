@@ -27,10 +27,10 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.impl.Ab
  *  Note: initUI is called from the AbstractBlock constructor which is called
  *       when the diagram is opened.
  */
-public class ProcessAttributeDisplay extends AbstractBlock implements NotificationChangeListener {
+public class AttributeDisplayView extends AbstractBlock implements NotificationChangeListener {
 	private static final String CLSS = "AttributeDisplay";
 	private final NotificationHandler notificationHandler = NotificationHandler.getInstance();
-	private final String blockId;
+	private final ProcessBlockView block;
 	private final String propertyName;
 	private final UUID uuid;
 	private int preferredHeight = 0;              // Size the view to "natural" size
@@ -40,38 +40,39 @@ public class ProcessAttributeDisplay extends AbstractBlock implements Notificati
 	private int height;
 	private int width;
 	private Point location;
-	private AbstractUIView ui = new AttributeDisplayUIView(this);
+	private AbstractUIView ui = null;
 	
 	/**
 	 * Constructor: Used in the Designer to create a new display
 	 */
-	public ProcessAttributeDisplay(String id,String name) {
-		this.blockId = id;
+	public AttributeDisplayView(ProcessBlockView blk,String name) {
+		this.block = blk;
 		this.propertyName = name;
 		this.uuid = UUID.randomUUID();
 		this.location = new Point(0,0);
+		this.ui = new AttributeDisplayUIView(this);
 	}
 	
 	/**
 	 * Constructor: Used to create a view from a serialized diagram.
 	 */
-	public ProcessAttributeDisplay(AttributeDisplay ad) {
-		this.blockId = ad.getBlockId();
+	public AttributeDisplayView(ProcessDiagramView diagram,AttributeDisplay ad) {
+		this.block = (ProcessBlockView)diagram.getBlock(ad.getUUID());
 		this.propertyName = ad.getPropertyName();
 		this.uuid = ad.getUUID();
 		this.location = new Point(ad.getX(),ad.getY());
+		this.ui = new AttributeDisplayUIView(this);
 	}
-	
-	public String getBlockId() { return this.blockId; }
+		
+	public ProcessBlockView getBlock() { return this.block; }
 	public int getPreferredHeight() { return this.preferredHeight; }
 	public int getPreferredWidth() { return this.preferredWidth; }
 	public String getPropertyName() { return this.propertyName; }
 	public AbstractUIView getUi() {return ui;}
 	public AttributeDisplay convertToSerializable() {
-		AttributeDisplay result = new AttributeDisplay(blockId,propertyName);
+		AttributeDisplay result = new AttributeDisplay(block.getId().toString(),propertyName);
 		result.setX(getLocation().x);
 		result.setY(getLocation().y);
-		
 		return result;
 	}
 	public void setPreferredHeight(int preferredHeight) {this.preferredHeight = preferredHeight;}
@@ -79,12 +80,12 @@ public class ProcessAttributeDisplay extends AbstractBlock implements Notificati
 	
 	// The parent diagram is displayed, start the listener.
 	public void startup() {
-		String key = NotificationKey.keyForPropertyBinding(blockId,propertyName);
+		String key = NotificationKey.keyForPropertyBinding(block.getId().toString(),propertyName);
 		notificationHandler.addNotificationChangeListener(key,CLSS,this);
 	}
 	
 	public void shutdown() {
-		String key = NotificationKey.keyForPropertyBinding(blockId,propertyName);
+		String key = NotificationKey.keyForPropertyBinding(block.getId().toString(),propertyName);
 		notificationHandler.removeNotificationChangeListener(key,CLSS);
 	}
 	// ================================== AbstractBlock ===========================================
@@ -94,12 +95,12 @@ public class ProcessAttributeDisplay extends AbstractBlock implements Notificati
 	 */
 	@Override
 	public Block copy(Map<UUID, UUID> arg0) {
-		ProcessAttributeDisplay newDisplay= null;
+		AttributeDisplay newDisplay= null;
 		for (UUID me:arg0.values()) {  
-			newDisplay = new ProcessAttributeDisplay(this.convertToSerializable());
+			newDisplay = convertToSerializable();
 		}
 		
-		return newDisplay;
+		return(Block)newDisplay;
 	}
 
 	@Override

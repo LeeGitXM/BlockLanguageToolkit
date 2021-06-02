@@ -11,6 +11,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
+import com.ils.blt.designer.workspace.AttributeDisplayView;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.common.log.ILSLogger;
@@ -105,14 +106,20 @@ public class PropertyEditorFrame extends DockableFrame implements ResourceWorksp
 				JComponent selection = selections.get(0);
 				log.infof("%s: DiagramWorkspaceListener.itemSelectionChanged: selected a %s",CLSS,selection.getClass().getName());
 				// KLUDGE ALERT: There should be a way to not hard code this.
+				// We've selected a block and connector block component
 				if( selection instanceof BlockComponent ) {
 					BlockComponent bc = ( BlockComponent)selection;
-					ProcessBlockView blk = (ProcessBlockView)bc.getBlock();
-					if( blk.getClassName().contains("FinalDiagnosis")) {
-						newEditor = new FinalDiagnosisPropertyEditor(context,workspace,blk);
+					if( bc.getBlock() instanceof AttributeDisplayView ) {
+						newEditor = new AttributeDisplayEditor(context,workspace,(AttributeDisplayView)(bc.getBlock()));
 					}
 					else {
-						newEditor = new BlockPropertyEditor(context,workspace,blk);
+						ProcessBlockView blk = (ProcessBlockView)bc.getBlock();
+						if( blk.getClassName().contains("FinalDiagnosis")) {
+							newEditor = new FinalDiagnosisPropertyEditor(context,workspace,blk);
+						}
+						else {
+							newEditor = new BlockPropertyEditor(context,workspace,blk);
+						}
 					}
 				}
 				// There may be a connection selected

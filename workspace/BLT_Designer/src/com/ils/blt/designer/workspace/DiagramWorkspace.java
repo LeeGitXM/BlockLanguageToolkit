@@ -20,7 +20,6 @@ import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Path2D;
@@ -79,11 +78,10 @@ import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.ResourceUpdateManager;
+import com.ils.blt.designer.config.AttributeDisplaySelector;
 import com.ils.blt.designer.config.BlockExplanationViewer;
 import com.ils.blt.designer.config.BlockInternalsViewer;
-import com.ils.blt.designer.config.AttributeDisplaySelector;
 import com.ils.blt.designer.config.ForceValueSettingsDialog;
-import com.ils.blt.designer.editor.AbstractPropertyEditor;
 import com.ils.blt.designer.editor.BlockEditConstants;
 import com.ils.blt.designer.editor.PropertyEditorFrame;
 import com.ils.blt.designer.navtree.DiagramTreeNode;
@@ -1458,7 +1456,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	}
 
 	/**
-	 * Post a custom  for the block. This action is expected to
+	 * Post a custom editor for the block. This action is expected to
 	 * apply to only a few block types. The action should be invoked only
 	 * if an editor class has been specified. 
 	 */

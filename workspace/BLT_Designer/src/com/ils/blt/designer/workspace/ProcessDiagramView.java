@@ -55,11 +55,11 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
 public class ProcessDiagramView extends AbstractChangeable implements BlockDiagramModel,NotificationChangeListener {
 	private static LoggerEx log = LogUtil.getLogger(ProcessDiagramView.class.getPackage().getName());
 	// Use TAG as the "source" identifier when registering for notifications from Gateway
-	private static final String TAG = "ProcessDiagramView";
+	private static final String CLSS = "ProcessDiagramView";
 	private final ApplicationRequestHandler appRequestHandler;
 	private final Map<UUID,ProcessBlockView> blockMap = new HashMap<>();
 	private List<Connection> connections = new ArrayList<>();
-	private List<ProcessAttributeDisplay> attributeDisplays = new ArrayList<>();
+	private List<AttributeDisplayView> attributeDisplays = new ArrayList<>();
 	private static final int MIN_WIDTH = 200;
 	private static final int MIN_HEIGHT = 200;
 	private Dimension diagramSize = new Dimension(MIN_WIDTH,MIN_HEIGHT);
@@ -90,7 +90,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			for( SerializableBlock sb:diagram.getBlocks()) {
 				ProcessBlockView pbv = new ProcessBlockView(sb);
 				blockMap.put(sb.getId(), pbv);
-				log.debugf("%s.createDiagramView: Added %s to map",TAG,sb.getId().toString());
+				log.debugf("%s.createDiagramView: Added %s to map",CLSS,sb.getId().toString());
 				this.addBlock(pbv);
 			}
 			
@@ -110,20 +110,20 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 					}
 					else {
 						if( blocka==null ) {
-							log.warnf("%s.createDiagramView: Failed to find block %s for begin anchor point %s",TAG,a.getParentId(),a);
+							log.warnf("%s.createDiagramView: Failed to find block %s for begin anchor point %s",CLSS,a.getParentId(),a);
 						}
 						if( blockb==null ) {
-							log.warnf("%s.createDiagramView: Failed to find block %s for end anchor point %s",TAG,b.getParentId(),b);
+							log.warnf("%s.createDiagramView: Failed to find block %s for end anchor point %s",CLSS,b.getParentId(),b);
 						}
 					}
 				}
 				else {
-					log.warnf("%s.createDiagramView: Connection %s missing one or more anchor points",TAG,scxn.toString());
+					log.warnf("%s.createDiagramView: Connection %s missing one or more anchor points",CLSS,scxn.toString());
 				}
 			}
 			
-			for( AttributeDisplay pad:diagram.getAttributeDisplays() ) {
-				ProcessAttributeDisplay view = new ProcessAttributeDisplay(pad);
+			for( AttributeDisplay ad:diagram.getAttributeDisplays() ) {
+				AttributeDisplayView view = new AttributeDisplayView(this,ad);
 				addDisplayView(view);
 				view.startup(); 
 			}
@@ -142,7 +142,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			if( blk.getLocation().getY()+blk.getPreferredHeight()>maxY) maxY = blk.getLocation().getY()+blk.getPreferredHeight();
 		}
 		// Account for attribute displays as well
-		for(ProcessAttributeDisplay display:getAttributeDisplays()) {
+		for(AttributeDisplayView display:getAttributeDisplays()) {
 			if( display.getLocation().getX()+display.getPreferredWidth()>maxX ) maxX = display.getLocation().getX()+display.getPreferredWidth();
 			if( display.getLocation().getY()+display.getPreferredHeight()>maxY) maxY = display.getLocation().getY()+display.getPreferredHeight();
 		}
@@ -179,7 +179,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 				propertyList.add(property);
 			}
 		}
-		log.tracef("%s.initBlockProperties - initialize property list for %s (%d properties)",TAG,block.getId().toString(),propertyList.size());
+		log.tracef("%s.initBlockProperties - initialize property list for %s (%d properties)",CLSS,block.getId().toString(),propertyList.size());
 		block.setProperties(propertyList);
 	}
 
@@ -196,7 +196,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		if( blk instanceof ProcessBlockView) {
 			ProcessBlockView block = (ProcessBlockView) blk;
 			if( ((ProcessBlockView) blk).getProperties().isEmpty() ) initBlockProperties(block);
-			log.tracef("%s.addBlock - %s",TAG,block.getClassName());
+			log.tracef("%s.addBlock - %s",CLSS,block.getClassName());
 			blockMap.put(blk.getId(), block);
 			fireStateChanged();
 		}
@@ -232,7 +232,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 					disallow = true;
 					String msg = String.format("Rejected connection.  Cannot connect %s and %s",eapp.getConnectionType().name(),originType.name());
 					JOptionPane.showMessageDialog(null, msg, "Warning", JOptionPane.INFORMATION_MESSAGE);
-					msg = String.format("%s.addConnection - rejected connection.  Cannot connect %s and %s",TAG,eapp.getConnectionType().name(),originType.name());
+					msg = String.format("%s.addConnection - rejected connection.  Cannot connect %s and %s",CLSS,eapp.getConnectionType().name(),originType.name());
 					log.warnf(msg);
 				}
 
@@ -243,7 +243,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 					for(Connection cxn:connections) {
 						if(cxn.getTerminus().equals(end)) {
 							disallow = true;
-							log.warnf("%s.addConnection - rejected attempt to add a second connection to a single connection endpoint",TAG);
+							log.warnf("%s.addConnection - rejected attempt to add a second connection to a single connection endpoint",CLSS);
 							break;
 						}
 					}
@@ -277,10 +277,10 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		}
 
 		else {
-			log.warnf("%s.addConnection - rejected attempt to add a connection with null anchor",TAG);
+			log.warnf("%s.addConnection - rejected attempt to add a connection with null anchor",CLSS);
 		}
 	}
-	public void addDisplayView(ProcessAttributeDisplay view) {
+	public void addDisplayView(AttributeDisplayView view) {
 		attributeDisplays.add(view);
 	}
 	// NOTE: This does not set connection type
@@ -302,7 +302,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			result.setEndAnchor(createSerializableAnchorPoint(cxn.getTerminus()));
 		}
 		else {
-			log.warnf("%s.convertConnectionToSerializable: connection missing terminus or origin (%s)",TAG,cxn.getClass().getName());
+			log.warnf("%s.convertConnectionToSerializable: connection missing terminus or origin (%s)",CLSS,cxn.getClass().getName());
 		}
 		return result;
 	}
@@ -366,10 +366,10 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 						}
 					}
 				}
-				if( !found ) log.warnf("%s.createSerializableRepresentation: unable to find %s port in begin block",TAG,port);
+				if( !found ) log.warnf("%s.createSerializableRepresentation: unable to find %s port in begin block",CLSS,port);
 			}
 			else {
-				log.warnf("%s.createSerializableRepresentation: begin block lookup failed",TAG);
+				log.warnf("%s.createSerializableRepresentation: begin block lookup failed",CLSS);
 			}
 			scxns.add(scxn);
 		}
@@ -394,7 +394,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			connections.remove(cxn);
 		}
 		
-		log.infof("%s.deleteBlock: deleting a sink (%s)",TAG,blk.getClass().getCanonicalName());
+		log.infof("%s.deleteBlock: deleting a sink (%s)",CLSS,blk.getClass().getCanonicalName());
 		
 		// For a Sink, remove its bound tag
 		if( blk instanceof ProcessBlockView ) {
@@ -434,9 +434,9 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 				break;
 			}
 		}
-		if(!success) log.warnf("%s.deleteConnection: failed to find match to existing",TAG);
+		if(!success) log.warnf("%s.deleteConnection: failed to find match to existing",CLSS);
 	}
-	public List<ProcessAttributeDisplay> getAttributeDisplays() {
+	public List<AttributeDisplayView> getAttributeDisplays() {
 		return attributeDisplays;
 	}
 	/**
@@ -537,7 +537,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 				ProcessBlockView blk = (ProcessBlockView)bap.getBlock();
 				String key = NotificationKey.keyForConnection(blk.getId().toString(), bap.getId().toString());
 				handler.initializePropertyValueNotification(key,blk.getLastValueForPort(bap.getId().toString()));
-				handler.addNotificationChangeListener(key,TAG, bap);
+				handler.addNotificationChangeListener(key,CLSS, bap);
 			}
 		}
 	}
@@ -558,7 +558,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 				ProcessBlockView blk = (ProcessBlockView)bap.getBlock();
 				String key = NotificationKey.keyForConnection(blk.getId().toString(), bap.getId().toString());
 				handler.initializePropertyValueNotification(key,blk.getLastValueForPort(bap.getId().toString()));
-				handler.addNotificationChangeListener(key,TAG, bap);
+				handler.addNotificationChangeListener(key,CLSS, bap);
 			}
 		}
 		
@@ -571,19 +571,19 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 				if( prop.getBindingType().equals(BindingType.ENGINE)) {
 					String key = NotificationKey.keyForProperty(block.getId().toString(), prop.getName());
 					handler.initializePropertyValueNotification(key,new BasicQualifiedValue(prop.getValue()));
-					handler.addNotificationChangeListener(key,TAG, prop);
+					handler.addNotificationChangeListener(key,CLSS, prop);
 					prop.addChangeListener(block);
 				}
 			}
 			if( block.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SOURCE) ||
 				block.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SINK)) {
 				String key = NotificationKey.keyForBlockName(block.getId().toString());
-				handler.addNotificationChangeListener(key,TAG, block);
+				handler.addNotificationChangeListener(key,CLSS, block);
 			}
 		}
 		// Register self for watermark changes
 		String key = NotificationKey.watermarkKeyForDiagram(getId().toString());
-		handler.addNotificationChangeListener(key,TAG,this);
+		handler.addNotificationChangeListener(key,CLSS,this);
 		
 		// Finally tell the Gateway to report status - on everything
 		// Theoretically this is overkill because the notification handler should know about all of this.
@@ -601,7 +601,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		for( Connection cxn:connections) {
 			BasicAnchorPoint bap = (BasicAnchorPoint)cxn.getOrigin();
 			ProcessBlockView blk = (ProcessBlockView)bap.getBlock();
-			handler.removeNotificationChangeListener(NotificationKey.keyForConnection(blk.getId().toString(),bap.getId().toString()),TAG);
+			handler.removeNotificationChangeListener(NotificationKey.keyForConnection(blk.getId().toString(),bap.getId().toString()),CLSS);
 			
 		}
 		
@@ -609,7 +609,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		for(ProcessBlockView block:blockMap.values() ) {
 			for(BlockProperty prop:block.getProperties()) {
 				if( prop.getBindingType().equals(BindingType.ENGINE)) {
-					handler.removeNotificationChangeListener(NotificationKey.keyForProperty(block.getId().toString(), prop.getName()),TAG);
+					handler.removeNotificationChangeListener(NotificationKey.keyForProperty(block.getId().toString(), prop.getName()),CLSS);
 					prop.removeChangeListener(block);
 				}
 			}
@@ -621,7 +621,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		}
 		// Finally, deregister self
 		String key = NotificationKey.watermarkKeyForDiagram(getId().toString());
-		handler.removeNotificationChangeListener(key,TAG);
+		handler.removeNotificationChangeListener(key,CLSS);
 	}
 	
 	/**
@@ -716,11 +716,11 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	 */
 	@Override
 	public void bindingChange(String binding) {
-		log.infof("%s.bindingChange: %s binding = %s",TAG,getName(),binding);
+		log.infof("%s.bindingChange: %s binding = %s",CLSS,getName(),binding);
 	} 
 	@Override
 	public void diagramStateChange(long resId, String stateString) {
-		log.infof("%s.diagramStateChange: %s (%d vs %d) state = %s",TAG,getName(),resId,getResourceId(),stateString);
+		log.infof("%s.diagramStateChange: %s (%d vs %d) state = %s",CLSS,getName(),resId,getResourceId(),stateString);
 	}
 	// Let the blocks subscribe to their own name changes
 	@Override

@@ -32,7 +32,7 @@ import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.designer.workspace.BasicAnchorPoint;
 import com.ils.blt.designer.workspace.ProcessAnchorDescriptor;
-import com.ils.blt.designer.workspace.ProcessAttributeDisplay;
+import com.ils.blt.designer.workspace.AttributeDisplayView;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.WorkspaceConstants;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
@@ -94,16 +94,18 @@ public abstract class AbstractUIView extends JComponent
 	}
 	
 	/**
-	 * From the standpoint of painting this view, the block is unknown.
+	 * Paint the property value of some block via it's ProcessAttribute display.
 	 * @param view
 	 * @param defaultWidth
 	 * @param defaultHeight
 	 */
-	public AbstractUIView(ProcessAttributeDisplay view,int defaultWidth,int defaultHeight) {
+	public AbstractUIView(AttributeDisplayView display,int defaultWidth,int defaultHeight) {
+		this.block = display.getBlock();
+		block.addChangeListener(this);
 		setOpaque(true);
-		int preferredHeight = view.getPreferredHeight();
+		int preferredHeight = display.getPreferredHeight();
 		if( preferredHeight<=0 ) preferredHeight = defaultHeight;
-		int preferredWidth = view.getPreferredWidth();
+		int preferredWidth = display.getPreferredWidth();
 		if( preferredWidth<=0 ) preferredWidth = defaultWidth;
 		setPreferredSize(new Dimension(preferredWidth,preferredHeight)); 
 		anchorPoints = new ArrayList<AnchorPoint>();  // There are no anchor points
