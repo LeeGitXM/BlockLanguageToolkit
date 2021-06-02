@@ -23,7 +23,6 @@
 		<jar scope="CD">lucene-1.4.3.jar.pack.gz</jar>
 		<jar scope="CD">prefuse-1.0.1.jar.pack.gz</jar>
 		
-		<jar scope="D">block-definition.jar.pack.gz</jar>
 		<jar scope="D">jackson-core-2.2.3.jar.pack.gz</jar>
 		<jar scope="D">jackson-databind-2.2.3.jar.pack.gz</jar>
 		<jar scope="D">jackson-annotations-2.2.3.jar.pack.gz</jar>

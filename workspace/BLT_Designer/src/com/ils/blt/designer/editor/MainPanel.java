@@ -140,9 +140,6 @@ public class MainPanel extends BasicEditPanel {
 			add(createTextField(blk.getClassName()),"span,growx");
 			add(createLabel("UUID"),"skip");
 			add(createTextField(blk.getId().toString()),"span,growx");
-			
-			// Listen on block name changes
-			block.getProperty(BlockConstants.BLOCK_PROPERTY_NAME).addChangeListener(this);
 		}
 		
 		public void saveName() {

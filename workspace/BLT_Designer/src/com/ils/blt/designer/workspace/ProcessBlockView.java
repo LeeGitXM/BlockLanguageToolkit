@@ -15,6 +15,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
 
+import com.ils.blt.common.block.Activity;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BlockConstants;
@@ -30,10 +31,10 @@ import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.designer.workspace.ui.AbstractUIView;
 import com.ils.blt.designer.workspace.ui.UIFactory;
 import com.ils.common.GeneralPurposeDataContainer;
+import com.ils.common.log.ILSLogger;
+import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
-import com.inductiveautomation.ignition.common.util.LogUtil;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockComponent;
 import com.inductiveautomation.ignition.designer.blockandconnector.blockui.AnchorDescriptor;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorPoint;
@@ -74,7 +75,8 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 	private boolean ctypeEditable=false;          // Can we globally change our connection types
 	private boolean locked = false; 
 	private Point location = new Point(0,0);
-	private final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
+	private final ILSLogger log; 
+	private String name;
 	private int preferredHeight = 0;              // Size the view to "natural" size
 	private int preferredWidth  = 0;              // Size the view to "natural" size
 	private String backgroundColor  = "GREY";
@@ -94,6 +96,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 	public ProcessBlockView(BlockDescriptor descriptor) {
 		this.listenerList = new EventListenerList();
 		this.changeEvent  = new ChangeEvent(this);
+		this.log = LogMaker.getLogger(this);
 		this.uuid = UUID.randomUUID();
 		this.background = descriptor.getBackground();
 		this.className = descriptor.getBlockClass();
@@ -143,6 +146,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 		this.encapsulation = (sb.getSubworkspaceId()!=null);
 		this.iconPath = sb.getIconPath();
 		this.locked   = sb.isLocked();
+		this.log = LogMaker.getLogger(this);
 		this.preferredHeight = sb.getPreferredHeight();
 		this.preferredWidth = sb.getPreferredWidth();
 		this.style = sb.getStyle();
@@ -228,7 +232,12 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 		
 		return result;
 	}
-    
+    public void addAnchor(AnchorPrototype ap) {
+		ProcessAnchorDescriptor pad = new ProcessAnchorDescriptor((ap.getAnchorDirection()==AnchorDirection.INCOMING?AnchorType.Terminus:AnchorType.Origin),
+				ap.getConnectionType(),UUID.randomUUID(),ap.getName(),ap.getAnnotation(),ap.getHint(),ap.isMultiple(), ap.getSortOrder());
+		pad.setHidden(ap.isHidden());
+		anchors.put(ap.getName(), pad);
+    }
     /**
      * Change the connection type of all anchors to a new specified
      * type. This has an effect only if ctypeEditable is true. This
@@ -358,14 +367,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 		}
 		return result;
 	}
-	public String getName() {
-		BlockProperty nameProperty = getProperty(BlockConstants.BLOCK_PROPERTY_NAME);
-		if(nameProperty==null ) {
-			nameProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_NAME,"",PropertyType.STRING,true);
-				properties.add(nameProperty);
-		}
-		return nameProperty.getValue().toString();
-	}
+	public String getName() { return this.className; }
 	public int getPreferredHeight() {return preferredHeight;}
 	public int getPreferredWidth() {return preferredWidth;}
 	public String getBackgroundColor() {return backgroundColor;}
@@ -414,13 +416,8 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 	public void setEmbeddedLabel(String embeddedLabel) {this.embeddedLabel = embeddedLabel;}
 	public void setIconPath(String iconPath) {this.iconPath = iconPath;}
 	public void setLocked(boolean flag) {this.locked = flag;}
-	public void setName(String name) {
-		BlockProperty nameProperty = getProperty(BlockConstants.BLOCK_PROPERTY_NAME);
-		if(nameProperty==null ) {
-			nameProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_NAME,name,PropertyType.STRING,true);
-			properties.add(nameProperty);
-		}
-		nameProperty.setValue(name);   // Notifies change listeners
+	public void setName(String text) { 
+		this.name = text; 
 		fireStateChanged(); 
 	}
 	@Override
@@ -438,7 +435,6 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 			log.warnf("%s.setProperties: WARNING: attempt to set %s properties to null",CLSS,getName());
 		}
 	}
-//	public void setReceiveEnabled(boolean receiveEnabled) {this.receiveEnabled = receiveEnabled;}
 	public void setBackground(int b)  { this.background = b; }
 	// Find the generic signal anchor and set its "hidden" property
 	public void setSignalAnchorDisplayed(boolean flag) {
@@ -563,7 +559,6 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 				changeConnectorType(conType);
 			}
 		}
-		
 	}
 
 	public ConnectionType determineDataTypeFromTagType(DataType type) {

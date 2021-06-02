@@ -59,16 +59,18 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ils.block.Input;
-import com.ils.block.Output;
-import com.ils.block.SinkConnection;
-import com.ils.block.SourceConnection;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.BusinessRules;
 import com.ils.blt.common.DiagramState;
+import com.ils.blt.common.block.AnchorDirection;
+import com.ils.blt.common.block.AnchorPrototype;
+import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockConstants;
+import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
+import com.ils.blt.common.block.BlockStyle;
+import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlock;
@@ -710,31 +712,84 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 							ProcessBlockView block = null;
 							TagPath tp = tnode.getTagPath();
 							boolean isStandardFolder = BusinessRules.isStandardConnectionsFolder(tp);
+							BlockDescriptor desc = new BlockDescriptor();
 							// Sinks to right,sources to the left
-							if (dropx < thewidth / 2) {
+							if (dropx < thewidth / 2) {	
 								if( isStandardFolder ) {
-									SourceConnection source = new SourceConnection();
-									block = new ProcessBlockView(source.getBlockPrototype().getBlockDescriptor());
+									desc.setBlockClass("com.ils.blt.SourceConnection");
+									desc.setStyle(BlockStyle.ARROW);
+									desc.setPreferredHeight(40);
+									desc.setPreferredWidth(50);
+									desc.setBackground(new Color(127,127,127).getRGB()); // Dark gray
+									desc.setCtypeEditable(true);
+									block = new ProcessBlockView(desc);
 									block.setName(nameFromTagTree(tnode));
 								}
 								else {
-									Input input = new Input();
-									block = new ProcessBlockView(input.getBlockPrototype().getBlockDescriptor());
+									desc.setBlockClass("com.ls.blt.Input");
+									desc.setStyle(BlockStyle.ARROW);
+									desc.setPreferredHeight(46);
+									desc.setPreferredWidth(60);
+									desc.setBackground(Color.cyan.getRGB());
+									desc.setCtypeEditable(true);
+									block = new ProcessBlockView(desc);
 									block.setName(enforceUniqueName(nameFromTagTree(tnode),diagram));
 								}
+								// Define a single output
+								AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.ANY);
+								block.addAnchor(output);
+								// Properties are the same for Inputs and Sources
+								// This property causes the engine to start a subscription.
+								BlockProperty tagPathProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH,tnode.getTagPath(),PropertyType.OBJECT,true);
+								tagPathProperty.setBinding(tnode.getName());
+								tagPathProperty.setBindingType(BindingType.TAG_READ);
+								block.getProperties().add(tagPathProperty);
+								
+								BlockProperty valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,"",PropertyType.OBJECT,false);
+								valueProperty.setBindingType(BindingType.ENGINE);
+								block.getProperties().add(valueProperty);
 							} 
 							else {
 								if( isStandardFolder ) {
-									SinkConnection sink = new SinkConnection();
-									block = new ProcessBlockView(sink.getBlockPrototype().getBlockDescriptor());
+									desc.setBlockClass("com.ils.blt.SinkConnection");
+									desc.setPreferredHeight(40);
+									desc.setPreferredWidth(50);    // Leave 6-pixel inset on top and bottom
+									desc.setBackground(new Color(127,127,127).getRGB()); // Dark gray
+									desc.setStyle(BlockStyle.ARROW);
+									desc.setCtypeEditable(true);
+									block = new ProcessBlockView(desc);
 									block.setName(nameFromTagTree(tnode));
+									// Define a single output
+									AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.ANY);
+									block.addAnchor(output);
 								}
 								else {
-									Output output = new Output();
-									block = new ProcessBlockView(output.getBlockPrototype().getBlockDescriptor());
+									desc.setBlockClass("com.ils.blt.Output");
+									desc.setStyle(BlockStyle.ARROW);
+									desc.setPreferredHeight(46);
+									desc.setPreferredWidth(60);
+									desc.setBackground(Color.cyan.getRGB());
+									desc.setCtypeEditable(true);
+									block = new ProcessBlockView(desc);
 									block.setName(enforceUniqueName(nameFromTagTree(tnode),diagram));
+
 								}
+								// Define a single input
+								AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.ANY);
+								input.setIsMultiple(false);
+								block.addAnchor(input);
+								// Properties are the same for Outputs and Sinks
+								BlockProperty pathProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH,"",PropertyType.STRING,true);
+								pathProperty.setBindingType(BindingType.TAG_WRITE);
+								pathProperty.setBinding("");
+								block.getProperties().add( pathProperty);
+								BlockProperty valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,"",PropertyType.OBJECT,false);
+								valueProperty.setBindingType(BindingType.ENGINE);
+								block.getProperties().add(valueProperty);
 							}
+							// Define a property that holds the size of the activity buffer. This applies to all blocks.
+							BlockProperty bufferSize = new BlockProperty(BlockConstants.BLOCK_PROPERTY_ACTIVITY_BUFFER_SIZE,new Integer(10),PropertyType.INTEGER,true);
+							block.getProperties().add(bufferSize);
 							
 							DesignPanel panel = getSelectedDesignPanel();
 							BlockDesignableContainer bdc = (BlockDesignableContainer) panel.getDesignable();
