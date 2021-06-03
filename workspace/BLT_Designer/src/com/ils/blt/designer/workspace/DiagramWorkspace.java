@@ -1200,7 +1200,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		else {
 			ProjectResource res = context.getProject().getResource(resourceId);	
 			String json = new String(res.getData());
-			logger.infof("%s: open - diagram = %s",CLSS,json);
+			logger.tracef("%s: open - diagram = %s",CLSS,json);
 			SerializableDiagram sd = null;
 			ObjectMapper mapper = new ObjectMapper();
 			mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);  //
@@ -1212,7 +1212,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				sd.setName(res.getName());
 				sd.setState(statusManager.getResourceState(resourceId));
 				for(SerializableBlock sb:sd.getBlocks()) {
-					logger.infof("%s: %s block, name = %s",CLSS,sb.getClassName(),sb.getName());
+					logger.debugf("%s: %s block, name = %s",CLSS,sb.getClassName(),sb.getName());
 				}
 			} 
 			catch (JsonParseException jpe) {
