@@ -172,7 +172,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 				properties.add(bp);
 			} 
 		}
-		// this.setName(sb.getName()); // There should already be a name property
+		this.setName(sb.getName());
 		this.location = new Point(sb.getX(),sb.getY());
 		log.debugf("%s: %s created %s %s (%s) view from serializable block", CLSS, sb.getName(),className, sb.getId().toString(),style.toString());
 	}
@@ -305,8 +305,8 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 		return background;
 	}
 	
+	// Remove xom from th class name
 	public synchronized String getClassName() { 
-//		removeXomFromBlockName();
 		String ret = new String(className);
 		if(ret.toLowerCase().startsWith("xom.block.")) {
 			ret = "ils." + ret.substring(4);
@@ -367,7 +367,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 		}
 		return result;
 	}
-	public String getName() { return this.className; }
+	public String getName() { return this.name; }
 	public int getPreferredHeight() {return preferredHeight;}
 	public int getPreferredWidth() {return preferredWidth;}
 	public String getBackgroundColor() {return backgroundColor;}

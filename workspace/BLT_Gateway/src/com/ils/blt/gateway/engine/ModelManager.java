@@ -1174,7 +1174,7 @@ public class ModelManager implements ProjectListener  {
 		SerializableDiagram sd = null;
 		try{
 			String json = new String(serializedObj);
-			log.infof("%s.deserializeDiagramResource: json = %s",CLSS,json);
+			log.tracef("%s.deserializeDiagramResource: json = %s",CLSS,json);
 			ObjectMapper mapper = new ObjectMapper();
 			mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 			mapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL,true);
@@ -1183,8 +1183,10 @@ public class ModelManager implements ProjectListener  {
 				sd.setName(res.getName());       // Name comes from the resource
 				log.debugf("%s.deserializeDiagramResource: Successfully deserialized diagram %s",CLSS,sd.getName());
 				sd.setResourceId(res.getResourceId());
-				for(SerializableBlock sb:sd.getBlocks()) {
-					log.infof("%s: %s block, name = %s",CLSS,sb.getClassName(),sb.getName());
+				if( DEBUG ) {
+					for(SerializableBlock sb:sd.getBlocks()) {
+						log.infof("%s: %s block, name = %s",CLSS,sb.getClassName(),sb.getName());
+					}
 				}
 			}
 			else {
