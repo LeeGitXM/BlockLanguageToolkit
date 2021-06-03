@@ -71,6 +71,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	private long projectId = -1;    // This is the global project
 	private GeneralPurposeDataContainer auxiliaryData = new GeneralPurposeDataContainer();
 	protected QualifiedValue lastValue = null;  // Most recently propagated value.
+	protected String name = ".";
 	protected String statusText;
 	protected PalettePrototype prototype = null;
 	protected boolean delayStart = false;
@@ -116,7 +117,6 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		this.controller = ec;
 		this.blockId = block;
 		this.parentId = parent;
-		log.infof("...done constructing!");
 	}
 	
 	/**
@@ -127,7 +127,6 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 * If you update any of these block properties, make sure to add version check and update code into the start() method. 
 	 */
 	private void initialize() {
-		log.infof("Initializing...");
 		this.state = TruthValue.UNSET;
 		AnchorPrototype sig = new AnchorPrototype(BlockConstants.SIGNAL_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.SIGNAL);
 		sig.setHidden(true);
@@ -136,8 +135,6 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		// Define a property that holds the size of the activity buffer. This applies to all blocks.
 		BlockProperty bufferSize = new BlockProperty(BlockConstants.BLOCK_PROPERTY_ACTIVITY_BUFFER_SIZE,new Integer(activities.getBufferSize()),PropertyType.INTEGER,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_ACTIVITY_BUFFER_SIZE, bufferSize);
-		
-		log.infof("...done initializing!");
 	}
 	
 
@@ -243,7 +240,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		return explanation;
 	}
 	@Override
-	public String getName() {return getProperty(BlockConstants.BLOCK_PROPERTY_NAME).getValue().toString();}
+	public String getName() {return this.name;}
 	@Override
 	public long getProjectId() {return projectId;}
 	@Override
@@ -267,11 +264,8 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	}
 	// Set the name in the name BlockProperty. Name is not a separate attribute
 	@Override
-	public void setName(String lbl) {
-		log.infof("Over here setting the name to %s", lbl);
-		log.infof("     ...available properties are: %s", getPropertyNames().toString()); 
-		BlockProperty nameProperty = getProperty(BlockConstants.BLOCK_PROPERTY_NAME);
-		nameProperty.setValue(lbl);   // Notifies change listeners
+	public void setName(String lbl) { 
+		this.name = lbl;
 	}
 	@Override
 	public String getStatusText() {return statusText;}

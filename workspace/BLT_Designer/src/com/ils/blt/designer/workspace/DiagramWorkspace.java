@@ -716,7 +716,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 							// Sinks to right,sources to the left
 							if (dropx < thewidth / 2) {	
 								if( isStandardFolder ) {
-									desc.setBlockClass("com.ils.blt.SourceConnection");
+									desc.setBlockClass("com.ils.block.SourceConnection");
 									desc.setStyle(BlockStyle.ARROW);
 									desc.setPreferredHeight(40);
 									desc.setPreferredWidth(50);
@@ -726,7 +726,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 									block.setName(nameFromTagTree(tnode));
 								}
 								else {
-									desc.setBlockClass("com.ls.blt.Input");
+									desc.setBlockClass("com.ils.block.Input");
 									desc.setStyle(BlockStyle.ARROW);
 									desc.setPreferredHeight(46);
 									desc.setPreferredWidth(60);
@@ -751,7 +751,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 							} 
 							else {
 								if( isStandardFolder ) {
-									desc.setBlockClass("com.ils.blt.SinkConnection");
+									desc.setBlockClass("com.ils.block.SinkConnection");
 									desc.setPreferredHeight(40);
 									desc.setPreferredWidth(50);    // Leave 6-pixel inset on top and bottom
 									desc.setBackground(new Color(127,127,127).getRGB()); // Dark gray
@@ -764,7 +764,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 									block.addAnchor(output);
 								}
 								else {
-									desc.setBlockClass("com.ils.blt.Output");
+									desc.setBlockClass("com.ils.block.Output");
 									desc.setStyle(BlockStyle.ARROW);
 									desc.setPreferredHeight(46);
 									desc.setPreferredWidth(60);
@@ -1200,17 +1200,20 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		else {
 			ProjectResource res = context.getProject().getResource(resourceId);	
 			String json = new String(res.getData());
-			logger.debugf("%s: open - diagram = %s",CLSS,json);
+			logger.infof("%s: open - diagram = %s",CLSS,json);
 			SerializableDiagram sd = null;
 			ObjectMapper mapper = new ObjectMapper();
-			mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-			mapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL,true);
+			mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);  //
+			mapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL,true); // Allows obsolete enum values to pass
 			try {
 				sd = mapper.readValue(json,SerializableDiagram.class);
 				// Synchronize names as the resource may have been re-named and/or
 				// state changed since it was serialized
 				sd.setName(res.getName());
 				sd.setState(statusManager.getResourceState(resourceId));
+				for(SerializableBlock sb:sd.getBlocks()) {
+					logger.infof("%s: %s block, name = %s",CLSS,sb.getClassName(),sb.getName());
+				}
 			} 
 			catch (JsonParseException jpe) {
 				logger.warnf("%s: open parse exception (%s)",CLSS,jpe.getLocalizedMessage());

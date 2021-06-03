@@ -86,7 +86,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		this.watermark = diagram.getWatermark();
 		this.context = context;
 		suppressStateChangeNotification = true;
-		synchronized(this) {
+		synchronized (diagram) {
 			for( SerializableBlock sb:diagram.getBlocks()) {
 				ProcessBlockView pbv = new ProcessBlockView(sb);
 				blockMap.put(sb.getId(), pbv);

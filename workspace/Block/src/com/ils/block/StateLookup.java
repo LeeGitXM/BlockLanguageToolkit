@@ -125,7 +125,7 @@ public class StateLookup extends AbstractProcessBlock implements ProcessBlock {
 			String[] keyvalues = nameValues.split(",");
 			for(String key:keyvalues ) {
 				String[] nv = key.split(":");
-				String name = nv[0].trim().toUpperCase();
+				String nam = nv[0].trim().toUpperCase();
 				TruthValue tv = TruthValue.UNKNOWN;
 				if( nv.length>1) {
 					String text = nv[1].trim().toUpperCase();
@@ -134,7 +134,7 @@ public class StateLookup extends AbstractProcessBlock implements ProcessBlock {
 					}
 					catch(IllegalStateException ise) {}
 				}
-				lookupMap.put(name,tv);
+				lookupMap.put(nam,tv);
 			}
 			TruthValue other = lookupMap.get(STATE_OTHER);
 			if( other==null ) {

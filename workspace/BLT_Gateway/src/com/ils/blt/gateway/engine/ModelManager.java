@@ -23,6 +23,7 @@ import com.ils.blt.common.script.Script;
 import com.ils.blt.common.script.ScriptConstants;
 import com.ils.blt.common.script.ScriptExtensionManager;
 import com.ils.blt.common.serializable.SerializableApplication;
+import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.SerializableFamily;
@@ -1173,7 +1174,7 @@ public class ModelManager implements ProjectListener  {
 		SerializableDiagram sd = null;
 		try{
 			String json = new String(serializedObj);
-			log.debugf("%s.deserializeDiagramResource: json = %s",CLSS,json);
+			log.infof("%s.deserializeDiagramResource: json = %s",CLSS,json);
 			ObjectMapper mapper = new ObjectMapper();
 			mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 			mapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL,true);
@@ -1182,6 +1183,9 @@ public class ModelManager implements ProjectListener  {
 				sd.setName(res.getName());       // Name comes from the resource
 				log.debugf("%s.deserializeDiagramResource: Successfully deserialized diagram %s",CLSS,sd.getName());
 				sd.setResourceId(res.getResourceId());
+				for(SerializableBlock sb:sd.getBlocks()) {
+					log.infof("%s: %s block, name = %s",CLSS,sb.getClassName(),sb.getName());
+				}
 			}
 			else {
 				log.warnf("%s.deserializeDiagramResource: deserialization failed",CLSS);

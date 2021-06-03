@@ -1,5 +1,5 @@
 /**
- *   (c) 2012-2015  ILS Automation. All rights reserved.
+ *   (c) 2012-2021  ILS Automation. All rights reserved.
  *  
  *   The block controller is designed to be called from the client
  *   via RPC. All methods must be thread safe,
@@ -21,8 +21,8 @@ import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.gateway.proxy.ProxyHandler;
-import com.inductiveautomation.ignition.common.util.LogUtil;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
+import com.ils.common.log.ILSLogger;
+import com.ils.common.log.LogMaker;
 
 
 
@@ -30,8 +30,8 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  *  The block factory creates a concrete process block from a serializable version.
  */
 public class BlockFactory  {
-	private final static String TAG = "BlockFactory";
-	private final LoggerEx log = LogUtil.getLogger(BlockFactory.class.getPackage().getName());
+	private final static String CLSS = "BlockFactory";
+	private final ILSLogger log = LogMaker.getLogger(BlockFactory.class.getPackage().getName());
 	private static BlockFactory instance = null;
 	private final BlockExecutionController controller = BlockExecutionController.getInstance();
 	private final ProxyHandler proxyHandler;
@@ -64,33 +64,37 @@ public class BlockFactory  {
 	 */
 	public ProcessBlock blockFromSerializable(UUID parentId,SerializableBlock sb,long projectId) {
 		String className = sb.getClassName();
+		// Handle python class name changes for some older versions
+		if( className.startsWith("emc.block")) {
+			className = className.replace("emc", "ils");
+		}
+		else if( className.startsWith("xom.block")) {
+			className = className.replace("xom", "ils");
+		}
 		UUID blockId = sb.getId();
-		log.infof("%s.blockFromSerializable: Create instance of %s (%s)",TAG,className,blockId.toString());   // Should be updated
+		log.infof("%s.blockFromSerializable: Create instance of %s (%s)",CLSS,className,blockId.toString());   // Should be updated
 		ProcessBlock block = null;
 		// If we can't create a Java class, try python ...
 		try {
 			Class<?> clss = Class.forName(className);
-			log.infof("A");
 			Constructor<?> ctor = clss.getDeclaredConstructor(new Class[] {ExecutionController.class,UUID.class,UUID.class});
-			log.infof("B");
 			block = (ProcessBlock)ctor.newInstance(BlockExecutionController.getInstance(),parentId,sb.getId());
-			log.infof("C");
 		}
 		catch(InvocationTargetException ite ) {
-			log.warnf("%s.blockFromSerializable %s: Invocation failed (%s)",TAG,className,ite.getMessage()); 
+			log.warnf("%s.blockFromSerializable %s: Invocation failed (%s)",CLSS,className,ite.getMessage()); 
 		}
 		catch(NoSuchMethodException nsme ) {
-			log.warnf("%s.blockFromSerializable %s: Three argument constructor not found (%s)",TAG,className,nsme.getMessage()); 
+			log.warnf("%s.blockFromSerializable %s: Three argument constructor not found (%s)",CLSS,className,nsme.getMessage()); 
 		}
 		catch( ClassNotFoundException cnf ) {
-			log.debugf("%s.blockFromSerializable: No java class %s ... %s trying Python",TAG,className,sb.getName()); 
+			log.debugf("%s.blockFromSerializable: No java class %s ... %s trying Python",CLSS,className,sb.getName()); 
 			block = proxyHandler.createBlockInstance(className,parentId,blockId,projectId,sb.getName());
 		}
 		catch( InstantiationException ie ) {
-			log.warnf("%s.blockFromSerializable: Error instantiating %s (%s)",TAG,className,ie.getLocalizedMessage()); 
+			log.warnf("%s.blockFromSerializable: Error instantiating %s (%s)",CLSS,className,ie.getLocalizedMessage()); 
 		}
 		catch( IllegalAccessException iae ) {
-			log.warnf("%s.blockFromSerializable: Security exception creating %s (%s)",TAG,className,iae.getLocalizedMessage()); 
+			log.warnf("%s.blockFromSerializable: Security exception creating %s (%s)",CLSS,className,iae.getLocalizedMessage()); 
 		}
 
 		if( block!=null ) {
@@ -129,7 +133,7 @@ public class BlockFactory  {
 		}
 		else {
 			// A "Note" has no anchors. Others initialize anchor points themselves.
-			log.infof("%s.updateBlockFromSerializable: No anchors found in process block",TAG);
+			log.infof("%s.updateBlockFromSerializable: No anchors found in process block",CLSS);
 		}
 		
 		log.infof("setting properties...");
@@ -175,13 +179,13 @@ public class BlockFactory  {
 					}
 				}
 				else {
-					log.warnf("%s: updateBlockFromSerializable: Property %s not found in process block %s",TAG,bp.getName(),pb.getName());
+					log.warnf("%s: updateBlockFromSerializable: Property %s not found in process block %s",CLSS,bp.getName(),pb.getName());
 					log.warnf("     available names are: %s",pb.getPropertyNames().toString()); 
 				}
 			}
 		}
 		else {
-			log.errorf("%s.updateBlockFromSerializable: No properties found in process block",TAG);
+			log.errorf("%s.updateBlockFromSerializable: No properties found in process block",CLSS);
 		}
 		log.infof("...done setting properties!");
 		// Update Aux data
