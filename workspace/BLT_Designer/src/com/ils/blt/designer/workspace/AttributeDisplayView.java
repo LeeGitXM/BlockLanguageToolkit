@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.ils.blt.common.block.AttributeDisplay;
+import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.notification.NotificationChangeListener;
 import com.ils.blt.common.notification.NotificationKey;
 import com.ils.blt.designer.NotificationHandler;
@@ -33,12 +34,12 @@ public class AttributeDisplayView extends AbstractBlock implements NotificationC
 	private final ProcessBlockView block;
 	private final String propertyName;
 	private final UUID uuid;
-	private int preferredHeight = 0;              // Size the view to "natural" size
-	private int preferredWidth  = 0;              // Size the view to "natural" siz
+	private int preferredHeight = BlockConstants.PREFERRED_ATTRIBUTE_HEIGHT;             // Size the view to "natural" size
+	private int preferredWidth  = BlockConstants.PREFERRED_ATTRIBUTE_WIDTH;              // Size the view to "natural" siz
 	private int offsetX;
 	private int offsetY;
-	private int height;
-	private int width;
+	private int height = BlockConstants.DEFAULT_ATTRIBUTE_HEIGHT;
+	private int width  = BlockConstants.DEFAULT_ATTRIBUTE_WIDTH;
 	private Point location;
 	private AbstractUIView ui = null;
 	
@@ -49,7 +50,7 @@ public class AttributeDisplayView extends AbstractBlock implements NotificationC
 		this.block = blk;
 		this.propertyName = name;
 		this.uuid = UUID.randomUUID();
-		this.location = new Point(0,0);
+		this.location = new Point(block.getLocation().x + offsetX,block.getLocation().y + offsetY);
 		this.ui = new AttributeDisplayUIView(this);
 	}
 	
@@ -61,6 +62,8 @@ public class AttributeDisplayView extends AbstractBlock implements NotificationC
 		this.propertyName = ad.getPropertyName();
 		this.uuid = ad.getUUID();
 		this.location = new Point(ad.getX(),ad.getY());
+		this.offsetX = block.getLocation().x - location.x;
+		this.offsetY = block.getLocation().y - location.y;
 		this.ui = new AttributeDisplayUIView(this);
 	}
 		
@@ -144,15 +147,12 @@ public class AttributeDisplayView extends AbstractBlock implements NotificationC
 	@Override
 	public void nameChange(String name) {
 	}
+	// Repaint when the value changes
 	@Override
 	public void valueChange(final QualifiedValue value) {
-		//log.infof("%s.valueChange: - %s new value (%s)",CLSS,property.getName(),value.getValue().toString());
-		// updateUI
+
 	}
 	@Override
 	public void watermarkChange(String value) {
 	}
-
-
-	
 }

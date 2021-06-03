@@ -110,6 +110,10 @@ public interface BlockConstants   {
 	// Default attribute offsets
 	public static final int DEFAULT_ATTRIBUTE_OFFSET_X     = 30;
 	public static final int DEFAULT_ATTRIBUTE_OFFSET_Y     = 75;
+	public static final int DEFAULT_ATTRIBUTE_HEIGHT     = 30;
+	public static final int DEFAULT_ATTRIBUTE_WIDTH      = 180;
+	public static final int PREFERRED_ATTRIBUTE_HEIGHT     = 30;
+	public static final int PREFERRED_ATTRIBUTE_WIDTH      = 180;
 	// Block filler colors
 	public static final int BLOCK_BACKGROUND_BLUE_GRAY      = (new Color(143,172,183)).getRGB();
 	public static final int BLOCK_BACKGROUND_GRAYISH        = (new Color(208,215,220)).getRGB();

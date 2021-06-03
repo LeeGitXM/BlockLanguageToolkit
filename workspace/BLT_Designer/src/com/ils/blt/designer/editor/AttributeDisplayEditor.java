@@ -8,7 +8,6 @@ import java.util.List;
 
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.DiagramState;
-import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.designer.workspace.AttributeDisplayView;
 import com.ils.blt.designer.workspace.DiagramWorkspace;

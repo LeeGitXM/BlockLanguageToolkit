@@ -24,6 +24,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
@@ -36,6 +37,7 @@ import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.AttributeDisplayView;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
+import com.ils.blt.designer.workspace.WorkspaceRepainter;
 import com.ils.common.log.ILSLogger;
 import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.common.BundleUtil;
@@ -44,7 +46,8 @@ import net.miginfocom.swing.MigLayout;
 
 /**
  * This is a properties list viewer to allow users to select what block
- * properties to display on the workspace
+ * properties to display on the workspace. The attribute "Name" is not
+ * strictly a property of the block but is treated as one.
  */
 
 public class AttributeDisplaySelector extends JDialog implements TableModelListener {
@@ -121,14 +124,14 @@ public class AttributeDisplaySelector extends JDialog implements TableModelListe
 			if (column == 0) {
 				TableModel model = (TableModel) e.getSource();
 				String propName = (String) model.getValueAt(row, 1);
-				BlockProperty property = block.getProperty(propName);
 				boolean newValue = ((Boolean) model.getValueAt(row, column)).booleanValue();
 				
-				AttributeDisplayView pad = findDisplay(diagram,block,property);
+				AttributeDisplayView pad = findDisplay(diagram,block,propName);
 				// CASE I - checked box, display does not exist. Create it.
+				// Add to diagram
 				if ( newValue && (pad==null) ) {
-					pad = new AttributeDisplayView(block,property.getName());
-					// TODO: Add display to workspace
+					pad = new AttributeDisplayView(block,propName);
+					diagram.addDisplayView(pad);
 					diagram.setDirty(true);
 				}
 				// CASE II - checked box, but display already exists. Do nothing, just use it.
@@ -141,6 +144,7 @@ public class AttributeDisplaySelector extends JDialog implements TableModelListe
 				// CASE IV - unchecked box and there is no display. Do nothing.
 				else  {
 				}
+				SwingUtilities.invokeLater(new WorkspaceRepainter());
 			}
 		}
 	}
@@ -164,11 +168,18 @@ public class AttributeDisplaySelector extends JDialog implements TableModelListe
 			}
 		};
 		dataModel.addTableModelListener(this);
+		
+		// First add "name". It is always present as a member of the block, not property
+		AttributeDisplayView display = findDisplay(diagram,block,"Name");
+		Object[] row = new Object[2];
+		row[0] = new Boolean(display!=null);
+		row[1] = "Name";
+		dataModel.addRow(row);
 
 		// For each block property, see if there is a display stored in the diagram.
 		for (BlockProperty prop : block.getProperties()) {
-			AttributeDisplayView display = findDisplay(diagram,block,prop);
-			Object[] row = new Object[2];
+			display = findDisplay(diagram,block,prop.getName());
+			row = new Object[2];
 			row[0] = new Boolean(display!=null);
 			row[1] = prop.getName();
 			dataModel.addRow(row);
@@ -205,11 +216,11 @@ public class AttributeDisplaySelector extends JDialog implements TableModelListe
 	 * @param name
 	 * @return the attribute display for the given block and property
 	 */
-	private AttributeDisplayView findDisplay(ProcessDiagramView dia, ProcessBlockView blk,BlockProperty prop) {
+	private AttributeDisplayView findDisplay(ProcessDiagramView dia, ProcessBlockView blk,String propName) {
 		AttributeDisplayView display = null;
 		for(AttributeDisplayView pad:dia.getAttributeDisplays()) {
 			if( pad.getBlock().getId().equals(blk.getId()) &&
-				pad.getPropertyName().equals(prop.getName()) ) {
+				pad.getPropertyName().equalsIgnoreCase(propName) ) {
 				display = pad;
 				break;
 			}
