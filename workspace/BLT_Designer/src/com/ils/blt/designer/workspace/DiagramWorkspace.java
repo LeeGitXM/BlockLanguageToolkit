@@ -811,10 +811,10 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 										property.setBinding(tnode.getTagPath().toStringFull());}
 										block.modifyConnectionForTagChange(property, type);
 								}
-								logger.infof("%s.handleDrop: dropped %s",CLSS,block.getClass().getName());
+								logger.infof("%s.handleDrop: dropped %s",CLSS,block.getClassName());
 							}
 							else {
-								logger.infof("%s.handleDrop: drop of %s out-of-bounds",CLSS,block.getClass().getName());
+								logger.infof("%s.handleDrop: drop of %s out-of-bounds",CLSS,block.getClassName());
 							}
 						}
 					}

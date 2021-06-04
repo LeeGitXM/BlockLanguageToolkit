@@ -42,7 +42,7 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  * Note that the callback class exposes public members instead of methods. 
  */
 public class Callback {
-	private final static String TAG = "Callback";
+	private final static String CLSS = "Callback";
 	protected final LoggerEx log;
 	private PyCode code;
 	protected String module;
@@ -68,12 +68,12 @@ public class Callback {
 	public boolean compileScript() {
 		if( code !=null ) return true;   // Already compiled               
 		String script = String.format("import %s;%s.%s(%s)",pythonPackage,pythonPackage,module,localVariableList);
-		log.debugf("%s.compileScript: Compiling ... %s",TAG,script);
+		log.debugf("%s.compileScript: Compiling ... %s",CLSS,script);
 		try {
 			code = Py.compile_flags(script,pythonPackage,CompileMode.exec,CompilerFlags.getCompilerFlags());
 	     }
 		catch(Exception ex) {
-			log.errorf("%s.compileScript: Failed to compile script \n%s",TAG,script);
+			log.errorf("%s.compileScript: Failed to compile script \n%s",CLSS,script);
 		}
 		return code!=null;
 	}
@@ -83,17 +83,17 @@ public class Callback {
 	public void execute(ScriptManager scriptManager) {
 		if( localsMap == null ) throw new IllegalArgumentException("Attempt to execute with uninitialized locals map.");
 		String script = pythonPackage+"."+module;
-		log.tracef("%s.execute: Running callback script ...(%s)",TAG,script);
+		log.tracef("%s.execute: Running callback script ...(%s)",CLSS,script);
 		try {
 			scriptManager.runCode(code,localsMap);
 		}
 		catch( JythonExecException jee) {
-			log.error(String.format("%s.execute: JythonExecException executing python %s(%s)",TAG,script,localVariableList),jee);
+			log.error(String.format("%s.execute: JythonExecException executing python %s(%s)",CLSS,script,localVariableList),jee);
 		}
 		catch(Exception ex) {
-			log.error(String.format("%s.execute: Error executing python %s(%s) (%s)",TAG,script,localVariableList,ex.getMessage()+")"),ex);
+			log.error(String.format("%s.execute: Error executing python %s(%s) (%s)",CLSS,script,localVariableList,ex.getMessage()+")"),ex);
 		}
-		log.tracef("%s: Completed callback script.",TAG);
+		log.tracef("%s: Completed callback script.",CLSS);
 		localsMap = null;
 	}
 	
@@ -114,8 +114,10 @@ public class Callback {
 	 *        upon which this is executed.
 	 */
 	public void initializeLocalsMap(ScriptManager scriptManager) {
-		localsMap = scriptManager.createLocalsMap();
-		//else log.errorf("%s.initializeLocalsMap: ERROR script manager is null", TAG);;
+		if(scriptManager!=null ) {
+			localsMap = scriptManager.createLocalsMap();
+		}
+		else log.errorf("%s.initializeLocalsMap: ERROR script manager is null", CLSS);
 	}
 	/**
 	 * Setting a variable value creates a locals map. We need to set the
@@ -127,7 +129,7 @@ public class Callback {
 		if( localsMap == null ) throw new IllegalArgumentException("Locals map must be initialized before variables can be added.");
 
 		localsMap.__setitem__(localVariables[index],value);
-		log.tracef("%s.setLocalVariable: %s to %s",TAG,localVariables[index],value.toString());
+		log.tracef("%s.setLocalVariable: %s to %s",CLSS,localVariables[index],value.toString());
 	}
 }
 
