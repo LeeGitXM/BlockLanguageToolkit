@@ -87,12 +87,12 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	
 	/**
 	 * On a get, we return the locally cached property.
-	 * @param name the property (attribute) name.
+	 * @param propName the property (attribute) name.
 	 * @return a particular property given its name
 	 */
 	@Override
-	public BlockProperty getProperty(String name) {
-		return super.getProperty(name);
+	public BlockProperty getProperty(String propName) {
+		return super.getProperty(propName);
 	}
 	
 	/**
