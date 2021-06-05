@@ -164,23 +164,21 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		this.appRequestHandler = new ApplicationRequestHandler();
 	}
 	
-	/** Get the current block property values from the Gateway. 
+	/** 
+	 * Get the current block property values from the Gateway. 
 	 * If the block does not have a Gateway counterpart (e.g. diagram is dirty), we'll get the 
 	 * default property list for the block class. 
 	 * 
 	 * IMPORTANT: Always do this before block is displayed.
 	 */
 	public void initBlockProperties(ProcessBlockView block) {
-		Collection<BlockProperty> propertyList;
-		propertyList = new ArrayList<BlockProperty>();
 		if( appRequestHandler!=null ) {
 			List<BlockProperty> properties = appRequestHandler.getBlockProperties(block.getClassName(),context.getProject().getId(),resourceId,block.getId());
-			for(BlockProperty property:properties) {
-				propertyList.add(property);
+			for(BlockProperty bp:properties) {
+				block.setProperty(bp);
 			}
+			log.tracef("%s.initBlockProperties - initialize property list for %s (%d properties)",CLSS,block.getId().toString(),properties.size());
 		}
-		log.tracef("%s.initBlockProperties - initialize property list for %s (%d properties)",CLSS,block.getId().toString(),propertyList.size());
-		//block.setProperties(propertyList);
 	}
 
 	/**

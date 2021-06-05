@@ -785,7 +785,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 								//block.getProperties().add( pathProperty);
 								BlockProperty valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,"",PropertyType.OBJECT,false);
 								valueProperty.setBindingType(BindingType.ENGINE);
-								block.getProperties().add(valueProperty);
+								//block.getProperties().add(valueProperty);
 							}
 							
 							AnchorPrototype signal = new AnchorPrototype(BlockConstants.SIGNAL_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.SIGNAL);
@@ -793,7 +793,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 							
 							// Define a property that holds the size of the activity buffer. This applies to all blocks.
 							BlockProperty bufferSize = new BlockProperty(BlockConstants.BLOCK_PROPERTY_ACTIVITY_BUFFER_SIZE,new Integer(10),PropertyType.INTEGER,true);
-							block.getProperties().add(bufferSize);
+							block.setProperty(bufferSize);
 							
 							DesignPanel panel = getSelectedDesignPanel();
 							BlockDesignableContainer bdc = (BlockDesignableContainer) panel.getDesignable();
