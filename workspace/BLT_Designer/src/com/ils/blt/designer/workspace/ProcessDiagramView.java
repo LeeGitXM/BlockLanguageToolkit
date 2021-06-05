@@ -571,7 +571,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 				if( prop.getBindingType().equals(BindingType.ENGINE)) {
 					String key = NotificationKey.keyForProperty(block.getId().toString(), prop.getName());
 					handler.initializePropertyValueNotification(key,new BasicQualifiedValue(prop.getValue()));
-					handler.addNotificationChangeListener(key,CLSS, prop);
+					//handler.addNotificationChangeListener(key,CLSS, prop);
 					prop.addChangeListener(block);
 				}
 			}

@@ -27,7 +27,7 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  * use the concrete SerializedQualifiedValue class rather than the interface.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class BlockProperty implements NotificationChangeListener {
+public class BlockProperty  {
 	private static final String TAG = "BlockProperty";
 	private static final String COMMA = ",";
 	private static LoggerEx log = LogUtil.getLogger(PalettePrototype.class.getPackage().getName());
@@ -190,50 +190,4 @@ public class BlockProperty implements NotificationChangeListener {
 			return String.format("%s (%s)=%s",getName(),getBindingType().name(),(binding==null?"null":binding));
 		}
 	}
-	// ===================================== Notification Change Listener =======================================
-	@Override
-	public void diagramStateChange(long resId, String state) {}
-	/**
-	 * Update a binding based on a push notification. Note that this
-	 * does NOT trigger change listeners.
-	 */
-	@Override
-	public void bindingChange(String bindTo) {
-		log.tracef("%s(%d).bindingChange %s now %s",TAG,hashCode(),getName(),bindTo);
-		try {
-			setBinding(bindTo);
-		}
-		catch(ConcurrentModificationException cme) {
-			// This is a possibility if the property listeners are also
-			// notification listeners. What a tangled web we weave.
-			log.infof("%s.bindingChange of %s to %s threw ConcurrentModificationException (ignored)",TAG,getName(),bindTo);
-		}
-	}
-	@Override
-	public void nameChange(String val) {}
-	/**
-	 * Update a value based on a push notification. Note that this
-	 * triggers any change listeners on this property. These
-	 * notifications are currently NOT on the UI thread.
-	 */
-	@Override
-	public synchronized void valueChange(QualifiedValue val) {
-		//log.infof("%s(%d).valueChange %s now %s",TAG,hashCode(),getName(),val.getValue().toString());
-		if( val!=null && val.getValue()!=null) {
-			try {
-				setValue(val.getValue());
-			}
-			catch(ConcurrentModificationException cme) {
-				// This is a possibility if the property listeners are also
-				// notification listeners. What a tangled web we weave.
-				log.info(String.format("%s.valueChange of %s to %s threw ConcurrentModificationException (ignored)",
-						TAG,getName(),val.getValue().toString()),cme);
-			}
-		}
-	}
-	@Override
-	public void watermarkChange(String val) {}
-
-
-
 }
