@@ -80,7 +80,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 	private int preferredHeight = 0;              // Size the view to "natural" size
 	private int preferredWidth  = 0;              // Size the view to "natural" size
 	private String backgroundColor  = "GREY";
-	private Collection<BlockProperty> properties;
+	private Map<String,BlockProperty> propertyMap = new HashMap<String,BlockProperty>();
 	private TruthValue state = TruthValue.UNSET;
 	private String badgeChar = null;
 	private String statusText;                    // Auxiliary text to display
@@ -125,7 +125,6 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 			order++;
 			anchors.put(ap.getName(), pad);
 		}
-		this.properties = new ArrayList<BlockProperty>();
 		log.debugf("%s: Created %s (%s) view from descriptor (%d anchors)", CLSS, className, style.toString(),anchors.size());
 		createPseudoRandomName();
 	}
@@ -164,12 +163,12 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 				anchors.put(sa.getDisplay(),pad);
 			}
 		}
-		this.properties = new ArrayList<BlockProperty>();
 		if(sb.getProperties()!=null ) {
 			for(BlockProperty bp:sb.getProperties()) {
-				if(bp==null) continue;
-				log.debugf("%s: %s creating property %s", CLSS,sb.getName(),bp.getName());
-				properties.add(bp);
+				if( bp!=null && bp.getName()!=null ) {
+					log.debugf("%s: %s creating property %s", CLSS,sb.getName(),bp.getName());
+					propertyMap.put(bp.getName(),bp);
+				}
 			} 
 		}
 		this.setName(sb.getName());
@@ -371,7 +370,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 	public int getPreferredHeight() {return preferredHeight;}
 	public int getPreferredWidth() {return preferredWidth;}
 	public String getBackgroundColor() {return backgroundColor;}
-	public Collection<BlockProperty> getProperties() { return properties; }
+	public Collection<BlockProperty> getProperties() { return propertyMap.values(); }
 	public TruthValue getState() {return state;}
 	public String getStatusText() { return statusText; }
 	public BlockStyle getStyle() { return style; }
@@ -427,9 +426,9 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 	}
 	public void setPreferredHeight(int preferredHeight) {this.preferredHeight = preferredHeight;}
 	public void setPreferredWidth(int preferredWidth) {this.preferredWidth = preferredWidth;}
-	public void setProperties(Collection<BlockProperty> props) { 
-		if( props!=null ) {
-			this.properties = props; 
+	public void setProperty(BlockProperty prop) { 
+		if( prop!=null && prop.getName()!=null ) {
+			propertyMap.put(prop.getName(), prop);
 		}
 		else {
 			log.warnf("%s.setProperties: WARNING: attempt to set %s properties to null",CLSS,getName());

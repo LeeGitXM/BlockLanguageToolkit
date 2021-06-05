@@ -785,7 +785,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 								//block.getProperties().add( pathProperty);
 								BlockProperty valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,"",PropertyType.OBJECT,false);
 								valueProperty.setBindingType(BindingType.ENGINE);
-								//block.getProperties().add(valueProperty);
+								block.getProperties().add(valueProperty);
 							}
 							
 							AnchorPrototype signal = new AnchorPrototype(BlockConstants.SIGNAL_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.SIGNAL);

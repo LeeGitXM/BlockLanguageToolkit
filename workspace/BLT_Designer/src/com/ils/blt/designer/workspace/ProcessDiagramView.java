@@ -180,7 +180,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			}
 		}
 		log.tracef("%s.initBlockProperties - initialize property list for %s (%d properties)",CLSS,block.getId().toString(),propertyList.size());
-		block.setProperties(propertyList);
+		//block.setProperties(propertyList);
 	}
 
 	/**
