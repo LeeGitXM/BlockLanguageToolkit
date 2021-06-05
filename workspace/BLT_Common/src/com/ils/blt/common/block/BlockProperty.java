@@ -3,7 +3,6 @@ package com.ils.blt.common.block;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.ConcurrentModificationException;
 import java.util.List;
 
 import javax.swing.event.ChangeEvent;
@@ -14,10 +13,8 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ils.blt.common.notification.NotificationChangeListener;
-import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
-import com.inductiveautomation.ignition.common.util.LogUtil;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
+import com.ils.common.log.ILSLogger;
+import com.ils.common.log.LogMaker;
 
 
 
@@ -28,9 +25,10 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class BlockProperty  {
-	private static final String TAG = "BlockProperty";
+	private static final long serialVersionUID = -8851989629221127947L;
+	private static final String CLSS = "BlockProperty";
 	private static final String COMMA = ",";
-	private static LoggerEx log = LogUtil.getLogger(PalettePrototype.class.getPackage().getName());
+	private static ILSLogger log = LogMaker.getLogger(PalettePrototype.class.getPackage().getName());
 	private boolean editable;
 	private PropertyType type = PropertyType.STRING;
 	private String binding = "";
@@ -49,7 +47,7 @@ public class BlockProperty  {
 	 */
 	public BlockProperty(String name,Object val,PropertyType type,boolean canEdit) {
 		if(val==null) throw new IllegalArgumentException("null property not allowed");
-		if(val instanceof QualifiedValue) throw new IllegalArgumentException(String.format("Complex object %s not allowed",val.getClass().getName()));
+		if(val.getClass().getCanonicalName().contains("QualifiedValue")) throw new IllegalArgumentException(String.format("Complex object %s not allowed",val.getClass().getName()));
 		this.name = name;
 		this.value = val;
 		this.type = type;
@@ -89,13 +87,13 @@ public class BlockProperty  {
 				if( property.value==null) property.setValue("");    // May be wrong for property type
 			} 
 			catch (JsonParseException jpe) {
-				log.warnf("%s: createProperty parse exception from %s (%s)",TAG,json,jpe.getLocalizedMessage());
+				log.warnf("%s: createProperty parse exception from %s (%s)",CLSS,json,jpe.getLocalizedMessage());
 			}
 			catch(JsonMappingException jme) {
-				log.warn(String.format("%s: createProperty from %s mapping exception (%s)",TAG,json,jme.getLocalizedMessage()),jme);
+				log.warn(String.format("%s: createProperty from %s mapping exception (%s)",CLSS,json,jme.getLocalizedMessage()),jme);
 			}
 			catch(IOException ioe) {
-				log.warnf("%s: createProperty from %s IO exception (%s)",TAG,json,ioe.getLocalizedMessage());
+				log.warnf("%s: createProperty from %s IO exception (%s)",CLSS,json,ioe.getLocalizedMessage());
 			} 
 		}
 		return property;
@@ -121,7 +119,7 @@ public class BlockProperty  {
 	public Object getValue() {return value;}
 	public void setValue(Object obj) {
 		if(obj==null) throw new IllegalArgumentException("null property not allowed");
-		if(obj instanceof QualifiedValue) throw new IllegalArgumentException(String.format("Complex object %s not allowed",obj.getClass().getName()));
+		if(obj.getClass().getCanonicalName().contains("QualifiedValue")) throw new IllegalArgumentException(String.format("Complex object %s not allowed",obj.getClass().getName()));
 		this.value = obj;
 		notifyChangeListeners();
 	}
@@ -163,9 +161,9 @@ public class BlockProperty  {
 			json = mapper.writeValueAsString(this);
 		}
 		catch(Exception ge) {
-			log.warnf("%s: toJson (%s)",TAG,ge.getMessage());
+			log.warnf("%s: toJson (%s)",CLSS,ge.getMessage());
 		}
-		log.tracef("%s: toJson = %s",TAG,json);
+		log.tracef("%s: toJson = %s",CLSS,json);
 		return json;
 	}
 	/**
