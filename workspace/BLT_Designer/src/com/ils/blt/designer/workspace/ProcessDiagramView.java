@@ -713,7 +713,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	 * Do nothing for a binding change - it just doesn't apply here
 	 */
 	@Override
-	public void bindingChange(String binding) {
+	public void bindingChange(String pname,String binding) {
 		log.infof("%s.bindingChange: %s binding = %s",CLSS,getName(),binding);
 	} 
 	@Override
@@ -722,14 +722,14 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	}
 	// Let the blocks subscribe to their own name changes
 	@Override
-	public void nameChange(String nm) {
-	}
+	public void nameChange(String nm) {}
+	@Override
+	public void propertyChange(String pname,Object value) {}
 	/**
 	 * The value that we expect is a state change
 	 */
 	@Override
-	public void valueChange(QualifiedValue value) {
-	}
+	public void valueChange(QualifiedValue value) {}
 
 	@Override
 	public void watermarkChange(String mark) {

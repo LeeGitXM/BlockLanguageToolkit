@@ -60,6 +60,17 @@ public class NotificationKey
 	public static String keyForProperty(String blkid,String pname) {
 		return String.format("P:%s:%s",blkid,pname);
 	}
+	
+	/**
+	 * Given either a PropertyValue or a PropertyBinding key,
+	 * extract the property name.
+	 * @param key
+	 * @return the property name
+	 */
+	public static String propertyFromKey(String key) {
+		int pos = key.lastIndexOf(":");
+		return key.substring(pos+1);
+	}
 	/**
 	 * @param blkid string version of the block's UUID
 	 * @param pname name of the property
@@ -69,6 +80,7 @@ public class NotificationKey
 	public static String keyForPropertyBinding(String blkid,String pname) {
 		return String.format("B:%s:%s",blkid,pname);
 	}
+
 	/**
 	 * @param key the key value 
 	 * @return  true if this is a connection key.

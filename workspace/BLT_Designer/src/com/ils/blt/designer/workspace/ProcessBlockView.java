@@ -597,14 +597,16 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 	}
 
 	@Override
-	public void bindingChange(String binding) {
+	public void bindingChange(String pname,String binding) {
 	}
 	
 	@Override
 	public void nameChange(String nm) {
 		setName(nm);
 	}
-
+	@Override
+	public void propertyChange(String pname,Object value) {
+	}
 	@Override
 	public void valueChange(QualifiedValue value) {	
 	}

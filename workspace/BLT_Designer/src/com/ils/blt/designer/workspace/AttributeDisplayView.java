@@ -139,20 +139,18 @@ public class AttributeDisplayView extends AbstractBlock implements NotificationC
 	
 	// ======================================= Notification Change Listener ===================================
 	@Override
-	public void bindingChange(String binding) {
+	public void bindingChange(String pname,String binding) {
 	}
 	@Override
 	public void diagramStateChange(long resId, String state) {}
-	// We get this when another entity changes a property. We just need to re-display.
 	@Override
-	public void nameChange(String name) {
-	}
+	public void nameChange(String name) {}
+	// This is the important callback. Update the UI with the new value
+	@Override
+	public void propertyChange(String pname, Object value) {}
 	// Repaint when the value changes
 	@Override
-	public void valueChange(final QualifiedValue value) {
-
-	}
+	public void valueChange(final QualifiedValue value) {}
 	@Override
-	public void watermarkChange(String value) {
-	}
+	public void watermarkChange(String value) {}
 }

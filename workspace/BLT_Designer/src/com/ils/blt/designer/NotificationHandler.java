@@ -171,7 +171,8 @@ public class NotificationHandler implements PushNotificationListener {
 					log.debugf("%s.receiveNotification: no receiver for key=%s,value=%s",CLSS,key,payload.toString());
 				}
 			}
-			// Payload is a qualified value
+			// Payload is a qualified value, but we report its simple value.
+			// Key is P:blockid:pname
 			else if(NotificationKey.isPropertyValueKey(key)) {
 				payloadMap.put(key, payload);
 				Map<String,NotificationChangeListener> listeners = changeListenerMap.get(key);
@@ -179,7 +180,8 @@ public class NotificationHandler implements PushNotificationListener {
 					for(NotificationChangeListener listener:listeners.values()) {
 						log.tracef("%s.receiveNotification: value %s=%s - notifying %s",CLSS,
 								key,((QualifiedValue)payload).getValue().toString(),listener.getClass().getName());
-						listener.valueChange((QualifiedValue)payload);
+						String pname = NotificationKey.propertyFromKey(key);
+						listener.propertyChange(pname,((QualifiedValue)payload).getValue());
 					}
 					// Repaint the workspace
 					SwingUtilities.invokeLater(new WorkspaceRepainter());
@@ -194,7 +196,8 @@ public class NotificationHandler implements PushNotificationListener {
 				if( listeners != null ) {
 					for(NotificationChangeListener listener:listeners.values()) {
 						log.tracef("%s.receiveNotification: binding key=%s - notifying %s",CLSS,key,listener.getClass().getName());
-						listener.bindingChange(payload.toString());
+						String pname = NotificationKey.propertyFromKey(key);
+						listener.bindingChange(pname,payload.toString());
 					}
 					// Repaint the workspace
 					SwingUtilities.invokeLater(new WorkspaceRepainter());
@@ -298,8 +301,14 @@ public class NotificationHandler implements PushNotificationListener {
 		if( update && payload!=null ) {
 			if( NotificationKey.isAuxDataKey(key))         listener.valueChange((QualifiedValue)payload);
 			else if( NotificationKey.isNameChangeKey(key)) listener.nameChange(payload.toString());
-			else if(NotificationKey.isPropertyBindingKey(key)) listener.bindingChange(payload.toString());
-			else if(NotificationKey.isPropertyValueKey(key))    listener.valueChange((QualifiedValue)payload);
+			else if(NotificationKey.isPropertyBindingKey(key)) {
+				String pname = NotificationKey.propertyFromKey(key);
+				listener.bindingChange(pname,payload.toString());
+			}
+			else if(NotificationKey.isPropertyValueKey(key))   {
+				String pname = NotificationKey.propertyFromKey(key);
+				listener.propertyChange(pname,((QualifiedValue)payload).getValue());
+			}
 			else if(NotificationKey.isWatermarkKey(key)) listener.watermarkChange(payload.toString());
 			// Repaint the workspace
 			SwingUtilities.invokeLater(new WorkspaceRepainter());

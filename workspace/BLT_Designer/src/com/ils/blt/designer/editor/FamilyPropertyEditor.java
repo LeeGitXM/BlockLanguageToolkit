@@ -185,11 +185,13 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor implements Noti
 
 	// ======================================= Notification Change Listener ===================================
 	@Override
-	public void bindingChange(String binding) {}
+	public void bindingChange(String pname,String binding) {}
 	@Override
 	public void diagramStateChange(long resId, String state) {}
 	@Override
 	public void nameChange(String name) {}
+	@Override
+	public void propertyChange(String pname,Object value) {}
 
 	// The value is the aux data of the family. Note that the method is not
 	// called on the Swing thread. It is called immediately on display of the editor.

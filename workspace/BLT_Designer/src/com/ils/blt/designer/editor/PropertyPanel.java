@@ -684,7 +684,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 	}
 	// ======================================= Notification Change Listener ===================================
 	@Override
-	public void bindingChange(String binding) {
+	public void bindingChange(String name,String binding) {
 		if(DEBUG )log.infof("%s.bindingChange: - %s new binding (%s)",CLSS,property.getName(),binding);
 		//property.setValue(value.getValue());  // Block should have its own subscription to value changes.
 		SwingUtilities.invokeLater( new Runnable() {
@@ -700,9 +700,9 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 	public void diagramStateChange(long resId, String state) {}
 	// We get this when another entity changes a property. We just need to re-display.
 	@Override
-	public void nameChange(String name) {
-		
-	}
+	public void nameChange(String name) {}
+	@Override
+	public void propertyChange(String pname,Object value) {}
 	/**
 	 * The source of the event is a property. 
 	 * Ignore if the binding has not changed.

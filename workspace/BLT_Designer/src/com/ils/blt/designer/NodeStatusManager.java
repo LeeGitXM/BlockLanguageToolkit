@@ -347,14 +347,13 @@ public void diagramStateChange(long resId, String state) {
 }
 
 @Override
-public void bindingChange(String binding) {}
-
+public void bindingChange(String pname,String binding) {}
 @Override
 public void nameChange(String name) {}
-
+@Override
+public void propertyChange(String pname,Object value) {}
 @Override
 public void valueChange(QualifiedValue value) {}
-
 @Override
 public void watermarkChange(String newWatermark) {}
 	

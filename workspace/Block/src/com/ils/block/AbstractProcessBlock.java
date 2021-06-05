@@ -1059,9 +1059,11 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	@Override
 	public void diagramStateChange(long resId, String s) {}
 	@Override
-	public void bindingChange(String bindTo) {}
+	public void bindingChange(String pname,String bindTo) {}
 	@Override
 	public void nameChange(String val) {}
+	@Override
+	public void propertyChange(String pname,Object value) {}
 	/**
 	 * Update aux data based on a push notification. Note that this
 	 * triggers any change listeners on this property. These

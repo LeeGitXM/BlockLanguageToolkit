@@ -24,11 +24,15 @@ public interface NotificationChangeListener extends EventListener  {
 	/**
 	 * A property binding has changed
 	 */
-	public void bindingChange(String binding);
+	public void bindingChange(String name,String binding);
 	/**
 	 * The name has changed
 	 */
 	public void nameChange(String name);
+	/**
+	 * Use this for a block listening on property value changes
+	 */
+	public void propertyChange(String name,Object value);
 	/**
 	 * Just send the new value.
 	 */

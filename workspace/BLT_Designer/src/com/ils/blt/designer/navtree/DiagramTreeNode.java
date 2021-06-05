@@ -839,19 +839,16 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		}
 	}
 	@Override
-	public void bindingChange(String binding) {
-	}
+	public void bindingChange(String pname,String binding) {}
 	// This is the name of a block, so doesn't appear in the tree
 	@Override
-	public void nameChange(String nm) {
-	}
+	public void nameChange(String nm) {}
 	@Override
-	public void valueChange(QualifiedValue value) {
-
-	}
+	public void propertyChange(String pname,Object value) {}
 	@Override
-	public void watermarkChange(String newWatermark) {
-	}
+	public void valueChange(QualifiedValue value) {}
+	@Override
+	public void watermarkChange(String newWatermark) {}
 
 
 	

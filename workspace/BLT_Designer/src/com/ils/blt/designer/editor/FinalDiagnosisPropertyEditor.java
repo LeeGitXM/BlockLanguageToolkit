@@ -471,11 +471,13 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 	}	
 	// ======================================= Notification Change Listener ===================================
 	@Override
-	public void bindingChange(String binding) {}
+	public void bindingChange(String pname,String binding) {}
 	@Override
 	public void diagramStateChange(long resId, String state) {}
 	@Override
 	public void nameChange(String name) {}
+	@Override
+	public void propertyChange(String pname,Object value) {}
 
 	// The value is the aux data of the application. Note that the method is not
 	// called on the Swing thread

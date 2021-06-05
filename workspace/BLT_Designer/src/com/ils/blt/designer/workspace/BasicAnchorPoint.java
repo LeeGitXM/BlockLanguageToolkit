@@ -211,11 +211,13 @@ public class BasicAnchorPoint extends AnchorPoint implements NotificationChangeL
 	 * Receive an event from the Gateway. Ignore a binding change,
 	 */
 	@Override
-	public void bindingChange(String value) {}
+	public void bindingChange(String pname,String value) {}
 	@Override
 	public void diagramStateChange(long resId, String alerting) {}
 	@Override
 	public void nameChange(String name) {}
+	@Override
+	public void propertyChange(String pname,Object value) {}
 	/**
 	 * Receive notification from the Gateway. Use the information to color
 	 * the connection. By convention we use the Origin as it is already
