@@ -743,11 +743,11 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 								BlockProperty tagPathProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH,tnode.getTagPath(),PropertyType.OBJECT,true);
 								tagPathProperty.setBinding(tnode.getName());
 								tagPathProperty.setBindingType(BindingType.TAG_READ);
-								//block.getProperties().add(tagPathProperty);
+								//block.setProperty(tagPathProperty);
 								
 								BlockProperty valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,"",PropertyType.OBJECT,false);
 								valueProperty.setBindingType(BindingType.ENGINE);
-								//block.getProperties().add(valueProperty);
+								block.setProperty(valueProperty);
 							} 
 							else {
 								if( isStandardFolder ) {
