@@ -136,6 +136,14 @@ public class ScriptExtensionManager {
 						p2j.updateMapFromDictionary((Map<String,Object>)arg,(PyDictionary)pyarg);
 						log.tracef("%s.runScript: Updating map on return: %s",CLSS,pyarg.toString());
 					}
+					else if( arg instanceof List) {
+						PyObject pyarg = pyargs.get(index);
+						List<String> list = p2j.pyListToStringList((PyList)pyarg);
+						for(String item:list ) {
+							((List)arg).add(item);
+						}
+						log.tracef("%s.runScript: Updating list on return: %s",CLSS,pyarg.toString());
+					}
 					else if( arg instanceof GeneralPurposeDataContainer) {
 						PyObject pyarg = pyargs.get(index);
 						p2j.updateDataContainerFromPython((GeneralPurposeDataContainer)arg,(PyList)pyarg);

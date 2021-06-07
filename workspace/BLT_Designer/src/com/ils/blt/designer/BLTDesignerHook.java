@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.ApplicationScriptFunctions;
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.script.ScriptExtensionManager;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.designer.navtree.GeneralPurposeTreeNode;
 import com.ils.blt.designer.search.BLTSearchProvider;
@@ -147,6 +148,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		this.context = ctx;
 		appRequestHandler = new ApplicationRequestHandler();
 		nodeStatusManager = new NodeStatusManager(context,appRequestHandler);
+		ScriptExtensionManager.getInstance().setContext(context);
 		ResourceCreateManager.setContext(ctx);
 		ResourceDeleteManager.setContext(ctx);
 		ResourceUpdateManager.setContext(ctx);

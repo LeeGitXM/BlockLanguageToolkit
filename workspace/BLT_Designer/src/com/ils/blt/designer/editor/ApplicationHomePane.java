@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.Icon;
@@ -20,17 +21,18 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
 import com.ils.blt.common.ApplicationRequestHandler;
+import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.notification.NotificationChangeListener;
 import com.ils.blt.common.notification.NotificationKey;
 import com.ils.blt.common.script.Script;
 import com.ils.blt.common.script.ScriptConstants;
 import com.ils.blt.common.script.ScriptExtensionManager;
+import com.ils.blt.common.serializable.SerializableApplication;
 import com.ils.blt.designer.NotificationHandler;
 import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.log.ILSLogger;
 import com.ils.common.log.LogMaker;
-import com.ils.common.persistence.ToolkitProperties;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 import net.miginfocom.swing.MigLayout;
@@ -101,24 +103,52 @@ public class ApplicationHomePane extends JPanel implements  NotificationChangeLi
 		mainPanel.add(new JLabel("Managed:"), "gap 10");
 		mainPanel.add(managedCheckBox, "wrap, align left");
 
+		// Combo boxes are populated from a database query. The database used is a function
+		// of the application state
+		SerializableApplication app = ((ApplicationPropertyEditor)editor).getApplication();
+		String db = requestHandler.getProductionDatabase();
+		String tag = requestHandler.getProductionTagProvider();
+		if( app.getState().equals(DiagramState.ISOLATED)) {
+			db = requestHandler.getIsolationDatabase();
+			tag = requestHandler.getIsolationTagProvider();
+		}
+		Script script = extensionManager.createExtensionScript(ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.GET_LIST_OPERATION, tag);
+	
 		// Create up the Message Queue Combo Box
 		mainPanel.add(new JLabel("Queue:"), "align right");
 		queueComboBox.setToolTipText("The message queue where messages for this application will be posted!");
 		queueComboBox.setPreferredSize(ApplicationPropertyEditor.COMBO_SIZE);
+		List<String> items = new ArrayList<>();
+		extensionManager.runScript(editor.context.getScriptManager(),script,ScriptConstants.LIST_KEY_MESSAGE_QUEUE,items,db);
+		for(String item:items) {
+			System.out.println("COMBO="+item);
+			queueComboBox.addItem(item);
+		}
 		mainPanel.add(queueComboBox, "wrap");
 
 		// Create up the Group Ramp Method Combo Box
 		mainPanel.add(new JLabel("Ramp Method:"),"align right");
 		groupRampMethodComboBox.setToolTipText("The Group Ramp Method that will be used for outputs in this application!");
 		groupRampMethodComboBox.setPreferredSize(ApplicationPropertyEditor.COMBO_SIZE);
+		items = new ArrayList<>();
+		extensionManager.runScript(editor.context.getScriptManager(),script,ScriptConstants.LIST_KEY_GROUP_RAMP,items,db);
+		for(String item:items) {
+			System.out.println("COMBO="+item);
+			groupRampMethodComboBox.addItem(item);
+		}
 		mainPanel.add(groupRampMethodComboBox, "wrap");
 		
 		// Create the unit combo box
 		mainPanel.add(new JLabel("Unit:"),"align right");
 		unitComboBox.setToolTipText("The unit associated with this application!");
 		unitComboBox.setPreferredSize(ApplicationPropertyEditor.COMBO_SIZE);
+		items = new ArrayList<>();
+		extensionManager.runScript(editor.context.getScriptManager(),script,ScriptConstants.LIST_KEY_UNIT,items,db);
+		for(String item:items) {
+			unitComboBox.addItem(item);
+		}
 		mainPanel.add(unitComboBox, "wrap");
-		//Script script = extensionManager.createExtensionScript(classKey, ScriptConstants.GET_LIST_OPERATION, toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER));
+		
 		//extensionManager.runScript(context.getProjectManager().getProjectScriptManager(node.getProjectId()), 
 		//		script, node.getSelf().toString(),node.getAuxiliaryData());
 		
@@ -143,42 +173,19 @@ public class ApplicationHomePane extends JPanel implements  NotificationChangeLi
 		descriptionTextArea.setText(description);
 		managedCheckBox.setSelected(fcns.coerceToBoolean( model.getProperties().get("Managed")));
 		
-		// Setup the Queue Combo box
-		List<String> mqueues = model.getLists().get("MessageQueues");
-		queueComboBox.removeAllItems();
-		if(mqueues!=null ) {
-			for(String q : mqueues) {
-				queueComboBox.addItem(q);
-			}
-		}
+		// Set combo boxes to current values
 		String queue = model.getProperties().get("MessageQueue");
 		if( queue!=null ) queueComboBox.setSelectedItem(queue);
 		else if( queueComboBox.getItemCount()>0) {
 			queueComboBox.setSelectedIndex(0);
 		}
 		
-		// Set up the method combo box
-		List<String> methods = model.getLists().get("GroupRampMethods");
-		groupRampMethodComboBox.removeAllItems();
-		if( methods!=null ) {
-			for(String o : methods) {
-				groupRampMethodComboBox.addItem(o);
-			}
-		}
 		String method = model.getProperties().get("GroupRampMethod");
 		if( method!=null ) groupRampMethodComboBox.setSelectedItem(method);
 		else if( groupRampMethodComboBox.getItemCount()>0) {
 			groupRampMethodComboBox.setSelectedIndex(0);
 		}
 		
-		// Set up the Unit Combo Box
-		List<String> units = model.getLists().get("Units");
-		unitComboBox.removeAllItems();
-		if( units!=null ) {
-			for(String o : units) {
-				unitComboBox.addItem(o);
-			}
-		}
 		String unit = model.getProperties().get("Unit");
 		if( unit!=null ) unitComboBox.setSelectedItem(unit);
 		else if( unitComboBox.getItemCount()>0) {
