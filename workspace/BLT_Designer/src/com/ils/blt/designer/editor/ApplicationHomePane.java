@@ -23,16 +23,21 @@ import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.notification.NotificationChangeListener;
 import com.ils.blt.common.notification.NotificationKey;
+import com.ils.blt.common.script.Script;
+import com.ils.blt.common.script.ScriptConstants;
+import com.ils.blt.common.script.ScriptExtensionManager;
 import com.ils.blt.designer.NotificationHandler;
 import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.log.ILSLogger;
 import com.ils.common.log.LogMaker;
+import com.ils.common.persistence.ToolkitProperties;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 import net.miginfocom.swing.MigLayout;
 
 public class ApplicationHomePane extends JPanel implements  NotificationChangeListener {
 	private static String CLSS = "ApplicationHomePane";
+	private final ScriptExtensionManager extensionManager = ScriptExtensionManager.getInstance();
 	private final NotificationHandler notificationHandler = NotificationHandler.getInstance();
 	private final ApplicationPropertyEditor editor;
 	private final ApplicationRequestHandler requestHandler;
@@ -113,6 +118,9 @@ public class ApplicationHomePane extends JPanel implements  NotificationChangeLi
 		unitComboBox.setToolTipText("The unit associated with this application!");
 		unitComboBox.setPreferredSize(ApplicationPropertyEditor.COMBO_SIZE);
 		mainPanel.add(unitComboBox, "wrap");
+		//Script script = extensionManager.createExtensionScript(classKey, ScriptConstants.GET_LIST_OPERATION, toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER));
+		//extensionManager.runScript(context.getProjectManager().getProjectScriptManager(node.getProjectId()), 
+		//		script, node.getSelf().toString(),node.getAuxiliaryData());
 		
 		mainPanel.add(nextButton,"cell 1 13,center");
 		nextButton.setHorizontalTextPosition(SwingConstants.LEFT);

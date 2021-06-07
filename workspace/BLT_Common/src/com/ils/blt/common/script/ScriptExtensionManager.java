@@ -163,6 +163,9 @@ public class ScriptExtensionManager {
 		else if( ScriptConstants.GET_AUX_OPERATION.equalsIgnoreCase(operation)) {
 			args = ScriptConstants.GET_AUX_SCRIPT_ARGS;
 		}
+		else if( ScriptConstants.GET_LIST_OPERATION.equalsIgnoreCase(operation)) {
+			args = ScriptConstants.GET_LIST_SCRIPT_ARGS;
+		}
 		else if( ScriptConstants.RENAME_OPERATION.equalsIgnoreCase(operation)) {
 			args = ScriptConstants.RENAME_SCRIPT_ARGS;
 		}

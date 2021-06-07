@@ -740,14 +740,14 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 								block.addAnchor(output);
 								// Properties are the same for Inputs and Sources
 								// This property causes the engine to start a subscription.
-								BlockProperty tagPathProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH,tnode.getTagPath().toStringFull(),PropertyType.OBJECT,true);
+								BlockProperty tagPathProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH,tnode.getTagPath(),PropertyType.OBJECT,true);
 								tagPathProperty.setBinding(tnode.getName());
 								tagPathProperty.setBindingType(BindingType.TAG_READ);
-								block.setProperty(tagPathProperty);
+								//block.getProperties().add(tagPathProperty);
 								
 								BlockProperty valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,"",PropertyType.OBJECT,false);
 								valueProperty.setBindingType(BindingType.ENGINE);
-								block.setProperty(valueProperty);
+								//block.getProperties().add(valueProperty);
 							} 
 							else {
 								if( isStandardFolder ) {
@@ -782,10 +782,10 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 								BlockProperty pathProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH,"",PropertyType.STRING,true);
 								pathProperty.setBindingType(BindingType.TAG_WRITE);
 								pathProperty.setBinding("");
-								block.setProperty(pathProperty);
+								//block.getProperties().add( pathProperty);
 								BlockProperty valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,"",PropertyType.OBJECT,false);
 								valueProperty.setBindingType(BindingType.ENGINE);
-								block.setProperty(valueProperty);
+								//block.getProperties().add(valueProperty);
 							}
 							
 							AnchorPrototype signal = new AnchorPrototype(BlockConstants.SIGNAL_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.SIGNAL);
@@ -815,10 +815,10 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 										property.setBinding(tnode.getTagPath().toStringFull());}
 										block.modifyConnectionForTagChange(property, type);
 								}
-								logger.infof("%s.handleDrop: dropped %s",CLSS,block.getClassName());
+								logger.infof("%s.handleDiagramDrop: dropped %s",CLSS,block.getClassName());
 							}
 							else {
-								logger.infof("%s.handleDrop: drop of %s out-of-bounds",CLSS,block.getClassName());
+								logger.infof("%s.handleDiagramDrop: drop of %s out-of-bounds",CLSS,block.getClassName());
 							}
 						}
 					}
@@ -1298,6 +1298,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			node.setIcon(node.getIcon());
 			node.refresh();
 		}
+		diagram.unregisterChangeListeners();
+		
 	}
 	/**
 	 * This is called as a result of a user "Save" selection on
@@ -1349,9 +1351,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	public void containerClosed(DesignableContainer c) {
 		logger.infof("%s.containerClosed: %s",CLSS,c.getName());
 		BlockDesignableContainer container = (BlockDesignableContainer)c;
-		ProcessDiagramView diag = (ProcessDiagramView)(container.getModel());
-		diag.removeChangeListener(this);
-		diag.unregisterChangeListeners(); 
+		ProcessDiagramView view = (ProcessDiagramView)(container.getModel());
+		view.removeChangeListener(this);
 	}
 	/**
 	 * Container layout manager is:
@@ -1361,16 +1362,13 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	public void containerOpened(DesignableContainer c) {
 		logger.infof("%s.containerOpened: %s",CLSS,c.getName());
 		BlockDesignableContainer container = (BlockDesignableContainer)c;
-		ProcessDiagramView diag = (ProcessDiagramView)(container.getModel());
-		diag.addChangeListener(this);
-		diag.registerChangeListeners();
+		ProcessDiagramView view = (ProcessDiagramView)(container.getModel());
+		view.addChangeListener(this);
 	}
 	@Override
 	public void containerSelected(DesignableContainer container) {
 		if( container==null ) logger.infof("%s.containerSelected is null",CLSS);
-		else {
-			logger.infof("%s.containerSelected: %s",CLSS,container.getName());
-		};
+		else logger.infof("%s.containerSelected: %s",CLSS,container.getName());
 	}
 	public CommandBar getAlignBar() {
 		return alignBar;
