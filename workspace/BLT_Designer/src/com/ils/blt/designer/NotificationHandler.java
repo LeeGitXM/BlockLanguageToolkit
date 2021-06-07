@@ -253,7 +253,7 @@ public class NotificationHandler implements PushNotificationListener {
 	 * to restore the diagram display to its state prior to its last serialization.
 	 * Note: This is used only for properties bound to ENGINE.
 	 */
-	public void initializePropertyValueNotification(String key,QualifiedValue value) {
+	public void initializePropertyValueNotification(String key,Object value) {
 		if( key==null || value==null) return;
 		// Only initialize the payload map if the key doesn't exist
 		Object payload = payloadMap.get(key);
@@ -262,7 +262,10 @@ public class NotificationHandler implements PushNotificationListener {
 		if( listeners != null ) {
 			for(NotificationChangeListener listener:listeners.values()) {
 				log.tracef("%s.initializePropertyValueNotification: key=%s - notifying %s",CLSS,key,listener.getClass().getName());
-				if( NotificationKey.isPropertyValueKey(key) ) listener.valueChange(value);
+				if( NotificationKey.isPropertyValueKey(key) ) {
+					String pname = NotificationKey.propertyFromKey(key);
+					listener.propertyChange(pname,value);
+				}
 			}
 			// Repaint the workspace
 			SwingUtilities.invokeLater(new WorkspaceRepainter());

@@ -1298,8 +1298,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			node.setIcon(node.getIcon());
 			node.refresh();
 		}
-		diagram.unregisterChangeListeners();
-		
 	}
 	/**
 	 * This is called as a result of a user "Save" selection on
@@ -1351,8 +1349,9 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	public void containerClosed(DesignableContainer c) {
 		logger.infof("%s.containerClosed: %s",CLSS,c.getName());
 		BlockDesignableContainer container = (BlockDesignableContainer)c;
-		ProcessDiagramView view = (ProcessDiagramView)(container.getModel());
-		view.removeChangeListener(this);
+		ProcessDiagramView diag = (ProcessDiagramView)(container.getModel());
+		diag.removeChangeListener(this);
+		diag.unregisterChangeListeners(); 
 	}
 	/**
 	 * Container layout manager is:
@@ -1362,13 +1361,16 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	public void containerOpened(DesignableContainer c) {
 		logger.infof("%s.containerOpened: %s",CLSS,c.getName());
 		BlockDesignableContainer container = (BlockDesignableContainer)c;
-		ProcessDiagramView view = (ProcessDiagramView)(container.getModel());
-		view.addChangeListener(this);
+		ProcessDiagramView diag = (ProcessDiagramView)(container.getModel());
+		diag.addChangeListener(this);
+		diag.registerChangeListeners();
 	}
 	@Override
 	public void containerSelected(DesignableContainer container) {
 		if( container==null ) logger.infof("%s.containerSelected is null",CLSS);
-		else logger.infof("%s.containerSelected: %s",CLSS,container.getName());
+		else {
+			logger.infof("%s.containerSelected: %s",CLSS,container.getName());
+		};
 	}
 	public CommandBar getAlignBar() {
 		return alignBar;

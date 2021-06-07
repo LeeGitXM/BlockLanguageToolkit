@@ -33,6 +33,7 @@ public class AttributeDisplayView extends AbstractBlock implements NotificationC
 	private final NotificationHandler notificationHandler = NotificationHandler.getInstance();
 	private final ProcessBlockView block;
 	private final String propertyName;
+	private String text = "";      // Current value
 	private final UUID uuid;
 	private int preferredHeight = BlockConstants.PREFERRED_ATTRIBUTE_HEIGHT;             // Size the view to "natural" size
 	private int preferredWidth  = BlockConstants.PREFERRED_ATTRIBUTE_WIDTH;              // Size the view to "natural" siz
@@ -83,8 +84,9 @@ public class AttributeDisplayView extends AbstractBlock implements NotificationC
 	
 	// The parent diagram is displayed, start the listener.
 	public void startup() {
-		String key = NotificationKey.keyForPropertyBinding(block.getId().toString(),propertyName);
-		notificationHandler.addNotificationChangeListener(key,CLSS,this);
+		String key = NotificationKey.keyForProperty(block.getId().toString(), propertyName);
+		notificationHandler.initializePropertyValueNotification(key,text);
+		notificationHandler.addNotificationChangeListener(key,CLSS, this);
 	}
 	
 	public void shutdown() {
@@ -147,10 +149,14 @@ public class AttributeDisplayView extends AbstractBlock implements NotificationC
 	public void nameChange(String name) {}
 	// This is the important callback. Update the UI with the new value
 	@Override
-	public void propertyChange(String pname, Object value) {}
+	public void propertyChange(String pname, Object value) {
+		this.text = value.toString();
+	}
 	// Repaint when the value changes
 	@Override
-	public void valueChange(final QualifiedValue value) {}
+	public void valueChange(final QualifiedValue value) {
+		this.text = value.getValue().toString();
+	}
 	@Override
 	public void watermarkChange(String value) {}
 }

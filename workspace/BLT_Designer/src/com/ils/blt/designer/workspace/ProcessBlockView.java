@@ -18,6 +18,7 @@ import javax.swing.event.EventListenerList;
 import com.ils.blt.common.block.Activity;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
+import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
@@ -26,13 +27,16 @@ import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.notification.NotificationChangeListener;
+import com.ils.blt.common.notification.NotificationKey;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlock;
+import com.ils.blt.designer.NotificationHandler;
 import com.ils.blt.designer.workspace.ui.AbstractUIView;
 import com.ils.blt.designer.workspace.ui.UIFactory;
 import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.log.ILSLogger;
 import com.ils.common.log.LogMaker;
+import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockComponent;
@@ -60,6 +64,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 	private final static Random random = new Random();
 	private Map<String,ProcessAnchorDescriptor> anchors;
 	private final EventListenerList listenerList;
+	private final NotificationHandler handler = NotificationHandler.getInstance();
 	private GeneralPurposeDataContainer auxiliaryData = new GeneralPurposeDataContainer();
 	private final ChangeEvent changeEvent;
 	private int background = Color.white.getRGB();
@@ -450,6 +455,25 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 	public void setSubworkspaceId(UUID subworkspaceId) {this.subworkspaceId = subworkspaceId;}
 	
 	/**
+	 * Remove notification subscriptions
+	 */
+	public void shutdown () {
+		for(BlockProperty prop:getProperties()) {
+			String key = NotificationKey.keyForProperty(getId().toString(), prop.getName());
+			handler.removeNotificationChangeListener(key,CLSS);
+		}
+	}
+	/**
+	 * Create a notification subscription for each property
+	 */
+	public void startup () {
+		for(BlockProperty prop:getProperties()) {
+			String key = NotificationKey.keyForProperty(getId().toString(), prop.getName());
+			handler.initializePropertyValueNotification(key,new BasicQualifiedValue(prop.getValue()));
+			handler.addNotificationChangeListener(key,CLSS, this);
+		}
+	}
+	/**
 	 * Create a name that is highly likely to be unique within the diagram.
 	 * The name can be user-modified at any time. If we really need a uniqueness,
 	 * use the block's UUID.
@@ -606,6 +630,8 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 	}
 	@Override
 	public void propertyChange(String pname,Object value) {
+		BlockProperty prop = getProperty(pname);
+		if( prop!=null ) prop.setValue(value);
 	}
 	@Override
 	public void valueChange(QualifiedValue value) {	

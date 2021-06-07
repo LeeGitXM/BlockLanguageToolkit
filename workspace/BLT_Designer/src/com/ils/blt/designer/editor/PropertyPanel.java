@@ -702,7 +702,9 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 	@Override
 	public void nameChange(String name) {}
 	@Override
-	public void propertyChange(String pname,Object value) {}
+	public void propertyChange(String pname,Object value) {
+		updateFieldForValue(value);
+	}
 	/**
 	 * The source of the event is a property. 
 	 * Ignore if the binding has not changed.
@@ -720,10 +722,14 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 	@Override
 	public void valueChange(final QualifiedValue value) {
 		log.infof("%s.valueChange: - %s new value (%s)",CLSS,property.getName(),value.getValue().toString());
-		property.setValue(value.getValue());  // Block should have its own subscription to value changes.
+		updateFieldForValue(value.getValue());
+		
+	}
+	private void updateFieldForValue(Object value) {
+		property.setValue(value);  // Block should have its own subscription to value changes.
 		SwingUtilities.invokeLater( new Runnable() {
 			public void run() {
-				String text = value.getValue().toString();
+				String text = value.toString();
 				if(property.getType().equals(PropertyType.TIME)) {
 					// Scale value for time unit.
 					double interval = fncs.coerceToDouble(text);

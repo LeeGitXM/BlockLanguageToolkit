@@ -20,7 +20,6 @@ import com.ils.blt.common.BusinessRules;
 import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AttributeDisplay;
-import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.connection.ConnectionType;
@@ -32,6 +31,8 @@ import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableConnection;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.designer.NotificationHandler;
+import com.ils.common.log.ILSLogger;
+import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
@@ -39,8 +40,6 @@ import com.inductiveautomation.ignition.common.model.values.Quality;
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 import com.inductiveautomation.ignition.common.sqltags.model.types.ExpressionType;
 import com.inductiveautomation.ignition.common.util.AbstractChangeable;
-import com.inductiveautomation.ignition.common.util.LogUtil;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorPoint;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorType;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
@@ -53,7 +52,7 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
  * This class represents a diagram in the designer.
  */
 public class ProcessDiagramView extends AbstractChangeable implements BlockDiagramModel,NotificationChangeListener {
-	private static LoggerEx log = LogUtil.getLogger(ProcessDiagramView.class.getPackage().getName());
+	private static ILSLogger log = LogMaker.getLogger(ProcessDiagramView.class.getPackage().getName());
 	// Use TAG as the "source" identifier when registering for notifications from Gateway
 	private static final String CLSS = "ProcessDiagramView";
 	private final ApplicationRequestHandler appRequestHandler;
@@ -124,8 +123,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			
 			for( AttributeDisplay ad:diagram.getAttributeDisplays() ) {
 				AttributeDisplayView view = new AttributeDisplayView(this,ad);
-				addDisplayView(view);
-				view.startup(); 
+				addDisplayView(view); 
 			}
 			suppressStateChangeNotification = false;
 		}  // -- end synchronized
@@ -565,19 +563,15 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		// this as it evaluates. Update the value from the newly deserialized diagram.
 		// Also register self for any block name changes
 		for(ProcessBlockView block:blockMap.values() ) {
-			for(BlockProperty prop:block.getProperties()) {
-				if( prop.getBindingType().equals(BindingType.ENGINE)) {
-					String key = NotificationKey.keyForProperty(block.getId().toString(), prop.getName());
-					handler.initializePropertyValueNotification(key,new BasicQualifiedValue(prop.getValue()));
-					//handler.addNotificationChangeListener(key,CLSS, prop);
-					prop.addChangeListener(block);
-				}
-			}
+			block.startup();
 			if( block.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SOURCE) ||
 				block.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SINK)) {
 				String key = NotificationKey.keyForBlockName(block.getId().toString());
 				handler.addNotificationChangeListener(key,CLSS, block);
 			}
+		}
+		for(AttributeDisplayView display:attributeDisplays ) {
+			display.startup();
 		}
 		// Register self for watermark changes
 		String key = NotificationKey.watermarkKeyForDiagram(getId().toString());
@@ -602,14 +596,14 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			handler.removeNotificationChangeListener(NotificationKey.keyForConnection(blk.getId().toString(),bap.getId().toString()),CLSS);
 			
 		}
+		for(AttributeDisplayView display:attributeDisplays ) {
+			display.shutdown();
+		}
 		
 		// De-register any properties "bound" to the engine
 		for(ProcessBlockView block:blockMap.values() ) {
 			for(BlockProperty prop:block.getProperties()) {
-				if( prop.getBindingType().equals(BindingType.ENGINE)) {
-					handler.removeNotificationChangeListener(NotificationKey.keyForProperty(block.getId().toString(), prop.getName()),CLSS);
-					prop.removeChangeListener(block);
-				}
+				block.shutdown();
 			}
 			
 			if( block.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SOURCE) ||
