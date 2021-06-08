@@ -28,7 +28,7 @@ import com.ils.blt.designer.workspace.ProcessBlockView;
  * The first input anchor creates an anchor point on the left. The first output anchor point 
  * creates an anchor point on the right.
  */
-public class ReadoutUIView extends AbstractUIView implements BlockViewUI {
+public class ReadoutUIView extends AbstractBlockUIView implements BlockViewUI {
 	private static final long serialVersionUID = 2160868310475735865L;
 	private static final int DEFAULT_HEIGHT = 40;
 	private static final int DEFAULT_WIDTH  = 80;

@@ -21,7 +21,7 @@ import com.ils.blt.designer.workspace.ProcessBlockView;
 /**
  * Draw various styles of logic blocks according to (roughly) "google logic gate symbols". 
  */
-public class LogicUIView extends AbstractUIView implements BlockViewUI {
+public class LogicUIView extends AbstractBlockUIView implements BlockViewUI {
 	private static final long serialVersionUID = 2180868310475735865L;
 	public static final String SUBSTYLE_AND = "AND";
 	public static final String SUBSTYLE_NOT = "NOT";

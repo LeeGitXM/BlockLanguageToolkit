@@ -17,7 +17,7 @@ import com.inductiveautomation.ignition.client.images.ImageLoader;
  * creates an anchor point on the left. The first output anchor point creates an 
  * anchor point on the top.
  */
-public class RoundUIView extends AbstractUIView implements BlockViewUI {
+public class RoundUIView extends AbstractBlockUIView implements BlockViewUI {
 	private static final long serialVersionUID = 2190868310475735865L;
 	private Icon icon = null;
 	private static final int DEFAULT_HEIGHT = 58;

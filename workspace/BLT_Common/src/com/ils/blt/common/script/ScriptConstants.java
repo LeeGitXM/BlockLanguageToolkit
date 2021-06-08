@@ -38,6 +38,7 @@ public interface ScriptConstants   {
 	public final static String SET_AUX_SCRIPT_ARGS     = "uuid,properties,db";
 
 	// For the GetList extension function, these are the known keys
+	public final static String LIST_KEY_FEEDBCK_METHOD     = "FeedbackMethod";
 	public final static String LIST_KEY_GROUP_RAMP         = "GroupRamp";
 	public final static String LIST_KEY_MESSAGE_QUEUE      = "MessageQueue";
 	public final static String LIST_KEY_UNIT               = "Unit";

@@ -23,7 +23,13 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
+import com.ils.blt.common.ApplicationRequestHandler;
+import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.UtilityFunctions;
+import com.ils.blt.common.script.Script;
+import com.ils.blt.common.script.ScriptConstants;
+import com.ils.blt.common.script.ScriptExtensionManager;
+import com.ils.blt.common.serializable.SerializableApplication;
 import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.log.ILSLogger;
 import com.ils.common.log.LogMaker;
@@ -38,6 +44,7 @@ public class OutputEditorPane extends JPanel implements ActionListener  {
 	private static final long serialVersionUID = -5387165467458025431L;
 	private final static String CLSS = "OutputEditorPane";
 	private final ApplicationPropertyEditor editor;
+	private final ScriptExtensionManager extensionManager = ScriptExtensionManager.getInstance();
 	private final JPanel mainPanel;
 	private final GeneralPurposeDataContainer model;
 	private Map<String,String> outputMap;  // Parameters for current output
@@ -99,8 +106,22 @@ public class OutputEditorPane extends JPanel implements ActionListener  {
 				feedbackMethodComboBox.addItem(feedbackMethod);
 			}
 		}
+		ApplicationRequestHandler requestHandler = new ApplicationRequestHandler();
+		String db = requestHandler.getProductionDatabase();
+		String tag = requestHandler.getProductionTagProvider();
+		SerializableApplication app = ((ApplicationPropertyEditor)editor).getApplication();
+		if( app.getState().equals(DiagramState.ISOLATED)) {
+			db = requestHandler.getIsolationDatabase();
+			tag = requestHandler.getIsolationTagProvider();
+		}
 		feedbackMethodComboBox.setToolTipText("The technique used to combine multiple recommendations for the this output!");
 		feedbackMethodComboBox.setPreferredSize(ApplicationPropertyEditor.COMBO_SIZE);
+		List<String> items = new ArrayList<>();
+		Script script = extensionManager.createExtensionScript(ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.GET_LIST_OPERATION, tag);
+		extensionManager.runScript(editor.context.getScriptManager(),script,ScriptConstants.LIST_KEY_FEEDBCK_METHOD,items,db);
+		for(String item:items) {
+			feedbackMethodComboBox.addItem(item);
+		}
 		mainPanel.add(feedbackMethodComboBox, "span, growx, wrap");
 		
 		mainPanel.add(new JLabel("Incremental Output:"), "gap 10");
@@ -186,7 +207,9 @@ public class OutputEditorPane extends JPanel implements ActionListener  {
 		setpointLowLimitField.setValue(dbl);
 		dbl = fcns.coerceToDouble(outputMap.get("SetpointHighLimit"));
 		setpointHighLimitField.setValue(dbl);
-		feedbackMethodComboBox.setSelectedItem((String) outputMap.get("FeedbackMethod"));
+		if( feedbackMethodComboBox.getItemCount()>0) {
+			feedbackMethodComboBox.setSelectedItem((String) outputMap.get("FeedbackMethod"));
+		}
 	}
 	
 	public JTextField getTagField() { return this.tagField; }

@@ -13,7 +13,8 @@ import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.notification.NotificationChangeListener;
 import com.ils.blt.common.notification.NotificationKey;
 import com.ils.blt.designer.NotificationHandler;
-import com.ils.blt.designer.workspace.ui.AbstractUIView;
+import com.ils.blt.designer.workspace.ui.AbstractBlockUIView;
+import com.ils.blt.designer.workspace.ui.AbstractDisplayUIView;
 import com.ils.blt.designer.workspace.ui.AttributeDisplayUIView;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockComponent;
@@ -42,7 +43,7 @@ public class AttributeDisplayView extends AbstractBlock implements NotificationC
 	private int height = BlockConstants.DEFAULT_ATTRIBUTE_HEIGHT;
 	private int width  = BlockConstants.DEFAULT_ATTRIBUTE_WIDTH;
 	private Point location;
-	private AbstractUIView ui = null;
+	private AbstractDisplayUIView ui = null;
 	
 	/**
 	 * Constructor: Used in the Designer to create a new display
@@ -67,12 +68,13 @@ public class AttributeDisplayView extends AbstractBlock implements NotificationC
 		this.offsetY = block.getLocation().y - location.y;
 		this.ui = new AttributeDisplayUIView(this);
 	}
+	
 		
 	public ProcessBlockView getBlock() { return this.block; }
 	public int getPreferredHeight() { return this.preferredHeight; }
 	public int getPreferredWidth() { return this.preferredWidth; }
 	public String getPropertyName() { return this.propertyName; }
-	public AbstractUIView getUi() {return ui;}
+	public AbstractDisplayUIView getUi() {return ui;}
 	public AttributeDisplay convertToSerializable() {
 		AttributeDisplay result = new AttributeDisplay(block.getId().toString(),propertyName);
 		result.setX(getLocation().x);
@@ -129,6 +131,8 @@ public class AttributeDisplayView extends AbstractBlock implements NotificationC
 		return location;
 	}
 
+	// This is called in the block-and-connector framework
+	// for each block as the diagram is opened.
 	@Override
 	public void initUI(BlockComponent blk) {
 		getUi().install(blk);

@@ -15,7 +15,7 @@ import javax.swing.SwingUtilities;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 
 @SuppressWarnings("serial")
-public class SquareUIView extends AbstractUIView implements BlockViewUI {
+public class SquareUIView extends AbstractBlockUIView implements BlockViewUI {
 	private static final int DEFAULT_HEIGHT = 80;
 	private static final int DEFAULT_WIDTH  = 80;
 	

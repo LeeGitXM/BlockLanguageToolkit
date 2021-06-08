@@ -19,7 +19,7 @@ import com.ils.blt.designer.workspace.ProcessBlockView;
  * Create a block that depicts a junction.
  * It looks like a tiny square block.
  */
-public class JunctionUIView extends AbstractUIView implements BlockViewUI {
+public class JunctionUIView extends AbstractBlockUIView implements BlockViewUI {
 	private static final long serialVersionUID = 6635500470545202522L;
 	private static final int DEFAULT_HEIGHT = 50;
 	private static final int DEFAULT_WIDTH  = 50;

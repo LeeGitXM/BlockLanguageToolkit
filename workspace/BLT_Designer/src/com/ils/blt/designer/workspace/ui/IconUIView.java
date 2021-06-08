@@ -21,7 +21,7 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorT
  * Create a drum with a predefined 48x48 graphic. The first input anchor
  * creates an anchor point on the top. Any others are ignored.
  */
-public class IconUIView extends AbstractUIView implements BlockViewUI {
+public class IconUIView extends AbstractBlockUIView implements BlockViewUI {
 	private static final long serialVersionUID = 7095402409706582432L;
 	private static final int DEFAULT_HEIGHT = 48;
 	private static final int DEFAULT_WIDTH  = 48;

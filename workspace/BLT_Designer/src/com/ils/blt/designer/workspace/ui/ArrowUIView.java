@@ -27,7 +27,7 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorT
  * square block with an arrow. The arrow colors are preset and depend on whether
  * this is a reader or a writer.
  */
-public class ArrowUIView extends AbstractUIView implements BlockViewUI {
+public class ArrowUIView extends AbstractBlockUIView implements BlockViewUI {
 	private static final long serialVersionUID = 6644400470545202522L;
 	private static final int DEFAULT_HEIGHT = 46;
 	private static final int DEFAULT_WIDTH  = 80;

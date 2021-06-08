@@ -133,7 +133,6 @@ public class ApplicationHomePane extends JPanel implements  NotificationChangeLi
 		items = new ArrayList<>();
 		extensionManager.runScript(editor.context.getScriptManager(),script,ScriptConstants.LIST_KEY_GROUP_RAMP,items,db);
 		for(String item:items) {
-			System.out.println("COMBO="+item);
 			groupRampMethodComboBox.addItem(item);
 		}
 		mainPanel.add(groupRampMethodComboBox, "wrap");

@@ -16,6 +16,7 @@ import java.util.Collection;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
 
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
@@ -31,7 +32,7 @@ import com.inductiveautomation.ignition.designer.blockandconnector.BlockComponen
  *  
  */
 @SuppressWarnings("serial")
-public class AttributeDisplayUIView extends AbstractUIView implements BlockViewUI  {
+public class AttributeDisplayUIView extends AbstractDisplayUIView implements BlockViewUI  {
 
 	private final JLabel label;
 	private String prefix = "";
@@ -40,8 +41,8 @@ public class AttributeDisplayUIView extends AbstractUIView implements BlockViewU
 	
 	
 	public AttributeDisplayUIView(AttributeDisplayView view) {
-		super(view,0,0);
-		this.log.infof("Initializing an AttributeDisplayUIView for block %s (%s)", view.getBlock().getId().toString(),view.getPropertyName());
+		super(view);
+		this.log.infof("INITIALIZING an AttributeDisplayUIView for block %s (%s)", view.getBlock().getId().toString(),view.getPropertyName());
 		this.label = new JLabel();
 		label.setForeground(getForeground());
 		label.setBackground(getBackground());
@@ -59,6 +60,7 @@ public class AttributeDisplayUIView extends AbstractUIView implements BlockViewU
 
 	// Set the display value and repaint.
 	public void setText(String text) {
+		this.log.infof("Set TEXT AttributeDisplayUIView for block %s %s (%s)", this.getDisplay().getBlock().getName(),this.getDisplay().getPropertyName(),text);
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				blockComponent.invalidate();
@@ -69,7 +71,7 @@ public class AttributeDisplayUIView extends AbstractUIView implements BlockViewU
 	
 	@Override
 	protected void paintComponent(Graphics g) {;
-		// TODO: get these from block properties
+		this.log.infof("PAINT AttributeDisplayUIView for block %s (%s)", this.getDisplay().getBlock().getName(),text);
 //		Border border = new LineBorder(Color.black,1);
 		final String html = "<html>" + prefix + " " + text + " " + suffix + "</html>";
 		
@@ -87,5 +89,12 @@ public class AttributeDisplayUIView extends AbstractUIView implements BlockViewU
 		int width = getWidthPropertyValue();
 		blockComponent.setPreferredSize(new Dimension(width, height));
 		*/
+	}
+	
+	
+	@Override
+	public void stateChanged(ChangeEvent e) {
+		// TODO Auto-generated method stub
+		
 	}
 }

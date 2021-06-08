@@ -22,7 +22,7 @@ import com.ils.blt.designer.workspace.WorkspaceConstants;
  * creates an anchor point on the left. The first output anchor point creates an 
  * anchor point on the top.
  */
-public class ClampUIView extends AbstractUIView implements BlockViewUI {
+public class ClampUIView extends AbstractBlockUIView implements BlockViewUI {
 	private static final long serialVersionUID = 2130868310475735865L;
 	private static final int DEFAULT_HEIGHT = 60;
 	private static final int DEFAULT_WIDTH  = 80;

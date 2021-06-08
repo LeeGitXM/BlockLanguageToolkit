@@ -31,7 +31,7 @@ import com.ils.blt.common.notification.NotificationKey;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.designer.NotificationHandler;
-import com.ils.blt.designer.workspace.ui.AbstractUIView;
+import com.ils.blt.designer.workspace.ui.AbstractBlockUIView;
 import com.ils.blt.designer.workspace.ui.UIFactory;
 import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.log.ILSLogger;
@@ -91,7 +91,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 	private String statusText;                    // Auxiliary text to display
 	private UUID subworkspaceId = null;           // Encapsulated diagram if encapsulation block
 	private BlockStyle style = BlockStyle.SQUARE;
-	private AbstractUIView ui = null;
+	private AbstractBlockUIView ui = null;
 	private UUID uuid = null;
 	
 	/**
@@ -382,6 +382,8 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 	public String getBadgeChar() { return badgeChar; }
 	public UUID getSubworkspaceId() {return subworkspaceId;}
 	
+	// This is called in the block-and-connector framework
+	// for each block as the diagram is opened.
 	@Override
 	public void initUI(BlockComponent blk) {
 		ui = factory.getUI(style, this);
@@ -602,7 +604,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 		return conType;
 	}
 
-	public AbstractUIView getUi() {
+	public AbstractBlockUIView getUi() {
 		return ui;
 	}
 

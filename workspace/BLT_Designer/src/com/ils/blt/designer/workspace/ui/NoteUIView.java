@@ -26,7 +26,7 @@ import com.inductiveautomation.ignition.designer.blockandconnector.BlockComponen
 
 /** Draw a free-form text (or html) note in a box. */
 @SuppressWarnings("serial")
-public class NoteUIView extends AbstractUIView implements BlockViewUI, ChangeListener {
+public class NoteUIView extends AbstractBlockUIView implements BlockViewUI, ChangeListener {
 
 	private JLabel label = new JLabel();
 	private BlockProperty textProperty;

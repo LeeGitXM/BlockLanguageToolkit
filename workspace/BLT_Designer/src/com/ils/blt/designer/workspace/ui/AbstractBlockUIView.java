@@ -32,12 +32,11 @@ import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.designer.workspace.BasicAnchorPoint;
 import com.ils.blt.designer.workspace.ProcessAnchorDescriptor;
-import com.ils.blt.designer.workspace.AttributeDisplayView;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.WorkspaceConstants;
+import com.ils.common.log.ILSLogger;
+import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
-import com.inductiveautomation.ignition.common.util.LogUtil;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockComponent;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorPoint;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorType;
@@ -51,10 +50,9 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorT
  * 
  */
 @SuppressWarnings("serial")
-public abstract class AbstractUIView extends JComponent 
-									 implements BlockViewUI,ChangeListener {
-	private static final String TAG = "AbstractUIView";
-	protected final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
+public abstract class AbstractBlockUIView extends JComponent implements BlockViewUI,ChangeListener {
+	private static final String CLSS = "AbstractBlockUIView";
+	protected final ILSLogger log = LogMaker.getLogger(getClass().getPackage().getName());
 	protected ProcessBlockView block = null;
 	private final List<AnchorPoint> anchorPoints;  // Entries are BasicAnchorPoint
 	protected BlockComponent blockComponent = null;
@@ -81,7 +79,7 @@ public abstract class AbstractUIView extends JComponent
 	 * @param defaultWidth
 	 * @param defaultHeight
 	 */
-	public AbstractUIView(ProcessBlockView view,int defaultWidth,int defaultHeight) {
+	public AbstractBlockUIView(ProcessBlockView view,int defaultWidth,int defaultHeight) {
 		this.block = view;
 		block.addChangeListener(this);
 		setOpaque(true);
@@ -91,24 +89,6 @@ public abstract class AbstractUIView extends JComponent
 		if( preferredWidth<=0 ) preferredWidth = defaultWidth;
 		setPreferredSize(new Dimension(preferredWidth,preferredHeight)); 
 		anchorPoints = new ArrayList<AnchorPoint>();
-	}
-	
-	/**
-	 * Paint the property value of some block via it's ProcessAttribute display.
-	 * @param view
-	 * @param defaultWidth
-	 * @param defaultHeight
-	 */
-	public AbstractUIView(AttributeDisplayView display,int defaultWidth,int defaultHeight) {
-		this.block = display.getBlock();
-		block.addChangeListener(this);
-		setOpaque(true);
-		int preferredHeight = display.getPreferredHeight();
-		if( preferredHeight<=0 ) preferredHeight = defaultHeight;
-		int preferredWidth = display.getPreferredWidth();
-		if( preferredWidth<=0 ) preferredWidth = defaultWidth;
-		setPreferredSize(new Dimension(preferredWidth,preferredHeight)); 
-		anchorPoints = new ArrayList<AnchorPoint>();  // There are no anchor points
 	}
 
 	/**
@@ -336,7 +316,7 @@ public abstract class AbstractUIView extends JComponent
 	// Force a repaint.
 	@Override
 	public void update() {
-		log.debugf("%s.update %s ...",TAG,getBlock().getName());
+		log.debugf("%s.update %s ...",CLSS,getBlock().getName());
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				repaint();
@@ -347,7 +327,7 @@ public abstract class AbstractUIView extends JComponent
 	// The block has changed, re-configure. The base method recalculates 
 	// anchor points. The only current use is when the user changes connection types.
 	public void reconfigure() { 
-		log.debugf("%s.reconfigure (%s)",TAG,getBlock().getName());
+		log.debugf("%s.reconfigure (%s)",CLSS,getBlock().getName());
 		initAnchorPoints();
 		
 	}
@@ -366,7 +346,7 @@ public abstract class AbstractUIView extends JComponent
 			}
 			index++;
 		}
-		log.debugf("%s.stateChanged %s ...hidden = %d",TAG,getBlock().getName(),hiddenIndex);
+		log.debugf("%s.stateChanged %s ...hidden = %d",CLSS,getBlock().getName(),hiddenIndex);
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				repaint();
@@ -519,7 +499,7 @@ public abstract class AbstractUIView extends JComponent
 			}
 		}
 		else {
-			log.warnf("%s: drawEmbeddedIcon Missing icon at %s for %s",TAG,iconPath,block.getName());
+			log.warnf("%s: drawEmbeddedIcon Missing icon at %s for %s",CLSS,iconPath,block.getName());
 		}
 	}
 	
@@ -572,7 +552,7 @@ public abstract class AbstractUIView extends JComponent
 			icon.paintIcon(getBlockComponent(), g, bounds.x, bounds.y);
 		}
 		else {
-			log.warnf("%s.paintBadge Missing icon at %s for %s",TAG,iconPath,block.getName());
+			log.warnf("%s.paintBadge Missing icon at %s for %s",CLSS,iconPath,block.getName());
 		}
 	}
 	
