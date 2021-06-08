@@ -740,14 +740,14 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 								block.addAnchor(output);
 								// Properties are the same for Inputs and Sources
 								// This property causes the engine to start a subscription.
-								BlockProperty tagPathProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH,tnode.getTagPath(),PropertyType.OBJECT,true);
+								BlockProperty tagPathProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH,tnode.getTagPath().toStringFull(),PropertyType.OBJECT,true);
 								tagPathProperty.setBinding(tnode.getName());
 								tagPathProperty.setBindingType(BindingType.TAG_READ);
-								block.getProperties().add(tagPathProperty);
+								block.setProperty(tagPathProperty);
 								
 								BlockProperty valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,"",PropertyType.OBJECT,false);
 								valueProperty.setBindingType(BindingType.ENGINE);
-								block.getProperties().add(valueProperty);
+								block.setProperty(valueProperty);
 							} 
 							else {
 								if( isStandardFolder ) {
@@ -782,10 +782,10 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 								BlockProperty pathProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH,"",PropertyType.STRING,true);
 								pathProperty.setBindingType(BindingType.TAG_WRITE);
 								pathProperty.setBinding("");
-								block.getProperties().add( pathProperty);
+								block.setProperty( pathProperty);
 								BlockProperty valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,"",PropertyType.OBJECT,false);
 								valueProperty.setBindingType(BindingType.ENGINE);
-								block.getProperties().add(valueProperty);
+								block.setProperty(valueProperty);
 							}
 							
 							AnchorPrototype signal = new AnchorPrototype(BlockConstants.SIGNAL_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.SIGNAL);
