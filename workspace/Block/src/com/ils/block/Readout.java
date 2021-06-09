@@ -30,6 +30,7 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
  */
 @ExecutableBlock
 public class Readout extends AbstractProcessBlock implements ProcessBlock {
+	private final static boolean DEBUG = false;
 	private String format = "%4.4f";
 	protected PropertyType type = PropertyType.DOUBLE;
 	protected BlockProperty valueProperty = null;
@@ -104,7 +105,7 @@ public class Readout extends AbstractProcessBlock implements ProcessBlock {
 		
 	}
 	protected void notifyOfStatus(QualifiedValue qv) {
-		log.debugf("%s.notifyOfStatus (%s)", getName(), qv.getValue().toString());
+		if(DEBUG) log.infof("%s.notifyOfStatus (%s)", getName(), qv.getValue().toString());
 		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,qv);
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
@@ -146,11 +147,11 @@ public class Readout extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	@Override
 	public void acceptValue(IncomingNotification incoming) {
-		log.tracef("Processing a value for a readout named %s", getName());
 		super.acceptValue(incoming);
 		if( type.equals(PropertyType.BOOLEAN) || type.equals(PropertyType.DOUBLE) ||
 				type.equals(PropertyType.INTEGER) || type.equals(PropertyType.STRING)     ) {
-			lastValue = incoming.getValue();	
+			lastValue = incoming.getValue();
+			if(DEBUG) log.infof("%s.acceptValue: received %s", getName(),lastValue.getValue().toString());
 			if( lastValue!=null && lastValue.getValue()!=null ) {
 				if( !isLocked()  ) {		
 					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);

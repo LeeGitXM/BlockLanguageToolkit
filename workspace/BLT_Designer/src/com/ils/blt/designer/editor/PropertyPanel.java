@@ -95,6 +95,8 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 	private final BlockProperty property;
 	private TimeUnit currentTimeUnit;
 	private final DiagramWorkspace workspace;
+	private final String bindingKey;
+	private final String valueKey;
 
 	
 	public PropertyPanel(DesignerContext ctx, MainPanel main,ProcessBlockView blk,BlockProperty prop, DiagramWorkspace workspace) {
@@ -104,6 +106,9 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 		this.block = blk;
 		this.property = prop;
 		this.workspace = workspace;
+		this.bindingKey = NotificationKey.keyForPropertyBinding(block.getId().toString(), property.getName());
+		this.valueKey = NotificationKey.keyForProperty(block.getId().toString(), property.getName());
+
 
 		this.currentTimeUnit = TimeUnit.MINUTES;   // Force all to be in minutes, to avoid confusing behavior in UI
 		property.addChangeListener(this);
@@ -192,39 +197,34 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 		
 		// Register for notifications
 		if(property.getBindingType().equals(BindingType.ENGINE)) {
-			String key = NotificationKey.keyForProperty(block.getId().toString(), property.getName());
-			log.debugf("%s: adding %s for ENGINE",CLSS,key);
-			notificationHandler.addNotificationChangeListener(key,CLSS,this);
+			log.debugf("%s: adding %s for ENGINE",CLSS,valueKey);
+			notificationHandler.addNotificationChangeListener(valueKey,CLSS,this);
 		}
 		// The "plain" (NONE) properties can be changed by python scripting. In these instances
 		// we are only interested in changes made AFTER the panel is displayed. 
-		else if(property.getBindingType().equals(BindingType.ENGINE) || property.getBindingType().equals(BindingType.NONE)) {
-			String key = NotificationKey.keyForProperty(block.getId().toString(), property.getName());
-			log.debugf("%s: adding %s",CLSS,key);
-			notificationHandler.addNotificationChangeListener(key,CLSS,this,false);
+		else if(property.getBindingType().equals(BindingType.ENGINE) || property.getBindingType().equals(BindingType.NONE)) {;
+			log.debugf("%s: adding %s",CLSS,valueKey);
+			notificationHandler.addNotificationChangeListener(valueKey,CLSS,this,false);
 		}
 		else if( property.getBindingType().equals(BindingType.TAG_MONITOR) ||
 				property.getBindingType().equals(BindingType.TAG_READ) ||
 				property.getBindingType().equals(BindingType.TAG_READWRITE) ||
 				property.getBindingType().equals(BindingType.TAG_WRITE)	) {
-			String key = NotificationKey.keyForPropertyBinding(block.getId().toString(), property.getName());
-			log.debugf("%s: adding %s for %s",CLSS,key,property.getBindingType().name());
-			notificationHandler.addNotificationChangeListener(key,CLSS,this);
+			log.debugf("%s: adding %s for %s",CLSS,bindingKey,property.getBindingType().name());
+			notificationHandler.addNotificationChangeListener(bindingKey,CLSS,this);
 			subscribeToTagPath(property.getBinding());
 		}
 	}
 	// Un-subscribe to anything we're listening on ...
 	public void unsubscribe() {
 		if( property.getBindingType().equals(BindingType.ENGINE)|| property.getBindingType().equals(BindingType.NONE) ) {
-			String key = NotificationKey.keyForProperty(block.getId().toString(), property.getName());
-			notificationHandler.removeNotificationChangeListener(key,CLSS);
+			notificationHandler.removeNotificationChangeListener(valueKey,CLSS);
 		}
 		else if( property.getBindingType().equals(BindingType.TAG_MONITOR) ||
 				property.getBindingType().equals(BindingType.TAG_READ) ||
 				property.getBindingType().equals(BindingType.TAG_READWRITE) ||
 				property.getBindingType().equals(BindingType.TAG_WRITE)	) {
-			String key = NotificationKey.keyForPropertyBinding(block.getId().toString(), property.getName());
-			notificationHandler.removeNotificationChangeListener(key,CLSS);
+			notificationHandler.removeNotificationChangeListener(bindingKey,CLSS);
 			unsubscribeToTagPath(property.getBinding());
 		}
 		property.removeChangeListener(this);
@@ -354,9 +354,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 	}
 	
 	
-	    // =============================== Component Creation Methods ================================
-	
-	
+	// =============================== Component Creation Methods ================================
 	/**
 	 * Create a text box for the binding field. This is editable.
 	 */
@@ -665,7 +663,8 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 							fieldValue.toString(),prop.getType().name());
 				}
 				prop.setValue(fieldValue);
-				parent.saveDiagramClean();    // Update property directly, immediately
+				//parent.saveDiagramClean();    // Update property directly, immediately
+				notificationHandler.initializePropertyValueNotification(valueKey, fieldValue);
 			}
 			else {
 				log.tracef("%s.updatePropertyForField: No Change was %s, is %s", CLSS,prop.getValue().toString(),fieldValue);
@@ -678,7 +677,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 				if( DEBUG ) log.infof("%s.updatePropertyForField: Adjusting %s to %s", CLSS,prop.getBinding(),tagPath);
 				prop.setBinding(tagPath);
 				subscribeToTagPath(tagPath);
-				parent.saveDiagramClean();		
+				//parent.saveDiagramClean();
 			}
 		}
 	}
@@ -717,7 +716,6 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 			updatePanelUI();	
 		}
 	}
-	
 
 	@Override
 	public void valueChange(final QualifiedValue value) {

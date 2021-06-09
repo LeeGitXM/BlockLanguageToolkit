@@ -1235,7 +1235,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			}
 			
 			super.open(diagram);
-			saveOpenDiagram(resourceId);
+			//saveOpenDiagram(resourceId);  // Shouldn't have to save a newly opened diagram, unless there is another user
 			// Inform the gateway of the state and let listeners update the UI
 			ApplicationRequestHandler arh = new ApplicationRequestHandler();
 			arh.setDiagramState(diagram.getId().toString(), diagram.getState().name());

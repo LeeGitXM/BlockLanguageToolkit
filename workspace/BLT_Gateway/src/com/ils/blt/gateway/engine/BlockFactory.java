@@ -112,9 +112,8 @@ public class BlockFactory  {
 	 * @param sb serializable block, the source
 	 */
 	public void updateBlockFromSerializable(ProcessBlock pb,SerializableBlock sb) {
-		log.infof("In updateBlockFromSerializable, setting the name...");
+		log.infof("%s.updateBlockFromSerializable %s %s",CLSS,sb.getName(),sb.getClassName());
 		pb.setName(sb.getName());
-		log.infof("...the name has been set...");
 		// Update anchors first.  We do this because in some blocks property update behavior depends
 		// on the datatype of the anchors.
 		SerializableAnchor[] sanchors = sb.getAnchors();
@@ -135,14 +134,12 @@ public class BlockFactory  {
 			// A "Note" has no anchors. Others initialize anchor points themselves.
 			log.infof("%s.updateBlockFromSerializable: No anchors found in process block",CLSS);
 		}
-		
-		log.infof("setting properties...");
+		;
 		log.infof("     ...available properties are: %s",pb.getPropertyNames().toString()); 
 		BlockProperty[] properties = sb.getProperties();
 		if( properties!=null ) {
 			for( BlockProperty bp:properties) {
 				if( bp==null || bp.getName()==null) continue;
-				log.infof("   Processing property: %s", bp.getName());
 				BlockProperty property = pb.getProperty(bp.getName());
 				if( property!=null ) {
 					// Use the property change interface so as to properly trigger
@@ -187,7 +184,6 @@ public class BlockFactory  {
 		else {
 			log.errorf("%s.updateBlockFromSerializable: No properties found in process block",CLSS);
 		}
-		log.infof("...done setting properties!");
 		// Update Aux data
 		pb.setAuxiliaryData(sb.getAuxiliaryData());
 	}

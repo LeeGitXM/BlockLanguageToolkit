@@ -548,7 +548,7 @@ public class ModelManager implements ProjectListener  {
 				for( ProcessBlock pb:diagram.getProcessBlocks()) {
 					if( !pb.delayBlockStart() ) pb.start();
 				}
-
+				try{ Thread.sleep(5000); } catch(InterruptedException ignore) {}
 				for( ProcessBlock pb:diagram.getProcessBlocks()) {
 					if( pb.delayBlockStart() ) pb.start();
 				}
@@ -767,7 +767,7 @@ public class ModelManager implements ProjectListener  {
 	 * @param startup
 	 */
 	private void addModifyDiagramResource(long projectId,ProjectResource res,boolean startup) {
-		log.debugf("%s.addModifyDiagramResource: %s(%d)",CLSS,res.getName(),res.getResourceId());
+		log.infof("%s.addModifyDiagramResource: %s(%d)",CLSS,res.getName(),res.getResourceId());
 		SerializableDiagram sd = deserializeDiagramResource(projectId,res);
 
 		if( sd!=null ) {
@@ -821,6 +821,7 @@ public class ModelManager implements ProjectListener  {
 				addToHierarchy(projectId,diagram);
 				// New Diagrams are always disabled
 				diagram.createBlocks(sd.getBlocks());
+				diagram.createAttributeDisplays(sd.getAttributeDisplays());
 				diagram.updateConnections(sd.getConnections());
 				diagram.updateProperties(sd);                    // Fixes subscriptions, as necessary
 				diagram.setState(sd.getState());                 // Handle state change, if any
@@ -840,19 +841,16 @@ public class ModelManager implements ProjectListener  {
 				for(ProcessBlock deletedBlock:deletedBlocks) {
 					deletedBlock.onDelete();
 				}
-				diagram.createBlocks(sd.getBlocks());       // Adds blocks that are new in update
+				diagram.createBlocks(sd.getBlocks());            // Adds blocks that are new in update
+				diagram.createAttributeDisplays(sd.getAttributeDisplays());
 				diagram.updateConnections(sd.getConnections());  // Adds connections that are new in update
 				diagram.updateProperties(sd);                    // Fixes subscriptions, as necessary
 				diagram.setState(sd.getState());// Handle state change, if any
 			}
-			// NOTE: On startup, we read block aux data from production for each of the blocks.
-			//       There are no aux data for the diagram itself.
+
 			if( diagram!=null )  {
 				for(ProcessBlock block:diagram.getProcessBlocks()) {
-					if( startup ) {
-						block.setAuxiliaryData(block.getAuxiliaryData());
-					}
-					else {
+					if( !startup ) {
 						block.onSave();
 					}
 				}
@@ -882,7 +880,7 @@ public class ModelManager implements ProjectListener  {
 	 * @param startup
 	 */
 	private void addModifyFamilyResource(long projectId,ProjectResource res,boolean startup) {
-		log.debugf("%s.addModifyFamilyResource: %s(%d)",CLSS,res.getName(),res.getResourceId());
+		log.infof("%s.addModifyFamilyResource: %s(%d)",CLSS,res.getName(),res.getResourceId());
 		SerializableFamily sf = deserializeFamilyResource(projectId,res);
 		if( sf!=null ) {
 			ProcessFamily family = new ProcessFamily(sf,res.getParentUuid());
@@ -959,7 +957,7 @@ public class ModelManager implements ProjectListener  {
 	 * @param model the diagram logic
 	 */
 	private void addModifyFolderResource(long projectId,ProjectResource res) {
-		log.debugf("%s.addFolderResource: %s(%d)",CLSS,res.getName(),res.getResourceId());
+		log.infof("%s.addFolderResource: %s(%d)",CLSS,res.getName(),res.getResourceId());
 		UUID self = res.getDataAsUUID();
 		ProcessNode node = nodesByUUID.get(self);
 		if( node==null ) {

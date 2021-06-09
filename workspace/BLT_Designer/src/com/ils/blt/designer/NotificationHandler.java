@@ -13,12 +13,12 @@ import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.notification.NotificationChangeListener;
 import com.ils.blt.common.notification.NotificationKey;
 import com.ils.blt.designer.workspace.WorkspaceRepainter;
+import com.ils.common.log.ILSLogger;
+import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
 import com.inductiveautomation.ignition.client.gateway_interface.PushNotificationListener;
 import com.inductiveautomation.ignition.common.gateway.messages.PushNotification;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
-import com.inductiveautomation.ignition.common.util.LogUtil;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
 
 
 /**
@@ -35,7 +35,7 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  */
 public class NotificationHandler implements PushNotificationListener {
 	private static String CLSS = "NotificationHandler";
-	private final LoggerEx log;
+	private final ILSLogger log;
 	private final Map<String,Map<String,NotificationChangeListener>> changeListenerMap;
 	private final Map<String,Object> payloadMap;        // Keyed by the message type.
 	private static NotificationHandler instance = null;
@@ -45,7 +45,7 @@ public class NotificationHandler implements PushNotificationListener {
 	 * The handler, make this private per Singleton pattern ...
 	 */
 	private NotificationHandler() {
-		log = LogUtil.getLogger(getClass().getPackage().getName());
+		log = LogMaker.getLogger(this);
 		// Register as listener for notifications
 		GatewayConnectionManager.getInstance().addPushNotificationListener(this);
 		// The first string is the key that we're listening on. Then we get a map
@@ -88,7 +88,7 @@ public class NotificationHandler implements PushNotificationListener {
 			String key = notice.getMessageType();
 			Object message = notice.getMessage();	
 			if( message==null ) return; // Ignore
-			//log.infof("%s.receiveNotification: key=%s,value=%s",CLSS,key,payload.toString());
+			log.infof("%s.receiveNotification: key=%s,value=%s",CLSS,key,message.toString());
 			
 			// Process alert change notifications independent of "attached" status
 			if(NotificationKey.isAlertKey(key)) {
@@ -239,7 +239,6 @@ public class NotificationHandler implements PushNotificationListener {
 	/**
 	 * Receive notification from a ProcessViewDiagram in the Designer. This is a mechanism
 	 * to restore the diagram display to its state prior to its last serialization.
-	 * Note: This is used only blocks whose names have been programmatically changed.
 	 */
 	public void initializeBlockNameNotification(String key,String name) {
 		if( key==null || name==null) return;
@@ -261,7 +260,6 @@ public class NotificationHandler implements PushNotificationListener {
 	/**
 	 * Receive notification from a ProcessViewDiagram in the Designer. This is a mechanism
 	 * to restore the diagram display to its state prior to its last serialization.
-	 * Note: This is used only for properties bound to ENGINE.
 	 */
 	public void initializePropertyValueNotification(String key,Object value) {
 		if( key==null || value==null) return;

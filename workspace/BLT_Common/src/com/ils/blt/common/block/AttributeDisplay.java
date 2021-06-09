@@ -11,14 +11,14 @@ import java.util.UUID;
  * In the Gateway these are simply "beans" and hold the few attributes.
  * These are serializable and therefore can be instantiated in any scope.
  */
-public class AttributeDisplay implements Serializable {
+public class AttributeDisplay implements Cloneable,Serializable {
 	private static final long serialVersionUID = -1802235810478552377L;
 	private static final String CLSS = "AttributeDisplay";
 	public static final int DEFAULT_WIDTH = 120;
 	public static final int DEFAULT_HEIGHT = 15;
 	private final String blockId;
 	private final String propertyName;
-	private final UUID uuid;
+	private UUID uuid;
 	private int offsetX;  // X distance relative to the block
 	private int offsetY;  // Y distance relative to the block
 	private int preferredHeight = DEFAULT_HEIGHT;   // Size the view to "natural" size
@@ -46,4 +46,21 @@ public class AttributeDisplay implements Serializable {
 	public int getY() { return this.y; }
 	public void setY(int pos) { this.y = pos; }
 	public UUID getUUID() { return this.uuid; }
+	
+	@Override
+	public AttributeDisplay clone() {
+		AttributeDisplay ad = new AttributeDisplay(this.blockId,this.propertyName);
+		ad.preferredHeight = getPreferredHeight();
+		ad.preferredWidth = getPreferredWidth();
+		ad.x = this.x;
+		ad.y = this.y;
+		ad.uuid = this.uuid;
+		return ad;
+	} 
+	/**
+	 * Start listening on property change
+	 */
+	public void start() {
+		
+	}
 }

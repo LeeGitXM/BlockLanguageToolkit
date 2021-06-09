@@ -96,8 +96,6 @@ public class Callback {
 		log.tracef("%s: Completed callback script.",CLSS);
 		localsMap = null;
 	}
-	
-
 	/**
 	 * Convert the comma-separated variable string into an array of strings.
 	 */
@@ -105,7 +103,6 @@ public class Callback {
 		localVariableList = varlist;
 		localVariables = varlist.split(",");
 	}
-
 	/**
 	 * Clear the locals map. This must be called before any local variables are 
 	 * defined.
@@ -132,4 +129,3 @@ public class Callback {
 		log.tracef("%s.setLocalVariable: %s to %s",CLSS,localVariables[index],value.toString());
 	}
 }
-

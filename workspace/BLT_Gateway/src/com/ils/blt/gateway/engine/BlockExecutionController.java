@@ -240,15 +240,15 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	public AcceleratedWatchdogTimer getSecondaryTimer() {return secondaryWatchdogTimer;}
 
 	/**
-	 * Start the controller, watchdogTimer, tagListener and TagWriter.
+	 * Start the controller, watchdogTimer, tagListener and TagWriter. We assume that projects are
+	 * already loaded.
 	 * @param context the gateway context
 	 */
 	public synchronized void start(GatewayContext context) {
-		log.infof("%s: STARTED",CLSS);
+		log.infof("%s: ============================ STARTED ===================================",CLSS);
 		if(!stopped) return;  
 		stopped = false;
 		this.notificationThread = new Thread(this, "BlockExecutionController");
-		log.debugf("%s START - notification thread %d ",CLSS,notificationThread.hashCode());
 		notificationThread.setDaemon(true);
 		notificationThread.start();
 		watchdogTimer.start();
@@ -271,7 +271,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	 * instance values to null to, hopefully, allow garbage collection.
 	 */
 	public synchronized void stop() {
-		log.infof("%s: STOPPING ...",CLSS);
+		log.infof("%s: ============================== STOPPING ===========================",CLSS);
 		if(stopped) return;
 		stopped = true;
 		if(notificationThread!=null) {

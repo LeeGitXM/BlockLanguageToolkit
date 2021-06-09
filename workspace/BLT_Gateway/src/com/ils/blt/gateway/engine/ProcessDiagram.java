@@ -145,6 +145,24 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 	}
 	
 	/**
+	 * Clone attribute displays from the subject serializable diagram and add them to the current.
+	 * In order to make this applicable for updates, we skip any blocks that currently
+	 * exist. Newly created blocks are started.
+	 * 
+	 * Blocks with an updated version are updated and replaced in the serializablediagram
+	 *    A save is required after they are replaced.
+	 * 
+	 * @param displays an array of newly created attribute displays to be added to the diagram
+	 */
+	public void createAttributeDisplays(AttributeDisplay[] darray ) {
+		for( AttributeDisplay display:darray ) {
+			AttributeDisplay ad = display.clone();
+			displays.put(ad.getBlockId(),ad);
+			ad.start();
+		}
+		return;
+	}
+	/**
 	 * Clone blocks from the subject serializable diagram and add them to the current.
 	 * In order to make this applicable for updates, we skip any blocks that currently
 	 * exist. Newly created blocks are started.
@@ -179,7 +197,6 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 							controller.startSubscription(getState(),pb,bp);
 						}
 					}
-
 				}
 				else {
 					log.errorf("%s.analyze: ERROR, diagram %s failed to instantiate block of type %s",CLSS,getName(),sb.getClassName());

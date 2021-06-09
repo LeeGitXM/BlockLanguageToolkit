@@ -95,11 +95,9 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	@Override
 	public void startup(LicenseState licenseState) {
 		this.toolkitHandler = new ToolkitRecordHandler(context);
-		// Look for all block resources and inform the execution controller
+		this.mmgr = new ModelManager(context);
 		BlockExecutionController controller = BlockExecutionController.getInstance();
-		mmgr = new ModelManager(context);
 		controller.setDelegate(mmgr);
-		controller.start(context);     // Start the controller
 
 		// Analyze existing projects - skip the global project and any that are disabled.
 		List<Project> projects = context.getProjectManager().getProjectsFull(ProjectVersion.Staging);
@@ -110,7 +108,8 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 
 		// Register for changes to our permanent settings
 		ToolkitRecord.META.addRecordListener(recordListener);
-
+		controller.start(context);     // Start the controller once the project has been analyzed
+		
 		context.getProjectManager().addProjectListener(mmgr);  
 		log.infof("%s: Startup complete.",CLSS);
 	}

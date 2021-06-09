@@ -38,12 +38,11 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import net.miginfocom.swing.MigLayout;
 
 /**
- * This is a read-only viewer for blocks for blocks that return internal state
+ * This is a read-only viewer for blocks that return internal state
  * (theoretically all of them).
  */
 
 public class PropertyDisplayEditor extends JDialog {
-	// A panel is designed to edit properties that are lists of strings.
 	private static final String PREFIX = BLTProperties.BLOCK_PREFIX;  // Required for text strings
 	private static final long serialVersionUID = 2002388376824434427L;
 	private final int DIALOG_HEIGHT = 320;
@@ -69,7 +68,6 @@ public class PropertyDisplayEditor extends JDialog {
 	}
 	
 	private void initialize() {
-		
 		// The internal panel has two panes - one for the JTextPane, the other for the JTextArea.
 		setLayout(new BorderLayout());
 		JPanel internalPanel = new JPanel();

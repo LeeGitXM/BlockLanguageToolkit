@@ -102,7 +102,6 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	// Insert a menu to allow control of database and tag provider.
     @Override
     public MenuBarMerge getModuleMenu() {
-
     	//log.infof("DesignerHook in Menu merge %s",(diagramsAttached?"TRUE":"FALSE"));
     	MenuBarMerge merge = new MenuBarMerge(BLTProperties.MODULE_ID);  // as suggested in javadocs
     	merge.addSeparator();

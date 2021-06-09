@@ -1,5 +1,5 @@
 /**
- *   (c) 2014-2018  ILS Automation. All rights reserved. 
+ *   (c) 2014-2021  ILS Automation. All rights reserved. 
  */
 package com.ils.block;
 
@@ -101,14 +101,11 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 						 (tagPathProperty.getValue()==null?"null":tagPathProperty.getValue().toString()));
 			}
 		}
-		/*
 		if( lastValue!=null &&  lastValue.getValue() != null && !isLocked()  ) {
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 			controller.acceptCompletionNotification(nvn);
-			//notifyOfStatus();
-			
+			notifyOfStatus();
 		}
-		*/
 	}
 
 	@Override
