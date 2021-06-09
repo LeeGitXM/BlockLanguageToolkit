@@ -32,6 +32,8 @@ import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.gateway.ControllerRequestHandler;
 import com.ils.blt.gateway.tag.TagListener;
 import com.ils.common.BoundedBuffer;
+import com.ils.common.log.ILSLogger;
+import com.ils.common.log.LogMaker;
 import com.ils.common.persistence.ToolkitProperties;
 import com.ils.common.tag.TagReader;
 import com.ils.common.tag.TagUtility;
@@ -41,8 +43,6 @@ import com.ils.common.watchdog.AcceleratedWatchdogTimer;
 import com.ils.common.watchdog.WatchdogTimer;
 import com.inductiveautomation.ignition.common.model.ApplicationScope;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
-import com.inductiveautomation.ignition.common.util.LogUtil;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.gateway.clientcomm.GatewaySessionManager;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 
@@ -61,7 +61,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	public final static String CONTROLLER_STOPPED_STATE = "stopped";
 	private static int BUFFER_SIZE = 100;       // Buffer Capacity
 	private static int THREAD_POOL_SIZE = 10;   // Notification threads
-	private final LoggerEx log;
+	private final ILSLogger log;
 	private GatewaySessionManager sessionManager = null;
 	private ModelManager modelManager = null;
 	private final WatchdogTimer watchdogTimer;
@@ -81,6 +81,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	private final TagListener tagListener;    // Tag subscriber
 	private TagWriter tagWriter = null;
 	private Thread notificationThread = null;
+	
 	// Make this static so we can test without creating an instance.
 	private static boolean stopped = true;
 	
@@ -88,7 +89,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	 * Initialize with instances of the classes to be controlled.
 	 */
 	private BlockExecutionController() {
-		log = LogUtil.getLogger(getClass().getPackage().getName());
+		log = LogMaker.getLogger(getClass().getPackage().getName());
 		this.threadPool = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
 		this.tagListener = new TagListener(this);
 		this.buffer = new BoundedBuffer(BUFFER_SIZE);

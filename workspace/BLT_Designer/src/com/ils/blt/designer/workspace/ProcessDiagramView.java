@@ -523,7 +523,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		}
 	}
 	/**
-	 * Update the UI, including connections
+	 * Update the UI, including connections. The block class listens for property values.
 	 */
 	public void refresh() {
 		NotificationHandler handler = NotificationHandler.getInstance();
@@ -532,7 +532,6 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			if( bap!=null ) {    // Is null when block-and-connector library is hosed.
 				ProcessBlockView blk = (ProcessBlockView)bap.getBlock();
 				String key = NotificationKey.keyForConnection(blk.getId().toString(), bap.getId().toString());
-				handler.initializePropertyValueNotification(key,blk.getLastValueForPort(bap.getId().toString()));
 				handler.addNotificationChangeListener(key,CLSS, bap);
 			}
 		}
@@ -553,7 +552,6 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			if( bap!=null ) {    // Is null when block-and-connector library is hosed.
 				ProcessBlockView blk = (ProcessBlockView)bap.getBlock();
 				String key = NotificationKey.keyForConnection(blk.getId().toString(), bap.getId().toString());
-				handler.initializePropertyValueNotification(key,blk.getLastValueForPort(bap.getId().toString()));
 				handler.addNotificationChangeListener(key,CLSS, bap);
 			}
 		}

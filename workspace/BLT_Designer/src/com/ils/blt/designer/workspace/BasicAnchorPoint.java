@@ -1,5 +1,5 @@
 /**
- *   (c) 2014-2017  ILS Automation. All rights reserved.
+ *   (c) 2014-2021  ILS Automation. All rights reserved.
  */
 package com.ils.blt.designer.workspace;
 
@@ -8,7 +8,6 @@ import java.awt.Color;
 import java.awt.Point;
 import java.awt.Shape;
 import java.awt.Stroke;
-import java.lang.NumberFormatException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.EnumSet;
@@ -18,9 +17,9 @@ import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.notification.NotificationChangeListener;
 import com.ils.blt.designer.workspace.ui.AnchorSide;
+import com.ils.common.log.ILSLogger;
+import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
-import com.inductiveautomation.ignition.common.util.LogUtil;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorPoint;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorType;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
@@ -36,7 +35,7 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
  * and workspace connection rendering.
  */
 public class BasicAnchorPoint extends AnchorPoint implements NotificationChangeListener {
-	private static LoggerEx log = LogUtil.getLogger(AnchorPoint.class.getPackage().getName());
+	private static ILSLogger log = LogMaker.getLogger(AnchorPoint.class.getPackage().getName());
 	protected final static String DEFAULT_FORMAT = "yyyy/MM/dd HH:mm:ss";
 	protected final static SimpleDateFormat dateFormatter = new SimpleDateFormat(DEFAULT_FORMAT);
 	// Here is our repertoire of strokes and colors ...

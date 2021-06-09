@@ -88,7 +88,7 @@ public class NotificationHandler implements PushNotificationListener {
 			String key = notice.getMessageType();
 			Object message = notice.getMessage();	
 			if( message==null ) return; // Ignore
-			log.infof("%s.receiveNotification: key=%s,value=%s",CLSS,key,message.toString());
+			//log.infof("%s.receiveNotification: key=%s,value=%s",CLSS,key,message.toString());
 			
 			// Process alert change notifications independent of "attached" status
 			if(NotificationKey.isAlertKey(key)) {
@@ -311,6 +311,9 @@ public class NotificationHandler implements PushNotificationListener {
 		Object payload = payloadMap.get(key);
 		if( update && payload!=null ) {
 			if( NotificationKey.isAuxDataKey(key))         listener.valueChange((QualifiedValue)payload);
+			else if( NotificationKey.isConnectionKey(key)) {
+				listener.valueChange((QualifiedValue)payload);
+			}
 			else if( NotificationKey.isNameChangeKey(key)) listener.nameChange(payload.toString());
 			else if(NotificationKey.isPropertyBindingKey(key)) {
 				String pname = NotificationKey.propertyFromKey(key);
