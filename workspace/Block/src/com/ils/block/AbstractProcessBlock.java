@@ -61,6 +61,7 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
  * 
  */
 public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropertyChangeListener, NotificationChangeListener, WatchdogObserver {
+	private static final boolean DEBUG = true;
 	protected final static int DEFAULT_ACTIVITY_BUFFER_SIZE = 10; 
 	protected final static String DEFAULT_FORMAT = "yyyy/MM/dd HH:mm:ss";
 	protected final static SimpleDateFormat dateFormatter = new SimpleDateFormat(DEFAULT_FORMAT);
@@ -529,6 +530,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 					recordActivity(Activity.ACTIVITY_RECEIVE_NULL,port);
 				}
 			}
+			if(DEBUG) log.infof("%s.acceptValue: %s on %s",getName(),qv.getValue().toString(),port);
 		}
 	}
 	/**
@@ -587,6 +589,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 			if( bp.getBindingType().equals(BindingType.ENGINE) ) {
 				QualifiedValue qv = new TestAwareQualifiedValue(timer,bp.getValue());
 				controller.sendPropertyNotification(getBlockId().toString(),bp.getName(), qv);
+				if(DEBUG) log.info("%s.notifyOfStatus: %s %s = %s",getName(),getBlockId().toString(),bp.getName(),qv.getValue().toString());
 			}
 		}
 	}

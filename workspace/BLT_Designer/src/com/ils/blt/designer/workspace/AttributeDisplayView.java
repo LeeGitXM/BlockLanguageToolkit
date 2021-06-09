@@ -13,9 +13,10 @@ import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.notification.NotificationChangeListener;
 import com.ils.blt.common.notification.NotificationKey;
 import com.ils.blt.designer.NotificationHandler;
-import com.ils.blt.designer.workspace.ui.AbstractBlockUIView;
 import com.ils.blt.designer.workspace.ui.AbstractDisplayUIView;
 import com.ils.blt.designer.workspace.ui.AttributeDisplayUIView;
+import com.ils.common.log.ILSLogger;
+import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockComponent;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorPoint;
@@ -31,8 +32,10 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.impl.Ab
  */
 public class AttributeDisplayView extends AbstractBlock implements NotificationChangeListener {
 	private static final String CLSS = "AttributeDisplay";
+	private final boolean DEBUG = true;
 	private final NotificationHandler notificationHandler = NotificationHandler.getInstance();
 	private final ProcessBlockView block;
+	private final ILSLogger log;
 	private final String propertyName;
 	private String text = "";      // Current value
 	private final UUID uuid;
@@ -54,6 +57,7 @@ public class AttributeDisplayView extends AbstractBlock implements NotificationC
 		this.uuid = UUID.randomUUID();
 		this.location = new Point(block.getLocation().x + offsetX,block.getLocation().y + offsetY);
 		this.ui = new AttributeDisplayUIView(this);
+		this.log = LogMaker.getLogger(this);
 	}
 	
 	/**
@@ -67,6 +71,7 @@ public class AttributeDisplayView extends AbstractBlock implements NotificationC
 		this.offsetX = block.getLocation().x - location.x;
 		this.offsetY = block.getLocation().y - location.y;
 		this.ui = new AttributeDisplayUIView(this);
+		this.log = LogMaker.getLogger(this);
 	}
 	
 		
@@ -87,6 +92,7 @@ public class AttributeDisplayView extends AbstractBlock implements NotificationC
 	// The parent diagram is displayed, start the listener.
 	public void startup() {
 		String key = NotificationKey.keyForProperty(block.getId().toString(), propertyName);
+		if(DEBUG) log.infof("%.startup: listening for notification %s",CLSS,key);
 		notificationHandler.initializePropertyValueNotification(key,text);
 		notificationHandler.addNotificationChangeListener(key,CLSS, this);
 	}

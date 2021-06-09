@@ -1147,8 +1147,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		catch(Exception ge) {
 			log.warnf("%s: toJson (%s)",CLSS,ge.getMessage());
 		}
-		log.tracef("%s: json properties = %s",CLSS,json);
-		log.debugf("%s.setBlockProperties: %s %s %s %s: %s", CLSS, diagId,blockId, json);
+		log.debugf("%s.setBlockProperties: %s %s: %s", CLSS, diagId,blockId, json);
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 				BLTProperties.MODULE_ID, "setBlockProperties", diagId,blockId, json);
@@ -1410,8 +1409,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		catch(Exception ge) {
 			log.warnf("%s: toJson (%s)",CLSS,ge.getMessage());
 		}
-		log.tracef("%s: json properties = %s",CLSS,json);
-		log.debugf("%s.setBlockProperties: %s %s %s %s: %s", CLSS, diagId,blockId, json);
+		log.debugf("%s.updateBlockAnchors: %s %s = %s", CLSS, diagId,blockId,json);
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 				BLTProperties.MODULE_ID, "updateBlockAnchors", diagId,blockId, json);

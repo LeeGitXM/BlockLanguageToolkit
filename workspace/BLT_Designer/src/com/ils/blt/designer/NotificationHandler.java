@@ -36,6 +36,7 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 public class NotificationHandler implements PushNotificationListener {
 	private static String CLSS = "NotificationHandler";
 	private final ILSLogger log;
+	private final boolean DEBUG = true;
 	private final Map<String,Map<String,NotificationChangeListener>> changeListenerMap;
 	private final Map<String,Object> payloadMap;        // Keyed by the message type.
 	private static NotificationHandler instance = null;
@@ -88,7 +89,7 @@ public class NotificationHandler implements PushNotificationListener {
 			String key = notice.getMessageType();
 			Object message = notice.getMessage();	
 			if( message==null ) return; // Ignore
-			//log.infof("%s.receiveNotification: key=%s,value=%s",CLSS,key,message.toString());
+			if(DEBUG) log.infof("%s.receiveNotification: key=%s,value=%s",CLSS,key,message.toString());
 			
 			// Process alert change notifications independent of "attached" status
 			if(NotificationKey.isAlertKey(key)) {

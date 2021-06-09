@@ -57,6 +57,7 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.impl.Ab
  */
 public class ProcessBlockView extends AbstractBlock implements ChangeListener, NotificationChangeListener {
 	private static final String CLSS = "ProcessBlockView";
+	private static final boolean DEBUG = true;
 	private final static Random random = new Random();
 	private Map<String,ProcessAnchorDescriptor> anchors;
 	private final EventListenerList listenerList;
@@ -126,7 +127,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 			order++;
 			anchors.put(ap.getName(), pad);
 		}
-		log.debugf("%s: Created %s (%s) view from descriptor (%d anchors)", CLSS, className, style.toString(),anchors.size());
+		if(DEBUG)log.infof("%s: Created %s (%s) view from descriptor (%d anchors)", CLSS, className, style.toString(),anchors.size());
 		createPseudoRandomName();
 	}
 	
@@ -174,7 +175,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 		}
 		this.setName(sb.getName());
 		this.location = new Point(sb.getX(),sb.getY());
-		log.debugf("%s: %s created %s %s (%s) view from serializable block", CLSS, sb.getName(),className, sb.getId().toString(),style.toString());
+		if(DEBUG) log.infof("%s: %s created %s %s (%s) view from serializable block", CLSS, sb.getName(),className, sb.getId().toString(),style.toString());
 	}
 	
 	// NOTE: The most recent values on each port are stored in the connection anchor point
@@ -468,6 +469,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 		for(BlockProperty prop:getProperties()) {
 			String key = NotificationKey.keyForProperty(getId().toString(), prop.getName());
 			handler.initializePropertyValueNotification(key,prop.getValue());
+			if(DEBUG) log.infof("%s.startup: %s listening %s", CLSS, key);
 			handler.addNotificationChangeListener(key,CLSS, this);
 		}
 	}
@@ -630,6 +632,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 	public void propertyChange(String pname,Object value) {
 		BlockProperty prop = getProperty(pname);
 		if( prop!=null ) prop.setValue(value);
+		if(DEBUG)log.infof("%s.propertyChange: %s %s=%s", CLSS,getName(),prop.getName(),value.toString());
 	}
 	@Override
 	public void valueChange(QualifiedValue value) {	

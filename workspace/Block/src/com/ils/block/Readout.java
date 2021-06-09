@@ -105,7 +105,7 @@ public class Readout extends AbstractProcessBlock implements ProcessBlock {
 		
 	}
 	protected void notifyOfStatus(QualifiedValue qv) {
-		if(DEBUG) log.infof("%s.notifyOfStatus (%s)", getName(), qv.getValue().toString());
+		if(DEBUG) log.infof("%s.notifyOfStatus %s %s =%s", getName(), getBlockId().toString(),BlockConstants.BLOCK_PROPERTY_VALUE,qv.getValue().toString());
 		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,qv);
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
@@ -151,7 +151,6 @@ public class Readout extends AbstractProcessBlock implements ProcessBlock {
 		if( type.equals(PropertyType.BOOLEAN) || type.equals(PropertyType.DOUBLE) ||
 				type.equals(PropertyType.INTEGER) || type.equals(PropertyType.STRING)     ) {
 			lastValue = incoming.getValue();
-			if(DEBUG) log.infof("%s.acceptValue: received %s", getName(),lastValue.getValue().toString());
 			if( lastValue!=null && lastValue.getValue()!=null ) {
 				if( !isLocked()  ) {		
 					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
