@@ -67,6 +67,8 @@ public interface BlockConstants   {
 	public static final String BLOCK_PROPERTY_VALUE 				= "Value";                       // Current value
 	public static final String BLOCK_PROPERTY_WIDTH 				= "Width";
 	
+	// Use this for notifications for all properties in the block
+	public static final String BLOCK_PROPERTY_ALL 	= "*";
 	
 	// These are valid block data types
 	public static final String BLOCK_TYPE_SCRIPT        = "script";  // Python module path

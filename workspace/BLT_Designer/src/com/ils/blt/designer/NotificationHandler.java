@@ -36,7 +36,7 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 public class NotificationHandler implements PushNotificationListener {
 	private static String CLSS = "NotificationHandler";
 	private final ILSLogger log;
-	private final boolean DEBUG = true;
+	private final boolean DEBUG = false;
 	private final Map<String,Map<String,NotificationChangeListener>> changeListenerMap;
 	private final Map<String,Object> payloadMap;        // Keyed by the message type.
 	private static NotificationHandler instance = null;

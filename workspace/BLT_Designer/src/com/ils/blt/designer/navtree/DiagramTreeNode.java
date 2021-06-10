@@ -220,7 +220,6 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 				ProcessBlockView pbv = (ProcessBlockView)blk;
 				pbv.setDirty(false);  // Suppresses the popup?
 			}
-			//view.registerChangeListeners();
 			workspace.saveDiagramResource(tab);
 			
 		}

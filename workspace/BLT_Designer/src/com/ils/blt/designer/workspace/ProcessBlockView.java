@@ -469,7 +469,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 		for(BlockProperty prop:getProperties()) {
 			String key = NotificationKey.keyForProperty(getId().toString(), prop.getName());
 			handler.initializePropertyValueNotification(key,prop.getValue());
-			if(DEBUG) log.infof("%s.startup: %s listening %s", CLSS, key);
+			if(DEBUG) log.infof("%s.startup: listening %s", CLSS, key);
 			handler.addNotificationChangeListener(key,CLSS, this);
 		}
 	}

@@ -137,7 +137,7 @@ public class Readout extends AbstractProcessBlock implements ProcessBlock {
 				format = "%s";
 			}
 		}
-		log.debugf("READOUT: %s property change %s = %s",getName(),propertyName,event.getNewValue().toString());
+		if(DEBUG) log.infof("%s.propertyChange: %s = %s",getName(),propertyName,event.getNewValue().toString());
 	}
 	
 	/**
@@ -183,12 +183,11 @@ public class Readout extends AbstractProcessBlock implements ProcessBlock {
 					updateStateForNewValue(lastValue);
 					QualifiedValue qv = new BasicQualifiedValue(value,lastValue.getQuality(),lastValue.getTimestamp()); 
 					valueProperty.setValue(value);
-					log.tracef("%s.acceptValue: port %s formatted value =  %s.",getName(),incoming.getConnection().getUpstreamPortName(),value);
+					if(DEBUG) log.infof("%s.acceptValue: port %s formatted value =  %s.",getName(),incoming.getConnection().getUpstreamPortName(),value);
 					notifyOfStatus(qv);
 				}
 			}
 		}
-		log.tracef("...done processing a value for a readout named %s", getName());
 	}
 	
 

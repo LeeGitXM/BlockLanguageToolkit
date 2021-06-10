@@ -61,7 +61,7 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
  * 
  */
 public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropertyChangeListener, NotificationChangeListener, WatchdogObserver {
-	private static final boolean DEBUG = true;
+	private static final boolean DEBUG = false;
 	protected final static int DEFAULT_ACTIVITY_BUFFER_SIZE = 10; 
 	protected final static String DEFAULT_FORMAT = "yyyy/MM/dd HH:mm:ss";
 	protected final static SimpleDateFormat dateFormatter = new SimpleDateFormat(DEFAULT_FORMAT);
