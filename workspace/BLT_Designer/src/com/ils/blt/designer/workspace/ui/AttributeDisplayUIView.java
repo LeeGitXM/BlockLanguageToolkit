@@ -1,5 +1,5 @@
 /**
- *  Copyright (c) 2021  ILS Automation. All rights reserved. 
+  *  Copyright (c) 2021  ILS Automation. All rights reserved. 
  *  
  *  This replaces what was known as an attribute display in the old system.
  *  It is a dynamic text string that automatically updates when the property in the linked

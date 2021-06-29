@@ -36,7 +36,7 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
 public class ResourceUpdateManager implements Runnable {
 	private static final String CLSS = "ResourceUpdateManager";
 	private static final LoggerEx log = LogUtil.getLogger(ResourceUpdateManager.class.getPackage().getName());
-	private static final boolean DEBUG = false;
+	private static final boolean DEBUG = true;
 	private static DesignerContext context = null;
 	private static NodeStatusManager statusManager = null;
 	private ReentrantLock sharedLock = new ReentrantLock(); 
@@ -78,6 +78,7 @@ public class ResourceUpdateManager implements Runnable {
 			sharedLock.lock();
 			// Now save the resource, as it is.
 			Project diff = context.getProject().getEmptyCopy();
+			ProcessDiagramView view = null;
 
 			if(res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
 				// If the resource is open, we need to save it
@@ -88,7 +89,7 @@ public class ResourceUpdateManager implements Runnable {
 					// from the diagram view. This method handles re-paint of the background.
 					// The diagram may not have been dirty in a structural sense, but update the resource
 					// anyway as block properties may have changed.
-					ProcessDiagramView view = (ProcessDiagramView)tab.getModel();
+					view = (ProcessDiagramView)tab.getModel();
 					SerializableDiagram sd = view.createSerializableRepresentation();
 					if(DEBUG) log.infof("%s.run: serializing ... %s(%d) %s",CLSS,tab.getName(),resourceId,sd.getState().name());
 					sd.setName(tab.getName());
@@ -102,7 +103,9 @@ public class ResourceUpdateManager implements Runnable {
 						log.warnf("%s.run: Exception serializing diagram, resource %d (%s)",CLSS,resourceId,jpe.getMessage());
 					}
 					view.setDirty(false);
-					view.registerChangeListeners();
+					// This is the culprit PH 06/08/2021
+					// Move this down.
+					//view.registerChangeListeners();
 				}
 			}
 			try {
@@ -126,6 +129,8 @@ public class ResourceUpdateManager implements Runnable {
 					project.clearAllFlags();
 					context.updateLock(res.getResourceId());
 					context.releaseLock(res.getResourceId());
+					
+					
 					if(DEBUG) log.infof("%s.run: released lock",CLSS);
 				}
 				else {
@@ -142,6 +147,12 @@ public class ResourceUpdateManager implements Runnable {
 
 			requestHandler.triggerStatusNotifications();
 			sharedLock.unlock();
+			
+			// PH 06/28/2021 - This should update the connections for a new block, but if this is an existing view don't we already have a listener registered??
+			// This does fix the problem updating connections, but it breaks the property update and reverts to the original value. 
+			//if(DEBUG) log.infof("%s.run: registering a new change listener", CLSS);
+			//if (view != null) view.registerChangeListeners();
+			
 			log.infof("%s.run: complete",CLSS);
 		}
 		this.counter.decrementCount();
