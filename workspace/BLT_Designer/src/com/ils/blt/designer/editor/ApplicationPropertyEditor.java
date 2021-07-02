@@ -30,6 +30,8 @@ public class ApplicationPropertyEditor extends AbstractPropertyEditor {
 	private final static String CLSS = "ApplicationPropertyEditor";
 	private static final long serialVersionUID = 2882399376824334427L;
 	public static final Dimension BUTTON_SIZE = new Dimension(80,36);   // 16x16
+	public static final Dimension NAV_BUTTON_SIZE = new Dimension(60,40);
+	public static final Dimension NAV_BUTTON_WITH_TEXT_SIZE = new Dimension(120,40);
 	public static final Dimension COMBO_SIZE  = new Dimension(120,24);
 	public static final Dimension EDIT_BUTTON_SIZE  = new Dimension(60,36);
 	public static final Dimension PANEL_SIZE  = new Dimension(350,350);
@@ -47,7 +49,7 @@ public class ApplicationPropertyEditor extends AbstractPropertyEditor {
 	private final ILSLogger log;
 	private final SortedListModel<String> outputKeys;
 
-	public ApplicationPropertyEditor(DesignerContext ctx,SerializableApplication app,ProjectResource res) {
+	public ApplicationPropertyEditor(DesignerContext ctx, SerializableApplication app, ProjectResource res) {
 		super(res);
 		this.log = LogMaker.getLogger(this);
 		this.context = ctx;

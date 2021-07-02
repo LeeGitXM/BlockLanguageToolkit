@@ -498,6 +498,11 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
     	return merge;
 	}
 	
+	// Added by PH 06/30/2021
+	public NodeStatusManager getNodeStatusManager(){
+		return this.statusManager;
+	}
+	
 	/**
 	 * Post an internals viewer for the block. The default shows
 	 * only name, class and UUID. Blocks may transmit additional

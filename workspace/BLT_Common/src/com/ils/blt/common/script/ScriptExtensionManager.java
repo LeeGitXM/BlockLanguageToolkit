@@ -32,6 +32,7 @@ import com.inductiveautomation.ignition.common.script.ScriptManager;
 public class ScriptExtensionManager {
 	private static String CLSS = "ScriptExtensionManager";
 	protected final ILSLogger log;
+	private static final boolean DEBUG = false;
 	protected final JavaToPython j2p;
 	protected final PythonToJava p2j;
 	private BaseContext context = null;
@@ -110,7 +111,7 @@ public class ScriptExtensionManager {
 				if( args!=null ) {
 					for(Object arg:args) {
 						if( arg==null ) {
-							log.infof("%s.runScript: null argument in %s",CLSS,script.toString());
+							log.warnf("%s.runScript: null argument in %s",CLSS,script.toString());
 							pyargs.add(new PyString(""));
 						}
 						else {
@@ -125,7 +126,7 @@ public class ScriptExtensionManager {
 				else {
 					log.warnf("%s.runScript: WARNING: null arguments in %s",CLSS,script.toString());
 				}
-				log.infof("%s.runScript: executing %s",CLSS,script.toString());
+				if (DEBUG) log.infof("%s.runScript: executing %s",CLSS,script.toString());
 				script.execute(mgr);
 				// For "complex" arguments, we update contents
 				// as a mechanism to return info from the script

@@ -33,8 +33,12 @@ import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.block.ActiveState;
 import com.ils.blt.common.notification.NotificationChangeListener;
 import com.ils.blt.common.notification.NotificationKey;
+import com.ils.blt.common.serializable.SerializableApplication;
 import com.ils.blt.designer.BLTDesignerHook;
+import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.NotificationHandler;
+import com.ils.blt.designer.navtree.DiagramTreeNode;
+import com.ils.blt.designer.navtree.GeneralPurposeTreeNode;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
@@ -44,12 +48,15 @@ import com.ils.common.log.LogMaker;
 import com.ils.common.ui.DualListBox;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
+import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
+import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceNavTreeNode;
 
 import net.miginfocom.swing.MigLayout;
 
 /**
- * Display a dialog to configure the outputs available for a Final Diagnosis.
+ * Display a dialog to configure the properties for a Final Diagnosis.  This includes the outputs used by the 
+ * Final Diagnosis.  The list of outputs available for the Final Diagnosis comes from the superior Application.
  * The constants contained herein are defined in designer.properties  (as defined in ConfigurationDialog*)
  * This dialog allows for the display and editing of auxiliary data in the proxy block. There is no extension
  * function interaction until the block is saved as part of a diagram-save.
@@ -57,7 +64,12 @@ import net.miginfocom.swing.MigLayout;
 public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor implements NotificationChangeListener, PropertyChangeListener {
 	private static final long serialVersionUID = 7211480530910862375L;
 	private static final String CLSS = "FinalDiagnosisPanel";
+	private static final boolean DEBUG = false;
 	private final NotificationHandler notificationHandler = NotificationHandler.getInstance();
+	private final NodeStatusManager nodeStatusMgr;			// PH 06/30/2021
+	private final DiagramTreeNode diagramTreeNode;		// PH 06/30/2021
+	private final GeneralPurposeTreeNode appNode;			// PH 06/30/2021
+	private final ProjectResource applicationResource;		// PH 06/30/2021
 	private final ApplicationRequestHandler requestHandler;
 	private final int DIALOG_HEIGHT = 700;
 	private final int DIALOG_WIDTH = 300;
@@ -65,6 +77,7 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 	private final ProcessBlockView block;
 	private BasicEditPanel mainPanel = null;
 	private final GeneralPurposeDataContainer model;           // Data container operated on by panels
+	private final GeneralPurposeDataContainer appModel;           // Data container operated on by panels PH 06/30/2021
 	protected DualListBox dual;
 	protected JTextField finalDiagnosisLabelField;
 	protected JTextField calculationMethodField;
@@ -88,7 +101,6 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 	protected static final Dimension COMMENT_AREA_SIZE  = new Dimension(250,300);
 	private final CorePropertyPanel corePanel;
 	
-
 	// from configuration dialog
 	protected final DesignerContext context;
 	protected final ResourceBundle rb;
@@ -100,9 +112,8 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 	private final UtilityFunctions fcns = new UtilityFunctions();
 	protected JTextField nameField;
 
-	
 	//	Now figure out how to get this to refresh when the diagram state (active/disabled) changes
-	public FinalDiagnosisPropertyEditor(DesignerContext context,DiagramWorkspace wrkspc,ProcessBlockView blk) {
+	public FinalDiagnosisPropertyEditor(DesignerContext context, DiagramWorkspace wrkspc, ProcessBlockView blk) {
 		this.block = blk;
 		this.model = blk.getAuxiliaryData();
 		this.key = NotificationKey.keyForAuxData(block.getId().toString());
@@ -115,10 +126,38 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		this.database = requestHandler.getProductionDatabase();
 		this.provider = requestHandler.getProductionTagProvider();
 		this.setPreferredSize(new Dimension(DIALOG_WIDTH,DIALOG_HEIGHT));
+		
+		/*
+		 * We need to get the application superior to the Final Diagnosis.  The information is in the ProjectTree.
+		 *  A final Diagnosis is on a diagram and there is a DiagramTreeNode in the project tree that corresponds to the diagram.
+		 *  From that node we can walk up the project tree until we hit an application.  There might be a problem if some 
+		 *  knucklehead puts a final diagnosis onto a diagram that is not built under the Application / Family framework.
+		 *  The steps are:
+		 *  	get the resource tree manager
+		 *  	get the node for the diagram 
+		 *  	get the Application node in tree superior to the diagram node
+		 *  	get the resource that corresponds to the application node
+		 *     convert the application resource to a serializable application
+		 *  	get the auxiliary data out of the application
+		 */
+		this.nodeStatusMgr = wrkspc.getNodeStatusManager();
+		this.diagramTreeNode = (DiagramTreeNode) nodeStatusMgr.findNode(diagram.getResourceId());
+		this.appNode = this.diagramTreeNode.getApplicationTreeNode();
+		if (this.appNode == null) {
+			log.errorf("**** ERROR APPLICATION NOT FOUND ****");
+			// Need to somehow bail here and let the user know they are screwed!
+		}
+		this.applicationResource = appNode.getProjectResource();
+		
+		// Somehow I need to get the serializable application, I have the tree node that represents the 
+		// application and I have the resource for the application.  
+		SerializableApplication sap = this.appNode.deserializeApplication(this.applicationResource);
+		this.appModel = sap.getAuxiliaryData();
+		
         initialize();
         setUI();
 		// Register for notifications
-		log.infof("%s: adding notification listener %s",CLSS,key);
+		if (DEBUG) log.infof("%s: adding notification listener %s",CLSS,key);
 		notificationHandler.addNotificationChangeListener(key,CLSS,this);
 	}
 
@@ -130,7 +169,9 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 	 * 2) Python hook definitions.
 	 */
 	private void initialize() {
-		setLayout(new MigLayout("top,flowy,ins 2,gapy 0:10:15","","[top]0[]"));
+		setLayout(new MigLayout("top,flowy,ins 2,gapy 0:10:15", "", "[top]0[]"));
+		//setLayout(new MigLayout("fillx", "[right]rel[grow, fill]"));
+		//mainPanel.setLayout(new MigLayout("fillx", "[right]rel[grow, fill]"));
 		add(corePanel,"grow,push");
 		
 		/*
@@ -142,14 +183,14 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		 */
 		
 		mainPanel = createMainPanel();
-		add(mainPanel,"grow,push");;
+		add(mainPanel,"grow, spanx, push");;
 	}
 	
 	public void shutdown() {
 		notificationHandler.removeNotificationChangeListener(key,CLSS);
 		save();
-		requestHandler.writeAuxData(context.getProject().getId(),diagram.getResourceId(),block.getId().toString(),model,provider, database);
-		log.infof("%s.shutdown: writing aux data",CLSS);
+		requestHandler.writeAuxData(context.getProject().getId(), diagram.getResourceId(), block.getId().toString(), model, provider, database);
+		if (DEBUG) log.infof("%s.shutdown: writing aux data",CLSS);
 	}
 	
 	private BasicEditPanel createMainPanel() {	
@@ -158,6 +199,8 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		//setLayout(new BorderLayout());
 		mainPanel = new BasicEditPanel(this);
 		mainPanel.setLayout(new MigLayout("ins 2,fill","[][]","[][growprio 60,150:150:2000][]"));
+		//mainPanel.setLayout(new MigLayout("fillx", "[right]rel[grow, fill]"));
+		//panel.setLayout(new MigLayout("fillx", "[right]rel[grow, fill]"));
 		
 		mainPanel.addSeparator(mainPanel,"QuantOutputs");
 		dual = new DualListBox();
@@ -178,44 +221,42 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 	 */
 	private JPanel createPropertiesPanel() {
 		JPanel panel = new JPanel();
-		final String columnConstraints = "para[][]";
-		final String layoutConstraints = "ins 2,gapy 1,gapx 5,fillx,filly";
-		final String rowConstraints = "para [][][][][][][][][][][][]";
-		panel.setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));
+		panel.setLayout(new MigLayout("fillx", "[right]rel[grow, fill]"));
 
-		panel.add(createLabel("FinalDiagnosis.Label"),"gaptop 2,aligny top");
+		panel.add(createLabel("FinalDiagnosis.Label"),"gaptop 2,aligny top, align right");
 		finalDiagnosisLabelField = createTextField("FinalDiagnosis.Label.Desc","");
 		
-		panel.add(finalDiagnosisLabelField,"growx,wrap");
+		panel.add(finalDiagnosisLabelField,"span, growx, wrap");
 		
-		panel.add(createLabel("FinalDiagnosis.Comment"),"gaptop 2,aligny top");
+		panel.add(createLabel("FinalDiagnosis.Comment"),"gaptop 2,aligny top, align right");
 		commentArea = createTextArea("FinalDiagnosis.Comment.Desc","");
 		JScrollPane commentScrollPane = new JScrollPane(commentArea);
 		commentScrollPane.setPreferredSize(COMMENT_AREA_SIZE);
-		panel.add(commentScrollPane,"growx,growy,wrap");
+		//panel.add(commentScrollPane,"growx,growy,wrap");
+		panel.add(commentScrollPane,"spanx, wrap");
 		
-		panel.add(createLabel("FinalDiagnosis.Explanation"),"gaptop 2,aligny top");
+		panel.add(createLabel("FinalDiagnosis.Explanation"),"gaptop 2, aligny top, align right");
 		explanationArea = createTextArea("FinalDiagnosis.Explanation.Desc","");
 		JScrollPane explanationScrollPane = new JScrollPane(explanationArea);
 		explanationScrollPane.setPreferredSize(EXPLANATIION_AREA_SIZE);
 		panel.add(explanationScrollPane,"growx,growy,wrap");
 		
-		panel.add(createLabel("FinalDiagnosis.TextRecommendation"),"gaptop 2,aligny top");
+		panel.add(createLabel("FinalDiagnosis.TextRecommendation"),"gaptop 2, aligny top, align right");
 		textRecommendationArea = createTextArea("FinalDiagnosis.TextRecommendation.Desc","");
 		JScrollPane textRecommendationScrollPane = new JScrollPane(textRecommendationArea);
 		textRecommendationScrollPane.setPreferredSize(TEXT_RECOMMENDATION_AREA_SIZE);
 		panel.add(textRecommendationScrollPane,"growx,growy,wrap");
 		
-		panel.add(createLabel("FinalDiagnosis.CalcMethod"),"gaptop 2,aligny top");
+		panel.add(createLabel("FinalDiagnosis.CalcMethod"),"gaptop 2, aligny top, align right");
 		calculationMethodField = createTextField("FinalDiagnosis.CalcMethod.Desc","");
-		panel.add(calculationMethodField,"growx,wrap");
+		panel.add(calculationMethodField,"span");
 
-		panel.add(createLabel("FinalDiagnosis.Priority"),"gaptop 2,aligny top");
+		panel.add(createLabel("FinalDiagnosis.Priority"),"gaptop 2, aligny top, align right");
 		priorityField = createTextField("FinalDiagnosis.Priority.Desc","");
 		priorityField.setPreferredSize(NUMBER_BOX_SIZE);
 		panel.add(priorityField,"wrap");
 		
-		panel.add(createLabel("FinalDiagnosis.RefreshRate"),"gaptop 2,aligny top");
+		panel.add(createLabel("FinalDiagnosis.RefreshRate"),"gaptop 2, aligny top, align right");
 		refreshRateField = createTextField("FinalDiagnosis.RefreshRate.Desc","");
 		refreshRateField.setPreferredSize(NUMBER_BOX_SIZE);
 		panel.add(refreshRateField,"wrap");
@@ -249,22 +290,39 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 	private void setUI() {
 		Map<String,String> properties = model.getProperties();
 		
+		/*
+		 * Populating the Dual List of Quant Outputs is a little tricky / clever.
+		 * The list of all available outs comes from the application superior to the final diagnosis.
+		 * The Final Diagnosis has a list of outputs already configured as being used by the Final diagnosis, this list
+		 * is known as q1 and goes into the list on the right.  The list on the left, known as q0, is the list of all
+		 * output sminus the inputs that are already in use.
+		 */
+		
 		List<String> q1 = model.getLists().get("OutputsInUse");
 		if( q1==null ) q1 = new ArrayList<>();
 		dual.setDestinationElements(q1);
-		// The outputs are ALL possibilities. Subtract 
-		// those already being used.
-		List<String> q0 = model.getLists().get("QuantOutputs");
-		if( q0!=null ) {
-			for( String inUse:q1) {
-				q0.remove(inUse);
-			}
-		}
-		else {
-			q0 = new ArrayList<>();
-		}
-		dual.setSourceElements(q0);
 		
+		// Get the list of quant outputs that have been defined for the application
+		List< Map<String,String> > outputMapList = appModel.getMapLists().get("QuantOutputs");
+		if (DEBUG) log.infof("Application Output Map List: %s", outputMapList);
+		
+		// Convert the list of output maps to a list of strings (output names)
+		List<String> q0 = new ArrayList<>();
+		for(Map<String,String> outmap:outputMapList) {
+			q0.add(outmap.get("QuantOutput"));
+		}
+		if (DEBUG) log.infof("Total list of outputs: %s", q0);
+		
+		// Remove the outputs that are already in use
+		for( String inUse:q1) {
+			q0.remove(inUse);
+		}
+		
+		if (DEBUG) log.infof("Left list: %s", q0);
+		if (DEBUG) log.infof("Right list: %s", q1);
+
+		dual.setSourceElements(q0);
+
 		String method = properties.get("FinalDiagnosisLabel");
 		if( method==null) method="";
 		finalDiagnosisLabelField.setText(method);
@@ -337,7 +395,7 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 				BLTDesignerHook hook = (BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID);
 				String msg = hook.scanForDiagnosisNameConflicts(diagram, nameField.getText());// send name and block
 				if (msg != null && msg.length() > 1) {
-					log.infof("Naming error: " + msg);
+					log.errorf("Naming error: " + msg);
 					ErrorUtil.showError("Naming error, duplicate diagnosis name: " + msg);
 					return;  // abort save
 					
@@ -455,8 +513,7 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 	 * Create a new label. The text is the bundle key.
 	 */
 	protected JLabel createLabel(String bundle) {
-		// I'd like to right justify the labels, but this doesn't seem to do anything.
-		JLabel label = new JLabel(rb.getString(bundle)+": ", JLabel.RIGHT);
+		JLabel label = new JLabel(rb.getString(bundle)+": ");
 		return label;
 	}
 	

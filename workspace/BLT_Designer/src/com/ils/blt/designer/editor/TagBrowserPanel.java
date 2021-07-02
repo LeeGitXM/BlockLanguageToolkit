@@ -63,6 +63,7 @@ public class TagBrowserPanel extends BasicEditPanel {
 		}
 		
 		JButton okButton = new JButton("OK");
+		okButton.setPreferredSize(ApplicationPropertyEditor.NAV_BUTTON_SIZE);
 		buttonPanel.add(okButton);
 		okButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -109,6 +110,7 @@ public class TagBrowserPanel extends BasicEditPanel {
 		});
 		
 		JButton cancelButton = new JButton("Cancel");
+		cancelButton.setPreferredSize(ApplicationPropertyEditor.NAV_BUTTON_SIZE);
 		buttonPanel.add(cancelButton);
 		cancelButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {

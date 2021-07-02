@@ -617,7 +617,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	 * @param res
 	 * @return
 	 */
-	private SerializableApplication deserializeApplication(ProjectResource res) {
+	// This used to be private PH 06/30/2021
+	public SerializableApplication deserializeApplication(ProjectResource res) {
 		SerializableApplication sa = null;
 		try{
 			byte[] bytes = res.getData();
@@ -670,6 +671,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		}
 		return sf;
 	}
+		
+	
 	// Return true if there is a "application" in the ancestral hierarchy of this folder node
 	private boolean hasApplication() {
 		boolean answer = false;

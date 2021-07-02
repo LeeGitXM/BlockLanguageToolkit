@@ -1,7 +1,9 @@
 package com.ils.blt.designer.editor;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -59,12 +61,13 @@ public class OutputEditorPane extends JPanel implements ActionListener  {
 	final JCheckBox incrementalOutputCheckBox = new JCheckBox();
 	final JComboBox<String> feedbackMethodComboBox = new JComboBox<String>();
 	private static Icon previousIcon = new ImageIcon(OutputEditorPane.class.getResource("/images/arrow_left_green.png"));
-	final JButton homeButton = new JButton(previousIcon);
+	final JButton previousButton = new JButton(previousIcon);
 	private static Icon tagBrowserIcon = new ImageIcon(OutputEditorPane.class.getResource("/images/arrow_right_green.png"));
 	final JButton tagButton = new JButton("Tags", tagBrowserIcon);
 	private final UtilityFunctions fcns = new UtilityFunctions();
 	
 	protected static final Dimension TEXT_FIELD_SIZE  = new Dimension(120,24);
+	protected static final Dimension MIN_FIELD_SIZE  = new Dimension(150,20);
 	protected static final Dimension NUMERIC_FIELD_SIZE  = new Dimension(100,24);
 	
 	// The constructor
@@ -73,9 +76,14 @@ public class OutputEditorPane extends JPanel implements ActionListener  {
 		this.editor = editor;
 		this.log = LogMaker.getLogger(this);
 		this.model = editor.getModel();
-				
+		this.setPreferredSize(editor.PANEL_SIZE);
+		
+		// This is the starting point, it looks great except it doeesn't grow if the panel grows
 		//mainPanel = new JPanel(new MigLayout("", "[right]"));
-		mainPanel = new JPanel(new MigLayout());
+		
+		// From the white paper on MIG layouts  - how does this thing know to have 3 columns??
+		mainPanel = new JPanel(new MigLayout("fillx", "[right]rel[grow, fill]"));
+		
 		add(mainPanel,BorderLayout.CENTER);
 
 		JLabel label = new JLabel("Quant Output Editor");
@@ -87,16 +95,26 @@ public class OutputEditorPane extends JPanel implements ActionListener  {
 		nameField.setToolTipText("The name of the Quant Output.");
 		mainPanel.add(nameField, "span, growx, wrap");
 
-		mainPanel.add(new JLabel("Tag:"), "gap 10");		
-		tagField.setPreferredSize(TEXT_FIELD_SIZE);
-		tagField.setToolTipText("The name of the OPC tag that corresponds to this quant output.");
-		mainPanel.add(tagField, "growx");
+		mainPanel.add(new JLabel("Tag:"), "gap 10");
 		
-		mainPanel.add(tagButton,"right, wrap");
+		// I want the field wide and the button small but my MIG layout somehow wants 3 columns 
+		// BorderLayout mostly works, the height of the field is a little bigger than I'd like, but it is pretty close.
+		JPanel tagPanel = new JPanel(new BorderLayout());
+		tagField.setMinimumSize(MIN_FIELD_SIZE);
+
+		tagField.setToolTipText("The name of the OPC tag that corresponds to this quant output.");
+		tagPanel.add(tagField, BorderLayout.CENTER);
+		
+		tagPanel.add(tagButton, BorderLayout.EAST);
 		tagButton.setHorizontalTextPosition(SwingConstants.LEFT);
+		tagButton.setToolTipText("Select a tag from the tag tree.");
 		tagButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {doTagSelector();}			
 		});
+		//mainPanel.add(tagPanel, "span");  This one was centered...
+		//mainPanel.add(tagPanel, "span, growx");  This was also centered...
+		// The tagField is taller than I'd like, I think because it is in a BorderLayout panel, but I did that to get the tag button correctly sized. PH 07/01/2021
+		mainPanel.add(tagPanel, "span, growx, wrap, gapy 2");
 
 		// Configure the Feedback method combo box
 		mainPanel.add(new JLabel("Feedback Method:"), "gap 10");
@@ -167,25 +185,32 @@ public class OutputEditorPane extends JPanel implements ActionListener  {
 		
 		mainPanel.add(absoluteContainer, "span, growx, wrap");
 		
-		// Now the arrow button
+		// Add the Previous / Back button - it should be all the way at the bottom, anchored to the left side.
 		// Perform a save of all the fields before we go to the outputs
-		JPanel bottomPanel = new JPanel(new MigLayout("","[25%, left][50%, center][25%]",""));
-		mainPanel.add(bottomPanel, "span");
-		homeButton.setPreferredSize(ApplicationPropertyEditor.BUTTON_SIZE);
-		homeButton.addActionListener(new ActionListener() {
+		JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		add(bottomPanel,BorderLayout.SOUTH);
+		bottomPanel.add(previousButton);
+		
+		// This is saving the contents of the pane all the way to the database.  That isn't really correct.  It should save it to a data structure in the 
+		// Designer that only gets written to the DB when they press File -> Save.  We should mark the application / output as Dirty.
+		previousButton.setPreferredSize(ApplicationPropertyEditor.NAV_BUTTON_SIZE);
+		previousButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				save();
 				editor.saveResource();
 				editor.setSelectedPane(ApplicationPropertyEditor.OUTPUTS);
 			}
 		});
-		bottomPanel.add(homeButton);
-		homeButton.setPreferredSize(ApplicationPropertyEditor.BUTTON_SIZE);
-		homeButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				editor.setSelectedPane(ApplicationPropertyEditor.OUTPUTS);
-			}
-		});	
+
+		// There were two action listeners here - I think you should only have one, so maybe this was an attempt to cache the change until they select File-> Save PH 06/29/3021
+//		previousButton.setPreferredSize(ApplicationPropertyEditor.NAV_BUTTON_SIZE);
+//		previousButton.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				editor.setSelectedPane(ApplicationPropertyEditor.OUTPUTS);
+//			}
+//		});	
+		
+		previousButton.setHorizontalAlignment(SwingConstants.LEFT);
 	}
 
 	/**

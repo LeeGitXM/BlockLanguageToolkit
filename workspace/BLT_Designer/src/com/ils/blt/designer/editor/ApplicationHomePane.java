@@ -76,8 +76,9 @@ public class ApplicationHomePane extends JPanel implements  NotificationChangeLi
 		this.database = requestHandler.getProductionDatabase();
 		this.provider = requestHandler.getProductionTagProvider();
 		this.key = NotificationKey.keyForAuxData(editor.getApplication().getId().toString());
+		this.setPreferredSize(editor.PANEL_SIZE);
 		
-		mainPanel = new JPanel(new MigLayout());
+		mainPanel = new JPanel(new MigLayout("fillx", "[right]rel[grow, fill]"));
 		add(mainPanel,BorderLayout.CENTER);
 		
 		// Add components to the main panel
@@ -88,7 +89,7 @@ public class ApplicationHomePane extends JPanel implements  NotificationChangeLi
 		nameField.setToolTipText("The name can only be changed from the project tree.");
 		mainPanel.add(nameField,"span,wrap");
 
-		mainPanel.add(new JLabel("Description:"),"align right");
+		mainPanel.add(new JLabel("Description:"),"gaptop 2, aligny top, align right");
 		descriptionTextArea.setEditable(true);
 		descriptionTextArea.setLineWrap(true);
 		descriptionTextArea.setWrapStyleWord(true);
@@ -100,7 +101,7 @@ public class ApplicationHomePane extends JPanel implements  NotificationChangeLi
 		mainPanel.add(scrollPane,"gaptop 2,aligny top,span,wrap");
 		
 		// Add the Managed check box
-		mainPanel.add(new JLabel("Managed:"), "gap 10");
+		mainPanel.add(new JLabel("Managed:"), "gap 10, align right");
 		mainPanel.add(managedCheckBox, "wrap, align left");
 
 		// Combo boxes are populated from a database query. The database used is a function
@@ -151,7 +152,12 @@ public class ApplicationHomePane extends JPanel implements  NotificationChangeLi
 		//extensionManager.runScript(context.getProjectManager().getProjectScriptManager(node.getProjectId()), 
 		//		script, node.getSelf().toString(),node.getAuxiliaryData());
 		
-		mainPanel.add(nextButton,"cell 1 13,center");
+		mainPanel.add(nextButton,"cell 1 13, right");
+		
+		// Added to set a max and min size so that when the pane was streched it maintained its size and was anchored right PH 6/29/2021
+		nextButton.setMaximumSize(ApplicationPropertyEditor.NAV_BUTTON_WITH_TEXT_SIZE);
+		nextButton.setMinimumSize(ApplicationPropertyEditor.NAV_BUTTON_WITH_TEXT_SIZE);
+		
 		nextButton.setHorizontalTextPosition(SwingConstants.LEFT);
 		nextButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {doNext();}			

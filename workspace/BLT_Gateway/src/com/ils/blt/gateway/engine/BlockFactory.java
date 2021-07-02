@@ -31,6 +31,7 @@ import com.ils.common.log.LogMaker;
  */
 public class BlockFactory  {
 	private final static String CLSS = "BlockFactory";
+	private static final boolean DEBUG = false;
 	private final ILSLogger log = LogMaker.getLogger(BlockFactory.class.getPackage().getName());
 	private static BlockFactory instance = null;
 	private final BlockExecutionController controller = BlockExecutionController.getInstance();
@@ -72,7 +73,7 @@ public class BlockFactory  {
 			className = className.replace("xom", "ils");
 		}
 		UUID blockId = sb.getId();
-		log.infof("%s.blockFromSerializable: Create instance of %s (%s)",CLSS,className,blockId.toString());   // Should be updated
+		if(DEBUG) log.infof("%s.blockFromSerializable: Create instance of %s (%s)",CLSS,className,blockId.toString());   // Should be updated
 		ProcessBlock block = null;
 		// If we can't create a Java class, try python ...
 		try {
@@ -112,7 +113,7 @@ public class BlockFactory  {
 	 * @param sb serializable block, the source
 	 */
 	public void updateBlockFromSerializable(ProcessBlock pb,SerializableBlock sb) {
-		log.infof("%s.updateBlockFromSerializable %s %s",CLSS,sb.getName(),sb.getClassName());
+		if(DEBUG) log.infof("%s.updateBlockFromSerializable %s %s",CLSS,sb.getName(),sb.getClassName());
 		pb.setName(sb.getName());
 		// Update anchors first.  We do this because in some blocks property update behavior depends
 		// on the datatype of the anchors.
@@ -132,10 +133,10 @@ public class BlockFactory  {
 		}
 		else {
 			// A "Note" has no anchors. Others initialize anchor points themselves.
-			log.infof("%s.updateBlockFromSerializable: No anchors found in process block",CLSS);
-		}
-		;
-		log.infof("     ...available properties are: %s",pb.getPropertyNames().toString()); 
+			if(DEBUG) log.infof("%s.updateBlockFromSerializable: No anchors found in process block",CLSS);
+		};
+		
+		if(DEBUG) log.infof("     ...available properties are: %s",pb.getPropertyNames().toString()); 
 		BlockProperty[] properties = sb.getProperties();
 		if( properties!=null ) {
 			for( BlockProperty bp:properties) {
@@ -167,7 +168,7 @@ public class BlockFactory  {
 					property.setBinding(bp.getBinding());
 					property.setBindingType(bp.getBindingType());
 					
-					if( valueChange   ) {
+					if( valueChange ) {
 						property.setValue(bp.getValue());
 						BlockPropertyChangeEvent event = 
 								new BlockPropertyChangeEvent(pb.getBlockId().toString(),property.getName(),
@@ -176,8 +177,11 @@ public class BlockFactory  {
 					}
 				}
 				else {
-					log.warnf("%s: updateBlockFromSerializable: Property %s not found in process block %s",CLSS,bp.getName(),pb.getName());
-					log.warnf("     available names are: %s",pb.getPropertyNames().toString()); 
+					// We removed support for the NAME property, so there isn't a need to see 
+					if ( !(bp.getName().toString().equals("Name"))) {
+						log.warnf("%s: updateBlockFromSerializable: Property <%s> not found in process block %s",CLSS,bp.getName(),pb.getName());
+						log.warnf("     available names are: %s",pb.getPropertyNames().toString()); 
+					}
 				}
 			}
 		}

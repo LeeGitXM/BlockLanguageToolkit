@@ -248,7 +248,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	public void setProjectId(long projectId) {this.projectId = projectId;}
 	@Override
 	public TruthValue getState() {
-		//log.infof("%s.getState: %s",name,this.state.name());
+		if(DEBUG) log.infof("%s.getState: %s",name,this.state.name());
 		return this.state;
 	}
 	@Override
@@ -260,7 +260,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 			// We assume that the only blocks where state is set are logical,
 			// so setting the last value makes sense ...
 			lastValue = new TestAwareQualifiedValue(timer,state.name());
-			//log.infof("%s.setState: %s",name,this.state.name());
+			if(DEBUG) log.infof("%s.setState: %s",name,this.state.name());
 		}
 	}
 	// Set the name in the name BlockProperty. Name is not a separate attribute
@@ -549,7 +549,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 			Signal sig = sn.getSignal();
 			recordActivity(Activity.ACTIVITY_RECEIVE,sig.getCommand());
 			if( sig.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_CONFIGURE) ) {
-				log.infof("%s - %s - %s", sig.getCommand(), sig.getArgument(), sig.getPayload());
+				if(DEBUG) log.infof("%s - %s - %s", sig.getCommand(), sig.getArgument(), sig.getPayload());
 				String propertyName = sig.getArgument();
 				BlockProperty bp = getProperty(propertyName);
 				if( bp!=null ) {
@@ -557,7 +557,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 					BlockPropertyChangeEvent event = new BlockPropertyChangeEvent(getBlockId().toString(), propertyName, bp.getValue(), sig.getPayload());
 					propertyChange(event);
 					QualifiedValue qv = new TestAwareQualifiedValue(timer,bp.getValue());  // Value now event payload.
-					log.infof("qv = %s", qv.getValue().toString());
+					if(DEBUG) log.infof("qv = %s", qv.getValue().toString());
 					controller.sendPropertyNotification(getBlockId().toString(),bp.getName(), qv);
 				}
 			}
@@ -870,13 +870,13 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		ArrayList<String> removeList = new ArrayList<String>();
 		for(String idString:qualifiedValueMap.keySet() ) {
 			if (idString.contains(":")) {
-//				log.errorf("EREIAM JH - initializedValues.add :%s: trimmed to :%s:",idString,idString.substring(0,idString.indexOf(':')));
+				if (DEBUG) log.infof("EREIAM JH - initializedValues.add :%s: trimmed to :%s:",idString,idString.substring(0,idString.indexOf(':')));
 				initializedValues.add(idString.substring(0,idString.indexOf(':')));
 			}
 		}
 		for(String idString:qualifiedValueMap.keySet() ) {
 			if (initializedValues.contains(idString)) {
-//				log.errorf("EREIAM JH - found :%s:, removing",idString);
+				if (DEBUG) log.infof("EREIAM JH - found :%s:, removing",idString);
 				// Duplicate found, remove it
 				removeList.add(idString);
 			}
@@ -898,7 +898,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 				blockId.toString(), port);
 		
 		recordActivity(Activity.ACTIVITY_INITIALIZE,"reconcile entry map",String.format("%d inputs", descriptors.size()));
-		log.debugf("%s.reconcileQualifiedValueMap: checking ------------- -",getName());
+		if (DEBUG) log.infof("%s.reconcileQualifiedValueMap: checking ------------- -",getName());
 		List<String> toBeAdded = new ArrayList<>();
 		List<String> toBeDeleted = new ArrayList<>();
 		List<String> toBeRetained = new ArrayList<>();
@@ -915,11 +915,11 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 			}
 		}
 		for( String key:toBeDeleted ) {
-			log.debugf("%s.reconcileQualifiedValueMap: removing connection from %s",getName(),key);
+			if (DEBUG) log.infof("%s.reconcileQualifiedValueMap: removing connection from %s",getName(),key);
 			qualifiedValueMap.remove(key);
 		}
 		for( String key:toBeAdded ) {
-			log.debugf("%s.reconcileQualifiedValueMap: adding connection to %s",getName(),key);
+			if (DEBUG) log.infof("%s.reconcileQualifiedValueMap: adding connection to %s",getName(),key);
 			qualifiedValueMap.put(key,new BasicQualifiedValue(unset));
 		}	
 	}
@@ -1074,7 +1074,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 */
 	@Override
 	public synchronized void valueChange(QualifiedValue val) {
-		//log.infof("%s(%d).valueChange %s now %s",TAG,hashCode(),getName(),val.getValue().toString());
+		if (DEBUG) log.infof("valueChanged: (%d) %s now %s", hashCode(), getName(), val.getValue().toString());
 		if( val!=null && val.getValue()!=null) {
 			setAuxiliaryData((GeneralPurposeDataContainer)val.getValue());
 		}

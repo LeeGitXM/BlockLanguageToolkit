@@ -184,6 +184,36 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
         menu.add(resetAction);
 	}
 
+	
+	
+	// Return application node for the current node.
+	// If the current node is a diagram, then walk up the project until u find an application.
+	// Remember that Symbolic Ai diagrams can exist outside the scope of the App / Family structure, but they better NOT use a Final Diagnosis.
+	// PH 06/30/2021
+	public GeneralPurposeTreeNode getApplicationTreeNode() {
+		GeneralPurposeTreeNode appNode = null;
+
+		AbstractNavTreeNode parentNode = getParent();
+		while( parentNode!=null ) {
+			if( parentNode instanceof GeneralPurposeTreeNode ) {
+				GeneralPurposeTreeNode node = (GeneralPurposeTreeNode)parentNode;
+				if( node.getProjectResource()==null ) {
+					;  // Folder node
+				}
+				else if( node.getProjectResource().getResourceType().equalsIgnoreCase(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
+					appNode = node;
+					break;
+				}
+			}
+			parentNode = parentNode.getParent();
+		}
+		return appNode;
+	}
+	
+	
+	
+	
+	
 
 	/**
 	 *  Called when the parent folder is deleted.

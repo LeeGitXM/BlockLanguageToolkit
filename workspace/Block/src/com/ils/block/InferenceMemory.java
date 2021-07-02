@@ -59,7 +59,7 @@ public class InferenceMemory extends AbstractProcessBlock implements ProcessBloc
 		setValue = TruthValue.UNSET; 
 		setState(TruthValue.UNKNOWN);
 		if(!locked) {
-			//log.infof("%s.reset lastValue = %s",getName(),lastValue.getValue().toString());
+			log.tracef("%s.reset lastValue = %s",getName(),lastValue.getValue().toString());
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 			controller.acceptCompletionNotification(nvn);
 			notifyOfStatus();
@@ -70,7 +70,7 @@ public class InferenceMemory extends AbstractProcessBlock implements ProcessBloc
 	public void start() {
 		super.start();
 		setState(TruthValue.UNKNOWN);  // Sets lastValue
-		//log.infof("%s.start lastValue = %s",getName(),lastValue.getValue().toString());
+		log.tracef("%s.start lastValue = %s",getName(),lastValue.getValue().toString());
 		OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 		controller.acceptCompletionNotification(nvn);
 		notifyOfStatus();
@@ -148,7 +148,7 @@ public class InferenceMemory extends AbstractProcessBlock implements ProcessBloc
 		else {
 			log.warnf("%s.determineOutput UNSET S=%s, R=%s",getName(),setValue.name(),resetValue.name());
 		}
-		//log.infof("%s.determineOutput State=%s R=%s, S=%s: %s",getName(),state.name(),resetValue.name(),setValue.name(),output.name());
+		log.tracef("%s.determineOutput State=%s R=%s, S=%s: %s",getName(),state.name(),resetValue.name(),setValue.name(),output.name());
 		return output;
 	}
 	
@@ -161,7 +161,7 @@ public class InferenceMemory extends AbstractProcessBlock implements ProcessBloc
 		notifyOfStatus(qv);
 	}
 	private void notifyOfStatus(QualifiedValue qv) {
-		//log.infof("%s.notifyOfStatus lastValue = %s",getName(),lastValue.getValue().toString());
+		log.tracef("%s.notifyOfStatus lastValue = %s",getName(),lastValue.getValue().toString());
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, lastValue);
 	}
 	/**

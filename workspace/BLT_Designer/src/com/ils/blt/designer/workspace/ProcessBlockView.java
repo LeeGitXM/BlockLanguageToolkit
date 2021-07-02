@@ -57,7 +57,7 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.impl.Ab
  */
 public class ProcessBlockView extends AbstractBlock implements ChangeListener, NotificationChangeListener {
 	private static final String CLSS = "ProcessBlockView";
-	private static final boolean DEBUG = true;
+	private static final boolean DEBUG = false;
 	private final static Random random = new Random();
 	private Map<String,ProcessAnchorDescriptor> anchors;
 	private final EventListenerList listenerList;

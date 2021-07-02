@@ -123,15 +123,15 @@ public class ModelManager implements ProjectListener  {
 			String type = res.getResourceType();
 			
 			if( type.equalsIgnoreCase(BLTProperties.APPLICATION_RESOURCE_TYPE) ) {
-				log.infof("%s.analyzeResource: application = %s %s",CLSS,type,(startup?"(STARTUP)":""));
+				if(DEBUG) log.infof("%s.analyzeResource: application = %s %s",CLSS,type,(startup?"(STARTUP)":""));
 				addModifyApplicationResource(projectId,res,startup);
 			}
 			else if( type.equalsIgnoreCase(BLTProperties.FAMILY_RESOURCE_TYPE) ) {
-				log.infof("%s.analyzeResource:  family = %s %s",CLSS,type,(startup?"(STARTUP)":""));
+				if(DEBUG) log.infof("%s.analyzeResource:  family = %s %s",CLSS,type,(startup?"(STARTUP)":""));
 				addModifyFamilyResource(projectId,res,startup);
 			}
 			else if( type.equalsIgnoreCase(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
-				log.infof("%s.analyzeResource:  diagram = %s %s",CLSS,type,(startup?"(STARTUP)":""));
+				if(DEBUG) log.infof("%s.analyzeResource:  diagram = %s %s",CLSS,type,(startup?"(STARTUP)":""));
 				addModifyDiagramResource(projectId,res,startup);
 			}
 			else if( type.equalsIgnoreCase(BLTProperties.FOLDER_RESOURCE_TYPE) ) {
@@ -534,7 +534,7 @@ public class ModelManager implements ProjectListener  {
 		orphansByUUID.clear();
 		nodesByUUID.clear();
 		root = new RootNode(context);
-		log.infof("%s.removeAllDiagrams ... complete",CLSS);
+		if(DEBUG) log.infof("%s.removeAllDiagrams ... complete",CLSS);
 	}
 	/**
 	 * Start all blocks in diagrams known to this manager. Note that, even if a diagram is
@@ -584,8 +584,7 @@ public class ModelManager implements ProjectListener  {
                 uuidByProjectId.put(new Long(projectId), staging.getUuid());
                 List<ProjectResource> resources = staging.getResources();
                 for( ProjectResource res:resources ) {
-                    log.infof("%s.projectAdded: resource %d.%d %s (%s)", CLSS,projectId,res.getResourceId(),res.getName(),
-                            res.getResourceType());
+                	if(DEBUG) log.infof("%s.projectAdded: resource %d.%d %s (%s)", CLSS, projectId, res.getResourceId(), res.getName(), res.getResourceType());
                     analyzeResource(projectId,res,false);
                 }
             }
@@ -618,7 +617,7 @@ public class ModelManager implements ProjectListener  {
 	@Override
 	public void projectUpdated(Project diff, ProjectVersion vers) { 
 		if( vers!=ProjectVersion.Staging ) return;  // Consider only the "Staging" version
-		//log.infof("%s.projectUpdated: %s (%d)  %s",CLSS,diff.getName(),diff.getId(),vers.toString());
+		if(DEBUG) log.infof("%s.projectUpdated: %s (%d)  %s",CLSS,diff.getName(),diff.getId(),vers.toString());
 		long projectId = diff.getId();
 		if( projectId<0 ) return;                   // Ignore global project
 		
@@ -637,7 +636,7 @@ public class ModelManager implements ProjectListener  {
 			Long pid = new Long(projectId);
 			for( ProjectResource res:resources ) {
 				if( isBLTResource(res.getResourceType()) || res.getResourceType().equalsIgnoreCase("Window") ) {
-					log.infof("%s.projectUpdated: add/update resource %d.%d %s (%s) %s %s", CLSS,projectId,res.getResourceId(),res.getName(),
+					if(DEBUG) log.infof("%s.projectUpdated: add/update resource %d.%d %s (%s) %s %s", CLSS,projectId,res.getResourceId(),res.getName(),
 							res.getResourceType(),(diff.isResourceDirty(res)?"dirty":"clean"),(res.isLocked()?"locked":"unlocked"));
 					if(res.isLocked()) res.setLocked(false);
 					analyzeResource(pid,res,false);  // Not startup
@@ -648,7 +647,7 @@ public class ModelManager implements ProjectListener  {
 			Set<Long> deleted = diff.getDeletedResources();
 			for (Long  rid : deleted) {
 				long resid = rid.longValue();
-				log.infof("%s.projectUpdated: delete resource %d:%d", CLSS,projectId,resid);
+				if(DEBUG) log.infof("%s.projectUpdated: delete resource %d:%d", CLSS,projectId,resid);
 				countOfInteresting++;
 				deleteResource(projectId,resid);
 			}
@@ -767,7 +766,7 @@ public class ModelManager implements ProjectListener  {
 	 * @param startup
 	 */
 	private void addModifyDiagramResource(long projectId,ProjectResource res,boolean startup) {
-		log.infof("%s.addModifyDiagramResource: %s(%d)",CLSS,res.getName(),res.getResourceId());
+		if(DEBUG) log.infof("%s.addModifyDiagramResource: %s(%d)",CLSS,res.getName(),res.getResourceId());
 		SerializableDiagram sd = deserializeDiagramResource(projectId,res);
 
 		if( sd!=null ) {
@@ -880,7 +879,7 @@ public class ModelManager implements ProjectListener  {
 	 * @param startup
 	 */
 	private void addModifyFamilyResource(long projectId,ProjectResource res,boolean startup) {
-		log.infof("%s.addModifyFamilyResource: %s(%d)",CLSS,res.getName(),res.getResourceId());
+		if(DEBUG) log.infof("%s.addModifyFamilyResource: %s(%d)",CLSS,res.getName(),res.getResourceId());
 		SerializableFamily sf = deserializeFamilyResource(projectId,res);
 		if( sf!=null ) {
 			ProcessFamily family = new ProcessFamily(sf,res.getParentUuid());
@@ -957,7 +956,7 @@ public class ModelManager implements ProjectListener  {
 	 * @param model the diagram logic
 	 */
 	private void addModifyFolderResource(long projectId,ProjectResource res) {
-		log.infof("%s.addFolderResource: %s(%d)",CLSS,res.getName(),res.getResourceId());
+		if(DEBUG) log.infof("%s.addFolderResource: %s(%d)",CLSS,res.getName(),res.getResourceId());
 		UUID self = res.getDataAsUUID();
 		ProcessNode node = nodesByUUID.get(self);
 		if( node==null ) {
@@ -1052,7 +1051,7 @@ public class ModelManager implements ProjectListener  {
 	 * @param resourceId root of the resource tree to delete.
 	 */
 	public void deleteResource(long projectId,long resourceId) {
-		log.infof("%s.deleteResource: %d:%d",CLSS,projectId,resourceId);
+		if(DEBUG) log.infof("%s.deleteResource: %d:%d",CLSS,projectId,resourceId);
 		ProjectResourceKey key = new ProjectResourceKey(projectId,resourceId);
 		ProcessNode head = nodesByKey.get(key);
 		DiagramState nodeState = DiagramState.ACTIVE;
@@ -1074,7 +1073,7 @@ public class ModelManager implements ProjectListener  {
 						// If this is a source connection, delete its associated tag
 						if(block.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK)) {
 							BlockProperty prop = block.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
-							log.infof("%s.deleteResource:Deleting aa sink",CLSS,projectId,resourceId);
+							if(DEBUG) log.infof("%s.deleteResource:Deleting a sink",CLSS,projectId,resourceId);
 						}
 					}
 				}
@@ -1120,7 +1119,7 @@ public class ModelManager implements ProjectListener  {
 	
 	// Delete all process nodes for a given project.
 	private void deleteProjectResources(long projectId) {
-		log.infof("%s.deleteProjectResources: proj = %d",CLSS,projectId);
+		if(DEBUG) log.infof("%s.deleteProjectResources: proj = %d",CLSS,projectId);
 		List<ProcessNode> nodes = root.allNodesForProject(projectId);
 		for(ProcessNode node:nodes) {
 			deleteResource(projectId,node.getResourceId());

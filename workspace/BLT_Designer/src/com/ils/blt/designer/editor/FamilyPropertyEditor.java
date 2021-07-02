@@ -100,29 +100,26 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor implements Noti
 	 */
 	private JPanel createMainPanel() {
 		JPanel panel = new JPanel();
-		final String columnConstraints = "para[][][][]";
-		final String layoutConstraints = "ins 10,gapy 3,gapx 5,fill";
-		final String rowConstraints = "para[][][][][][][][]";
-		panel.setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));
+		panel.setLayout(new MigLayout("fillx", "[right]rel[grow, fill]"));
 		panel.setPreferredSize(PANEL_SIZE);
 
-		panel.add(new JLabel("Name"),"");
+		panel.add(new JLabel("Name:"),"align right");
 		nameField = new JTextField();
 		nameField.setEditable(false);;
 		panel.add(nameField,"span,growx,wrap");
 
-		panel.add(new JLabel("UUID"),"gaptop 2,aligny top");
+		panel.add(new JLabel("UUID:"),"align right");
 		uuidField = new JTextField();
 		uuidField.setEditable(false);
 		panel.add(uuidField,"span,growx,wrap");
 		
-		panel.add(new JLabel("Description"),"gaptop 2,aligny top");
+		panel.add(new JLabel("Description:"),"gaptop 2,aligny top, align right");
 		descriptionArea = new JTextArea();
 		JScrollPane scrollPane = new JScrollPane(descriptionArea);
 		scrollPane.setPreferredSize(DESCRIPTION_AREA_SIZE);
 		panel.add(scrollPane,"gaptop 2,aligny top,spanx,growx,growy,wrap");
 
-		panel.add(new JLabel("Priority"),"gaptop 2,aligny top");
+		panel.add(new JLabel("Priority:"),"align right");
 		priorityField = new JTextField();
 		priorityField.setPreferredSize(NUMBER_BOX_SIZE);
 		panel.add(priorityField,"span,wrap");

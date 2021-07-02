@@ -34,7 +34,7 @@ import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceN
 public class ResourceSaveManager implements Runnable {
 	private static final String CLSS = "ResourceSaveManager";
 	private static final LoggerEx log = LogUtil.getLogger(ResourceSaveManager.class.getPackage().getName());
-	private static final boolean DEBUG = true;
+	private static final boolean DEBUG = false;
 	private static DesignerContext context = null;
 	private final AbstractResourceNavTreeNode root;	      // Root of our save.
 	private final DiagramWorkspace workspace;

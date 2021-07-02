@@ -46,18 +46,15 @@ public class OutputsPane extends JPanel {
 	private final JList<String> jlist;
 	private final OutputEditorPane detailEditor;  // Handles a single output
 	final JScrollPane outputsScrollPane = new JScrollPane();
-/*	
-	private PropertyEditor editor = new PropertyEditor();
-	private ButtonPanel buttonPanel = new ButtonPanel(true, true, true, true, false,  RecipeEditorController.background);
 
-	private Data recipeData;
-*/	
 	public OutputsPane(ApplicationPropertyEditor edit,OutputEditorPane detailEdit) {
-		super(new BorderLayout(20, 30));
+		//super(new BorderLayout(20, 30));
+		super(new BorderLayout(5, 5));
 		this.editor = edit;
 		this.detailEditor = detailEdit;
 		this.model = editor.getModel();
 		this.outputKeys = editor.getOutputKeys();
+		this.setPreferredSize(edit.PANEL_SIZE);
 		
 		JLabel label = new JLabel("Outputs");
 		label.setHorizontalAlignment(SwingConstants.CENTER);
@@ -65,13 +62,13 @@ public class OutputsPane extends JPanel {
 		
 		jlist = new JList<String>(outputKeys);
 		JScrollPane scrollPane = new JScrollPane(jlist);
-		scrollPane.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(10,10,10,10),
+		scrollPane.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(10,10,10,0),
 								BorderFactory.createEtchedBorder(EtchedBorder.RAISED)));
 		add(scrollPane, BorderLayout.CENTER);
 		
-		// The three button along the right are in their own panel
+		// The three buttons along the right are in their own panel
 		buttonPanel = new JPanel();
-		buttonPanel.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
+		buttonPanel.setBorder(BorderFactory.createEmptyBorder(10,0,10,10));
 		BoxLayout layout = new BoxLayout(buttonPanel, BoxLayout.Y_AXIS);
 		buttonPanel.setLayout(layout);
 		add(buttonPanel,BorderLayout.EAST);
@@ -97,11 +94,11 @@ public class OutputsPane extends JPanel {
 			public void actionPerformed(ActionEvent e) {doEdit();}
 		});
 		
-		// The previous button should be all the way at the bottom, hugging the left side.
+		// The previous button should be all the way at the bottom, anchored to the left side.
 		JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		add(bottomPanel,BorderLayout.SOUTH);
 		bottomPanel.add(previousButton);
-		previousButton.setPreferredSize(ApplicationPropertyEditor.BUTTON_SIZE);
+		previousButton.setPreferredSize(ApplicationPropertyEditor.NAV_BUTTON_SIZE);
 		previousButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {doPrevious();}
 		});
