@@ -16,8 +16,8 @@ public class AttributeDisplay implements Cloneable,Serializable {
 	private static final String CLSS = "AttributeDisplay";
 	public static final int DEFAULT_WIDTH = 120;
 	public static final int DEFAULT_HEIGHT = 15;
-	private final String blockId;
-	private final String propertyName;
+	private String blockId;
+	private String propertyName;
 	private UUID uuid;
 	private int offsetX;  // X distance relative to the block
 	private int offsetY;  // Y distance relative to the block
@@ -28,6 +28,12 @@ public class AttributeDisplay implements Cloneable,Serializable {
 	private int height = DEFAULT_HEIGHT; 
 	private int width  = DEFAULT_WIDTH;
 	
+	/**
+	 * Constructor: No-arg constructor used for JSON deserialization
+	 */
+	public AttributeDisplay() {
+		this.uuid = UUID.randomUUID();
+	}
 	/**
 	 * Constructor: 
 	 */

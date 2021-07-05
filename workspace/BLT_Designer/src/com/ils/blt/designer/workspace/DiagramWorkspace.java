@@ -1235,8 +1235,10 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			}
 			ProcessDiagramView diagram = new ProcessDiagramView(res.getResourceId(),sd, context);
 			for( Block blk:diagram.getBlocks()) {
-				ProcessBlockView pbv = (ProcessBlockView)blk;
-				diagram.initBlockProperties(pbv);
+				if( blk instanceof ProcessBlockView) {
+					ProcessBlockView pbv = (ProcessBlockView)blk;
+					diagram.initBlockProperties(pbv);
+				}
 			}
 			
 			super.open(diagram);

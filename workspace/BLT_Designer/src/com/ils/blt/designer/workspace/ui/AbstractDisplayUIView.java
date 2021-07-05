@@ -68,7 +68,7 @@ public abstract class AbstractDisplayUIView extends JComponent implements BlockV
 		setPreferredSize(new Dimension(preferredWidth,preferredHeight)); 
 	}
 
-	
+
 	protected AttributeDisplayView getDisplay() { return this.display; }
 	public BlockComponent getBlockComponent() { return this.blockComponent; }
 	
@@ -94,10 +94,6 @@ public abstract class AbstractDisplayUIView extends JComponent implements BlockV
 			}
 		});
 	}
-
-	
-
-	
 	
 	/**
 	 * Utility method to paint a text string.

@@ -131,7 +131,7 @@ public class AttributeDisplaySelector extends JDialog implements TableModelListe
 				// Add to diagram
 				if ( newValue && (pad==null) ) {
 					pad = new AttributeDisplayView(block,propName);
-					diagram.addDisplayView(pad);
+					diagram.addBlock(pad);
 					diagram.setDirty(true);
 				}
 				// CASE II - checked box, but display already exists. Do nothing, just use it.
@@ -140,6 +140,8 @@ public class AttributeDisplaySelector extends JDialog implements TableModelListe
 				}
 				// CASE III - unchecked box and there is display. Delete it.
 				else if ( !newValue && (pad!=null)) {
+					diagram.deleteBlock(pad);
+					diagram.setDirty(true);
 				}
 				// CASE IV - unchecked box and there is no display. Do nothing.
 				else  {

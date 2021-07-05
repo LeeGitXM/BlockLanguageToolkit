@@ -4,6 +4,7 @@
 package com.ils.blt.designer.workspace;
 
 import java.awt.Point;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
@@ -24,16 +25,16 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.impl.AbstractBlock;
 
 /**
- * Designer equivalents of these display a single property of another block.
- * In the Gateway these are simply "beans" and hold a few attributes.
+ * Display a single property of the referenced block.
  * 
  *  Note: initUI is called from the AbstractBlock constructor which is called
  *       when the diagram is opened.
  */
-public class AttributeDisplayView extends AbstractBlock implements NotificationChangeListener {
+public class AttributeDisplayView extends AbstractBlock implements Block,NotificationChangeListener {
 	private static final String CLSS = "AttributeDisplay";
 	private final boolean DEBUG = true;
 	private final NotificationHandler notificationHandler = NotificationHandler.getInstance();
+	private final Collection<AnchorPoint> anchorPoints = new ArrayList<>();
 	private final ProcessBlockView block;
 	private final ILSLogger log;
 	private final String propertyName;
@@ -46,7 +47,7 @@ public class AttributeDisplayView extends AbstractBlock implements NotificationC
 	private int height = BlockConstants.DEFAULT_ATTRIBUTE_HEIGHT;
 	private int width  = BlockConstants.DEFAULT_ATTRIBUTE_WIDTH;
 	private Point location;
-	private AbstractDisplayUIView ui = null;
+	private final AbstractDisplayUIView ui;
 	
 	/**
 	 * Constructor: Used in the Designer to create a new display
@@ -64,7 +65,7 @@ public class AttributeDisplayView extends AbstractBlock implements NotificationC
 	 * Constructor: Used to create a view from a serialized diagram.
 	 */
 	public AttributeDisplayView(ProcessDiagramView diagram,AttributeDisplay ad) {
-		this.block = (ProcessBlockView)diagram.getBlock(ad.getUUID());
+		this.block = (ProcessBlockView)diagram.getBlock(UUID.fromString(ad.getBlockId()));
 		this.propertyName = ad.getPropertyName();
 		this.uuid = ad.getUUID();
 		this.location = new Point(ad.getX(),ad.getY());
@@ -74,7 +75,10 @@ public class AttributeDisplayView extends AbstractBlock implements NotificationC
 		this.log = LogMaker.getLogger(this);
 	}
 	
-		
+	@Override
+	public Collection<AnchorPoint> getAnchorPoints() {
+		return this.anchorPoints;
+	}
 	public ProcessBlockView getBlock() { return this.block; }
 	public int getPreferredHeight() { return this.preferredHeight; }
 	public int getPreferredWidth() { return this.preferredWidth; }
@@ -92,7 +96,7 @@ public class AttributeDisplayView extends AbstractBlock implements NotificationC
 	// The parent diagram is displayed, start the listener.
 	public void startup() {
 		String key = NotificationKey.keyForProperty(block.getId().toString(), propertyName);
-		if(DEBUG) log.infof("%.startup: listening for notification %s",CLSS,key);
+		if(DEBUG) log.infof("%s.startup: listening for notification %s",CLSS,key);
 		notificationHandler.initializePropertyValueNotification(key,text);
 		notificationHandler.addNotificationChangeListener(key,CLSS, this);
 	}
@@ -117,13 +121,8 @@ public class AttributeDisplayView extends AbstractBlock implements NotificationC
 	}
 
 	@Override
-	public Collection<AnchorPoint> getAnchorPoints() {
-		return null;
-	}
-
-	@Override
 	public AnchorPoint getDefaultDropAnchor(AnchorPoint arg0) {
-		return null;
+		return null;	
 	}
 
 	@Override

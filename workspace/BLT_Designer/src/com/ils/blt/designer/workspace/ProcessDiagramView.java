@@ -45,20 +45,21 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorT
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.BlockDiagramModel;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Connection;
+import com.inductiveautomation.ignition.designer.blockandconnector.model.impl.AbstractBlock;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.impl.LookupConnection;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
 /**
- * This class represents a diagram in the designer.
+ * This class represents a diagram in the designer. Note that attribute displays are simply blocks 
+ * in the Block and Connector way of doing things.
  */
 public class ProcessDiagramView extends AbstractChangeable implements BlockDiagramModel,NotificationChangeListener {
 	private static ILSLogger log = LogMaker.getLogger(ProcessDiagramView.class.getPackage().getName());
 	// Use TAG as the "source" identifier when registering for notifications from Gateway
 	private static final String CLSS = "ProcessDiagramView";
 	private final ApplicationRequestHandler appRequestHandler;
-	private final Map<UUID,ProcessBlockView> blockMap = new HashMap<>();
+	private final Map<UUID,AbstractBlock> blockMap = new HashMap<>();
 	private List<Connection> connections = new ArrayList<>();
-	private List<AttributeDisplayView> attributeDisplays = new ArrayList<>();
 	private static final int MIN_WIDTH = 200;
 	private static final int MIN_HEIGHT = 200;
 	private Dimension diagramSize = new Dimension(MIN_WIDTH,MIN_HEIGHT);
@@ -97,8 +98,8 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 				SerializableAnchorPoint a = scxn.getBeginAnchor();
 				SerializableAnchorPoint b = scxn.getEndAnchor();
 				if( a!=null && b!=null ) {
-					ProcessBlockView blocka = blockMap.get(a.getParentId());
-					ProcessBlockView blockb = blockMap.get(b.getParentId());
+					ProcessBlockView blocka = (ProcessBlockView)blockMap.get(a.getParentId());
+					ProcessBlockView blockb = (ProcessBlockView)blockMap.get(b.getParentId());
 					if( blocka!=null && blockb!=null) {
 						AnchorPoint origin = new ProcessAnchorView(blocka,a);
 						AnchorPoint terminus = new ProcessAnchorView(blockb,b);
@@ -123,7 +124,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			
 			for( AttributeDisplay ad:diagram.getAttributeDisplays() ) {
 				AttributeDisplayView view = new AttributeDisplayView(this,ad);
-				addDisplayView(view); 
+				addBlock(view); 
 			}
 			suppressStateChangeNotification = false;
 		}  // -- end synchronized
@@ -135,16 +136,19 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		// We do this initially. From then on it's whatever the user leaves it at.
 		double maxX = MIN_WIDTH;
 		double maxY = MIN_HEIGHT;
-		for(ProcessBlockView blk:blockMap.values()) {
-			if( blk.getLocation().getX()+blk.getPreferredWidth()>maxX ) maxX = blk.getLocation().getX()+blk.getPreferredWidth();
-			if( blk.getLocation().getY()+blk.getPreferredHeight()>maxY) maxY = blk.getLocation().getY()+blk.getPreferredHeight();
+		for(Block blk:blockMap.values()) {
+			if( blk instanceof AttributeDisplayView) {
+				AttributeDisplayView display = (AttributeDisplayView)blk;
+				if( blk.getLocation().getX()+display.getPreferredWidth()>maxX ) maxX = display.getLocation().getX()+display.getPreferredWidth();
+				if( blk.getLocation().getY()+display.getPreferredHeight()>maxY) maxY = display.getLocation().getY()+display.getPreferredHeight();
+			}
+			else if(blk instanceof ProcessBlockView) {
+				ProcessBlockView view = (ProcessBlockView)blk;
+				if( blk.getLocation().getX()+view.getPreferredWidth()>maxX ) maxX = view.getLocation().getX()+view.getPreferredWidth();
+				if( blk.getLocation().getY()+view.getPreferredHeight()>maxY) maxY = view.getLocation().getY()+view.getPreferredHeight();
+			}
 		}
-		// Account for attribute displays as well
-		for(AttributeDisplayView display:getAttributeDisplays()) {
-			if( display.getLocation().getX()+display.getPreferredWidth()>maxX ) maxX = display.getLocation().getX()+display.getPreferredWidth();
-			if( display.getLocation().getY()+display.getPreferredHeight()>maxY) maxY = display.getLocation().getY()+display.getPreferredHeight();
-		}
-		
+
 		diagramSize =  new Dimension((int)(maxX*1.05),(int)(maxY*1.25));
 		this.setDiagramSize(diagramSize);
 	}
@@ -194,6 +198,11 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			if( ((ProcessBlockView) blk).getProperties().isEmpty() ) initBlockProperties(block);
 			log.tracef("%s.addBlock - %s",CLSS,block.getClassName());
 			blockMap.put(blk.getId(), block);
+			fireStateChanged();
+		}
+		else if(blk instanceof AttributeDisplayView) {
+			AttributeDisplayView display = (AttributeDisplayView) blk;
+			blockMap.put(blk.getId(), display);
 			fireStateChanged();
 		}
 	}
@@ -276,9 +285,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			log.warnf("%s.addConnection - rejected attempt to add a connection with null anchor",CLSS);
 		}
 	}
-	public void addDisplayView(AttributeDisplayView view) {
-		attributeDisplays.add(view);
-	}
+
 	// NOTE: This does not set connection type
 	private SerializableConnection convertConnectionToSerializable(Connection cxn) {
 		SerializableConnection result = new SerializableConnection();
@@ -334,19 +341,29 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		diagram.setState(state);
 		diagram.setDirty(dirty);
 		diagram.setWatermark(watermark);
-		List<SerializableBlock> sblocks = new ArrayList<SerializableBlock>();
-		for( ProcessBlockView blk:blockMap.values()) {
-			SerializableBlock sb = blk.convertToSerializable();
-			sblocks.add(sb);
+		List<SerializableBlock> sblocks = new ArrayList<>();
+		List<AttributeDisplay>  displays = new ArrayList<>();
+		for( AbstractBlock blk:blockMap.values()) {
+			if( blk instanceof AttributeDisplayView) {
+				AttributeDisplay ad = ((AttributeDisplayView)blk).convertToSerializable();
+				displays.add(ad);
+			}
+			else if(blk instanceof ProcessBlockView) {
+				SerializableBlock sb = ((ProcessBlockView)blk).convertToSerializable();
+				sblocks.add(sb);
+			}
+			
 		}
-		diagram.setBlocks(sblocks.toArray(new SerializableBlock[sblocks.size()]));
+		if( sblocks.size()>0 )    diagram.setBlocks(sblocks.toArray(new SerializableBlock[sblocks.size()]));
+		if(displays.size()>0)    diagram.setAttributeDisplays(displays.toArray(new AttributeDisplay[displays.size()]));
+
 			
 		// As we iterate the connections, update SerializableAnchors with connection types
 		List<SerializableConnection> scxns = new ArrayList<SerializableConnection>();
 		for( Connection cxn:connections) {
 			SerializableConnection scxn = convertConnectionToSerializable(cxn);
 			// Set the connection type to the begin block type
-			ProcessBlockView beginBlock = blockMap.get(scxn.getBeginBlock());
+			ProcessBlockView beginBlock = (ProcessBlockView)blockMap.get(scxn.getBeginBlock());
 			if( beginBlock!=null ) {
 				String port = scxn.getBeginAnchor().getId().toString();
 				SerializableAnchorPoint sap = scxn.getBeginAnchor();
@@ -432,8 +449,13 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		}
 		if(!success) log.warnf("%s.deleteConnection: failed to find match to existing",CLSS);
 	}
+	
 	public List<AttributeDisplayView> getAttributeDisplays() {
-		return attributeDisplays;
+		List<AttributeDisplayView> displays = new ArrayList<>();
+		for(AbstractBlock blk:blockMap.values()) {
+			if(blk instanceof AttributeDisplayView) displays.add((AttributeDisplayView)blk);
+		}
+		return displays;
 	}
 	/**
 	 * @return a background color appropriate for the current state
@@ -560,17 +582,21 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		// It is the responsibility of the block to trigger
 		// this as it evaluates. Update the value from the newly deserialized diagram.
 		// Also register self for any block name changes
-		for(ProcessBlockView block:blockMap.values() ) {
-			block.startup();
-			if( block.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SOURCE) ||
-				block.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SINK)) {
-				String key = NotificationKey.keyForBlockName(block.getId().toString());
-				handler.addNotificationChangeListener(key,CLSS, block);
+		for(AbstractBlock blk:blockMap.values() ) {
+			if( blk instanceof ProcessBlockView) {
+				ProcessBlockView block = (ProcessBlockView)blk;
+				block.startup();
+				if( block.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SOURCE) ||
+						block.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SINK)) {
+					String key = NotificationKey.keyForBlockName(block.getId().toString());
+					handler.addNotificationChangeListener(key,CLSS, block);
+				}
+			}
+			else if(blk instanceof AttributeDisplayView) {
+				((AttributeDisplayView)blk).startup();
 			}
 		}
-		for(AttributeDisplayView display:attributeDisplays ) {
-			display.startup();
-		}
+
 		// Register self for watermark changes
 		String key = NotificationKey.watermarkKeyForDiagram(getId().toString());
 		handler.addNotificationChangeListener(key,CLSS,this);
@@ -594,19 +620,23 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			handler.removeNotificationChangeListener(NotificationKey.keyForConnection(blk.getId().toString(),bap.getId().toString()),CLSS);
 			
 		}
-		for(AttributeDisplayView display:attributeDisplays ) {
-			display.shutdown();
-		}
 		
 		// De-register any properties "bound" to the engine
-		for(ProcessBlockView block:blockMap.values() ) {
-			for(BlockProperty prop:block.getProperties()) {
-				block.shutdown();
-			}
+		for(AbstractBlock blk:blockMap.values() ) {
+			if( blk instanceof ProcessBlockView) {
+				ProcessBlockView block = (ProcessBlockView)blk;
+				for(BlockProperty prop:block.getProperties()) {
+					block.shutdown();
+				}
 			
-			if( block.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SOURCE) ||
-				block.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SINK)) {
-				handler.removeNotificationChangeListener(NotificationKey.keyForBlockName(block.getId().toString()),block.getId().toString());
+			
+				if( block.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SOURCE) ||
+					block.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SINK)) {
+					handler.removeNotificationChangeListener(NotificationKey.keyForBlockName(block.getId().toString()),block.getId().toString());
+				}
+			}
+			else if(blk instanceof AttributeDisplayView) {
+				((AttributeDisplayView)blk).shutdown();
 			}
 		}
 		// Finally, deregister self

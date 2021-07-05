@@ -82,7 +82,7 @@ public class DataSelector extends AbstractProcessBlock implements ProcessBlock {
 		anchors.add(output);
 		
 		for(AnchorPrototype desc:getAnchors()) {
-			log.trace("initAnchorPoints counts(tblr)" + desc.getAnnotation() + " " + desc.getConnectionType().name());
+			log.trace(getName()+".initialize counts(tblr)" + desc.getAnnotation() + " " + desc.getConnectionType().name());
 		}
 			
 

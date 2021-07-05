@@ -7,24 +7,23 @@
  */
 package com.ils.blt.designer.workspace.ui;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
-import java.util.Collection;
+import java.awt.Graphics2D;
+import java.awt.Shape;
+import java.awt.font.FontRenderContext;
+import java.awt.font.GlyphVector;
+import java.awt.geom.Rectangle2D;
 
-import javax.swing.JLabel;
-import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 
-import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
-import com.ils.blt.common.block.PropertyType;
-import com.ils.blt.common.notification.NotificationChangeListener;
 import com.ils.blt.designer.workspace.AttributeDisplayView;
-import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
+import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockComponent;
+import java.awt.Color;
 
 /** 
  * This is the renderer for an AttributeDisplayView. It shows the value of a single property.
@@ -33,34 +32,26 @@ import com.inductiveautomation.ignition.designer.blockandconnector.BlockComponen
  */
 @SuppressWarnings("serial")
 public class AttributeDisplayUIView extends AbstractDisplayUIView implements BlockViewUI  {
-
-	private final JLabel label;
-	private String prefix = "";
-	private String text = "";
-	private String suffix = "";
+	private final float FONT_SIZE = 12f;
+	private final ProcessBlockView block;
+	private final String property;
 	
 	
 	public AttributeDisplayUIView(AttributeDisplayView view) {
 		super(view);
 		this.log.infof("INITIALIZING an AttributeDisplayUIView for block %s (%s)", view.getBlock().getId().toString(),view.getPropertyName());
-		this.label = new JLabel();
-		label.setForeground(getForeground());
-		label.setBackground(getBackground());
-		label.setOpaque(true);
-		label.setFont(getFont());
-		label.setHorizontalAlignment(SwingConstants.LEFT);
+		this.property = view.getPropertyName();
+		this.block = view.getBlock();
 	}
 
 	@Override
 	public void install(BlockComponent panel) {
 		super.install(panel);
-		// now that blockComponent is set, we can initialize its size
 		setSizeFromProperties();
 	}
 
-	// Set the display value and repaint.
-	public void setText(String text) {
-		this.log.infof("Set TEXT AttributeDisplayUIView for block %s %s (%s)", this.getDisplay().getBlock().getName(),this.getDisplay().getPropertyName(),text);
+	// Set the display value and repaint. Does this ever get called?
+	public void repaint() {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				blockComponent.invalidate();
@@ -68,27 +59,36 @@ public class AttributeDisplayUIView extends AbstractDisplayUIView implements Blo
 			}
 		});
 	}
-	
+	// Paint texdt string
 	@Override
-	protected void paintComponent(Graphics g) {;
-		this.log.infof("PAINT AttributeDisplayUIView for block %s (%s)", this.getDisplay().getBlock().getName(),text);
-//		Border border = new LineBorder(Color.black,1);
-		final String html = "<html>" + prefix + " " + text + " " + suffix + "</html>";
+	protected void paintComponent(Graphics _g) {;
+		Graphics2D g = (Graphics2D) _g;
+		//this.log.infof("PAINT AttributeDisplayUIView for block %s (%s)", this.getDisplay().getBlock().getName(),"TODO");
+		//	Border border = new LineBorder(Color.black,1);
+		String text = property+": "+getValue();
 		
-		// Display using the block properties:
+		Color fill = Color.BLACK;
+		Font font = g.getFont();
+		font = font.deriveFont(FONT_SIZE);  // This is, presumably the correct way
+		FontRenderContext frc = g.getFontRenderContext();
+		GlyphVector vector = font.createGlyphVector(frc, text);
+		Rectangle2D bounds = vector.getVisualBounds();
+		// xpos, ypos are centers. Adjust to upper left.
+		float xpos = 0f;
+		float ypos = 0f;
+		ypos += bounds.getHeight()/2f;
+		xpos += bounds.getWidth()/2f;
 
-		label.setText(html);
-		label.validate();
-		label.paint(g);
+		Shape textShape = vector.getOutline(xpos, ypos);
+		g.setColor(fill);
+		g.fill(textShape);
 	}
 
 	/** Set the visible box's size from the width and height block properties. */
 	private void setSizeFromProperties() {
-		/*
-		int height = getHeightPropertyValue();
-		int width = getWidthPropertyValue();
+		int height = display.getPreferredHeight();
+		int width = display.getPreferredWidth();
 		blockComponent.setPreferredSize(new Dimension(width, height));
-		*/
 	}
 	
 	
@@ -96,5 +96,17 @@ public class AttributeDisplayUIView extends AbstractDisplayUIView implements Blo
 	public void stateChanged(ChangeEvent e) {
 		// TODO Auto-generated method stub
 		
+	}
+	
+	private String getValue() {
+		String text = "PROPERTY NOT FOUND";
+		if( property.equalsIgnoreCase("Name")) {
+			text = block.getName();
+		}
+		else {
+			BlockProperty prop = block.getProperty(property);
+			if( prop!=null ) text = prop.getValue().toString();
+		}
+		return text;
 	}
 }
