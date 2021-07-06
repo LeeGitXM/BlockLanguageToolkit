@@ -407,7 +407,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			connections.remove(cxn);
 		}
 		
-		log.infof("%s.deleteBlock: deleting a sink (%s)",CLSS,blk.getClass().getCanonicalName());
+		log.infof("%s.deleteBlock: deleting a %s",CLSS,blk.getClass().getCanonicalName());
 		
 		// For a Sink, remove its bound tag
 		if( blk instanceof ProcessBlockView ) {

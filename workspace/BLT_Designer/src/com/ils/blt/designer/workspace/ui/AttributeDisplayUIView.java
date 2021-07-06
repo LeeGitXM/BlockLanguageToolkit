@@ -7,6 +7,7 @@
  */
 package com.ils.blt.designer.workspace.ui;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -23,7 +24,6 @@ import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.designer.workspace.AttributeDisplayView;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockComponent;
-import java.awt.Color;
 
 /** 
  * This is the renderer for an AttributeDisplayView. It shows the value of a single property.
@@ -32,7 +32,7 @@ import java.awt.Color;
  */
 @SuppressWarnings("serial")
 public class AttributeDisplayUIView extends AbstractDisplayUIView implements BlockViewUI  {
-	private final float FONT_SIZE = 12f;
+	private final float FONT_SIZE = 10f;
 	private final ProcessBlockView block;
 	private final String property;
 	
@@ -59,7 +59,7 @@ public class AttributeDisplayUIView extends AbstractDisplayUIView implements Blo
 			}
 		});
 	}
-	// Paint texdt string
+	// Paint text string
 	@Override
 	protected void paintComponent(Graphics _g) {;
 		Graphics2D g = (Graphics2D) _g;
@@ -67,6 +67,7 @@ public class AttributeDisplayUIView extends AbstractDisplayUIView implements Blo
 		//	Border border = new LineBorder(Color.black,1);
 		String text = property+": "+getValue();
 		
+		g.setBackground(Color.RED);
 		Color fill = Color.BLACK;
 		Font font = g.getFont();
 		font = font.deriveFont(FONT_SIZE);  // This is, presumably the correct way
@@ -74,8 +75,10 @@ public class AttributeDisplayUIView extends AbstractDisplayUIView implements Blo
 		GlyphVector vector = font.createGlyphVector(frc, text);
 		Rectangle2D bounds = vector.getVisualBounds();
 		// xpos, ypos are centers. Adjust to upper left.
-		float xpos = 0f;
-		float ypos = 0f;
+		//float xpos = block.getLocation().x;
+		//float ypos = block.getLocation().y;
+		float xpos = 0;
+		float ypos = 10;
 		ypos += bounds.getHeight()/2f;
 		xpos += bounds.getWidth()/2f;
 

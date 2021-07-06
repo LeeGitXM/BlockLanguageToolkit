@@ -6,9 +6,12 @@ package com.ils.blt.designer.workspace;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import com.ils.blt.common.block.AnchorDirection;
+import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.AttributeDisplay;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.notification.NotificationChangeListener;
@@ -21,6 +24,7 @@ import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockComponent;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorPoint;
+import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorType;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.impl.AbstractBlock;
 
@@ -33,6 +37,7 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.impl.Ab
 public class AttributeDisplayView extends AbstractBlock implements Block,NotificationChangeListener {
 	private static final String CLSS = "AttributeDisplay";
 	private final boolean DEBUG = true;
+	private Map<String,ProcessAnchorDescriptor> anchors;
 	private final NotificationHandler notificationHandler = NotificationHandler.getInstance();
 	private final Collection<AnchorPoint> anchorPoints = new ArrayList<>();
 	private final ProcessBlockView block;
@@ -59,6 +64,18 @@ public class AttributeDisplayView extends AbstractBlock implements Block,Notific
 		this.location = new Point(block.getLocation().x + offsetX,block.getLocation().y + offsetY);
 		this.ui = new AttributeDisplayUIView(this);
 		this.log = LogMaker.getLogger(this);
+		
+		// Add a single anchor that encompasses the entire block.
+		this.anchors = new HashMap<>();
+		/*
+		ProcessAnchorDescriptor pad = new ProcessAnchorDescriptor();
+		ap.setAnchorDirection(AnchorDirection.INCOMING);
+		ap.setHidden(true);
+		ap.setIsMultiple(false);
+		ap.setName("center");
+		ap.setSortOrder(0);
+		anchors.put(ap.getName(), ap);
+		*/
 	}
 	
 	/**

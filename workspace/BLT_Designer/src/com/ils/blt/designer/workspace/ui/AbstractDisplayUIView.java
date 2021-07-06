@@ -94,28 +94,5 @@ public abstract class AbstractDisplayUIView extends JComponent implements BlockV
 			}
 		});
 	}
-	
-	/**
-	 * Utility method to paint a text string.
-	 * @param g
-	 * @param text
-	 * @param xpos center of the text
-	 * @param ypos center of the text
-	 * @param fill color of the text
-	 */
-	private void paintTextAt(Graphics2D g, String text, float xpos, float ypos, Color fill,int fontSize) {
-		Font font = g.getFont();
-		font = font.deriveFont((float)fontSize);  // This is, presumably the correct way
-		FontRenderContext frc = g.getFontRenderContext();
-		GlyphVector vector = font.createGlyphVector(frc, text);
-		Rectangle2D bounds = vector.getVisualBounds();
-		// xpos, ypos are centers. Adjust to upper left.
-		ypos+= bounds.getHeight()/2f;
-		xpos-= bounds.getWidth()/2f;
-
-		Shape textShape = vector.getOutline(xpos, ypos);
-		g.setColor(fill);
-		g.fill(textShape);
-	}
 
 }
