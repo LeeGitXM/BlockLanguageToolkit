@@ -350,9 +350,11 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		String constantValue = properties.get("Constant");
 		if( constantValue==null) constantValue="0";
 		constantCheckBox.setSelected(constantValue.equalsIgnoreCase("1"));
+		
 		String postTextRec = (String)properties.get("PostTextRecommendation");
 		if( postTextRec==null) postTextRec="0";
 		postTextRecommendationCheckBox.setSelected(postTextRec.equals("0")?false:true);
+		
 		String showExplanation = (String)properties.get("ShowExplanationWithRecommendation");
 		if( showExplanation==null) showExplanation="0";
 		showExplanationWithRecommendationCheckBox.setSelected(showExplanation.equals("0")?false:true);

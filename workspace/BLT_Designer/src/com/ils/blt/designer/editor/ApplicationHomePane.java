@@ -176,7 +176,10 @@ public class ApplicationHomePane extends JPanel implements  NotificationChangeLi
 		String description = model.getProperties().get("Description");
 		if( description==null) description="";
 		descriptionTextArea.setText(description);
-		managedCheckBox.setSelected(fcns.coerceToBoolean( model.getProperties().get("Managed")));
+		
+		String managed = (String)model.getProperties().get("Managed");
+		if( managed==null) managed="0";
+		managedCheckBox.setSelected(managed.equals("0")?false:true);
 		
 		// Set combo boxes to current values
 		String queue = model.getProperties().get("MessageQueue");
