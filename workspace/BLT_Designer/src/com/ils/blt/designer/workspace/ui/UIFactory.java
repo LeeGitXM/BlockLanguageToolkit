@@ -22,6 +22,9 @@ public class UIFactory {
 			case ARROW:
 				ui= new ArrowUIView(block);
 				break;
+			case ATTRIBUTE:
+				ui= new AttributeUIView(block);
+				break;
 			case CLAMP:
 				ui= new ClampUIView(block);
 				break;

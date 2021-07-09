@@ -11,6 +11,7 @@ package com.ils.blt.common.block;
 public enum BlockStyle
 {
 			ARROW,
+			ATTRIBUTE,
 			CLAMP,
             DIAMOND,
             LOGIC_AND,

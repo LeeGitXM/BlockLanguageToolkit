@@ -721,7 +721,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 							// Sinks to right,sources to the left
 							if (dropx < thewidth / 2) {	
 								if( isStandardFolder ) {
-									desc.setBlockClass("com.ils.block.SourceConnection");
+									desc.setBlockClass(BlockConstants.BLOCK_CLASS_SOURCE);
 									desc.setStyle(BlockStyle.ARROW);
 									desc.setPreferredHeight(40);
 									desc.setPreferredWidth(50);
@@ -731,7 +731,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 									block.setName(nameFromTagTree(tnode));
 								}
 								else {
-									desc.setBlockClass("com.ils.block.Input");
+									desc.setBlockClass(BlockConstants.BLOCK_CLASS_INPUT);
 									desc.setStyle(BlockStyle.ARROW);
 									desc.setPreferredHeight(46);
 									desc.setPreferredWidth(60);
@@ -756,7 +756,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 							} 
 							else {
 								if( isStandardFolder ) {
-									desc.setBlockClass("com.ils.block.SinkConnection");
+									desc.setBlockClass(BlockConstants.BLOCK_CLASS_SINK);
 									desc.setPreferredHeight(40);
 									desc.setPreferredWidth(50);    // Leave 6-pixel inset on top and bottom
 									desc.setBackground(new Color(127,127,127).getRGB()); // Dark gray
@@ -769,7 +769,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 									block.addAnchor(output);
 								}
 								else {
-									desc.setBlockClass("com.ils.block.Output");
+									desc.setBlockClass(BlockConstants.BLOCK_CLASS_OUTPUT);
 									desc.setStyle(BlockStyle.ARROW);
 									desc.setPreferredHeight(46);
 									desc.setPreferredWidth(60);

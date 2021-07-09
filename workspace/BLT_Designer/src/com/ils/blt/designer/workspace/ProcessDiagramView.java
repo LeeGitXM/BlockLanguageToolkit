@@ -58,7 +58,6 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	private final ApplicationRequestHandler appRequestHandler;
 	private final Map<UUID,ProcessBlockView> blockMap = new HashMap<>();
 	private List<Connection> connections = new ArrayList<>();
-	private List<AttributeDisplayView> attributeDisplays = new ArrayList<>();
 	private static final int MIN_WIDTH = 200;
 	private static final int MIN_HEIGHT = 200;
 	private Dimension diagramSize = new Dimension(MIN_WIDTH,MIN_HEIGHT);
@@ -120,11 +119,6 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 					log.warnf("%s.createDiagramView: Connection %s missing one or more anchor points",CLSS,scxn.toString());
 				}
 			}
-			
-			for( AttributeDisplay ad:diagram.getAttributeDisplays() ) {
-				AttributeDisplayView view = new AttributeDisplayView(this,ad);
-				addDisplayView(view); 
-			}
 			suppressStateChangeNotification = false;
 		}  // -- end synchronized
 		
@@ -138,11 +132,6 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		for(ProcessBlockView blk:blockMap.values()) {
 			if( blk.getLocation().getX()+blk.getPreferredWidth()>maxX ) maxX = blk.getLocation().getX()+blk.getPreferredWidth();
 			if( blk.getLocation().getY()+blk.getPreferredHeight()>maxY) maxY = blk.getLocation().getY()+blk.getPreferredHeight();
-		}
-		// Account for attribute displays as well
-		for(AttributeDisplayView display:getAttributeDisplays()) {
-			if( display.getLocation().getX()+display.getPreferredWidth()>maxX ) maxX = display.getLocation().getX()+display.getPreferredWidth();
-			if( display.getLocation().getY()+display.getPreferredHeight()>maxY) maxY = display.getLocation().getY()+display.getPreferredHeight();
 		}
 		
 		diagramSize =  new Dimension((int)(maxX*1.05),(int)(maxY*1.25));
@@ -276,9 +265,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			log.warnf("%s.addConnection - rejected attempt to add a connection with null anchor",CLSS);
 		}
 	}
-	public void addDisplayView(AttributeDisplayView view) {
-		attributeDisplays.add(view);
-	}
+
 	// NOTE: This does not set connection type
 	private SerializableConnection convertConnectionToSerializable(Connection cxn) {
 		SerializableConnection result = new SerializableConnection();
@@ -432,8 +419,14 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		}
 		if(!success) log.warnf("%s.deleteConnection: failed to find match to existing",CLSS);
 	}
-	public List<AttributeDisplayView> getAttributeDisplays() {
-		return attributeDisplays;
+	public List<ProcessBlockView> getAttributeDisplays() {
+		List<ProcessBlockView> list = new ArrayList<>();
+		for(ProcessBlockView blk:blockMap.values()) {
+			if( blk.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_ATTRIBUTE) ) {
+				list.add(blk);
+			}
+		}
+		return list;
 	}
 	/**
 	 * @return a background color appropriate for the current state
@@ -568,9 +561,6 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 				handler.addNotificationChangeListener(key,CLSS, block);
 			}
 		}
-		for(AttributeDisplayView display:attributeDisplays ) {
-			display.startup();
-		}
 		// Register self for watermark changes
 		String key = NotificationKey.watermarkKeyForDiagram(getId().toString());
 		handler.addNotificationChangeListener(key,CLSS,this);
@@ -593,9 +583,6 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			ProcessBlockView blk = (ProcessBlockView)bap.getBlock();
 			handler.removeNotificationChangeListener(NotificationKey.keyForConnection(blk.getId().toString(),bap.getId().toString()),CLSS);
 			
-		}
-		for(AttributeDisplayView display:attributeDisplays ) {
-			display.shutdown();
 		}
 		
 		// De-register any properties "bound" to the engine

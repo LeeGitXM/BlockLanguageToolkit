@@ -32,15 +32,17 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
+import com.ils.blt.designer.workspace.AttributeDisplayDescriptor;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
-import com.ils.blt.designer.workspace.AttributeDisplayView;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.ils.blt.designer.workspace.WorkspaceRepainter;
 import com.ils.common.log.ILSLogger;
 import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.common.BundleUtil;
+import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
 
 import net.miginfocom.swing.MigLayout;
 
@@ -126,12 +128,12 @@ public class AttributeDisplaySelector extends JDialog implements TableModelListe
 				String propName = (String) model.getValueAt(row, 1);
 				boolean newValue = ((Boolean) model.getValueAt(row, column)).booleanValue();
 				
-				AttributeDisplayView pad = findDisplay(diagram,block,propName);
+				ProcessBlockView pad = findDisplay(diagram,block,propName);
 				// CASE I - checked box, display does not exist. Create it.
 				// Add to diagram
 				if ( newValue && (pad==null) ) {
-					pad = new AttributeDisplayView(block,propName);
-					diagram.addDisplayView(pad);
+					pad = new ProcessBlockView(new AttributeDisplayDescriptor());
+					diagram.addBlock(pad);
 					diagram.setDirty(true);
 				}
 				// CASE II - checked box, but display already exists. Do nothing, just use it.
@@ -170,7 +172,7 @@ public class AttributeDisplaySelector extends JDialog implements TableModelListe
 		dataModel.addTableModelListener(this);
 		
 		// First add "name". It is always present as a member of the block, not property
-		AttributeDisplayView display = findDisplay(diagram,block,"Name");
+		ProcessBlockView display = findDisplay(diagram,block,"Name");
 		Object[] row = new Object[2];
 		row[0] = new Boolean(display!=null);
 		row[1] = "Name";
@@ -211,18 +213,23 @@ public class AttributeDisplaySelector extends JDialog implements TableModelListe
 	}
 
 	/**
-	 * 
+	 * The "display" is a AttributeDisplay block with the indicated 
 	 * @param blockId
 	 * @param name
 	 * @return the attribute display for the given block and property
 	 */
-	private AttributeDisplayView findDisplay(ProcessDiagramView dia, ProcessBlockView blk,String propName) {
-		AttributeDisplayView display = null;
-		for(AttributeDisplayView pad:dia.getAttributeDisplays()) {
-			if( pad.getBlock().getId().equals(blk.getId()) &&
-				pad.getPropertyName().equalsIgnoreCase(propName) ) {
-				display = pad;
-				break;
+	private ProcessBlockView findDisplay(ProcessDiagramView dia, ProcessBlockView blk,String propName) {
+		ProcessBlockView display = null;
+		for(Block block:dia.getBlocks()) {
+			if( block instanceof ProcessBlockView ) {
+				ProcessBlockView view = (ProcessBlockView)block;
+				BlockProperty viewProp = view.getProperty(BlockConstants.BLOCK_PROPERTY_PROPERTY);
+				if( viewProp!=null && propName.equalsIgnoreCase(viewProp.getValue().toString()) ) {
+					BlockProperty idProp =  view.getProperty(BlockConstants.BLOCK_PROPERTY_BLOCK_ID);
+					if( idProp!=null && blk.getIconPath().toString().equalsIgnoreCase(idProp.getValue().toString())) {
+						display = view;
+					}
+				}
 			}
 		}
 		return display;
