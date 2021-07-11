@@ -35,6 +35,7 @@ import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.designer.workspace.AttributeDisplayDescriptor;
+import com.ils.blt.designer.workspace.BlockAttributeView;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
@@ -132,7 +133,7 @@ public class AttributeDisplaySelector extends JDialog implements TableModelListe
 				// CASE I - checked box, display does not exist. Create it.
 				// Add to diagram
 				if ( newValue && (pad==null) ) {
-					pad = new ProcessBlockView(new AttributeDisplayDescriptor());
+					pad = new BlockAttributeView(new AttributeDisplayDescriptor());
 					diagram.addBlock(pad);
 					diagram.setDirty(true);
 				}
@@ -225,7 +226,7 @@ public class AttributeDisplaySelector extends JDialog implements TableModelListe
 				ProcessBlockView view = (ProcessBlockView)block;
 				BlockProperty viewProp = view.getProperty(BlockConstants.BLOCK_PROPERTY_PROPERTY);
 				if( viewProp!=null && propName.equalsIgnoreCase(viewProp.getValue().toString()) ) {
-					BlockProperty idProp =  view.getProperty(BlockConstants.BLOCK_PROPERTY_BLOCK_ID);
+					BlockProperty idProp =  view.getProperty(BlockConstants.ATTRIBUTE_DISPLAY_BLOCK_ID);
 					if( idProp!=null && blk.getIconPath().toString().equalsIgnoreCase(idProp.getValue().toString())) {
 						display = view;
 					}

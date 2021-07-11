@@ -20,28 +20,35 @@ import com.ils.blt.designer.workspace.ProcessBlockView;
 
 
 /**
- * Create a rectangular "readout". This is similar to a SQUARE, except that the text in the
- * block is dynamic. We expect the block to have properties:
- *     Format:  @See String.format 
- *     Value:   this is bound to the ENGINE and is dynamic.
+ * Create a rectangular display similar to a "readout". The block has a large number of properties
+ * related to formatting of the output.
  * 
- * The first input anchor creates an anchor point on the left. The first output anchor point 
- * creates an anchor point on the right.
+ * There are no anchor points.
  */
 public class AttributeUIView extends AbstractBlockUIView implements BlockViewUI {
-	private static final long serialVersionUID = 2160868310475735865L;
+	private static final long serialVersionUID = 2160868310475735865L; 
+	private final ProcessBlockView referenceBlock;
 	private static final int DEFAULT_HEIGHT = 40;
-	private static final int DEFAULT_WIDTH  = 80;
+	private static final int DEFAULT_WIDTH = 80;
+	private final String propertyName;
+	private int height;
+	private int width ;
+	private int offsetx;
+	private int offsety;
 	private final UtilityFunctions fncs;
-	private BlockProperty valueProperty = null;
+	private BlockProperty valueProperty = null;  /// This is the watched property on the reference block
 	
 	public AttributeUIView(ProcessBlockView view) {
 		super(view,DEFAULT_WIDTH,DEFAULT_HEIGHT);
+		this.referenceBlock = null;
+		this.propertyName = null;
 		this.fncs = new UtilityFunctions();
 		setOpaque(false);
-		initAnchorPoints();
+		
 		valueProperty = findValueProperty();
 	}
+	
+	// The value property is the named property of the referenced block.
 	private BlockProperty findValueProperty() {
 		BlockProperty vp = null;
 		for( BlockProperty bp:block.getProperties()) {
@@ -51,20 +58,6 @@ public class AttributeUIView extends AbstractBlockUIView implements BlockViewUI 
 			}
 		}
 		return vp;
-	}
-		
-	/**
-	 *  Draw "badge" icons on bottom of the main rendering to indicate various block properties.
-	 */
-	protected void drawBadges(Graphics2D g) {
-		super.drawBadges(g);
-		if(block.getBadgeChar() != null) {
-			Dimension sz = getPreferredSize();
-			String badgeChar = block.getBadgeChar();
-			Rectangle bounds = new Rectangle(INSET,3*(sz.height-3*INSET)/4,BADGE_WIDTH,BADGE_HEIGHT);
-			String path = "Block/icons/badges/" + badgeChar + ".png";
-			paintBadge(g,path,bounds);
-		}
 	}
 	
 	
@@ -83,7 +76,7 @@ public class AttributeUIView extends AbstractBlockUIView implements BlockViewUI 
 		// Setup for outlining
 		float outlineWidth = 1.0f;
 		Stroke stroke = new BasicStroke(outlineWidth,BasicStroke.CAP_ROUND,BasicStroke.JOIN_ROUND);
-		g.setStroke(stroke);
+		//g.setStroke(stroke);
 		g.setPaint(Color.BLACK);
 		
 		// Calculate the inner area

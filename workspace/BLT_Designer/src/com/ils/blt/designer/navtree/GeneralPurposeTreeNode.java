@@ -667,7 +667,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			sf.setName(res.getName());  // ???
 		}
 		catch(Exception ex) {
-			logger.warnf("%s.deserializeFamily: Deserialization exception (%s)",ex.getMessage());
+			logger.warnf("%s.deserializeFamily: Deserialization exception (%s)",CLSS,ex.getMessage());
 		}
 		return sf;
 	}

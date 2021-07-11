@@ -22,8 +22,14 @@ import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 @ExecutableBlock
 public class AttributeDisplay extends AbstractProcessBlock implements ProcessBlock {
 	private static final String CLSS = "AttributeDisplay";
-	public static final int DEFAULT_WIDTH = 100;
+	public static final int ATTRIBUTE_DISPLAY_SEPARATION  = 30; // Default y separation
+	public static final String DEFAULT_FONT = "SansSerif";      // Font family - Serif, Dialog,Monospaced
+	public static final int DEFAULT_FONT_SIZE = 12;
 	public static final int DEFAULT_HEIGHT = 25;
+	public static final int DEFAULT_OFFSET_X = 50;
+	public static final int DEFAULT_OFFSET_Y = 25;
+	public static final int DEFAULT_WIDTH = 100;
+	
 
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -62,18 +68,20 @@ public class AttributeDisplay extends AbstractProcessBlock implements ProcessBlo
 	 */
 	private void initialize() {
 		setName(CLSS);
-		BlockProperty blockId = new BlockProperty(BlockConstants.BLOCK_PROPERTY_BLOCK_ID,"The id of the block to be displayed", PropertyType.STRING, true);
-		setProperty(BlockConstants.BLOCK_PROPERTY_BLOCK_ID, blockId);	
-		BlockProperty property = new BlockProperty(BlockConstants.BLOCK_PROPERTY_PROPERTY,"The property to be displayed", PropertyType.STRING, true);
-		setProperty(BlockConstants.BLOCK_PROPERTY_PROPERTY, property);
-		BlockProperty value = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,"The current value of the block property", PropertyType.STRING, true);
-		setProperty(BlockConstants.BLOCK_PROPERTY_VALUE, value);	
-		BlockProperty width = new BlockProperty(BlockConstants.BLOCK_PROPERTY_WIDTH, Integer.valueOf(DEFAULT_WIDTH), PropertyType.INTEGER,true);
-		setProperty(BlockConstants.BLOCK_PROPERTY_WIDTH, width);		
-		BlockProperty height = new BlockProperty(BlockConstants.BLOCK_PROPERTY_HEIGHT, Integer.valueOf(DEFAULT_HEIGHT), PropertyType.INTEGER,true);
-		setProperty(BlockConstants.BLOCK_PROPERTY_HEIGHT, height);		
-		BlockProperty backgroundColor = new BlockProperty(BlockConstants.BLOCK_PROPERTY_BACKGROUND_COLOR, "TRANSPARENT", PropertyType.COLOR,true);
-		setProperty(BlockConstants.BLOCK_PROPERTY_BACKGROUND_COLOR, backgroundColor);		
+		BlockProperty blockId = new BlockProperty(BlockConstants.ATTRIBUTE_DISPLAY_BLOCK_ID,"The id of the block to be displayed", PropertyType.STRING, true);
+		setProperty(BlockConstants.ATTRIBUTE_DISPLAY_BLOCK_ID, blockId);	
+		BlockProperty property = new BlockProperty(BlockConstants.ATTRIBUTTE_DISPLAY_PROPERTY,"The property to be displayed", PropertyType.STRING, true);
+		setProperty(BlockConstants.ATTRIBUTTE_DISPLAY_PROPERTY, property);	
+		BlockProperty width = new BlockProperty(BlockConstants.ATTRIBUTE_DISPLAY_WIDTH, Integer.valueOf(DEFAULT_WIDTH), PropertyType.INTEGER,true);
+		setProperty(BlockConstants.ATTRIBUTE_DISPLAY_WIDTH, width);		
+		BlockProperty height = new BlockProperty(BlockConstants.ATTRIBUTE_DISPLAY_HEIGHT, Integer.valueOf(DEFAULT_HEIGHT), PropertyType.INTEGER,true);
+		setProperty(BlockConstants.ATTRIBUTE_DISPLAY_HEIGHT, height);		
+		BlockProperty backgroundColor = new BlockProperty(BlockConstants.ATTRIBUTE_DISPLAY_BACKGROUND_COLOR, "TRANSPARENT", PropertyType.COLOR,true);
+		setProperty(BlockConstants.ATTRIBUTE_DISPLAY_BACKGROUND_COLOR, backgroundColor);
+		BlockProperty offsetx = new BlockProperty(BlockConstants.ATTRIBUTE_DISPLAY_OFFSET_X, Integer.valueOf(DEFAULT_WIDTH), PropertyType.INTEGER,true);
+		setProperty(BlockConstants.ATTRIBUTE_DISPLAY_WIDTH, offsetx);		
+		BlockProperty offsety = new BlockProperty(BlockConstants.ATTRIBUTE_DISPLAY_OFFSET_Y, Integer.valueOf(DEFAULT_HEIGHT), PropertyType.INTEGER,true);
+		setProperty(BlockConstants.ATTRIBUTE_DISPLAY_HEIGHT, offsety);
 	}
 	
 	/**

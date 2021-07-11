@@ -25,10 +25,20 @@ public interface BlockConstants   {
 	public static final String RECEIVER_PORT_NAME   = "recv";     // Receive
 	public static final String SIGNAL_PORT_NAME    = "signal";   // Signal (every block has one)
 		
+	// These are block property names used specially for attrbute displays
+	public static final String ATTRIBUTE_DISPLAY_BACKGROUND_COLOR   = "BackgroundColor";
+	public static final String ATTRIBUTE_DISPLAY_BLOCK_ID    		= "BlockId";
+	public static final String ATTRIBUTE_DISPLAY_FONT        		= "Font";
+	public static final String ATTRIBUTE_DISPLAY_FONT_SIZE        	= "FontSize";
+	public static final String ATTRIBUTE_DISPLAY_HEIGHT        		= "Height";
+	public static final String ATTRIBUTE_DISPLAY_OFFSET_X        	= "OffsetX";
+	public static final String ATTRIBUTE_DISPLAY_OFFSET_Y        	= "OffsetY";
+	public static final String ATTRIBUTTE_DISPLAY_PROPERTY    		= "Property";
+	public static final String ATTRIBUTE_DISPLAY_USE_PREFIX        	= "Prefix?";
+	public static final String ATTRIBUTE_DISPLAY_WIDTH        		= "Width";
 	// These are block property names that used in multiple block definitions
 	public static final String BLOCK_PROPERTY_ACTIVITY_BUFFER_SIZE 	= "ActivityBufferSize";
 	public static final String BLOCK_PROPERTY_BACKGROUND_COLOR     	= "BackgroundColor";
-	public static final String BLOCK_PROPERTY_BLOCK_ID    			= "BlockId";
 	public static final String BLOCK_PROPERTY_CLEAR_ON_RESET       	= "ClearOnReset";
 	public static final String BLOCK_PROPERTY_COMMAND              	= "Command";
 	public static final String BLOCK_PROPERTY_DEADBAND             	= "Deadband";
