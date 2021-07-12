@@ -269,8 +269,7 @@
 	<!-- Install jar files that are necessary for Python scripts -->
 	<target name="python.jars" >
 		<echo message="Copying jar files from ${basedir}/BLT_Build/temp_modl" />
-		
-		<copy todir="${demo.py.lib}/../../lib/core/common">
+		<copy todir="${ignition.py.lib}/../../lib/core/common">
 			<fileset dir="${basedir}/BLT_Build/temp_modl">
 				<include name="ils-common.jar" />
 				<include name="ils-common.jar.pack.gz" />
@@ -280,87 +279,25 @@
 				<include name="commons-math*.jar" />
 			</fileset>
 		</copy>
-		<copy todir="${dev.py.lib}/../../lib/core/common">
-			<fileset dir="${basedir}/BLT_Build/temp_modl">
-				<include name="ils-common.jar" />
-				<include name="ils-common.jar.pack.gz" />
-				<include name="blt-common.jar" />
-				<include name="jackson*.gz" />
-				<include name="commons-math*.gz" />
-				<include name="commons-math*.jar" />
-			</fileset>
-		</copy>
-		<copy todir="${test.py.lib}/../../lib/core/common">
-			<fileset dir="${basedir}/BLT_Build/temp_modl">
-				<include name="ils-common.jar" />
-				<include name="ils-common.jar.pack.gz" />
-				<include name="blt-common.jar" />
-				<include name="jackson*.gz" />
-				<include name="commons-math*.gz" />
-				<include name="commons-math*.jar" />
-			</fileset>
-		</copy>
-
-
-		<copy todir="${demo.py.lib}/../../lib/core/common">
+		<copy todir="${ignition.py.lib}/../../lib/core/common">
 			<fileset dir="${jar.dir}">
 				<include name="jackson*.jar" />
 			</fileset>
 		</copy>
-		<copy todir="${dev.py.lib}/../../lib/core/common">
-			<fileset dir="${jar.dir}">
-				<include name="jackson*.jar" />
-			</fileset>
-		</copy>
-		<copy todir="${test.py.lib}/../../lib/core/common">
-			<fileset dir="${jar.dir}">
-				<include name="jackson*.jar" />
-			</fileset>
-		</copy>
-
-		
-		<copy todir="${demo.py.lib}/../../lib/core/gateway">
+		<copy todir="${ignition.py.lib}/../../lib/core/gateway">
 			<fileset dir="${basedir}/BLT_Build/temp_modl">
 				<include name="commons-math3-3.1.6.jar" />
 				<include name="blt-gateway.jar" />
 				<include name="block-definition.jar" />
 			</fileset>
 		</copy>
-		<copy todir="${dev.py.lib}/../../lib/core/gateway">
-			<fileset dir="${basedir}/BLT_Build/temp_modl">
-				<include name="commons-math3-3.1.6.jar" />
-				<include name="blt-gateway.jar" />
-				<include name="block-definition.jar" />
-			</fileset>
-		</copy>
-		<copy todir="${test.py.lib}/../../lib/core/gateway">
-			<fileset dir="${basedir}/BLT_Build/temp_modl">
-				<include name="commons-math3-3.1.6.jar" />
-				<include name="blt-gateway.jar" />
-				<include name="block-definition.jar" />
-			</fileset>
-		</copy>
-		
 		<!-- Copy test extension functions -->
-		<mkdir dir="${demo.py.lib}/ils/blt/extensions" />
-		<copy todir="${demo.py.lib}/ils/blt/extensions">
+		<mkdir dir="${ignition.py.lib}/ils/blt/extensions" />
+		<copy todir="${ignition.py.lib}/ils/blt/extensions">
 			<fileset dir="${root.dir}/blt/extensions/test">
 				<include name="*.py" />
 			</fileset>
 		</copy>
-		<mkdir dir="${dev.py.lib}/ils/blt/extensions" />
-		<copy todir="${dev.py.lib}/ils/blt/extensions">
-			<fileset dir="${root.dir}/blt/extensions/test">
-				<include name="*.py" />
-			</fileset>
-		</copy>
-		<mkdir dir="${test.py.lib}/ils/blt/extensions" />
-		<copy todir="${test.py.lib}/ils/blt/extensions">
-			<fileset dir="${root.dir}/blt/extensions/test">
-				<include name="*.py" />
-			</fileset>
-		</copy>
-		
 	</target>
 
 	<!-- Installs BLT module in local Ignition gateway. Note that the gateway must be running for this to succeed. -->

@@ -58,7 +58,7 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	
 	public BLTGatewayHook() {
 		log = LogMaker.getLogger(this);
-		log.info(CLSS+"Initializing BLT Gateway hook");
+		log.info(CLSS+".Initializing BLT Gateway hook FOO");
 		BundleUtil.get().addBundle(prefix, getClass(), BUNDLE_NAME);
 		requestHandler = ControllerRequestHandler.getInstance();
 	}
@@ -82,6 +82,7 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 		
 		// Set context in the ScriptManager instance
 		ScriptExtensionManager.getInstance().setContext(context);
+		log.info(CLSS+".setup - done setting up scriptExtensionManager.");
 		// Register the ToolkitRecord making sure that the table exists
 		try {
 			context.getSchemaUpdater().updatePersistentRecords(ToolkitRecord.META);
@@ -89,20 +90,24 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 		catch(SQLException sqle) {
 			log.error("BLTGatewayHook.setup: Error registering ToolkitRecord",sqle);
 		}
+		log.info(CLSS+".setup() complete");
 		
 	}
 
 	@Override
 	public void startup(LicenseState licenseState) {
+		log.info(CLSS+".startup()");
 		this.toolkitHandler = new ToolkitRecordHandler(context);
 		this.mmgr = new ModelManager(context);
 		BlockExecutionController controller = BlockExecutionController.getInstance();
 		controller.setDelegate(mmgr);
 
+
 		// Analyze existing projects - skip the global project and any that are disabled.
 		List<Project> projects = context.getProjectManager().getProjectsFull(ProjectVersion.Staging);
 		for( Project project:projects ) {
 			if( !project.isEnabled() || project.getId()==-1 ) continue;
+				log.infof(CLSS+".startup() - adding project %s", project.getName());
 				mmgr.projectAdded(project,null); 
 		}
 

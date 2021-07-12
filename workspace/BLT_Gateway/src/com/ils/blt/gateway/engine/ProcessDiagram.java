@@ -50,7 +50,7 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 	private static final long serialVersionUID = 3557397875746466629L;
 	private static String CLSS = "ProcessDiagram";
-	private static final boolean DEBUG = false;
+	private static final boolean DEBUG = true;
 	private boolean valid = false;
 	protected final Map<UUID,ProcessBlock> blocks;
 	private final Map<ConnectionKey,ProcessConnection> connectionMap;            // Key by connection number
@@ -139,7 +139,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 				controller.removeSubscription(oldBlock, prop);
 			}
 			oldBlock.stop();
-			log.debugf("%s.removeBlocksFromList: decommissioned %s (%d)",CLSS,oldBlock.getName(),oldBlock.hashCode());
+			if( DEBUG ) log.infof("%s.removeBlocksFromList: decommissioned %s (%d)",CLSS,oldBlock.getName(),oldBlock.hashCode());
 		}
 		return blocksToRemove;
 	}
@@ -175,6 +175,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 	public void createBlocks(SerializableBlock[] sblks ) {
 		BlockFactory blockFactory = BlockFactory.getInstance();
 		String provider = getProviderForState(state);
+		if( DEBUG ) log.infof("%s.createBlocks: Starting...", CLSS);
 		// Update the blocks - we've already deleted any not present in the new
 		for( SerializableBlock sb:sblks ) {
 			UUID id = sb.getId();
@@ -187,7 +188,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 					else if(DiagramState.ISOLATED.equals(state)) pb.setTimer(controller.getSecondaryTimer());
 					pb.setProjectId(projectId);
 					blocks.put(pb.getBlockId(), pb);
-					log.debugf("%s.analyze: New block %s(%d)",CLSS,pb.getName(),pb.hashCode());
+					if( DEBUG ) log.infof("%s.createBlocks: New block %s(%d)", CLSS, pb.getName(), pb.hashCode());
 
 					if( BlockExecutionController.CONTROLLER_RUNNING_STATE.equalsIgnoreCase(BlockExecutionController.getExecutionState()) ) {
 						updatePropertyProviderInBlock(provider,pb);
@@ -203,6 +204,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 				}
 			}
 		}
+		if( DEBUG ) log.infof("%s.createBlocks: Complete!", CLSS);
 		return;
 	}
 	/**
@@ -234,7 +236,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 					if( connections==null ) {
 						connections = new ArrayList<ProcessConnection>();
 						outgoingConnections.put(key, connections);
-						//log.tracef("%s.updateConnections: mapping connection from %s:%s",TAG,upstreamBlock.getBlockId().toString(),pc.getUpstreamPortName());
+						if( DEBUG ) log.infof("%s.updateConnections: mapping connection from %s:%s",CLSS,upstreamBlock.getBlockId().toString(),pc.getUpstreamPortName());
 					}
 					if( !connections.contains(pc) ) connections.add(pc);
 				}
@@ -261,7 +263,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 		}
 		// Now that the connection maps have been created/updated, allow the blocks to update their information.
 		// Currently we only do this for the incoming connections.
-		log.debugf("%s.updateConnections: updating connections ...",CLSS);
+		if( DEBUG ) log.infof("%s.updateConnections: updating connections ...",CLSS);
 		for(BlockPort key:incomingConnections.keySet() ) {
 			key.getBlock().validateConnections();
 			
@@ -281,7 +283,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 			UUID id = sb.getId();
 			ProcessBlock pb = blocks.get(id);
 			if( pb!=null && sb.getProperties()!=null ) {
-				log.debugf("%s.updateProperties: Update block %s",CLSS,pb.getName());
+				if( DEBUG ) log.infof("%s.updateProperties: Update block %s",CLSS,pb.getName());
 				boolean hasChanged = false;
 				// Stop old subscriptions ONLY if the property changed, or no longer exists
 				// NOTE: The blockFactory update will take care of values. We're just worried about subscriptions
@@ -540,7 +542,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 
 		}
 		else {
-			log.debugf("%s.getOutgoingNotifications: no connections found for %s:%s",CLSS,block.getBlockId().toString(),port);
+			if( DEBUG ) log.infof("%s.getOutgoingNotifications: no connections found for %s:%s",CLSS,block.getBlockId().toString(),port);
 
 		}
 		return notifications;
@@ -575,7 +577,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 			}
 		}
 		else {
-			log.debugf("%s.getOutgoingSignalNotifications: no connections found for %s:%s",CLSS,block.getBlockId().toString(),port);
+			if( DEBUG ) log.infof("%s.getOutgoingSignalNotifications: no connections found for %s:%s",CLSS,block.getBlockId().toString(),port);
 		}
 		return notifications;
 	}
@@ -717,7 +719,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 	 * Stop all subscriptions for properties in blocks in this diagram
 	 */
 	public void stopSubscriptions() {
-		log.debugf("%s.stopSubscriptions: project %d:%s",CLSS,projectId,getName());
+		if( DEBUG ) log.infof("%s.stopSubscriptions: project %d:%s",CLSS,projectId,getName());
 		for( ProcessBlock pb:getProcessBlocks()) {
 			for(BlockProperty bp:pb.getProperties()) {
 				if(DEBUG && bp.getBinding()!=null && !bp.getBinding().isEmpty()) {
