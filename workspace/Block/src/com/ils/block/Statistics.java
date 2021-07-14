@@ -58,7 +58,7 @@ public class Statistics extends AbstractProcessBlock implements ProcessBlock {
 	private final String CLSS = "Statistics";
 	// Keep map of values by originating block id
 	protected final Map<String,QualifiedValue> qualifiedValueMap;
-	private final boolean DEBUG = true;
+	private final boolean DEBUG = false;
 	private final Watchdog dog;
 	private StatFunction function = StatFunction.RANGE;
 	private double synchInterval = 0.5; // 1/2 sec synchronization by default

@@ -87,7 +87,7 @@ public class MainPanel extends BasicEditPanel {
 	}
 	public BlockPropertyEditor getBlockPropertyEditor() { return this.bpe; }
 	public void saveDiagramClean() {bpe.saveDiagramClean();} 
-
+	public void setDiagramDirty()  {bpe.setDiagramDirty(); }
 	/**
 	 * Iterate over panels and close any subscriptions
 	 */

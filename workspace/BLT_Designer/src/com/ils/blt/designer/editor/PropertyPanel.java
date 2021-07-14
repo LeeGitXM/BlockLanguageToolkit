@@ -73,7 +73,7 @@ import net.miginfocom.swing.MigLayout;
  */
 public class PropertyPanel extends JPanel implements ChangeListener, FocusListener, NotificationChangeListener,TagChangeListener {
 	private static final long serialVersionUID = 2264535784255009984L;
-	private static final boolean DEBUG = true;
+	private static final boolean DEBUG = false;
 	private static SimpleDateFormat dateFormatter = new SimpleDateFormat(BlockConstants.TIMESTAMP_FORMAT);
 	private final NotificationHandler notificationHandler = NotificationHandler.getInstance();
 	private static UtilityFunctions fncs = new UtilityFunctions();
@@ -200,10 +200,11 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 			log.debugf("%s: adding %s for ENGINE",CLSS,valueKey);
 			notificationHandler.addNotificationChangeListener(valueKey,CLSS,this);
 		}
-		// The "plain" (NONE) properties can be changed by python scripting.  
+		// The "plain" (NONE) properties can be changed by python scripting. Note: we do not want to update from Gateway
+		// yet, as there may have been local chenges in the designer
 		else if(property.getBindingType().equals(BindingType.ENGINE) || property.getBindingType().equals(BindingType.NONE)) {
 			log.debugf("%s: adding %s",CLSS,valueKey);
-			notificationHandler.addNotificationChangeListener(valueKey,CLSS,this);
+			notificationHandler.addNotificationChangeListener(valueKey,CLSS,this,false);
 		}
 		else if( property.getBindingType().equals(BindingType.TAG_MONITOR) ||
 				property.getBindingType().equals(BindingType.TAG_READ) ||
@@ -666,6 +667,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 				// Update the notification handler with the new value
 				if(DEBUG) log.infof("%s.updatePropertyForField: property %s value= %s",CLSS,prop.getName(),fieldValue.toString());	
 				notificationHandler.initializePropertyValueNotification(valueKey, fieldValue);
+				parent.setDiagramDirty();
 			}
 			else {
 				log.tracef("%s.updatePropertyForField: No Change was %s, is %s", CLSS,prop.getValue().toString(),fieldValue);
