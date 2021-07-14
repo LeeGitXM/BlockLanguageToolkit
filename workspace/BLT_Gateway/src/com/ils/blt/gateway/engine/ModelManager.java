@@ -56,7 +56,7 @@ import com.inductiveautomation.ignition.gateway.project.ProjectListener;
  */
 public class ModelManager implements ProjectListener  {
 	private static final String CLSS = "ModelManager";
-	private static final boolean DEBUG = false;
+	private static final boolean DEBUG = true;
 	private final GatewayContext context;
 	private final LoggerEx log;
 	/** Access nodes by either UUID or tree path */
@@ -123,23 +123,25 @@ public class ModelManager implements ProjectListener  {
 			String type = res.getResourceType();
 			
 			if( type.equalsIgnoreCase(BLTProperties.APPLICATION_RESOURCE_TYPE) ) {
-				if(DEBUG) log.infof("%s.analyzeResource: application = %s %s",CLSS,type,(startup?"(STARTUP)":""));
+				if(DEBUG) log.infof("%s.analyzeResource: adding an application = %s %s", CLSS, res.getName(), (startup?"(STARTUP)":""));
 				addModifyApplicationResource(projectId,res,startup);
 			}
 			else if( type.equalsIgnoreCase(BLTProperties.FAMILY_RESOURCE_TYPE) ) {
-				if(DEBUG) log.infof("%s.analyzeResource:  family = %s %s",CLSS,type,(startup?"(STARTUP)":""));
+				if(DEBUG) log.infof("%s.analyzeResource: adding a family = %s %s", CLSS, res.getName(), (startup?"(STARTUP)":""));
 				addModifyFamilyResource(projectId,res,startup);
 			}
 			else if( type.equalsIgnoreCase(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
-				if(DEBUG) log.infof("%s.analyzeResource:  diagram = %s %s",CLSS,type,(startup?"(STARTUP)":""));
+				if(DEBUG) log.infof("%s.analyzeResource: adding a diagram = %s %s", CLSS, res.getName(), (startup?"(STARTUP)":""));
 				addModifyDiagramResource(projectId,res,startup);
+				if(DEBUG) log.infof("%s.analyzeResource: diagram %s successfully added!", CLSS, res.getName() );
 			}
 			else if( type.equalsIgnoreCase(BLTProperties.FOLDER_RESOURCE_TYPE) ) {
+				if(DEBUG) log.infof("%s.analyzeResource: adding a folder = %s %s", CLSS, res.getName(), (startup?"(STARTUP)":""));
 				addModifyFolderResource(projectId,res);
 			}
 			else {
 				// Don't care
-				log.tracef("%s.analyzeResource: Ignoring %s resource",CLSS,type);
+				if(DEBUG) log.infof("%s.analyzeResource: Ignoring %s resource",CLSS,type);
 			}
 		}
 	}
@@ -658,7 +660,7 @@ public class ModelManager implements ProjectListener  {
 				Project project = context.getProjectManager().getProject(projectId, ApplicationScope.GATEWAY,ProjectVersion.Staging);
 				log.debug("============================== ENABLED =================================");
 				for( ProjectResource res: project.getResources() ) {
-					log.debugf("%s.projectUpdated: enabling %d:%d %s",CLSS,projectId,res.getResourceId(),res.getName());
+					if(DEBUG) log.infof("%s.projectUpdated: enabling %d:%d %s",CLSS,projectId,res.getResourceId(),res.getName());
 				}
 				
 				for( ProjectResource res: project.getResources() ) {
@@ -690,7 +692,7 @@ public class ModelManager implements ProjectListener  {
 	 * @param startup true if called from the gateway hook
 	 */
 	private void addModifyApplicationResource(long projectId,ProjectResource res,boolean startup) {
-		log.debugf("%s.addModifyApplicationResource: %s(%d)",CLSS,res.getName(),res.getResourceId());
+		if(DEBUG) log.infof("%s.addModifyApplicationResource: %s(%d)",CLSS,res.getName(),res.getResourceId());
 		SerializableApplication sa = deserializeApplicationResource(projectId,res);
 		if(sa!=null ) {
 			ProcessApplication application = new ProcessApplication(sa,res.getParentUuid());
@@ -766,7 +768,7 @@ public class ModelManager implements ProjectListener  {
 	 * @param startup
 	 */
 	private void addModifyDiagramResource(long projectId,ProjectResource res,boolean startup) {
-		if(DEBUG) log.infof("%s.addModifyDiagramResource: %s(%d)",CLSS,res.getName(),res.getResourceId());
+		if(DEBUG) log.infof("%s.addModifyDiagramResource: adding diagram: %s (%d)", CLSS, res.getName(), res.getResourceId());
 		SerializableDiagram sd = deserializeDiagramResource(projectId,res);
 
 		if( sd!=null ) {
@@ -1004,7 +1006,7 @@ public class ModelManager implements ProjectListener  {
 	 * @param node the node to be added
 	 */
 	private void addToHierarchy(long projectId,ProcessNode node) {
-		log.tracef("%s.addToHierarchy: %s (%d:%s)",CLSS,node.getName(),node.getResourceId(),node.getSelf().toString());
+		if(DEBUG) log.infof("%s.addToHierarchy: %s (%d:%s)",CLSS,node.getName(),node.getResourceId(),node.getSelf().toString());
 		UUID self     = node.getSelf();
 		nodesByUUID.put(self, node);
 		
@@ -1012,11 +1014,11 @@ public class ModelManager implements ProjectListener  {
 		// Add the node to the root.
 		if( node.getParent()==null )  {
 			root.addChild(node,projectId);
-			log.tracef("%s.addToHierarchy: %s is a ROOT (null parent)",CLSS,node.getName());
+			if(DEBUG) log.infof("%s.addToHierarchy: %s is a ROOT (null parent)",CLSS,node.getName());
 		}
 		else if( node.getParent().equals(BLTProperties.ROOT_FOLDER_UUID) )  {
 			root.addChild(node,projectId);
-			log.tracef("%s.addToHierarchy: %s is a ROOT (parent is root folder)",CLSS,node.getName());
+			if(DEBUG) log.infof("%s.addToHierarchy: %s is a ROOT (parent is root folder)",CLSS,node.getName());
 		}
 		else {
 			// If the parent is already in the tree, simply add the node as a child
@@ -1032,11 +1034,11 @@ public class ModelManager implements ProjectListener  {
 			}
 	
 			if(parent==null ) {
-				log.tracef("%s.addToHierarchy: %s is an ORPHAN (parent is %s)",CLSS,node.getName(),node.getParent().toString());
+				if(DEBUG) log.infof("%s.addToHierarchy: %s is an ORPHAN (parent is %s)",CLSS,node.getName(),node.getParent().toString());
 				orphansByUUID.put(self, node);
 			}
 			else {
-				log.tracef("%s.addToHierarchy: %s is a CHILD of %s",CLSS,node.getName(),parent.getName());
+				if(DEBUG) log.infof("%s.addToHierarchy: %s is a CHILD of %s",CLSS,node.getName(),parent.getName());
 				parent.addChild(node);
 			}
 		}	
@@ -1139,14 +1141,14 @@ public class ModelManager implements ProjectListener  {
 	public SerializableApplication deserializeApplicationResource(long projId,ProjectResource res) {
 		byte[] serializedObj = res.getData();
 		String json = new String(serializedObj);
-		log.debugf("%s.deserializeApplicationResource: json = %s",CLSS,json);
+		if(DEBUG) log.infof("%s.deserializeApplicationResource: json = %s",CLSS,json);
 		SerializableApplication sa = null;
 		try{
 			ObjectMapper mapper = new ObjectMapper();
 			sa = mapper.readValue(json, SerializableApplication.class);
 			if( sa!=null ) {
 				sa.setName(res.getName());
-				log.debugf("%s.deserializeApplicationResource: Successfully deserialized application %s",CLSS,sa.getName());
+				if(DEBUG) log.infof("%s.deserializeApplicationResource: Successfully deserialized application %s",CLSS,sa.getName());
 				
 			}
 			else {
@@ -1171,14 +1173,14 @@ public class ModelManager implements ProjectListener  {
 		SerializableDiagram sd = null;
 		try{
 			String json = new String(serializedObj);
-			log.tracef("%s.deserializeDiagramResource: json = %s",CLSS,json);
+			if(DEBUG) log.infof("%s.deserializeDiagramResource: json = %s",CLSS,json);
 			ObjectMapper mapper = new ObjectMapper();
 			mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 			mapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL,true);
 			sd = mapper.readValue(json, SerializableDiagram.class);
 			if( sd!=null ) {
 				sd.setName(res.getName());       // Name comes from the resource
-				log.debugf("%s.deserializeDiagramResource: Successfully deserialized diagram %s",CLSS,sd.getName());
+				if(DEBUG) log.infof("%s.deserializeDiagramResource: Successfully deserialized diagram %s",CLSS,sd.getName());
 				sd.setResourceId(res.getResourceId());
 				if( DEBUG ) {
 					for(SerializableBlock sb:sd.getBlocks()) {
@@ -1205,14 +1207,14 @@ public class ModelManager implements ProjectListener  {
 	public SerializableFamily deserializeFamilyResource(long projId,ProjectResource res) {
 		byte[] serializedObj = res.getData();
 		String json = new String(serializedObj);
-		log.debugf("%s.deserializeFamilyResource: json = %s",CLSS,json);
+		if(DEBUG) log.infof("%s.deserializeFamilyResource: json = %s",CLSS,json);
 		SerializableFamily sf = null;
 		try{
 			ObjectMapper mapper = new ObjectMapper();
 			sf = mapper.readValue(json, SerializableFamily.class);
 			if( sf!=null ) {
 				sf.setName(res.getName());     // Resource is the source of the name.
-				log.debugf("%s.deserializeFamilyResource: Successfully deserialized family %s",CLSS,sf.getName());
+				if(DEBUG) log.infof("%s.deserializeFamilyResource: Successfully deserialized family %s",CLSS,sf.getName());
 			}
 			else {
 				log.warnf("%s: deserializeFamilyResource: deserialization failed",CLSS);
@@ -1259,7 +1261,7 @@ public class ModelManager implements ProjectListener  {
 				}
 				
 				if( parent!=null ) {
-					log.debugf("%s.resolveOrphans: %s RECONCILED with parent (%s)",CLSS,orphan.getName(),parent.getName());
+					if(DEBUG) log.infof("%s.resolveOrphans: %s RECONCILED with parent (%s)",CLSS,orphan.getName(),parent.getName());
 					reconciledOrphans.add(orphan);
 				}
 			}

@@ -36,7 +36,7 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
 public class ResourceUpdateManager implements Runnable {
 	private static final String CLSS = "ResourceUpdateManager";
 	private static final LoggerEx log = LogUtil.getLogger(ResourceUpdateManager.class.getPackage().getName());
-	private static final boolean DEBUG = false;
+	private static final boolean DEBUG = true;
 	private static DesignerContext context = null;
 	private static NodeStatusManager statusManager = null;
 	private ReentrantLock sharedLock = new ReentrantLock(); 

@@ -31,7 +31,7 @@ import com.ils.common.log.LogMaker;
  */
 public class BlockFactory  {
 	private final static String CLSS = "BlockFactory";
-	private static final boolean DEBUG = false;
+	private static final boolean DEBUG = true;
 	private final ILSLogger log = LogMaker.getLogger(BlockFactory.class.getPackage().getName());
 	private static BlockFactory instance = null;
 	private final BlockExecutionController controller = BlockExecutionController.getInstance();
