@@ -435,8 +435,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	
 	@Override
 	public MenuBarMerge getMenu() {
-
-    	logger.tracef("EREIAM JH - GetMenu, context: %s",""+getContext());
     	BundleUtil.get();
 
     	MenuBarMerge merge = null;     	

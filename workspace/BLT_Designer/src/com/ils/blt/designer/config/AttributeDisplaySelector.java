@@ -13,6 +13,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Frame;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -129,11 +130,15 @@ public class AttributeDisplaySelector extends JDialog implements TableModelListe
 				String propName = (String) model.getValueAt(row, 1);
 				boolean newValue = ((Boolean) model.getValueAt(row, column)).booleanValue();
 				
-				ProcessBlockView pad = findDisplay(diagram,block,propName);
+				BlockAttributeView pad = findDisplay(diagram,block,propName);
 				// CASE I - checked box, display does not exist. Create it.
 				// Add to diagram
 				if ( newValue && (pad==null) ) {
 					pad = new BlockAttributeView(new AttributeDisplayDescriptor());
+					pad.setDiagram(diagram);
+					pad.setReferenceBlock(block);
+					pad.setPropertyName(propName);
+					pad.setLocation(new Point(100,40));
 					diagram.addBlock(pad);
 					diagram.setDirty(true);
 				}
@@ -143,6 +148,7 @@ public class AttributeDisplaySelector extends JDialog implements TableModelListe
 				}
 				// CASE III - unchecked box and there is display. Delete it.
 				else if ( !newValue && (pad!=null)) {
+					diagram.deleteBlock(pad);
 				}
 				// CASE IV - unchecked box and there is no display. Do nothing.
 				else  {
@@ -214,21 +220,19 @@ public class AttributeDisplaySelector extends JDialog implements TableModelListe
 	}
 
 	/**
-	 * The "display" is a AttributeDisplay block with the indicated 
-	 * @param blockId
-	 * @param name
+	 * The "display" is a BlockAttributeView block with the indicated reference block and property.
 	 * @return the attribute display for the given block and property
 	 */
-	private ProcessBlockView findDisplay(ProcessDiagramView dia, ProcessBlockView blk,String propName) {
-		ProcessBlockView display = null;
+	private BlockAttributeView findDisplay(ProcessDiagramView dia, ProcessBlockView refBlock,String propName) {
+		BlockAttributeView display = null;
 		for(Block block:dia.getBlocks()) {
-			if( block instanceof ProcessBlockView ) {
-				ProcessBlockView view = (ProcessBlockView)block;
-				BlockProperty viewProp = view.getProperty(BlockConstants.BLOCK_PROPERTY_PROPERTY);
+			if( block instanceof BlockAttributeView ) {
+				BlockAttributeView bav = (BlockAttributeView)block;
+				BlockProperty viewProp = bav.getProperty(BlockConstants.BLOCK_PROPERTY_PROPERTY);
 				if( viewProp!=null && propName.equalsIgnoreCase(viewProp.getValue().toString()) ) {
-					BlockProperty idProp =  view.getProperty(BlockConstants.ATTRIBUTE_DISPLAY_BLOCK_ID);
-					if( idProp!=null && blk.getIconPath().toString().equalsIgnoreCase(idProp.getValue().toString())) {
-						display = view;
+					BlockProperty idProp =  bav.getProperty(BlockConstants.ATTRIBUTE_DISPLAY_BLOCK_ID);
+					if( idProp!=null && bav.getId().equals(refBlock.getId())) {
+						display = bav;
 					}
 				}
 			}

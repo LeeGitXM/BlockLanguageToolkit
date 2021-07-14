@@ -73,7 +73,7 @@ import net.miginfocom.swing.MigLayout;
  */
 public class PropertyPanel extends JPanel implements ChangeListener, FocusListener, NotificationChangeListener,TagChangeListener {
 	private static final long serialVersionUID = 2264535784255009984L;
-	private static final boolean DEBUG = false;
+	private static final boolean DEBUG = true;
 	private static SimpleDateFormat dateFormatter = new SimpleDateFormat(BlockConstants.TIMESTAMP_FORMAT);
 	private final NotificationHandler notificationHandler = NotificationHandler.getInstance();
 	private static UtilityFunctions fncs = new UtilityFunctions();
@@ -100,7 +100,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 
 	
 	public PropertyPanel(DesignerContext ctx, MainPanel main,ProcessBlockView blk,BlockProperty prop, DiagramWorkspace workspace) {
-		log.debugf("%s: property %s (%s:%s) = %s",CLSS,prop.getName(),prop.getType().toString(),prop.getBindingType().toString(),prop.getValue().toString());
+		if(DEBUG)log.infof("%s:CONSTRUCTOR: property %s (%s:%s) = %s",CLSS,prop.getName(),prop.getType().toString(),prop.getBindingType().toString(),prop.getValue().toString());
 		this.context = ctx;
 		this.parent = main;
 		this.block = blk;
@@ -200,20 +200,20 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 			log.debugf("%s: adding %s for ENGINE",CLSS,valueKey);
 			notificationHandler.addNotificationChangeListener(valueKey,CLSS,this);
 		}
-		// The "plain" (NONE) properties can be changed by python scripting. In these instances
-		// we are only interested in changes made AFTER the panel is displayed. 
-		else if(property.getBindingType().equals(BindingType.ENGINE) || property.getBindingType().equals(BindingType.NONE)) {;
+		// The "plain" (NONE) properties can be changed by python scripting.  
+		else if(property.getBindingType().equals(BindingType.ENGINE) || property.getBindingType().equals(BindingType.NONE)) {
 			log.debugf("%s: adding %s",CLSS,valueKey);
-			notificationHandler.addNotificationChangeListener(valueKey,CLSS,this,false);
+			notificationHandler.addNotificationChangeListener(valueKey,CLSS,this);
 		}
 		else if( property.getBindingType().equals(BindingType.TAG_MONITOR) ||
 				property.getBindingType().equals(BindingType.TAG_READ) ||
 				property.getBindingType().equals(BindingType.TAG_READWRITE) ||
 				property.getBindingType().equals(BindingType.TAG_WRITE)	) {
-			log.debugf("%s: adding %s for %s",CLSS,bindingKey,property.getBindingType().name());
+			if(DEBUG)log.infof("%s: adding %s for %s",CLSS,bindingKey,property.getBindingType().name());
 			notificationHandler.addNotificationChangeListener(bindingKey,CLSS,this);
 			subscribeToTagPath(property.getBinding());
 		}
+		updatePanelUI();
 	}
 	// Un-subscribe to anything we're listening on ...
 	public void unsubscribe() {
@@ -653,7 +653,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 						// Scale field value for time unit. Get back to seconds.
 						double interval = fncs.coerceToDouble(fieldValue);
 						fieldValue = new Double(TimeUtility.canonicalValueForValue(interval,currentTimeUnit));
-						log.tracef("%s.updatePropertyForField: property %s,old= %s, new= %s, displayed= %s (%s)",CLSS,prop.getName(),prop.getValue().toString(),
+						if(DEBUG) log.infof("%s.updatePropertyForField: property %s,old= %s, new= %s, displayed= %s (%s)",CLSS,prop.getName(),prop.getValue().toString(),
 								fieldValue.toString(),field.getText(),currentTimeUnit.name());
 					}
 					else if( prop.getType().equals(PropertyType.STATISTICS) ) fieldValue = StatFunction.valueOf(fieldValue.toString().toUpperCase());
@@ -663,7 +663,8 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 							fieldValue.toString(),prop.getType().name());
 				}
 				prop.setValue(fieldValue);
-				//parent.saveDiagramClean();    // Update property directly, immediately
+				// Update the notification handler with the new value
+				if(DEBUG) log.infof("%s.updatePropertyForField: property %s value= %s",CLSS,prop.getName(),fieldValue.toString());	
 				notificationHandler.initializePropertyValueNotification(valueKey, fieldValue);
 			}
 			else {
@@ -723,6 +724,8 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 		updateFieldForValue(value.getValue());
 		
 	}
+	
+	// Called on notification of a value change
 	private void updateFieldForValue(Object value) {
 		property.setValue(value);  // Block should have its own subscription to value changes.
 		SwingUtilities.invokeLater( new Runnable() {

@@ -68,9 +68,9 @@ public class AttributeDisplay extends AbstractProcessBlock implements ProcessBlo
 	 */
 	private void initialize() {
 		setName(CLSS);
-		BlockProperty blockId = new BlockProperty(BlockConstants.ATTRIBUTE_DISPLAY_BLOCK_ID,"The id of the block to be displayed", PropertyType.STRING, true);
+		BlockProperty blockId = new BlockProperty(BlockConstants.ATTRIBUTE_DISPLAY_BLOCK_ID,"The id of the block to be displayed", PropertyType.STRING, false);
 		setProperty(BlockConstants.ATTRIBUTE_DISPLAY_BLOCK_ID, blockId);	
-		BlockProperty property = new BlockProperty(BlockConstants.ATTRIBUTTE_DISPLAY_PROPERTY,"The property to be displayed", PropertyType.STRING, true);
+		BlockProperty property = new BlockProperty(BlockConstants.ATTRIBUTTE_DISPLAY_PROPERTY,"Name", PropertyType.STRING, false);
 		setProperty(BlockConstants.ATTRIBUTTE_DISPLAY_PROPERTY, property);	
 		BlockProperty width = new BlockProperty(BlockConstants.ATTRIBUTE_DISPLAY_WIDTH, Integer.valueOf(DEFAULT_WIDTH), PropertyType.INTEGER,true);
 		setProperty(BlockConstants.ATTRIBUTE_DISPLAY_WIDTH, width);		

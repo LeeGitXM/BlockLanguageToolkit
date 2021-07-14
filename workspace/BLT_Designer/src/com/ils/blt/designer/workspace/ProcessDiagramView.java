@@ -19,7 +19,6 @@ import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.BusinessRules;
 import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.block.AnchorDirection;
-import com.ils.blt.common.block.AttributeDisplay;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.connection.ConnectionType;
