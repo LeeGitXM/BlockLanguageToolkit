@@ -59,6 +59,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	private List<Connection> connections = new ArrayList<>();
 	private static final int MIN_WIDTH = 200;
 	private static final int MIN_HEIGHT = 200;
+	private static final boolean DEBUG = true;
 	private Dimension diagramSize = new Dimension(MIN_WIDTH,MIN_HEIGHT);
 	private final UUID id;
 	private String name = "UNSET";
@@ -79,6 +80,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	 */
 	public ProcessDiagramView (long resid,SerializableDiagram diagram, DesignerContext context) {
 		this(resid,diagram.getId(),diagram.getName());
+		if( DEBUG ) log.infof("%s.ProcessDiagramView: for diagram %s", CLSS, diagram.getName());
 		this.state = diagram.getState();
 		this.watermark = diagram.getWatermark();
 		this.context = context;
@@ -87,7 +89,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			for( SerializableBlock sb:diagram.getBlocks()) {
 				ProcessBlockView pbv = new ProcessBlockView(sb);
 				blockMap.put(sb.getId(), pbv);
-				log.debugf("%s.createDiagramView: Added %s to map",CLSS,sb.getId().toString());
+				if( DEBUG ) log.infof("%s.ProcessDiagramView: Added a ProcessBlockView for %s to map", CLSS, sb.getName());
 				this.addBlock(pbv);
 			}
 			
@@ -98,6 +100,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 					ProcessBlockView blocka = blockMap.get(a.getParentId());
 					ProcessBlockView blockb = blockMap.get(b.getParentId());
 					if( blocka!=null && blockb!=null) {
+						if( DEBUG ) log.infof("%s.ProcessDiagramView: Creating a connection from %s to %s...", CLSS, blocka.getName(), blockb.getName());
 						AnchorPoint origin = new ProcessAnchorView(blocka,a);
 						AnchorPoint terminus = new ProcessAnchorView(blockb,b);
 						this.addConnection(origin,terminus);   // AnchorPoints
@@ -485,12 +488,14 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	}
 	
 	public DiagramState getState() {return state;}
+	
 	/**
 	 * A diagram that is dirty is structurally out-of-sync with what is running
 	 * in the gateway.
 	 * @return true if the diagram does not represent what is actually running.
 	 */
 	public boolean isDirty() {return dirty;}
+	
 	public void setDirty(boolean dirty) {
 		this.dirty = dirty;
 		super.fireStateChanged();
@@ -501,7 +506,9 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		diagramSize = dim;
 		super.fireStateChanged();  // Bypass setting block dirty
 	}
+	
 	public void setEncapsulationBlockID(UUID encapsulationBlockID) {this.encapsulationBlockID = encapsulationBlockID;}
+	
 	public void setState(DiagramState state) {this.state = state;}
 	
 	/**

@@ -36,7 +36,7 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
 public class ResourceUpdateManager implements Runnable {
 	private static final String CLSS = "ResourceUpdateManager";
 	private static final LoggerEx log = LogUtil.getLogger(ResourceUpdateManager.class.getPackage().getName());
-	private static final boolean DEBUG = false;
+	private static final boolean DEBUG = true;
 	private static DesignerContext context = null;
 	private static NodeStatusManager statusManager = null;
 	private ReentrantLock sharedLock = new ReentrantLock(); 
@@ -46,6 +46,7 @@ public class ResourceUpdateManager implements Runnable {
 	private final ApplicationRequestHandler requestHandler;
 	
 	public ResourceUpdateManager(DiagramWorkspace wksp,ProjectResource pr) {
+		if(DEBUG) log.infof("%s.run: Creating a new ResourceUpdateManager for DiagramWorkspace %s...", CLSS, wksp.getName());
 		this.workspace = wksp;
 		this.res = pr;
 		this.counter.incrementCount();
@@ -74,6 +75,7 @@ public class ResourceUpdateManager implements Runnable {
 	
 	@Override
 	public void run() {
+		
 		if( res!=null ) {
 			sharedLock.lock();
 			// Now save the resource, as it is.
@@ -81,7 +83,7 @@ public class ResourceUpdateManager implements Runnable {
 			ProcessDiagramView view = null;
 
 			if(res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
-				// If the resource is open, we need to save it
+				// If the resource is open and it is dirty then we need to save it
 				long resourceId = res.getResourceId();
 				BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resourceId);
 				if( tab!=null ) {
@@ -91,7 +93,10 @@ public class ResourceUpdateManager implements Runnable {
 					// anyway as block properties may have changed.
 					view = (ProcessDiagramView)tab.getModel();
 					SerializableDiagram sd = view.createSerializableRepresentation();
-					if(DEBUG) log.infof("%s.run: serializing ... %s(%d) %s",CLSS,tab.getName(),resourceId,sd.getState().name());
+
+					if( DEBUG ) log.infof("%s.run(), %s-%s (%s)", CLSS, view.getName(), sd.getName(), (view.isDirty()?"DIRTY":"CLEAN"));
+					
+					if(DEBUG) log.infof("%s.run(): serializing ... %s(%d) %s",CLSS,tab.getName(),resourceId,sd.getState().name());
 					sd.setName(tab.getName());
 					ObjectMapper mapper = new ObjectMapper();
 					try{
@@ -109,9 +114,10 @@ public class ResourceUpdateManager implements Runnable {
 				}
 			}
 			try {
-				if(DEBUG) log.infof("%s.run: getting lock ...",CLSS);
+				
 				if( context.requestLockQuietly(res.getResourceId()) )
 				{
+					if(DEBUG) log.infof("%s.run(): forcing an update on %s...", CLSS, res.getName());
 					context.updateResource(res.getResourceId(),res.getData());   // Force an update
 
 					diff.putResource(res, true);    // Mark as dirty for our controller as resource listener
@@ -153,7 +159,7 @@ public class ResourceUpdateManager implements Runnable {
 			//if(DEBUG) log.infof("%s.run: registering a new change listener", CLSS);
 			//if (view != null) view.registerChangeListeners();
 			
-			log.infof("%s.run: complete",CLSS);
+			if(DEBUG) log.infof("%s.run(): complete",CLSS);
 		}
 		this.counter.decrementCount();
 	}

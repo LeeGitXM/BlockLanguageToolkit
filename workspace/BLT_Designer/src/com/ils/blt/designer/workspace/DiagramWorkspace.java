@@ -155,6 +155,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 							  			ChangeListener                                  {
 	private static final String ALIGN_MENU_TEXT = "Align Blocks";
 	private static final String CLSS = "DiagramWorkspace";
+	private static final boolean DEBUG = true;
 	private static final long serialVersionUID = 4627016159409031941L;
 	private static final DataFlavor BlockDataFlavor = LocalObjectTransferable.flavorForClass(ObservablePropertySet.class);
 	public static final String key = "BlockDiagramWorkspace";
@@ -166,7 +167,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	private final ExecutionManager executionEngine;
 	private final NodeStatusManager statusManager;
 	private Collection<ResourceWorkspaceFrame> frames;
-	private ILSLogger logger = LogMaker.getLogger(this);
+	private ILSLogger log = LogMaker.getLogger(this);
 	private final PropertyEditorFrame propertyEditorFrame;
 	private PopupListener rightClickHandler;
 	private JPopupMenu zoomPopup;
@@ -251,7 +252,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	public JPopupMenu getSelectionPopupMenu(List<JComponent> selections) {
 		if( selections.size()>0 ) {
 			JComponent selection = selections.get(0);
-			logger.debugf("%s.getSelectionPopupMenu: Component is: %s",CLSS,selections.get(0).getClass().getName());
+			if( DEBUG ) log.infof("%s.getSelectionPopupMenu: Component is: %s",CLSS,selections.get(0).getClass().getName());
 			if( selection instanceof BlockComponent ) {
 				
 				JPopupMenu menu = new JPopupMenu();
@@ -284,7 +285,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 					
 					if( anch!=null ) {
 						ConnectionType ct = anch.getConnectionType();
-						logger.debugf("%s.getSelectionPopupMenu: Connection type is: %s",CLSS,ct.name());
+						if( DEBUG ) log.infof("%s.getSelectionPopupMenu: Connection type is: %s",CLSS,ct.name());
 						ProcessDiagramView pdv = getActiveDiagram();
 						ChangeConnectionAction ccaAny = new ChangeConnectionAction(pdv,pbv,ConnectionType.ANY);
 						ccaAny.setEnabled(!ct.equals(ConnectionType.ANY));
@@ -304,7 +305,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 					}
 				}
 				if( pbv.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK) ) {
-					logger.infof("%s.getSelectionPopupMenu: SINK",CLSS);
+					log.infof("%s.getSelectionPopupMenu: SINK",CLSS);
 					JMenu linkSinkMenu = new JMenu(BundleUtil.get().getString(PREFIX+".FollowConnection.Name"));
 					linkSinkMenu.setToolTipText(BundleUtil.get().getString(PREFIX+".FollowConnection.Desc"));
 					String diagramId = getActiveDiagram().getId().toString();
@@ -318,7 +319,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 					menu.add(linkSinkMenu);
 				}
 				else if( pbv.getClassName().equals(BlockConstants.BLOCK_CLASS_SOURCE) )  {
-					logger.infof("%s.getSelectionPopupMenu: SOURCE",CLSS);
+					log.infof("%s.getSelectionPopupMenu: SOURCE",CLSS);
 					JMenu linkSourceMenu = new JMenu(BundleUtil.get().getString(PREFIX+".FollowConnection.Name"));
 					linkSourceMenu.setToolTipText(BundleUtil.get().getString(PREFIX+".FollowConnection.Desc"));
 					
@@ -332,7 +333,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 					}
 					menu.add(linkSourceMenu);
 				}
-				logger.debugf("%s.getSelectionPopupMenu: Selection editor class = %s",CLSS,pbv.getEditorClass());
+				if( DEBUG ) log.infof("%s.getSelectionPopupMenu: Selection editor class = %s",CLSS,pbv.getEditorClass());
 				// Do not allow editing when the diagram is disabled
 				if(pbv.getEditorClass() !=null && pbv.getEditorClass().length() > 0 &&
 						!getActiveDiagram().getState().equals(DiagramState.DISABLED)) {
@@ -672,15 +673,15 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 						this.getActiveDiagram().addBlock(block);
 						// Null doesn't work here ...
 						
-						logger.infof("%s.handleDrop: dropped %s",CLSS,event.getTransferable().getTransferData(BlockDataFlavor).getClass().getName());
+						log.infof("%s.handleDrop: dropped %s",CLSS,event.getTransferable().getTransferData(BlockDataFlavor).getClass().getName());
 						return true;
 					}
 					else {
-						logger.infof("%s.handleDrop: drop of %s out-of-bounds",CLSS,event.getTransferable().getTransferData(BlockDataFlavor).getClass().getName());
+						log.infof("%s.handleDrop: drop of %s out-of-bounds",CLSS,event.getTransferable().getTransferData(BlockDataFlavor).getClass().getName());
 					}
 				}
 				else {
-					logger.infof("%s.handlerDrop: Unexpected class (%s),  rejected",
+					log.infof("%s.handlerDrop: Unexpected class (%s),  rejected",
 							event.getTransferable().getTransferData(BlockDataFlavor).getClass().getName());
 				}
 			} 
@@ -818,10 +819,10 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 										property.setBinding(tnode.getTagPath().toStringFull());}
 										block.modifyConnectionForTagChange(property, type);
 								}
-								logger.infof("%s.handleDiagramDrop: dropped %s",CLSS,block.getClassName());
+								log.infof("%s.handleDiagramDrop: dropped %s",CLSS,block.getClassName());
 							}
 							else {
-								logger.infof("%s.handleDiagramDrop: drop of %s out-of-bounds",CLSS,block.getClassName());
+								log.infof("%s.handleDiagramDrop: drop of %s out-of-bounds",CLSS,block.getClassName());
 							}
 						}
 					}
@@ -854,7 +855,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 						BlockDesignableContainer container = getSelectedContainer();
 						ProcessDiagramView diagram = (ProcessDiagramView)container.getModel();
 						TagTreeNode tnode = (TagTreeNode) tagNodeArr.get(0);
-						logger.infof("%s.handleDrop: tag data: %s",CLSS,tnode.getName());
+						log.infof("%s.handleDrop: tag data: %s",CLSS,tnode.getName());
 						TagPath tp = tnode.getTagPath();
 
 						Block targetBlock = ((BlockComponent)droppedOn).getBlock();
@@ -889,14 +890,14 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			}
 		}
 		catch(Exception ex) {
-			logger.error(String.format("%s.handleDrop: Exceptiona: %s",CLSS,ex.getLocalizedMessage()),ex);
+			log.error(String.format("%s.handleDrop: Exceptiona: %s",CLSS,ex.getLocalizedMessage()),ex);
 		}
 	}
 
 	@Override
 	public void onActivation() {
 		zoomCombo.setVisible(true);
-		logger.infof("%s: onActivation",CLSS);
+		log.infof("%s: onActivation",CLSS);
 		
 	}
 
@@ -904,7 +905,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	@Override
 	public void onDeactivation() {
 		zoomCombo.setVisible(false);
-		logger.infof("%s: onDeactivation",CLSS);
+		log.infof("%s: onDeactivation",CLSS);
 	}
 	
 	// Guarantee a unique name for a block that has not yet been added to the diagram.
@@ -967,12 +968,12 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	 */
 	@Override
 	public String copyBlocks(Collection<Block> blocks) throws SerializationException {
-		logger.infof("%s: copyBlocks",CLSS);
+		log.infof("%s: copyBlocks",CLSS);
 		ObjectMapper mapper = new ObjectMapper();
 		String json = null;
 		List<SerializableBlock> list = new ArrayList<SerializableBlock>();
 		for( Block blk:blocks) {
-			logger.infof("%s: copyBlocks class=%s",CLSS,blk.getClass().getName());
+			log.infof("%s: copyBlocks class=%s",CLSS,blk.getClass().getName());
 			ProcessBlockView view = (ProcessBlockView)blk;
 			SerializableBlock sb = view.convertToSerializable();
 			list.add(sb);
@@ -981,7 +982,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			   json = mapper.writeValueAsString(list);
 		}
 		catch(JsonProcessingException jpe) {
-			logger.warnf("%s: Unable to serialize block list (%s)",CLSS,jpe.getMessage());
+			log.warnf("%s: Unable to serialize block list (%s)",CLSS,jpe.getMessage());
 		}
 		return json;
 	}
@@ -993,7 +994,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	 */
 	@Override
 	public Collection<Block> pasteBlocks(String json) {
-		logger.infof("%s.pasteBlocks: %s",CLSS,json);
+		log.infof("%s.pasteBlocks: %s",CLSS,json);
 		ObjectMapper mapper = new ObjectMapper();
 		Collection<Block>results = new ArrayList<Block>();
 		JavaType type = mapper.getTypeFactory().constructCollectionType(ArrayList.class, SerializableBlock.class);
@@ -1036,17 +1037,17 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 						diagram.setId(UUID.randomUUID());
 						diagram.setEncapsulationBlockId(pbv.getId());
 						diagram.setDirty(false);    // Will become dirty as soon as we add a block
-						logger.infof("%s: new diagram for encapsulation block ...",CLSS);
+						log.infof("%s: new diagram for encapsulation block ...",CLSS);
 						try{ 
 						    json = mapper.writeValueAsString(diagram);
 						}
 						catch(JsonProcessingException jpe) {
-							logger.warnf("%s: Unable to serialize diagram (%s)",CLSS,jpe.getMessage());
+							log.warnf("%s: Unable to serialize diagram (%s)",CLSS,jpe.getMessage());
 						}
-						logger.infof("%s: serializeDiagram created json ... %s",CLSS,json);
+						log.infof("%s: serializeDiagram created json ... %s",CLSS,json);
 
 						byte[] bytes = json.getBytes();
-						logger.debugf("%s: DiagramAction. create new %s resource %d (%d bytes)",CLSS,BLTProperties.DIAGRAM_RESOURCE_TYPE,
+						if( DEBUG ) log.infof("%s: DiagramAction. create new %s resource %d (%d bytes)",CLSS,BLTProperties.DIAGRAM_RESOURCE_TYPE,
 								newId,bytes.length);
 						ProjectResource resource = new ProjectResource(newId,
 								BLTProperties.MODULE_ID, BLTProperties.DIAGRAM_RESOURCE_TYPE,
@@ -1061,13 +1062,13 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			}
 		} 
 		catch (JsonParseException jpe) {
-			logger.warnf("%s: pasteBlocks parse exception (%s)",CLSS,jpe.getLocalizedMessage());
+			log.warnf("%s: pasteBlocks parse exception (%s)",CLSS,jpe.getLocalizedMessage());
 		}
 		catch(JsonMappingException jme) {
-			logger.warnf("%s: pasteBlocks mapping exception (%s)",CLSS,jme.getLocalizedMessage());
+			log.warnf("%s: pasteBlocks mapping exception (%s)",CLSS,jme.getLocalizedMessage());
 		}
 		catch(IOException ioe) {
-			logger.warnf("%s: pasteBlocks IO exception (%s)",CLSS,ioe.getLocalizedMessage());
+			log.warnf("%s: pasteBlocks IO exception (%s)",CLSS,ioe.getLocalizedMessage());
 		}; 
 		return results;
 	}
@@ -1199,7 +1200,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	}
 	
 	public void open (long resourceId) {
-		logger.debugf("%s: open - already open (%s)",CLSS,(isOpen(resourceId)?"true":"false"));
+		if( DEBUG ) log.infof("%s: open - already open (%s)",CLSS,(isOpen(resourceId)?"true":"false"));
 		if(isOpen(resourceId) ) {
 			BlockDesignableContainer tab = (BlockDesignableContainer)findDesignableContainer(resourceId);
 			open(tab);  // Brings tab to front
@@ -1207,7 +1208,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		else {
 			ProjectResource res = context.getProject().getResource(resourceId);	
 			String json = new String(res.getData());
-			logger.tracef("%s: open - diagram = %s",CLSS,json);
+			if( DEBUG ) log.infof("%s: open - diagram = %s",CLSS,json);
 			SerializableDiagram sd = null;
 			ObjectMapper mapper = new ObjectMapper();
 			mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);  //
@@ -1219,17 +1220,17 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				sd.setName(res.getName());
 				sd.setState(statusManager.getResourceState(resourceId));
 				for(SerializableBlock sb:sd.getBlocks()) {
-					logger.debugf("%s: %s block, name = %s",CLSS,sb.getClassName(),sb.getName());
+					if( DEBUG ) log.infof("%s: %s block, name = %s",CLSS,sb.getClassName(),sb.getName());
 				}
 			} 
 			catch (JsonParseException jpe) {
-				logger.warnf("%s: open parse exception (%s)",CLSS,jpe.getLocalizedMessage());
+				log.warnf("%s: open parse exception (%s)",CLSS,jpe.getLocalizedMessage());
 			} 
 			catch (JsonMappingException jme) {
-				logger.warnf("%s: open mapping exception (%s)",CLSS,jme.getLocalizedMessage());
+				log.warnf("%s: open mapping exception (%s)",CLSS,jme.getLocalizedMessage());
 			} 
 			catch (IOException ioe) {
-				logger.warnf("%s: open io exception (%s)",CLSS,ioe.getLocalizedMessage());
+				log.warnf("%s: open io exception (%s)",CLSS,ioe.getLocalizedMessage());
 			}
 			ProcessDiagramView diagram = new ProcessDiagramView(res.getResourceId(),sd, context);
 			for( Block blk:diagram.getBlocks()) {
@@ -1258,7 +1259,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	}
 	
 	public void close (long resourceId) {
-		logger.infof("%s: close resource %d",CLSS,resourceId);
+		log.infof("%s: close resource %d",CLSS,resourceId);
 		super.close(findDesignableContainer(resourceId));
 	}
 	
@@ -1267,7 +1268,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	// As it is ... a dialog pops up.
 	@Override
 	protected void onClose(DesignableContainer c) {
-		logger.debugf("%s: onClose",CLSS);
+		if( DEBUG ) log.infof("%s: onClose",CLSS);
 		BlockDesignableContainer container = (BlockDesignableContainer)c;
 		ProcessDiagramView diagram = (ProcessDiagramView)container.getModel();
 		if( diagram.isDirty()  ) {
@@ -1290,7 +1291,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 					saveDiagramResource(container);
 				}
 				catch(JsonProcessingException jpe) {
-					logger.warnf("%s.onClose: serialization exception (%s)",CLSS, jpe.getLocalizedMessage());
+					log.warnf("%s.onClose: serialization exception (%s)",CLSS, jpe.getLocalizedMessage());
 				}
 			}
 			else {
@@ -1312,7 +1313,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	 * is open, then save it.
 	 */
 	public void saveOpenDiagram(long resourceId) {
-		logger.debugf("%s: saveOpenDiagrams",CLSS);
+		if( DEBUG ) log.infof("%s: saveOpenDiagram()",CLSS);
 		for(DesignableContainer dc:openContainers.keySet()) {
 			BlockDesignableContainer bdc = (BlockDesignableContainer)dc;
 			if( bdc.getResourceId()==resourceId ) {
@@ -1328,7 +1329,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	 */
 	public void saveDiagramResource(BlockDesignableContainer c) {
 		ProcessDiagramView diagram = (ProcessDiagramView)c.getModel();
-		logger.infof("%s.saveDiagramResource - %s ...",CLSS,diagram.getDiagramName());
+		log.infof("%s.saveDiagramResource - %s ...",CLSS,diagram.getDiagramName());
 		diagram.registerChangeListeners();     // The diagram may include new components
 		long resid = diagram.getResourceId();
 		executionEngine.executeOnce(new ResourceUpdateManager(this,context.getProject().getResource(resid)));
@@ -1354,7 +1355,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	// =========================== DesignableWorkspaceListener ===========================
 	@Override
 	public void containerClosed(DesignableContainer c) {
-		logger.infof("%s.containerClosed: %s",CLSS,c.getName());
+		log.infof("%s.containerClosed: %s",CLSS,c.getName());
 		BlockDesignableContainer container = (BlockDesignableContainer)c;
 		ProcessDiagramView view = (ProcessDiagramView)(container.getModel());
 		view.removeChangeListener(this);
@@ -1365,15 +1366,20 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	 */
 	@Override
 	public void containerOpened(DesignableContainer c) {
-		logger.infof("%s.containerOpened: %s",CLSS,c.getName());
+		log.infof("%s.containerOpened: %s",CLSS,c.getName());
 		BlockDesignableContainer container = (BlockDesignableContainer)c;
 		ProcessDiagramView view = (ProcessDiagramView)(container.getModel());
 		view.addChangeListener(this);
 	}
 	@Override
 	public void containerSelected(DesignableContainer container) {
-		if( container==null ) logger.infof("%s.containerSelected is null",CLSS);
-		else logger.infof("%s.containerSelected: %s",CLSS,container.getName());
+		if( container==null ) log.infof("%s.containerSelected is null",CLSS);
+		else{
+			log.infof("%s.containerSelected: %s, updating background color...",CLSS,container.getName());
+			// Added to clear the dirty background if more than one diagram was dirty before the save. 
+			// When we save, we save every processDiagramView that is dirty and then we clear the dirty flag, but only the diagram that is on top got PAH 7/18/2021
+			updateBackgroundForDirty();
+		}
 	}
 	public CommandBar getAlignBar() {
 		return alignBar;
@@ -1384,7 +1390,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		if( selections!=null ) {
 			if (selections.size()==1 ) {
 				JComponent selection = selections.get(0);
-				logger.infof("%s.itemSelectionChanged: selected a %s",CLSS,selection.getClass().getCanonicalName());
+				log.infof("%s.itemSelectionChanged: selected a %s",CLSS,selection.getClass().getCanonicalName());
 			} 
 			else {
 				int count = 0;
@@ -1416,7 +1422,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			dropPoint.y<bounds.y	  ||
 			dropPoint.x>bounds.x+bounds.width ||
 			dropPoint.y>bounds.y+bounds.height   )  inBounds = false;
-		logger.infof("%s.handlerDrop: drop x,y = (%d,%d), bounds %d,%d,%d,%d",CLSS,dropPoint.x,dropPoint.y,bounds.x,bounds.y,bounds.width,bounds.height );
+		log.infof("%s.handlerDrop: drop x,y = (%d,%d), bounds %d,%d,%d,%d",CLSS,dropPoint.x,dropPoint.y,bounds.x,bounds.y,bounds.width,bounds.height );
 		return inBounds;
 	}
 
@@ -1429,7 +1435,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	 */
 	@Override
 	public void stateChanged(ChangeEvent event) {
-		logger.infof("%s.stateChanged: source = %s",CLSS,event.getSource().getClass().getCanonicalName());
+		log.infof("%s.stateChanged: source = %s",CLSS,event.getSource().getClass().getCanonicalName());
 		updateBackgroundForDirty();
 	}
 	
@@ -1562,19 +1568,19 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				}); 
 			}
 			catch(InvocationTargetException ite ) {
-				logger.info(CLSS+".customEditAction: Invocation failed for "+block.getEditorClass(),ite); 
+				log.info(CLSS+".customEditAction: Invocation failed for "+block.getEditorClass(),ite); 
 			}
 			catch(NoSuchMethodException nsme ) {
-				logger.info(CLSS+".customEditAction: Constructor taking diagram and block not found for "+block.getEditorClass(),nsme); 
+				log.info(CLSS+".customEditAction: Constructor taking diagram and block not found for "+block.getEditorClass(),nsme); 
 			}
 			catch(ClassNotFoundException cnfe) {
-				logger.info(CLSS+".customEditAction: Custom editor class "+block.getEditorClass()+" not found",cnfe);
+				log.info(CLSS+".customEditAction: Custom editor class "+block.getEditorClass()+" not found",cnfe);
 			}
 			catch( InstantiationException ie ) {
-				logger.info(CLSS+".customEditAction: Error instantiating "+block.getEditorClass(),ie); 
+				log.info(CLSS+".customEditAction: Error instantiating "+block.getEditorClass(),ie); 
 			}
 			catch( IllegalAccessException iae ) {
-				logger.info(CLSS+".customEditAction: Security exception creating "+block.getEditorClass(),iae); 
+				log.info(CLSS+".customEditAction: Security exception creating "+block.getEditorClass(),iae); 
 			}
 		}
 	}
@@ -1803,20 +1809,20 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				if( OS.indexOf("win")>=0) {
 					String browserPath = requestHandler.getWindowsBrowserPath();
 					if( browserPath==null ) browserPath = "PATH_NOT_FOUND_IN_ORM";
-					logger.infof("%s.HelpAction: Windows command: %s %s",CLSS,browserPath,address);
+					log.infof("%s.HelpAction: Windows command: %s %s",CLSS,browserPath,address);
 					new ProcessBuilder().command(browserPath, address).start();
 				}
 				else {
 					URI url = new URI(address);
-					logger.infof("%s.HelpAction: URI is: %s",CLSS,url.toASCIIString());
+					log.infof("%s.HelpAction: URI is: %s",CLSS,url.toASCIIString());
 					desktop.browse(url);
 				}
 			}
 			catch(URISyntaxException use) {
-				logger.infof("%s.HelpAction: illegal syntax in %s (%s)",CLSS,address,use.getLocalizedMessage()); 
+				log.infof("%s.HelpAction: illegal syntax in %s (%s)",CLSS,address,use.getLocalizedMessage()); 
 			}
 			catch(IOException ioe) {
-				logger.infof("%s.HelpAction: Exception posting browser (%s)",CLSS,ioe.getLocalizedMessage()); 
+				log.infof("%s.HelpAction: Exception posting browser (%s)",CLSS,ioe.getLocalizedMessage()); 
 			}
 		}
 	}
@@ -1973,7 +1979,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			logger.info("DiagramWorkspace: SAVE BLOCK");
+			log.info("DiagramWorkspace: SAVE BLOCK");
 			ProcessDiagramView pdv = getActiveDiagram();
 			handler.setBlockProperties(pdv.getId(),block.getId(), block.getProperties());
 			block.setDirty(false);
@@ -2018,7 +2024,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 					catch(InterruptedException ignore) {}
 				}
 				else{
-					logger.warnf("%s.receiveNotification: Unable to find node (%s) on browser path",CLSS,pathArray[index]);
+					log.warnf("%s.receiveNotification: Unable to find node (%s) on browser path",CLSS,pathArray[index]);
 					break;
 				}
 				index++;
@@ -2028,7 +2034,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				node.onDoubleClick();    // Opens the diagram
 			}
 			else {
-				logger.warnf("%s.receiveNotification: Unable to open browser path (%s)",CLSS,path.toString());
+				log.warnf("%s.receiveNotification: Unable to open browser path (%s)",CLSS,path.toString());
 			}
 			// Repaint the workspace
 			SwingUtilities.invokeLater(new WorkspaceRepainter());
@@ -2049,7 +2055,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				
 				while( nodeWalker.hasMoreElements() ) {
 					child = nodeWalker.nextElement();
-					logger.infof("%s.findChildInTree: testing %s vs %s",CLSS,name,child.getName());
+					log.infof("%s.findChildInTree: testing %s vs %s",CLSS,name,child.getName());
 					if( child.getName().equalsIgnoreCase(name)) {
 						match = child;
 						break;

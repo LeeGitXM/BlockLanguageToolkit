@@ -7,9 +7,11 @@ import java.util.Enumeration;
 
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.designer.navtree.DiagramTreeNode;
 import com.ils.blt.designer.navtree.NavTreeNodeInterface;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
+import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayException;
 import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
@@ -34,7 +36,7 @@ import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceN
 public class ResourceSaveManager implements Runnable {
 	private static final String CLSS = "ResourceSaveManager";
 	private static final LoggerEx log = LogUtil.getLogger(ResourceSaveManager.class.getPackage().getName());
-	private static final boolean DEBUG = false;
+	private static final boolean DEBUG = true;
 	private static DesignerContext context = null;
 	private final AbstractResourceNavTreeNode root;	      // Root of our save.
 	private final DiagramWorkspace workspace;
@@ -75,11 +77,13 @@ public class ResourceSaveManager implements Runnable {
 	 * of a top-level save. This method is called from the designer hook.
 	 */
 	public void saveSynchronously() {
+		if( DEBUG ) log.infof("%s.saveSynchronously()", CLSS);
 		saveOpenDiagrams(root);
 	}
 	
 	@Override
 	public void run() {
+		if( DEBUG ) log.infof("%s.run()", CLSS);
 		int dirtyCount = saveNodeAndDescendants();
 		// Update UI
 		if( dirtyCount>0 ) {
@@ -91,18 +95,41 @@ public class ResourceSaveManager implements Runnable {
 	// Recursively descend the node tree, looking for diagram resources where
 	// the associated DiagramView is open. These are the only diagrams that
 	// can be out-of-sync with the gateway.
+	
+	// TODO Make this saveDirtyDiagrams PAH 7/16/21
 	private void saveOpenDiagrams(AbstractResourceNavTreeNode node) {
 		ProjectResource res = node.getProjectResource();
+		ProcessDiagramView view = null;  // PH 7/16/21
 		node.setItalic(false);
 		if( res!=null ) {
 			if(res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
-				log.debugf("%s.saveOpenDiagrams found: %s (%d) %s",CLSS,res.getName(),res.getResourceId(),
+				
+				/*
+				 * We might be managing the dirty flag incorrectly!  The dirty check shown below is not consistent with the dirty check
+				 * on ProcessDiagramView.  The check below shows the resource as clean but the ProcessDiagramView as dirty.
+				 * PAH 07/18/21
+				 */
+				
+				if( DEBUG ) log.infof("%s.saveOpenDiagrams(), found: %s (%d) %s", CLSS, res.getName(), res.getResourceId(),
 						  (context.getProject().isResourceDirty(res.getResourceId())?"DIRTY":"CLEAN"));
+				
 				// If the resource is open, we need to save it
+				/*
+				 * Is there a way to get the view without it being open?
+				 * If we change what we do with a dirty view, i.e. keep the changes (somewhere / somehow) but not do a save of the whole project
+				 * when they close the view and say save. 
+				 */
+				
 				BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(res.getResourceId());
 				if( tab!=null ) {
-					new ResourceUpdateManager(workspace,res).run();
-					log.infof("%s.saveOpenDiagrams: saved %s",CLSS,res.getName());
+					view = (ProcessDiagramView)tab.getModel();
+					if( DEBUG ) log.infof("%s.run(), %s (%s)", CLSS, view.getName(), (view.isDirty()?"DIRTY":"CLEAN"));
+					if (view.isDirty()){
+						if( DEBUG ) log.infof("%s.saveOpenDiagrams: Saving %s...", CLSS, res.getName());
+						new ResourceUpdateManager(workspace, res).run();
+						view.setDirty(false);
+						if( DEBUG ) log.infof("%s.saveOpenDiagrams: %s saved!", CLSS, res.getName());
+					}
 				}
 			}
 		}
@@ -157,6 +184,7 @@ public class ResourceSaveManager implements Runnable {
 	 * the accumulation, we set the resources to "clean".
 	 */
 	private int saveNodeAndDescendants() {
+		if( DEBUG ) log.infof("%s.saveNodeAndDescendants()", CLSS);
 		Project diff = context.getProject().getEmptyCopy();
 
 		// Scoop up the dirty nodes (that aren't deleted).
@@ -165,7 +193,7 @@ public class ResourceSaveManager implements Runnable {
 		try {
 			DTGatewayInterface.getInstance().saveProject(IgnitionDesigner.getFrame(), diff, false, "Committing ...");  // Do not publish
 			for(ProjectResource res:diff.getResources()) {
-				log.infof("%s.saveNodeAndDescendants: Saved %s (%d)",CLSS,res.getName(),res.getResourceId());
+				if( DEBUG ) log.infof("%s.saveNodeAndDescendants: Saved %s (%d)",CLSS,res.getName(),res.getResourceId());
 			}
 
 		}

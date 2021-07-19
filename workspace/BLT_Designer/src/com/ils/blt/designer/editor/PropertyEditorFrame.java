@@ -35,6 +35,7 @@ public class PropertyEditorFrame extends DockableFrame implements ResourceWorksp
 	public static final String DOCKING_KEY = "ProcessDiagramEditorFrame";
 	public static final String TITLE = "Symbolic AI Property Editor";
 	public static final String SHORT_TITLE = "Properties";
+	private static final boolean DEBUG = true;
 	private final DesignerContext context;
 	private final DiagramWorkspace workspace;
 	private final JPanel contentPanel;
@@ -47,7 +48,7 @@ public class PropertyEditorFrame extends DockableFrame implements ResourceWorksp
 	public PropertyEditorFrame(DesignerContext ctx,DiagramWorkspace workspace) {
 		super(DOCKING_KEY, IconUtil.getRootIcon("delay_block_16.png"));  // Pinned icon
 		this.context = ctx;
-		log.infof("%s.PropertyEditorFrame: CONSTRUCTOR ...",CLSS);
+		if( DEBUG ) log.infof("%s.PropertyEditorFrame: CONSTRUCTOR ...",CLSS);
 		this.workspace = workspace;
 		workspace.addDesignableWorkspaceListener(new DiagramWorkspaceListener());
 		contentPanel = new JPanel(new BorderLayout());
@@ -103,7 +104,7 @@ public class PropertyEditorFrame extends DockableFrame implements ResourceWorksp
 			AbstractPropertyEditor newEditor = null;
 			if( selections!=null && selections.size()==1 ) {
 				JComponent selection = selections.get(0);
-				log.infof("%s: DiagramWorkspaceListener.itemSelectionChanged: selected a %s",CLSS,selection.getClass().getName());
+				if( DEBUG )log.infof("%s: DiagramWorkspaceListener.itemSelectionChanged: selected a %s",CLSS,selection.getClass().getName());
 				// KLUDGE ALERT: There should be a way to not hard code this.
 				// We've selected a block and connector block component
 				if( selection instanceof BlockComponent ) {
