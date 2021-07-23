@@ -87,11 +87,20 @@ public class UtilityFunctions  {
 	 */
 	public boolean coerceToBoolean(Object val) {
 		boolean result = false;
+		boolean r1 = false;
+		boolean r2 = false;
 		if( val!=null ) {
 			if( val instanceof Boolean)      result = ((Boolean)val).booleanValue();
 			else if( val instanceof Double)  result = (((Double)val).doubleValue()!=0.0);
 			else if( val instanceof Integer) result = (((Integer)val).intValue() != 0);
-			else                             result = val.toString().equalsIgnoreCase("true");
+			else{
+				/*
+				 * Added case that checks if it is a string value "1" - PAH 7/22/2021
+				 */
+				r1 = val.toString().equalsIgnoreCase("true");
+				r2 = val.toString().equalsIgnoreCase("1");
+				result = r1 || r2;
+			}
 		}
 		return result;
 	}

@@ -166,7 +166,7 @@ public class OutputsPane extends JPanel {
 		// Get the Map that corresponds to the name that is selected
 		Map<String,String> outputMap=newOutput();
 		if (outputMap != null){
-			System.out.println("Looking at an Output" + outputMap);
+			System.out.println("Adding at an Output" + outputMap);
 			// Get the output editor and call method that puts the output into the fields
 			detailEditor.updateFields(outputMap);
 			editor.setSelectedPane(ApplicationPropertyEditor.EDITOR);

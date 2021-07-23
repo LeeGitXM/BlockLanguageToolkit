@@ -218,10 +218,13 @@ public class OutputEditorPane extends JPanel implements ActionListener  {
 	 * @param map
 	 */
 	public void updateFields(Map<String,String> map){
+		log.infof("%s.updateFields()", CLSS);
 		outputMap=map;
 		nameField.setText((String) outputMap.get("QuantOutput"));
 		tagField.setText((String) outputMap.get("TagPath"));
+		
 		incrementalOutputCheckBox.setSelected(fcns.coerceToBoolean(outputMap.get("IncrementalOutput")));
+		
 		double dbl = fcns.coerceToDouble(outputMap.get("MostNegativeIncrement"));
 		mostNegativeIncrementField.setValue(dbl);
 		dbl = fcns.coerceToDouble(outputMap.get("MostPositiveIncrement"));
