@@ -42,8 +42,8 @@ public class RootNode extends ProcessNode {
 	
 	public void addChild(ProcessNode child,long childProjectId) {
 		log.debugf("%s.addChild: %s[%s]",TAG,getName(),child.getName());
-		Long key = new Long(childProjectId);
-		String projectName = context.getProjectManager().getProjectName(childProjectId, ProjectVersion.Staging);
+		long key = childProjectId;
+		String projectName = context.getProjectManager().getProject(childProjectId,ProjectVersion.Staging);
 		if( projectName==null ) {
 			log.warnf("%s.addChild: No name for projectId %d. No child added.",TAG,childProjectId);
 			return;
@@ -57,7 +57,7 @@ public class RootNode extends ProcessNode {
 			map = new HashMap<Long,ProcessNode>();
 			childrenByProjectId.put(key, map);
 		}
-		map.put(new Long(child.getResourceId()),child);
+		map.put(child.getResourceId(),child);
 	}
 	
 	/**
@@ -122,7 +122,7 @@ public class RootNode extends ProcessNode {
 	 */
 	public void removeChildFromProjectRoot(Long childProjectId,ProcessNode node) {
 		Map<Long,ProcessNode> map = childrenByProjectId.get(childProjectId);
-		if( map!=null) map.remove(new Long(node.getResourceId()));	
+		if( map!=null) map.remove(node.getResourceId());	
 	}
 	
 	/**
