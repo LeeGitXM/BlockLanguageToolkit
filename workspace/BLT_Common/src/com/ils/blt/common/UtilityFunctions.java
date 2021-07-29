@@ -4,12 +4,11 @@
 package com.ils.blt.common;
 
 import com.ils.blt.common.block.TruthValue;
+import com.ils.common.log.ILSLogger;
+import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.Quality;
-import com.inductiveautomation.ignition.common.util.LogUtil;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
+import com.inductiveautomation.ignition.common.model.values.QualityCode;
 
 
 /**
@@ -18,12 +17,12 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  */
 public class UtilityFunctions  {
 	private final static String TAG = "UtilityFunctions";
-	private final LoggerEx log;
+	private final ILSLogger log;
 	/**
 	 * No-argument constructor. 
 	 */
 	public UtilityFunctions() {
-		log = LogUtil.getLogger(getClass().getPackage().getName());
+		log = LogMaker.getLogger(this);
 	}
 	
 	
@@ -236,11 +235,11 @@ public class UtilityFunctions  {
 				result = new BasicQualifiedValue( value);
 			}
 			else{
-				result = new BasicQualifiedValue(value,new BasicQuality("unrecognized data type",Quality.Level.Bad));
+				result = new BasicQualifiedValue(value,QualityCode.Bad);
 			}
 		}
 		else {
-			result = new BasicQualifiedValue("",new BasicQuality("null value",Quality.Level.Bad));
+			result = new BasicQualifiedValue("",QualityCode.Bad);
 		}
 		return result; 
 	}

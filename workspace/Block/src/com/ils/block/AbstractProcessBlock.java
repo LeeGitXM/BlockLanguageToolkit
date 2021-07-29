@@ -69,7 +69,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	protected ExecutionController controller = null;
 	private UUID blockId;
 	private UUID parentId;
-	private long projectId = -1;    // This is the global project
+	private String projectName = "global";    // This is the global project
 	private GeneralPurposeDataContainer auxiliaryData = new GeneralPurposeDataContainer();
 	protected QualifiedValue lastValue = null;  // Most recently propagated value.
 	protected String name = ".";
@@ -243,9 +243,9 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	@Override
 	public String getName() {return this.name;}
 	@Override
-	public long getProjectId() {return projectId;}
+	public String getProjectName() {return projectName;}
 	@Override
-	public void setProjectId(long projectId) {this.projectId = projectId;}
+	public void setProjectName(String name) {this.projectName = name;}
 	@Override
 	public TruthValue getState() {
 		if(DEBUG) log.infof("%s.getState: %s",name,this.state.name());

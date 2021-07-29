@@ -25,9 +25,8 @@ import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.Quality;
+import com.inductiveautomation.ignition.common.model.values.QualityCode;
 
 /**
  * This class reports the median value among its inputs. If there are an even number of inputs,
@@ -72,7 +71,7 @@ public class InputMedian extends AbstractProcessBlock implements ProcessBlock {
 	private void initialize() {	
 		setName("InputMedian");
 		// Define the time for "coalescing" inputs ~ msec
-		BlockProperty synch = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL,new Double(synchInterval),PropertyType.TIME_SECONDS,true);
+		BlockProperty synch = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL,synchInterval,PropertyType.TIME_SECONDS,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL, synch);
 		
 		// Define a single input -- but allow multiple connections
@@ -125,7 +124,7 @@ public class InputMedian extends AbstractProcessBlock implements ProcessBlock {
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s.acceptValue: Unable to convert incoming value to a double (%s)",TAG,nfe.getLocalizedMessage());
-				qval = new BasicQualifiedValue(Double.NaN,new BasicQuality(nfe.getLocalizedMessage(),Quality.Level.Bad),qval.getTimestamp());
+				qval = new BasicQualifiedValue(Double.NaN,QualityCode.Bad,qval.getTimestamp());
 			}
 			valueMap.put(blockId, qval);
 		}
@@ -138,7 +137,7 @@ public class InputMedian extends AbstractProcessBlock implements ProcessBlock {
 	public void evaluate() {
 		if( !isLocked() && !valueMap.isEmpty()) {
 			double value = getAggregateResult();
-			lastValue = new TestAwareQualifiedValue(timer,new Double(value),getAggregateQuality());
+			lastValue = new TestAwareQualifiedValue(timer,value,getAggregateQuality());
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 			controller.acceptCompletionNotification(nvn);
 			notifyOfStatus(lastValue);
@@ -198,13 +197,12 @@ public class InputMedian extends AbstractProcessBlock implements ProcessBlock {
 	 * Compute the overall product, presumably because of a new input.
 	 *  valueMap is guaranteed to be non-empty.
 	 */
-	private Quality getAggregateQuality() {
+	private QualityCode getAggregateQuality() {
 		Collection<QualifiedValue> values = valueMap.values();
-		Quality result = null;
-		for(QualifiedValue qval:values) {
-			result = qval.getQuality();
-			if( !result.isGood() ) break;
+		QualityCode q = QualityCode.Good;
+		for(QualifiedValue qv:values) {
+			if( !qv.getQuality().isGood() ) return qv.getQuality();
 		}
-		return result;	
+		return q;	
 	}
 }

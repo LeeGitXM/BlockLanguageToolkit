@@ -125,7 +125,7 @@ public class ProcessNode implements Serializable {
 		SerializableResourceDescriptor descriptor = new SerializableResourceDescriptor();
 		descriptor.setName(getName());
 		descriptor.setId(self.toString());
-		descriptor.setProjectId(projectId);
+		descriptor.setProjectName(projectId);
 		descriptor.setResourceId(resourceId);
 		descriptor.setType(BLTProperties.FOLDER_RESOURCE_TYPE);
 		return descriptor;

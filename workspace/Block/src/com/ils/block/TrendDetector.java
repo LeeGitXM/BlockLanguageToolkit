@@ -35,7 +35,7 @@ import com.ils.common.FixedSizeQueue;
 import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.Quality;
+import com.inductiveautomation.ignition.common.model.values.QualityCode;
 
 /**
  * This class applies SQC-like rules to its input with the objective of detecting trends.
@@ -204,7 +204,7 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 	public void acceptValue(IncomingNotification incoming) {
 		super.acceptValue(incoming);
 		QualifiedValue qv = incoming.getValue();
-		Quality qual = qv.getQuality();
+		QualityCode qual = qv.getQuality();
 		
 
 		String port = incoming.getConnection().getDownstreamPortName();

@@ -31,7 +31,7 @@ import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.Quality;
+import com.inductiveautomation.ignition.common.model.values.QualityCode;
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataQuality;
 
 /**
@@ -182,7 +182,7 @@ public class Or extends AbstractProcessBlock implements ProcessBlock {
 			if(!newState.equals(state)) {
 				setState(newState);  // Sets last value as side effect
 				lastValue = new TestAwareQualifiedValue(timer,state.name(),
-                        (state.equals(TruthValue.UNKNOWN)?getAggregateQuality():DataQuality.GOOD_DATA));
+                        (state.equals(TruthValue.UNKNOWN)?getAggregateQuality():QualityCode.Good));
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 				controller.acceptCompletionNotification(nvn);
 				valueProperty.setValue(state);
@@ -306,9 +306,9 @@ public class Or extends AbstractProcessBlock implements ProcessBlock {
 	 * * Compute the overall quality.
 	 * NOTE: This is only valid if the current state is UNKNOWN.
 	 */
-	private Quality getAggregateQuality() {
+	private QualityCode getAggregateQuality() {
 		Collection<QualifiedValue> values = qualifiedValueMap.values();
-		Quality q = DataQuality.GOOD_DATA; 
+		QualityCode q = QualityCode.Good; 
 		for(QualifiedValue qv:values) {
 			if( !qv.getQuality().isGood() ) return qv.getQuality();
 		}

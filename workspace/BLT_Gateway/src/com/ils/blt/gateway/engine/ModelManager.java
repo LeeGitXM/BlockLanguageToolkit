@@ -707,7 +707,7 @@ public class ModelManager implements ProjectListener  {
 				nodesByKey.put(key,application);
 				addToHierarchy(projectId,application);
 			}
-			else if( node.getProjectId() != projectId)  {
+			else if( node.getProjectName() != projectId)  {
 				// The same UUID, but a different project, is a different resource
 				// Check the node and parent UUIDs:
 				//     if they haven't already been migrated, do it here.
@@ -742,7 +742,7 @@ public class ModelManager implements ProjectListener  {
 						toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER):
 							toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER));
 				Script script = extensionManager.createExtensionScript(ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.SAVE_OPERATION, provider);
-				extensionManager.runScript(context.getProjectManager().getProjectScriptManager(application.getProjectId()), 
+				extensionManager.runScript(context.getProjectManager().getProjectScriptManager(application.getProjectName()), 
 						script, application.getSelf().toString());
 				String db = (application.getState().equals(DiagramState.ACTIVE) ? 
 						toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_DATABASE):
@@ -795,7 +795,7 @@ public class ModelManager implements ProjectListener  {
 					diagram.synchronizeSubscriptions();
 				}
 			}
-			else if(diagram.getProjectId() != projectId) {
+			else if(diagram.getProjectName() != projectId) {
 				// The same UUID, but a different project, is a different resource
 				// Check the node and parent UUIDs:
 				//     if they haven't already been migrated, do it here.
@@ -863,7 +863,7 @@ public class ModelManager implements ProjectListener  {
 						toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER):
 						toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER));
 				Script script = extensionManager.createExtensionScript(ScriptConstants.DIAGRAM_CLASS_NAME, ScriptConstants.SAVE_OPERATION, provider);
-				extensionManager.runScript(context.getProjectManager().getProjectScriptManager(diagram.getProjectId()), 
+				extensionManager.runScript(context.getProjectManager().getProjectScriptManager(diagram.getProjectName()), 
 						script, diagram.getSelf().toString());
 			}
 		}
@@ -896,7 +896,7 @@ public class ModelManager implements ProjectListener  {
 				nodesByKey.put(key,family);
 				addToHierarchy(projectId,family);
 			}
-			else if(node.getProjectId() != projectId) {
+			else if(node.getProjectName() != projectId) {
 				// The same UUID, but a different project, is a different resource
 				// Check the node and parent UUIDs:
 				//     if they haven't already been migrated, do it here.
@@ -935,7 +935,7 @@ public class ModelManager implements ProjectListener  {
 						toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER):
 							toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER));
 				Script script = extensionManager.createExtensionScript(ScriptConstants.FAMILY_CLASS_NAME, ScriptConstants.SAVE_OPERATION, provider);
-				extensionManager.runScript(context.getProjectManager().getProjectScriptManager(family.getProjectId()), 
+				extensionManager.runScript(context.getProjectManager().getProjectScriptManager(family.getProjectName()), 
 						script, family.getSelf().toString());
 				String db = (family.getState().equals(DiagramState.ACTIVE) ? 
 						toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_DATABASE):
@@ -970,7 +970,7 @@ public class ModelManager implements ProjectListener  {
 			nodesByKey.put(key,node);
 			addToHierarchy(projectId,node);
 		}
-		else if(node.getProjectId() != projectId) {
+		else if(node.getProjectName() != projectId) {
 			// The same UUID, but a different project, is a different resource
 			// Check the node and parent UUIDs:
 			//     if they haven't already been migrated, do it here.
@@ -1024,9 +1024,9 @@ public class ModelManager implements ProjectListener  {
 			// If the parent is already in the tree, simply add the node as a child
 			// Otherwise add to our list of orphans
 			ProcessNode parent = nodesByUUID.get(node.getParent());
-			if( parent!=null && parent.getProjectId()!=node.getProjectId()) {
+			if( parent!=null && parent.getProjectName()!=node.getProjectName()) {
 				// We need to use the migrated parent
-				ProjectUUIDKey pukey = new ProjectUUIDKey(node.getProjectId(),parent.getSelf());	 		
+				ProjectUUIDKey pukey = new ProjectUUIDKey(node.getProjectName(),parent.getSelf());	 		
 				if( uuidMigrationMap.get(pukey) != null ) {
 					UUID parentuuid = uuidMigrationMap.get(pukey);
 					parent = nodesByUUID.get(parentuuid);
@@ -1109,10 +1109,10 @@ public class ModelManager implements ProjectListener  {
 				// Execute for BOTH production and isolation
 				if( node!=null ) {
 					Script script = extensionManager.createExtensionScript(classKey, ScriptConstants.DELETE_OPERATION, toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER));
-					extensionManager.runScript(context.getProjectManager().getProjectScriptManager(node.getProjectId()), 
+					extensionManager.runScript(context.getProjectManager().getProjectScriptManager(node.getProjectName()), 
 							script, node.getSelf().toString(),node.getAuxiliaryData());
 					script = extensionManager.createExtensionScript(classKey, ScriptConstants.DELETE_OPERATION, toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER));
-					extensionManager.runScript(context.getProjectManager().getProjectScriptManager(node.getProjectId()), 
+					extensionManager.runScript(context.getProjectManager().getProjectScriptManager(node.getProjectName()), 
 					script, node.getSelf().toString(),node.getAuxiliaryData());
 				}
 			}
@@ -1250,9 +1250,9 @@ public class ModelManager implements ProjectListener  {
 			// If is now resolved, remove node from orphan list and
 			// add as child of parent. Recurse it's children.
 			if(parent!=null ) {
-				if( parent.getProjectId()!=orphan.getProjectId()) {
+				if( parent.getProjectName()!=orphan.getProjectName()) {
 					// We need to use the migrated parent
-					ProjectUUIDKey pukey = new ProjectUUIDKey(orphan.getProjectId(),parent.getSelf());	 		
+					ProjectUUIDKey pukey = new ProjectUUIDKey(orphan.getProjectName(),parent.getSelf());	 		
 					if( uuidMigrationMap.get(pukey) != null ) {
 						UUID parentuuid = uuidMigrationMap.get(pukey);
 						orphan.setParent(parentuuid);

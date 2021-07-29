@@ -43,7 +43,7 @@ import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.common.FixedSizeQueue;
 import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
-import com.inductiveautomation.ignition.common.sqltags.model.types.DataQuality;
+import com.inductiveautomation.ignition.common.model.values.QualityCode;
 
 /**
  * This class computes a specified statistic on the last "n" readings.
@@ -171,7 +171,7 @@ public class StatisticsSample extends AbstractProcessBlock implements ProcessBlo
 			}
 			double result = computeStatistic();
 			// Result gets good quality and a new timestamp
-			lastValue = new TestAwareQualifiedValue(timer,new Double(result),DataQuality.GOOD_DATA);
+			lastValue = new TestAwareQualifiedValue(timer,result,QualityCode.Good);
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 			controller.acceptCompletionNotification(nvn);
 			notifyOfStatus(lastValue);

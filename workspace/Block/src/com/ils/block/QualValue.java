@@ -30,6 +30,7 @@ import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.Quality;
+import com.inductiveautomation.ignition.common.model.values.QualityCode;
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataQuality;
 
 /**
@@ -44,7 +45,7 @@ public class QualValue extends AbstractProcessBlock implements ProcessBlock {
 
 	private final Watchdog dog;
 	private QualifiedValue value = null;
-	private Quality   quality = DataQuality.GOOD_DATA;
+	private QualityCode   quality = QualityCode.Good;
 	private Date      timestamp    = null;
 	private SimpleDateFormat customFormatter = new SimpleDateFormat(DEFAULT_FORMAT);
 	private double synchInterval = 0.5; // 1/2 sec synchronization by default
@@ -141,8 +142,8 @@ public class QualValue extends AbstractProcessBlock implements ProcessBlock {
 		else if( port.equals(QUALITY_PORT)  ) {
 			Object val = qv.getValue();
 			if( val.toString().equalsIgnoreCase("good") ||
-				val.toString().toLowerCase().contains("true")) quality = DataQuality.GOOD_DATA;
-			else quality = new BasicQuality(qv.getValue().toString(),Quality.Level.Bad);
+				val.toString().toLowerCase().contains("true")) quality = QualityCode.Good;
+			else quality = QualityCode.Bad;
 		}
 		else if( port.equals(TIME_PORT)  ) {
 			if( qv.getValue() instanceof Date ) {
@@ -180,7 +181,7 @@ public class QualValue extends AbstractProcessBlock implements ProcessBlock {
 	public void evaluate() {
 		if( value==null ) return;   // Shouldn't happen
 		if( !isLocked() ) {
-			Quality q = quality;
+			QualityCode q = quality;
 			if( q.isGood() && value.getQuality()!=null ) q = value.getQuality();
 			Date ts = value.getTimestamp();
 			if(timestamp!=null ) ts = timestamp;

@@ -31,8 +31,7 @@ import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.Quality;
-import com.inductiveautomation.ignition.common.sqltags.model.types.DataQuality;
+import com.inductiveautomation.ignition.common.model.values.QualityCode;
 
 /**
  * This class emits the "and" of its inputs. Synchronizing
@@ -78,7 +77,7 @@ public class And extends AbstractProcessBlock {
 		setName("And");
 		state = TruthValue.UNSET;
 		// Define the time for "coalescing" inputs ~ msec
-		BlockProperty synch = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL,new Double(synchInterval),PropertyType.TIME_SECONDS,true);
+		BlockProperty synch = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL,synchInterval,PropertyType.TIME_SECONDS,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL, synch);
 		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,TruthValue.UNSET,PropertyType.TRUTHVALUE,false);
 		valueProperty.setBindingType(BindingType.ENGINE);
@@ -206,7 +205,7 @@ public class And extends AbstractProcessBlock {
 			if(!newState.equals(state)) {
 				setState(newState);  // Sets last value as side effect
 				lastValue = new TestAwareQualifiedValue(timer,state.name(),
-						               (state.equals(TruthValue.UNKNOWN)?getAggregateQuality():DataQuality.GOOD_DATA));
+						               (state.equals(TruthValue.UNKNOWN)?getAggregateQuality():QualityCode.Good));
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 				controller.acceptCompletionNotification(nvn);
 				valueProperty.setValue(state);
@@ -280,9 +279,9 @@ public class And extends AbstractProcessBlock {
 	 * Compute the overall quality.
 	 * NOTE: This is only valid if the current state is UNKNOWN.
 	 */
-	private Quality getAggregateQuality() {
+	private QualityCode getAggregateQuality() {
 		Collection<QualifiedValue> values = qualifiedValueMap.values();
-		Quality q = DataQuality.GOOD_DATA; 
+		QualityCode q = QualityCode.Good; 
 		for(QualifiedValue qv:values) {
 			if( !qv.getQuality().isGood() ) return qv.getQuality();
 		}

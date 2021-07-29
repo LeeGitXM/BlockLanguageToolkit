@@ -35,7 +35,7 @@ public class ProjectResourceKey implements Serializable {
 		boolean result = false;
 		if( arg instanceof ProjectResourceKey) {
 			ProjectResourceKey that = (ProjectResourceKey)arg;
-			if( (this.getProjectId()==that.getProjectId()) &&
+			if( (this.getProjectName()==that.getProjectName()) &&
 					(this.getResourceId()==that.getResourceId())   ) {
 				result = true;
 			}

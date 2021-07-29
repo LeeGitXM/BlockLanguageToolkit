@@ -45,9 +45,9 @@ public class ProcessNodeSynchronizer {
     	Map<ProjectResourceKey,ProcessNode> nodeMap = modelManager.getNodesByKey();
     	for(ProjectResourceKey key:resourceMap.keySet()) {
     		if( nodeMap.get(key)==null) {
-    			log.infof("%s.createMissingResources: ADDING node %d:%d %s (project resource not represented)", TAG,key.getProjectId(),key.getResourceId(),
+    			log.infof("%s.createMissingResources: ADDING node %d:%d %s (project resource not represented)", TAG,key.getProjectName(),key.getResourceId(),
     					resourceMap.get(key).getName());
-    			modelManager.analyzeResource(key.getProjectId(), resourceMap.get(key),true);
+    			modelManager.analyzeResource(key.getProjectName(), resourceMap.get(key),true);
     		}
     	}
     	log.infof("%s.createMissingResources ============================     Complete    ====================================", TAG);
@@ -64,11 +64,11 @@ public class ProcessNodeSynchronizer {
     	for(ProjectResourceKey key:nodeMap.keySet()) {
     		if( resourceMap.get(key)==null ) {
     			nodesToDelete.add(key);
-    			log.infof("%s.removeExcessNodes: DELETING node %d:%d (not backed by project resource)", TAG,key.getProjectId(),key.getResourceId());
+    			log.infof("%s.removeExcessNodes: DELETING node %d:%d (not backed by project resource)", TAG,key.getProjectName(),key.getResourceId());
     		}
     	}
     	for(ProjectResourceKey key:nodesToDelete) {
-    		modelManager.deleteResource(key.getProjectId(), key.getResourceId());
+    		modelManager.deleteResource(key.getProjectName(), key.getResourceId());
     	}
     	log.infof("%s.removeExcessNodes ==========================       Complete      ==================================", TAG);
     }
@@ -87,24 +87,24 @@ public class ProcessNodeSynchronizer {
     	RootNode root = modelManager.getRootNode();
     	for( ProcessNode child:nodes) {
     		if( !child.getSelf().equals(root.getSelf()) && modelManager.getProcessNode(child.getParent())==null ) {
-    			ProjectResourceKey key = new ProjectResourceKey(child.getProjectId(),child.getResourceId());
+    			ProjectResourceKey key = new ProjectResourceKey(child.getProjectName(),child.getResourceId());
     			nodesToDelete.add(key);
-    			log.infof("%s.removeOrphans: DELETING node %d:%d (has no parent)", TAG,key.getProjectId(),key.getResourceId());
+    			log.infof("%s.removeOrphans: DELETING node %d:%d (has no parent)", TAG,key.getProjectName(),key.getResourceId());
     		}
     	}
     	// Actually remove the resource.
     	for(ProjectResourceKey key:nodesToDelete) {
-    		modelManager.deleteResource(key.getProjectId(), key.getResourceId());
+    		modelManager.deleteResource(key.getProjectName(), key.getResourceId());
     		// Delete the current node and all its children.
     		GatewayContext context = modelManager.getContext();
-    		Project project = context.getProjectManager().getProject(key.getProjectId(), ApplicationScope.GATEWAY, ProjectVersion.Staging);
+    		Project project = context.getProjectManager().getProject(key.getProjectName(), ApplicationScope.GATEWAY, ProjectVersion.Staging);
     		if( project!=null ) {
     			project.deleteResource(key.getResourceId(), true); // Mark as dirty
     			try {
     				context.getProjectManager().saveProject(project, null, null, "Removing orphan resource", false);
     			}
     			catch(Exception ex) {
-    				log.warnf("%s.removeOrphans: Failed to save project when deleting node %d:%d (%s)", TAG,key.getProjectId(),key.getResourceId(),
+    				log.warnf("%s.removeOrphans: Failed to save project when deleting node %d:%d (%s)", TAG,key.getProjectName(),key.getResourceId(),
     						   ex.getMessage());
     			}
     		}

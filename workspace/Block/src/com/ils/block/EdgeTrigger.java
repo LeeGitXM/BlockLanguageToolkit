@@ -22,9 +22,8 @@ import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.Quality;
+import com.inductiveautomation.ignition.common.model.values.QualityCode;
 
 /**
  * Delay before passing the input onto the output.
@@ -91,7 +90,7 @@ public class EdgeTrigger extends AbstractProcessBlock implements ProcessBlock {
 				if( trigger.equals(TruthValue.FALSE) || trigger.equals(TruthValue.TRUE) ) {
 					TruthValue tv = vcn.getValueAsTruthValue();
 					if( tv.equals(trigger)) {	
-						QualifiedValue nqv = new BasicQualifiedValue(new Boolean(true),qv.getQuality(),qv.getTimestamp());
+						QualifiedValue nqv = new BasicQualifiedValue(true,qv.getQuality(),qv.getTimestamp());
 						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,nqv);
 						controller.acceptCompletionNotification(nvn);
 						dog.setSecondsDelay(holdInterval);
@@ -112,7 +111,7 @@ public class EdgeTrigger extends AbstractProcessBlock implements ProcessBlock {
 		if( !isLocked() ) {
 			if( trigger.equals(TruthValue.TRUE) || trigger.equals(TruthValue.FALSE)) {
 				state = TruthValue.FALSE;
-				QualifiedValue nqv = new BasicQualifiedValue(new Boolean(false),new BasicQuality("GOOD", Quality.Level.Good));
+				QualifiedValue nqv = new BasicQualifiedValue(false,QualityCode.Good);
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,nqv);
 				controller.acceptCompletionNotification(nvn);
 				notifyOfStatus(nqv);
@@ -166,7 +165,7 @@ public class EdgeTrigger extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	private void initialize() {
 		setName("EdgeTrigger");
-		BlockProperty constant = new BlockProperty(BlockConstants.BLOCK_PROPERTY_INTERVAL,new Double(holdInterval),PropertyType.TIME_SECONDS,true);
+		BlockProperty constant = new BlockProperty(BlockConstants.BLOCK_PROPERTY_INTERVAL,holdInterval,PropertyType.TIME_SECONDS,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_INTERVAL, constant);
 		BlockProperty trigProp = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TRIGGER,trigger.name(),PropertyType.BOOLEAN,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_TRIGGER, trigProp);

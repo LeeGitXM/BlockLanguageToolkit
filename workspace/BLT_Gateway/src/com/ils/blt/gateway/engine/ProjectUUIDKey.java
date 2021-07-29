@@ -32,7 +32,7 @@ public class ProjectUUIDKey implements Serializable {
 		boolean result = false;
 		if( arg instanceof ProjectUUIDKey) {
 			ProjectUUIDKey that = (ProjectUUIDKey)arg;
-			if( (this.getProjectId()==that.getProjectId()) &&
+			if( (this.getProjectName()==that.getProjectName()) &&
 					(this.getUUID().equals(that.getUUID()))   ) {
 				result = true;
 			}

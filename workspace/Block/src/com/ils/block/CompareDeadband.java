@@ -17,9 +17,8 @@ import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.common.watchdog.TestAwareQualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.Quality;
+import com.inductiveautomation.ignition.common.model.values.QualityCode;
 
 /**
  * This class emits "true" if the value of the "x" input is greater than or equal to
@@ -58,7 +57,7 @@ public class CompareDeadband extends Compare implements ProcessBlock {
 	private void initialize() {	
 		setName("CompareDeadband");
 		// Define the deadband
-		BlockProperty oprop = new BlockProperty(BlockConstants.BLOCK_PROPERTY_DEADBAND,new Double(deadband),PropertyType.DOUBLE,true);
+		BlockProperty oprop = new BlockProperty(BlockConstants.BLOCK_PROPERTY_DEADBAND,deadband,PropertyType.DOUBLE,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_DEADBAND, oprop);
 	}
 	
@@ -103,10 +102,10 @@ public class CompareDeadband extends Compare implements ProcessBlock {
 			state = TruthValue.UNKNOWN;
 			QualifiedValue result = null;
 			if( x==null ) {
-				result = new TestAwareQualifiedValue(timer,state,new BasicQuality("'x' is unset",Quality.Level.Bad));
+				result = new TestAwareQualifiedValue(timer,state,QualityCode.Bad);
 			}
 			else if( y==null ) {
-				result = new TestAwareQualifiedValue(timer,state,new BasicQuality("'y' is unset",Quality.Level.Bad));
+				result = new TestAwareQualifiedValue(timer,state,QualityCode.Bad);
 			}
 			else if( !x.getQuality().isGood()) {
 				result = new TestAwareQualifiedValue(timer,state,x.getQuality());
@@ -123,11 +122,11 @@ public class CompareDeadband extends Compare implements ProcessBlock {
 						yy = Double.parseDouble(y.getValue().toString());
 					}
 					catch(NumberFormatException nfe) {
-						result = new TestAwareQualifiedValue(timer,TruthValue.UNKNOWN,new BasicQuality("'y' is not a valid double",Quality.Level.Bad));
+						result = new TestAwareQualifiedValue(timer,TruthValue.UNKNOWN,QualityCode.Bad);
 					}
 				}
 				catch(NumberFormatException nfe) {
-					result = new TestAwareQualifiedValue(timer,TruthValue.UNKNOWN,new BasicQuality("'x' is not a valid double",Quality.Level.Bad));
+					result = new TestAwareQualifiedValue(timer,TruthValue.UNKNOWN,QualityCode.Bad);
 				}
 			}
 	
@@ -154,7 +153,7 @@ public class CompareDeadband extends Compare implements ProcessBlock {
 					}
 				}
 				else {
-					Quality q = x.getQuality();
+					QualityCode q = x.getQuality();
 					if( q.isGood()) 
 						q = y.getQuality();
 					lastValue = new TestAwareQualifiedValue(timer,state,q);

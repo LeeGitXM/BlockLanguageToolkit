@@ -91,7 +91,7 @@ public class ToolkitStatusPanel extends Panel {
 			private static final long serialVersionUID = 3537127058517061095L;
 			protected void populateItem(ListItem<ProcessDiagram> item) {
 				ProcessDiagram diagram = item.getModelObject();
-				String label = String.format("%3d.%4d: %s\t(%s)", diagram.getProjectId(),diagram.getResourceId(),diagram.getName(),diagram.getState().name());
+				String label = String.format("%3d.%4d: %s\t(%s)", diagram.getProjectName(),diagram.getResourceId(),diagram.getName(),diagram.getState().name());
 				item.add(new Label("name",label));
 			}
 		});

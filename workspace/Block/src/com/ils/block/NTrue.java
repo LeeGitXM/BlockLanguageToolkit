@@ -30,8 +30,7 @@ import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.Quality;
-import com.inductiveautomation.ignition.common.sqltags.model.types.DataQuality;
+import com.inductiveautomation.ignition.common.model.values.QualityCode;
 
 /**
  * This class tests if the number of true inputs is greater than a set value. Synchronizing
@@ -164,7 +163,7 @@ public class NTrue extends AbstractProcessBlock implements ProcessBlock {
 			if(!newState.equals(state)) {
 				setState(newState); 
 				lastValue = new TestAwareQualifiedValue(timer,state.name(),
-			            (state.equals(TruthValue.UNKNOWN)?getAggregateQuality():DataQuality.GOOD_DATA));
+			            (state.equals(TruthValue.UNKNOWN)?getAggregateQuality():QualityCode.Good));
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 				controller.acceptCompletionNotification(nvn);
 				valueProperty.setValue(state);
@@ -267,9 +266,9 @@ public class NTrue extends AbstractProcessBlock implements ProcessBlock {
 	/**
 	 * Compute the overall quality.
 	 */
-	private Quality getAggregateQuality() {
+	private QualityCode getAggregateQuality() {
 		Collection<QualifiedValue> values = qualifiedValueMap.values();
-		Quality q = null; 
+		QualityCode q = null; 
 		for(QualifiedValue qv:values) {
 			if( q == null || !qv.getQuality().isGood() ) q = qv.getQuality();
 		}

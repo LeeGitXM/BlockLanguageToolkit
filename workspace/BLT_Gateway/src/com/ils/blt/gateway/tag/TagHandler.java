@@ -8,21 +8,20 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.ils.common.tag.TagValidator;
 import com.inductiveautomation.ignition.common.sqltags.TagDefinition;
 import com.inductiveautomation.ignition.common.sqltags.model.TagManagerBase;
-import com.inductiveautomation.ignition.common.sqltags.model.TagNode;
-import com.inductiveautomation.ignition.common.sqltags.model.TagPath;
 import com.inductiveautomation.ignition.common.sqltags.model.types.AccessRightsType;
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 import com.inductiveautomation.ignition.common.sqltags.model.types.TagType;
-import com.inductiveautomation.ignition.common.sqltags.parser.BasicTagPath;
-import com.inductiveautomation.ignition.common.sqltags.parser.TagPathParser;
 import com.inductiveautomation.ignition.common.sqltags.tags.TagDiff;
+import com.inductiveautomation.ignition.common.tags.model.TagPath;
+import com.inductiveautomation.ignition.common.tags.model.TagProvider;
+import com.inductiveautomation.ignition.common.tags.model.TagStructureTree.TagNode;
+import com.inductiveautomation.ignition.common.tags.paths.BasicTagPath;
+import com.inductiveautomation.ignition.common.tags.paths.parser.TagPathParser;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
-import com.inductiveautomation.ignition.gateway.sqltags.TagProvider;
 
 /**
  *  The tag handler is a utility for creation and deletion of tags

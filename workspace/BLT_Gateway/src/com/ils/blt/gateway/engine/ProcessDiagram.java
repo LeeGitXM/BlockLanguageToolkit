@@ -181,12 +181,12 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 			UUID id = sb.getId();
 			ProcessBlock pb = blocks.get(id);
 			if( pb==null ) {
-				pb = blockFactory.blockFromSerializable(getSelf(),sb,getProjectId());
+				pb = blockFactory.blockFromSerializable(getSelf(),sb,getProjectName());
 				if( pb!=null ) {
 					// Set the proper timer
 					if(DiagramState.ACTIVE.equals(state)) pb.setTimer(controller.getTimer());
 					else if(DiagramState.ISOLATED.equals(state)) pb.setTimer(controller.getSecondaryTimer());
-					pb.setProjectId(projectId);
+					pb.setProjectName(projectId);
 					blocks.put(pb.getBlockId(), pb);
 					if( DEBUG ) log.infof("%s.createBlocks: New block %s(%d)", CLSS, pb.getName(), pb.hashCode());
 

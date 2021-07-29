@@ -36,7 +36,7 @@ import com.ils.common.FixedSizeQueue;
 import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.Quality;
+import com.inductiveautomation.ignition.common.model.values.QualityCode;
 
 /**
  * This class applies one of the Westinghouse (Western Electric) SPC rules to its input.
@@ -174,7 +174,7 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 	public synchronized void acceptValue(IncomingNotification incoming) {
 		super.acceptValue(incoming);
 		QualifiedValue qv = incoming.getValue();
-		Quality qual = qv.getQuality();
+		QualityCode qual = qv.getQuality();
 		String port = incoming.getConnection().getDownstreamPortName();
 		if( port.equals(PORT_VALUE)  ) {
 			if( qual.isGood() && qv!=null && qv.getValue()!=null ) {

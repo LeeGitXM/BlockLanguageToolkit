@@ -19,12 +19,11 @@
 	<property name="block.bin.dir" value="${root.dir}/blt/workspace/Block/bin" />
 	<property name="block.src.dir" value="${root.dir}/blt/workspace/Block/src" />
 	<property name="ils.python.src.dir" value="${root.dir}/ils_python/ILS_Python/src" />
+	<property name="ant.build.javac.source" value="13"/>
+	<property name="ant.build.javac.target" value="13"/>
 	
 <!--   THE NEXT LINE IS ONLY NEEDED FOR XOM SAMPLES AND TESTING - CONSIDER HAVING A FLAG TO DISABLE COPY -->	
 <!--	<property name="xom.python.src.dir" value="${root.dir}/xom-python/XOM_Python/src" />  -->
-	
-	<property name="ant.build.javac.source" value="1.8"/>
-	<property name="ant.build.javac.target" value="1.8"/>
 		
 	<!-- External jar classpath -->
 	<path id="ils-classpath">

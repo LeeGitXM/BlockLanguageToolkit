@@ -31,7 +31,7 @@ import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.Quality;
+import com.inductiveautomation.ignition.common.model.values.QualityCode;
 
 /**
  * Monitor the incoming truth-value for percent-of-time true. The output
@@ -141,7 +141,7 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 	public void acceptValue(IncomingNotification incoming) {
 		super.acceptValue(incoming);
 		QualifiedValue qv = incoming.getValue();
-		Quality qual = qv.getQuality();
+		QualityCode qual = qv.getQuality();
 		if( qual.isGood() && qv!=null && qv.getValue()!=null ) {
 			currentValue = incoming.getValueAsTruthValue();
 			if(!dog.isActive()) evaluate();

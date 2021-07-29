@@ -29,6 +29,7 @@ import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.Quality;
+import com.inductiveautomation.ignition.common.model.values.QualityCode;
 
 /**
  * This class emits "true" if the "x" input is greater than or equal to the "y". This block
@@ -76,9 +77,9 @@ public class Compare extends AbstractProcessBlock implements ProcessBlock {
 	private void initialize() {		
 		setName("Compare");
 		// Define the time for "coalescing" inputs ~ msec
-		BlockProperty oprop = new BlockProperty(BlockConstants.BLOCK_PROPERTY_OFFSET,new Double(offset),PropertyType.DOUBLE,true);
+		BlockProperty oprop = new BlockProperty(BlockConstants.BLOCK_PROPERTY_OFFSET,offset,PropertyType.DOUBLE,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_OFFSET, oprop);
-		BlockProperty synch = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL,new Double(synchInterval),PropertyType.TIME_SECONDS,true);
+		BlockProperty synch = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL,synchInterval,PropertyType.TIME_SECONDS,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL, synch);
 		
 		// Define two inputs 
@@ -158,10 +159,10 @@ public class Compare extends AbstractProcessBlock implements ProcessBlock {
 			state = TruthValue.UNKNOWN;
 			QualifiedValue currentValue = null;
 			if( x==null ) {
-				currentValue = new TestAwareQualifiedValue(timer,state,new BasicQuality("'x' is unset",Quality.Level.Bad));
+				currentValue = new TestAwareQualifiedValue(timer,state,QualityCode.Bad);
 			}
 			else if( y==null ) {
-				currentValue = new TestAwareQualifiedValue(timer,state,new BasicQuality("'y' is unset",Quality.Level.Bad));
+				currentValue = new TestAwareQualifiedValue(timer,state,QualityCode.Bad);
 			}
 			else if( !x.getQuality().isGood()) {
 				currentValue = new TestAwareQualifiedValue(timer,state,x.getQuality());
@@ -176,7 +177,7 @@ public class Compare extends AbstractProcessBlock implements ProcessBlock {
 					// Handle dates
 					if( x.getValue() instanceof Date || y.getValue() instanceof Date ) {
 						if( !(x.getValue() instanceof Date) || !(y.getValue() instanceof Date)  ) {
-							currentValue = new TestAwareQualifiedValue(timer,TruthValue.UNKNOWN,new BasicQuality("If one input is a Date, then both must be",Quality.Level.Bad));
+							currentValue = new TestAwareQualifiedValue(timer,TruthValue.UNKNOWN,QualityCode.Bad);
 						}
 						else {
 							xx = ((Date)(x.getValue())).getTime();
@@ -189,12 +190,12 @@ public class Compare extends AbstractProcessBlock implements ProcessBlock {
 							yy = Double.parseDouble(y.getValue().toString());
 						}
 						catch(NumberFormatException nfe) {
-							currentValue = new TestAwareQualifiedValue(timer,TruthValue.UNKNOWN,new BasicQuality("'y' is not a valid double",Quality.Level.Bad));
+							currentValue = new TestAwareQualifiedValue(timer,TruthValue.UNKNOWN,QualityCode.Bad);
 						}
 					}
 				}
 				catch(NumberFormatException nfe) {
-					currentValue = new TestAwareQualifiedValue(timer,TruthValue.UNKNOWN,new BasicQuality("'x' is not a valid double",Quality.Level.Bad));
+					currentValue = new TestAwareQualifiedValue(timer,TruthValue.UNKNOWN,QualityCode.Bad);
 				}
 			}
 			
@@ -206,7 +207,7 @@ public class Compare extends AbstractProcessBlock implements ProcessBlock {
 					lastValue = new TestAwareQualifiedValue(timer,state);
 				}
 				else {
-					Quality q = x.getQuality();
+					QualityCode q = x.getQuality();
 					if( q.isGood()) 
 						q = y.getQuality();
 					lastValue = new TestAwareQualifiedValue(timer,state,q);

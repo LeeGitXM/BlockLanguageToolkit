@@ -27,6 +27,7 @@ import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.Quality;
+import com.inductiveautomation.ignition.common.model.values.QualityCode;
 
 /**
  * This class filters its input with an exponentially weighted 
@@ -67,7 +68,7 @@ public class ExponentialFilter extends AbstractProcessBlock implements ProcessBl
 	 */
 	private void initialize() {
 		setName("Exponential Filter");
-		BlockProperty constant = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW,new Double(window),PropertyType.TIME_MINUTES,true);
+		BlockProperty constant = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW,window,PropertyType.TIME_MINUTES,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW, constant);
 		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,"",PropertyType.STRING,false);
 		valueProperty.setBindingType(BindingType.ENGINE);
@@ -105,7 +106,7 @@ public class ExponentialFilter extends AbstractProcessBlock implements ProcessBl
 	public void acceptValue(IncomingNotification vcn) {
 		super.acceptValue(vcn);
 		QualifiedValue qv = vcn.getValue();
-		Quality qual = qv.getQuality();
+		QualityCode qual = qv.getQuality();
 		if( qual.isGood() && qv!=null && qv.getValue()!=null && window>0.0 ) {
 			try {
 				double newValue = Double.parseDouble(qv.getValue().toString());

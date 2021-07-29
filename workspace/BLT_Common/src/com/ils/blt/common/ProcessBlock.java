@@ -134,7 +134,7 @@ public interface ProcessBlock extends BlockPropertyChangeListener {
 	/**
 	 * @return the id of the project under which this block was created.
 	 */
-	public long getProjectId() ;
+	public String getProjectName() ;
 	/**
 	 * @return all properties of the block. The array may be used
 	 * 			to updated properties directly.
@@ -258,9 +258,9 @@ public interface ProcessBlock extends BlockPropertyChangeListener {
 	 */
 	public void setName(String name);
 	/**
-	 * @param id is the project to which this block belongs.
+	 * @param name is the project to which this block belongs.
 	 */
-	public void setProjectId(long id);
+	public void setProjectName(String name);
 	/**
 	 * Accept a new value for a block property. It is up to the
 	 * block to determine whether or not this triggers block 

@@ -30,7 +30,7 @@ import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.Quality;
+import com.inductiveautomation.ignition.common.model.values.QualityCode;
 
 /**
  * This class computes an average of the input over a time interval.
@@ -129,7 +129,7 @@ public class LowLimitTimeWindow extends AbstractProcessBlock implements ProcessB
 	public void acceptValue(IncomingNotification incoming) {
 		super.acceptValue(incoming);
 		QualifiedValue qv = incoming.getValue();
-		Quality qual = qv.getQuality();
+		QualityCode qual = qv.getQuality();
 		if( qual.isGood() && qv.getValue()!=null ) {
 			currentValue = Double.NaN;
 			try {

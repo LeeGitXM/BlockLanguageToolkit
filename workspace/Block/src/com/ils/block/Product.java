@@ -30,6 +30,7 @@ import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.Quality;
+import com.inductiveautomation.ignition.common.model.values.QualityCode;
 
 /**
  * This class emits the "product" of its inputs. Synchronizing
@@ -250,13 +251,12 @@ public class Product extends AbstractProcessBlock implements ProcessBlock {
 	 * Compute the overall product, presumably because of a new input.
 	 *  valueMap is guaranteed to be non-empty.
 	 */
-	private Quality getAggregateQuality() {
+	private QualityCode getAggregateQuality() {
 		Collection<QualifiedValue> values = valueMap.values();
-		Quality result = null;
+		QualityCode q = QualityCode.Good;
 		for(QualifiedValue qv:values) {
-			result = qv.getQuality();
-			if( !result.isGood() ) break;
+			if( !qv.getQuality().isGood() ) return qv.getQuality();
 		}
-		return result;	
+		return q;	
 	}
 }

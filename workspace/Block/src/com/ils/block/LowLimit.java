@@ -29,6 +29,7 @@ import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.Quality;
+import com.inductiveautomation.ignition.common.model.values.QualityCode;
 
 /**
  * This class is a no-op. It simply passes its input onto the output.
@@ -270,7 +271,7 @@ public class LowLimit extends AbstractProcessBlock implements ProcessBlock {
 				}
 			}
 			else {
-				return new BasicQualifiedValue(Double.NaN,new BasicQuality("Bad input",Quality.Level.Bad));
+				return new BasicQualifiedValue(Double.NaN,QualityCode.Bad);
 			}
 		}
 		return result;	

@@ -33,9 +33,8 @@ import com.ils.common.FixedSizeQueue;
 import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.Quality;
+import com.inductiveautomation.ignition.common.model.values.QualityCode;
 
 /**
  * Compute the best fit line over a recent history of data points. The incoming
@@ -204,10 +203,10 @@ public class XYFit extends AbstractProcessBlock implements ProcessBlock {
 			state = TruthValue.UNKNOWN;
 			QualifiedValue currentValue = null;
 			if( x==null ) {
-				currentValue = new TestAwareQualifiedValue(timer,state,new BasicQuality("'x' is unset",Quality.Level.Bad));
+				currentValue = new TestAwareQualifiedValue(timer,state,QualityCode.Bad);
 			}
 			else if( y==null ) {
-				currentValue = new TestAwareQualifiedValue(timer,state,new BasicQuality("'y' is unset",Quality.Level.Bad));
+				currentValue = new TestAwareQualifiedValue(timer,state,QualityCode.Bad);
 			}
 			else if( !x.getQuality().isGood()) {
 				currentValue = new TestAwareQualifiedValue(timer,state,x.getQuality());
@@ -224,11 +223,11 @@ public class XYFit extends AbstractProcessBlock implements ProcessBlock {
 						yy = Double.parseDouble(y.getValue().toString());
 					}
 					catch(NumberFormatException nfe) {
-						currentValue = new TestAwareQualifiedValue(timer,TruthValue.UNKNOWN,new BasicQuality("'y' is not a valid double",Quality.Level.Bad));	
+						currentValue = new TestAwareQualifiedValue(timer,TruthValue.UNKNOWN,QualityCode.Bad);	
 					}
 				}
 				catch(NumberFormatException nfe) {
-					currentValue = new TestAwareQualifiedValue(timer,TruthValue.UNKNOWN,new BasicQuality("'x' is not a valid double",Quality.Level.Bad));
+					currentValue = new TestAwareQualifiedValue(timer,TruthValue.UNKNOWN,QualityCode.Bad);
 				}
 			}
 			
@@ -239,7 +238,7 @@ public class XYFit extends AbstractProcessBlock implements ProcessBlock {
 					computeFit();
 				}
 				else {
-					Quality q = x.getQuality();
+					QualityCode q = x.getQuality();
 					if( q.isGood()) 
 						q = y.getQuality();
 					lastValue = new TestAwareQualifiedValue(timer,state,q);

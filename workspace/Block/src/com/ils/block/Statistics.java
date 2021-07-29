@@ -47,6 +47,7 @@ import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.Quality;
+import com.inductiveautomation.ignition.common.model.values.QualityCode;
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataQuality;
 
 /**
@@ -305,9 +306,9 @@ public class Statistics extends AbstractProcessBlock implements ProcessBlock {
 	 * Compute the overall quality.
 	 * NOTE: This is only valid if the current state is UNKNOWN.
 	 */
-	private Quality getAggregateQuality() {
+	private QualityCode getAggregateQuality() {
 		Collection<QualifiedValue> values = qualifiedValueMap.values();
-		Quality q = DataQuality.GOOD_DATA; 
+		QualityCode q = QualityCode.Good;
 		for(QualifiedValue qv:values) {
 			if( !qv.getQuality().isGood() ) return qv.getQuality();
 		}

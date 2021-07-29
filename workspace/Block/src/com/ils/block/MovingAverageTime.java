@@ -30,7 +30,7 @@ import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.Quality;
+import com.inductiveautomation.ignition.common.model.values.QualityCode;
 
 /**
  * This class computes an average of the input over a time interval.
@@ -132,7 +132,7 @@ public class MovingAverageTime extends AbstractProcessBlock implements ProcessBl
 	public void acceptValue(IncomingNotification incoming) {
 		super.acceptValue(incoming);
 		QualifiedValue qv = incoming.getValue();
-		Quality qual = qv.getQuality();
+		QualityCode qual = qv.getQuality();
 		if( qual.isGood() && qv.getValue()!=null && !qv.getValue().toString().isEmpty() ) {
 			try {
 				Double dbl = Double.parseDouble(qv.getValue().toString());

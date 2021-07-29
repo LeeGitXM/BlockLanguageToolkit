@@ -25,6 +25,7 @@ import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.Quality;
+import com.inductiveautomation.ignition.common.model.values.QualityCode;
 
 /**
  * This class emits the "product" of its inputs. Synchronizing
@@ -154,16 +155,16 @@ public class Quotient extends AbstractProcessBlock implements ProcessBlock {
 		if( !isLocked() ) {
 			lastValue = null;
 			if( a==null ) {
-				lastValue = new TestAwareQualifiedValue(timer,new Double(Double.NaN),new BasicQuality("dividend is unset",Quality.Level.Bad));
+				lastValue = new TestAwareQualifiedValue(timer,Double.NaN,QualityCode.Bad);
 			}
 			else if( b==null ) {
-				lastValue = new TestAwareQualifiedValue(timer,new Double(Double.NaN),new BasicQuality("divisor is unset",Quality.Level.Bad));
+				lastValue = new TestAwareQualifiedValue(timer,Double.NaN,QualityCode.Bad);
 			}
 			else if( !a.getQuality().isGood()) {
-				lastValue = new TestAwareQualifiedValue(timer,new Double(Double.NaN),a.getQuality());
+				lastValue = new TestAwareQualifiedValue(timer,Double.NaN,a.getQuality());
 			}
 			else if( !b.getQuality().isGood()) {
-				lastValue = new TestAwareQualifiedValue(timer,new Double(Double.NaN),b.getQuality());
+				lastValue = new TestAwareQualifiedValue(timer,Double.NaN,b.getQuality());
 			}
 			double aa = Double.NaN;
 			double bb = Double.NaN;
@@ -173,15 +174,15 @@ public class Quotient extends AbstractProcessBlock implements ProcessBlock {
 					try {
 						bb = Double.parseDouble(b.getValue().toString());
 						if( bb==0.0) {
-							lastValue = new TestAwareQualifiedValue(timer,new Double(Double.NaN),new BasicQuality("divide by zero",Quality.Level.Bad));
+							lastValue = new TestAwareQualifiedValue(timer,Double.NaN,QualityCode.Bad);
 						}
 					}
 					catch(NumberFormatException nfe) {
-						lastValue = new TestAwareQualifiedValue(timer,new Double(Double.NaN),new BasicQuality("divisor is not a valid double",Quality.Level.Bad));
+						lastValue = new TestAwareQualifiedValue(timer,Double.NaN,QualityCode.Bad);
 					}
 				}
 				catch(NumberFormatException nfe) {
-					lastValue = new TestAwareQualifiedValue(timer,new Double(Double.NaN),new BasicQuality("dividend is not a valid double",Quality.Level.Bad));
+					lastValue = new TestAwareQualifiedValue(timer,Double.NaN,QualityCode.Bad);
 				}
 			}
 			

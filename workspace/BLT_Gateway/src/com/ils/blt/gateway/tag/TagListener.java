@@ -26,20 +26,21 @@ import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.blt.gateway.engine.IncomingValueChangeTask;
 import com.ils.blt.gateway.engine.ProcessDiagram;
 import com.ils.blt.gateway.engine.PropertyChangeEvaluationTask;
+import com.ils.common.log.ILSLogger;
+import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.Quality;
 import com.inductiveautomation.ignition.common.sqltags.model.Tag;
-import com.inductiveautomation.ignition.common.sqltags.model.TagPath;
 import com.inductiveautomation.ignition.common.sqltags.model.TagProp;
-import com.inductiveautomation.ignition.common.sqltags.model.event.TagChangeEvent;
-import com.inductiveautomation.ignition.common.sqltags.model.event.TagChangeListener;
-import com.inductiveautomation.ignition.common.sqltags.parser.TagPathParser;
-import com.inductiveautomation.ignition.common.util.LogUtil;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
+import com.inductiveautomation.ignition.common.tags.model.SecurityContext;
+import com.inductiveautomation.ignition.common.tags.model.TagManager;
+import com.inductiveautomation.ignition.common.tags.model.TagPath;
+import com.inductiveautomation.ignition.common.tags.model.event.TagChangeEvent;
+import com.inductiveautomation.ignition.common.tags.model.event.TagChangeListener;
+import com.inductiveautomation.ignition.common.tags.paths.parser.TagPathParser;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
-import com.inductiveautomation.ignition.gateway.sqltags.SQLTagsManager;
 
 /**
  *  The tag listener waits for inputs on a collection of tags and,
@@ -54,7 +55,7 @@ public class TagListener implements TagChangeListener   {
 	private static final String TAG = "TagListener";
 	private static int THREAD_POOL_SIZE = 10;   // Notification threads
 	private static final boolean DEBUG = false;
-	private final LoggerEx log;
+	private final ILSLogger log;
 	private GatewayContext context = null;
 	private final Map<String,List<BlockPropertyPair>> blockMap;  // Blocks-Properties keyed by tag path (case-insensitive)
 	private final Map<BlockPropertyPair,String>       tagMap;    // Tag paths keyed by Block-Property
@@ -67,7 +68,7 @@ public class TagListener implements TagChangeListener   {
 	 * Constructor: 
 	 */
 	public TagListener(BlockExecutionController ec) {
-		log = LogUtil.getLogger(getClass().getPackage().getName());
+		log = LogMaker.getLogger(this);
 		this.blockMap = new HashMap<String,List<BlockPropertyPair>>();
 		this.tagMap   = new HashMap<BlockPropertyPair,String>();
 		this.dateFormatter = new SimpleDateFormat(BlockConstants.TIMESTAMP_FORMAT);
@@ -189,10 +190,10 @@ public class TagListener implements TagChangeListener   {
 			blockMap.remove(tagPath.toUpperCase());
 			if(!stopped) {
 				// If we're running unsubscribe
-				SQLTagsManager tmgr = context.getTagManager();
+				TagManager tmgr = context.getTagManager();
 				try {
 					TagPath tp = TagPathParser.parse(tagPath);
-					tmgr.unsubscribe(tp, this);
+					tmgr.unsubscribeAsync(tp, this);
 					if( log.isTraceEnabled() || DEBUG  ) log.infof("%s.removeSubscription: unsubscribed to %s",TAG,tagPath);
 				}
 				catch(IOException ioe) {
@@ -210,11 +211,11 @@ public class TagListener implements TagChangeListener   {
 	private void stopSubscription(String tagPath) {
 		if( tagPath==null) return;    // There was no subscription
 		if( stopped ) return;         // Everything is unsubscribed if we're stopped
-		SQLTagsManager tmgr = context.getTagManager();
+		TagManager tmgr = context.getTagManager();
 		try {
 			TagPath tp = TagPathParser.parse(tagPath);
 			if( log.isTraceEnabled() || DEBUG  ) log.infof("%s.stopSubscription: %s",TAG,tagPath);
-			tmgr.unsubscribe(tp, this);
+			tmgr.unsubscribeAsync(tp, this);
 		}
 		catch(IOException ioe) {
 			log.warnf("%s.stopSubscription: Error tag %s (%s)",TAG,tagPath,ioe.getMessage());
@@ -240,7 +241,7 @@ public class TagListener implements TagChangeListener   {
 	 * @param tagPath
 	 */
 	private void startSubscriptionForTag(String tagPath) {
-		SQLTagsManager tmgr = context.getTagManager();
+		TagManager tmgr = context.getTagManager();
 		List<BlockPropertyPair> list = blockMap.get(tagPath.toUpperCase());    // Should never be null
 		if( list==null || list.size()==0 ) {
 			log.warnf("%s.startSubscriptionForTag: %s - found no block/properties",TAG,tagPath);
@@ -270,7 +271,7 @@ public class TagListener implements TagChangeListener   {
 					else {
 						setPropertiesForNullTag(list);
 					}
-					tmgr.subscribe(tp, this);
+					tmgr.subscribeAsync(tp, this);
 				}
 				else {
 					log.errorf("%s.startSubscriptionForTag: Failed. (%s unknown to provider %s)",TAG,tp.toStringFull(),providerName);
@@ -307,14 +308,21 @@ public class TagListener implements TagChangeListener   {
 		stopped = true;
 	}
 	
+	/**
+	 * A lightweight listener does not lease a tag when subscribed. 
+	 */
+	@Override
+	public boolean isLightweight() {
+		return true;
+	}
 	/** 
 	 * NOTE: Previously we only listened on the property TagProp.VALUE.
 	 * @return the tag property that we care about.
 	 *         The null means all attributes.
 	 */
 	@Override
-	public TagProp getTagProperty() {
-		return null;
+	public SecurityContext getSecurityContext() {
+		return SecurityContext.emptyContext();
 	}
 
 	/**
@@ -431,7 +439,7 @@ public class TagListener implements TagChangeListener   {
 	 * @param list of subscribers
 	 */
 	private void updatePropertyValueDirectlyFromTag(ProcessBlock block,BlockProperty property,String tagPath) {
-		SQLTagsManager tmgr = context.getTagManager();
+		TagManager tmgr = context.getTagManager();
 		QualifiedValue value = null;
 		try {
 			TagPath tp = TagPathParser.parse(tagPath);

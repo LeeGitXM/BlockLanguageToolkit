@@ -1,5 +1,5 @@
 /**
- *   (c) 2013  ILS Automation. All rights reserved. 
+ cv v54 *   (c) 2013  ILS Automation. All rights reserved. 
  */
 package com.ils.blt.gateway.proxy;
 
@@ -61,8 +61,6 @@ public class ProxyBlock extends AbstractProcessBlock  {
 		if (ret.toLowerCase().startsWith("xom.block.")) {
 			ret = "ils" + className.substring(3);
 		}
-
-//		ret = removeXomFromClassname(ret);
 		return ret; 
 	}
 	
@@ -109,7 +107,7 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	 */
 	@Override
 	public TruthValue getState() {
-		return delegate.getBlockState(context.getProjectManager().getProjectScriptManager(getProjectId()), pythonBlock);
+		return delegate.getBlockState(context.getProjectManager().getProjectScriptManager(getProjectName()), pythonBlock);
 	}
 	/**
 	 * Send status update notifications for any properties
@@ -120,14 +118,14 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	 */
 	@Override
 	public void notifyOfStatus() {
-		delegate.notifyOfStatus(context.getProjectManager().getProjectScriptManager(getProjectId()),getPythonBlock());
+		delegate.notifyOfStatus(context.getProjectManager().getProjectScriptManager(getProjectName()),getPythonBlock());
 	}
 	/**
 	 * Notify the python instance that it needs to propagate a value.
 	 */
 	@Override
 	public void propagate() {
-		delegate.propagate(context.getProjectManager().getProjectScriptManager(getProjectId()), pythonBlock);
+		delegate.propagate(context.getProjectManager().getProjectScriptManager(getProjectName()), pythonBlock);
 	}
 	/**
 	 * Accept a new value for a block property. Push through to the
@@ -141,7 +139,7 @@ public class ProxyBlock extends AbstractProcessBlock  {
 		BlockProperty prop = getProperty(name);
 		if( prop!=null ) {
 			prop.setValue(obj);
-			delegate.setBlockProperty(context.getProjectManager().getProjectScriptManager(getProjectId()),this,prop);
+			delegate.setBlockProperty(context.getProjectManager().getProjectScriptManager(getProjectName()),this,prop);
 		}
 	}
 	/**
@@ -151,7 +149,7 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	@Override
 	public synchronized void setState(TruthValue newState) {
 		super.setState(newState);   // Records activity
-		delegate.setBlockState(context.getProjectManager().getProjectScriptManager(getProjectId()),this,newState);
+		delegate.setBlockState(context.getProjectManager().getProjectScriptManager(getProjectName()),this,newState);
 		requestHandler.postAlertingStatus(this);
 	}
 	
@@ -167,7 +165,7 @@ public class ProxyBlock extends AbstractProcessBlock  {
 			port = vcn.getConnection().getDownstreamPortName();
 		}
 		recordActivity(Activity.ACTIVITY_RECEIVE,port,vcn.getValue().toString());
-		delegate.acceptValue( context.getProjectManager().getProjectScriptManager(getProjectId()),getPythonBlock(),port,vcn.getValue());
+		delegate.acceptValue( context.getProjectManager().getProjectScriptManager(getProjectName()),getPythonBlock(),port,vcn.getValue());
 	}
 	
 	/**
@@ -177,7 +175,7 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	 */
 	@Override
 	public synchronized void evaluate() { 
-		delegate.evaluate(context.getProjectManager().getProjectScriptManager(getProjectId()),getPythonBlock()); 
+		delegate.evaluate(context.getProjectManager().getProjectScriptManager(getProjectName()),getPythonBlock()); 
 	}
 
 	/**
@@ -185,7 +183,7 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	 */
 	@Override
 	public synchronized  void getAuxData(GeneralPurposeDataContainer container) { 
-		delegate.getAuxData(context.getProjectManager().getProjectScriptManager(getProjectId()),getPythonBlock(),container);
+		delegate.getAuxData(context.getProjectManager().getProjectScriptManager(getProjectName()),getPythonBlock(),container);
 		requestHandler.postAlertingStatus(this);
 	}
 	
@@ -215,7 +213,7 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	 */
 	@Override
 	public synchronized void onDelete() { 
-		delegate.onDelete(context.getProjectManager().getProjectScriptManager(getProjectId()),getPythonBlock()); 
+		delegate.onDelete(context.getProjectManager().getProjectScriptManager(getProjectName()),getPythonBlock()); 
 		requestHandler.postAlertingStatus(this);
 	}
 	/**
@@ -223,7 +221,7 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	 */
 	@Override
 	public synchronized void onSave() { 
-		delegate.onSave(context.getProjectManager().getProjectScriptManager(getProjectId()),getPythonBlock()); 
+		delegate.onSave(context.getProjectManager().getProjectScriptManager(getProjectName()),getPythonBlock()); 
 		requestHandler.postAlertingStatus(this);
 	}
 	/**
@@ -232,7 +230,7 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	 */
 	@Override
 	public synchronized void reset() { 
-		delegate.reset(context.getProjectManager().getProjectScriptManager(getProjectId()),getPythonBlock()); 
+		delegate.reset(context.getProjectManager().getProjectScriptManager(getProjectName()),getPythonBlock()); 
 		requestHandler.postAlertingStatus(this);
 		recordActivity(Activity.ACTIVITY_RESET,"");
 	}
@@ -241,7 +239,7 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	 */
 	@Override
 	public synchronized void setAuxData(GeneralPurposeDataContainer container) { 
-		delegate.setAuxData(context.getProjectManager().getProjectScriptManager(getProjectId()),getPythonBlock(),container); 
+		delegate.setAuxData(context.getProjectManager().getProjectScriptManager(getProjectName()),getPythonBlock(),container); 
 		setAuxiliaryData(container);
 		requestHandler.postAlertingStatus(this);
 	}

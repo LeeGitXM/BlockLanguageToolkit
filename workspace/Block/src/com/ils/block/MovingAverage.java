@@ -25,6 +25,7 @@ import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.Quality;
+import com.inductiveautomation.ignition.common.model.values.QualityCode;
 
 /**
  * This class accumulates an average value of all points that have arrived at the block's 
@@ -98,7 +99,7 @@ public class MovingAverage extends AbstractProcessBlock implements ProcessBlock 
 		super.acceptValue(incoming);
 		double result = Double.NaN;
 		QualifiedValue qv = incoming.getValue();
-		Quality qual = qv.getQuality();
+		QualityCode qual = qv.getQuality();
 		if( qual.isGood() && qv!=null && qv.getValue()!=null ) {
 			try {
 				Double dbl = Double.parseDouble(qv.getValue().toString());
