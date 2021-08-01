@@ -18,7 +18,7 @@ import com.ils.common.PythonToJava;
 import com.ils.common.log.ILSLogger;
 import com.ils.common.log.LogMaker;
 import com.ils.common.tag.TagReader;
-import com.inductiveautomation.ignition.common.model.BaseContext;
+import com.inductiveautomation.ignition.common.model.CommonContext;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.script.ScriptManager;
 
@@ -35,7 +35,7 @@ public class ScriptExtensionManager {
 	private static final boolean DEBUG = false;
 	protected final JavaToPython j2p;
 	protected final PythonToJava p2j;
-	private BaseContext context = null;
+	private CommonContext context = null;
 	private static ScriptExtensionManager instance = null;
 	
 	
@@ -66,7 +66,7 @@ public class ScriptExtensionManager {
 	 * Set the context in order to get the tag manager.
 	 * @param ctx
 	 */
-	public void setContext(BaseContext ctx) { this.context = ctx; }
+	public void setContext(CommonContext ctx) { this.context = ctx; }
 	/**
 	 * Read a configuration tag to get a script string, then compile it.
 	 * If the tag is not found, the module path is empty or the compilation

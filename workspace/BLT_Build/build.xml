@@ -28,7 +28,7 @@
 
 	<!-- SDK jar classpath. This classpath includes all the jars needed to build a module against the SDK. -->
 	<path id="ignition-sdk.classpath">
-		<fileset dir="${basedir}/../../ignition-79/lib" includes="*.jar" />
+		<fileset dir="${basedir}/../../ignition-80/lib" includes="*.jar" />
 	</path>
 	
 	<!-- External jar classpath. This classpath includes all the jars needed to build a module against the SDK. -->
@@ -40,10 +40,12 @@
 		 <fileset dir="${basedir}/../../external/lib" includes="jcommon*.jar" />
 		 <fileset dir="${basedir}/../../external/lib" includes="jfreechart*.jar" />
 		 <fileset dir="${basedir}/../../external/lib" includes="jython-*.jar" />
+		 <fileset dir="${basedir}/../../external/lib" includes="logback*.jar" />
 		 <fileset dir="${basedir}/../../external/lib" includes="log4j*.jar" />
 		 <fileset dir="${basedir}/../../external/lib" includes="lucene*.jar" />
 		 <fileset dir="${basedir}/../../external/lib" includes="miglayout*.jar" />
 		 <fileset dir="${basedir}/../../external/lib" includes="prefuse*.jar" />
+		 <fileset dir="${basedir}/../../external/lib" includes="slf4j-*.jar" />
 		 <fileset dir="${basedir}/../../external/lib" includes="sqlite-jdbc*.jar" />
 	</path>
 	
@@ -53,7 +55,7 @@
 		<mkdir dir="${basedir}/BLT_Build/bin/${modName}/bin" />
 		<echo message="Compiling ${sourceDirFolder}" />
 		<javac srcdir="${sourceDirFolder}/src" destdir="${basedir}/BLT_Build/bin/${modName}/bin"
-				source="${javacSource}" target="${javacSource}" debug="true" fork="true"
+			   debug="true" fork="true"
 				memoryinitialsize="128m" memorymaximumsize="512m" debuglevel="lines,vars,source"
 				includeantruntime="false">
 			<classpath refid="${module.build.classpath}" />

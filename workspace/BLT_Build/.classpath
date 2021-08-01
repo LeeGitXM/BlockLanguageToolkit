@@ -1,5 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry combineaccessrules="false" kind="src" path="/BlockDef"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/BLT_Client"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/BLT_Common"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/BLT_Designer"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/BLT_Gateway"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/External"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/Ignition-80"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/ILS_Common"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

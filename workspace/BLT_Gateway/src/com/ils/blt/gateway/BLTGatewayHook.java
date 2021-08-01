@@ -106,7 +106,7 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 		// Analyze existing projects - skip the global project and any that are disabled.
 		List<Project> projects = context.getProjectManager().getProjectsFull(ProjectVersion.Staging);
 		for( Project project:projects ) {
-			if( !project.isEnabled() || project.getId()==-1 ) continue;
+			if( !project.isEnabled() || project.getName().equals(Project.GLOBAL_PROJECT_NAME) ) continue;
 				log.infof(CLSS+".startup() - adding project %s", project.getName());
 				mmgr.projectAdded(project,null); 
 		}

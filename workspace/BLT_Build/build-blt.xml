@@ -11,7 +11,7 @@
 	<property name="BLTModule.description" value="Block Language Toolkit" />
 	<property name="root.dir" value="${basedir}/../.." />
 	<property name="jar.dir" value="${root.dir}/external/lib" />
-	<property name="sdk.dir" value="${root.dir}/ignition-79/lib" />
+	<property name="sdk.dir" value="${root.dir}/ignition-80/lib" />
 	<property name="common.jar.name" value="ils-common.jar" />
 	<property name="common.bin.dir" value="${root.dir}/ils-common/bin" />
 	<property name="common.src.dir" value="${root.dir}/ils-common/ILS_Common/src" />
@@ -19,8 +19,8 @@
 	<property name="block.bin.dir" value="${root.dir}/blt/workspace/Block/bin" />
 	<property name="block.src.dir" value="${root.dir}/blt/workspace/Block/src" />
 	<property name="ils.python.src.dir" value="${root.dir}/ils_python/ILS_Python/src" />
-	<property name="ant.build.javac.source" value="13"/>
-	<property name="ant.build.javac.target" value="13"/>
+	<property name="ant.build.javac.source" value="11"/>
+	<property name="ant.build.javac.target" value="11"/>
 	
 <!--   THE NEXT LINE IS ONLY NEEDED FOR XOM SAMPLES AND TESTING - CONSIDER HAVING A FLAG TO DISABLE COPY -->	
 <!--	<property name="xom.python.src.dir" value="${root.dir}/xom-python/XOM_Python/src" />  -->
@@ -117,9 +117,9 @@
 	
 	<!-- Compile the Common library -->
 	<target name="common.build" description="Compile the source">
-		<echo  message="Using Java version ${ant.java.version}."/>
+		<!-- <echo  message="Using Java version ${ant.java.version}."/> -->
 		<mkdir dir="${common.bin.dir}/images"/>
-		<javac destdir="${common.bin.dir}" debug="true" target="1.8" includeantruntime="false">
+		<javac destdir="${common.bin.dir}" debug="true" includeantruntime="false">
 			<src path="${common.src.dir}"/>
 			<classpath refid="BLT_Common.classpath"/>
 		</javac>
@@ -134,7 +134,7 @@
 	<!-- Compile the Block Definition library -->
 			<target name="block.build" description="Compile the source">
 				<mkdir dir="${block.bin.dir}"/>
-				<javac destdir="${block.bin.dir}" debug="true" target="1.8" includeantruntime="false">
+				<javac destdir="${block.bin.dir}" debug="true" includeantruntime="false">
 					<src path="${block.src.dir}"/>
 					<classpath refid="BlockDefinition.classpath"/>
 				</javac>
@@ -173,7 +173,6 @@
 			<param name="modName" value="${BLTModule.name}_Gateway" />
 			<param name="sourceDirFolder" value="${BLTModule.name}_Gateway" />
 			<param name="jarName" value="blt-gateway" />
-			<param name="javacSource" value="1.8" />
 			<param name="[replace]BLTGateway.properties:Meta.Version" value="${version.build}" />
 			<param name="[replace]BLTGateway.properties:Meta.ReleaseDate" value="${build.date}" />
 			<param name="module.build.classpath" value="${BLTModule.name}_Gateway.classpath"/>
@@ -184,7 +183,6 @@
 			<param name="modName" value="${BLTModule.name}_Client" />
 			<param name="sourceDirFolder" value="${BLTModule.name}_Client" />
 			<param name="jarName" value="blt-client" />
-			<param name="javacSource" value="1.8" />
 			<param name="module.build.classpath" value="${BLTModule.name}_Client.classpath"/>
 		</antcall>
 		
@@ -193,7 +191,6 @@
 			<param name="modName" value="${BLTModule.name}_Designer" />
 			<param name="sourceDirFolder" value="${BLTModule.name}_Designer" />
 			<param name="jarName" value="blt-designer" />
-			<param name="javacSource" value="1.8" />
 			<param name="module.build.classpath" value="${BLTModule.name}_Designer.classpath"/>
 		</antcall>
 		
