@@ -2,7 +2,7 @@
 
 	<import file="${basedir}/BLT_Build/build.xml"/>
 
-	<property name="version.build" value="3" />	
+	<property name="version.build" value="${DSTAMP}" />	
 	<!-- Change version.beta value to "" for release builds -->
 	<property name="version.beta" value="-development" />		
 	<property name="BLTModule.version" value="2.0.00.${version.build}" />
@@ -336,6 +336,7 @@
 	<!-- Installs BLT module in local Ignition gateway. Note that the gateway must be running for this to succeed. -->
 	<target name="deploy" depends="build,python.jars" >
 		<echo message="Installing ${BLTModule.name} on Ignition Gateway." />
+		<copy file="${basedir}/BLT_Build/modules/${BLTModule.name}-module-signed.modl" tofile="U:/Work/EMC/Modules/${BLTModule.name}-module-signed-${BLTModule.version}.modl" />
 		<postmodule posturl="${local.gateway.url}" modulefile="${basedir}/BLT_Build/modules/${BLTModule.name}-module-signed.modl" />
 	</target>	
 
