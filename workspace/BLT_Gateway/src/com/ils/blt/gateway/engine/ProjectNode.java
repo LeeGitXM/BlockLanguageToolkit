@@ -7,12 +7,10 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
 
-import com.inductiveautomation.ignition.common.project.ProjectVersion;
-
 /**
  * A project node is a construction solely for the use of the status panel
  * browser. It is a way to create a full tree from the root node.
- * A project node is identified by the projectId. Its parent is the root node.
+ * A project node is identified by the project name. Its parent is the root node.
  */
 public class ProjectNode extends ProcessNode {
 	private static final long serialVersionUID = 6280701183405134254L;
@@ -22,13 +20,13 @@ public class ProjectNode extends ProcessNode {
 	 * Constructor: 
 	 * @param rootNode the root node
 	 * @param me UUID of this node 
-	 * @param projId the project
+	 * @param projName the project
 	 */
-	public ProjectNode(RootNode rootNode, UUID me, long projId) { 
+	public ProjectNode(RootNode rootNode, UUID me, String projName) { 
 		super("",rootNode.self,me);
-		this.projectId = projId;
+		this.projectName = projName;
 		this.root = rootNode;
-		setName(root.context.getProjectManager().getProjectName(projectId, ProjectVersion.Staging));
+		setName(projectName);
 	}
 
 	public void addChild(ProjectNode child)    { 
@@ -36,11 +34,11 @@ public class ProjectNode extends ProcessNode {
 	}
 
 	public Collection<ProcessNode> getChildren() { 
-		return root.allNodesForProject(new Long(projectId)); 
+		return root.allNodesForProject(projectName); 
 	}
 
 
-	public void setProjectId(long projectId) {
+	public void setProjectName(String name) {
 		throw new UnsupportedOperationException();
 	}
 	/**

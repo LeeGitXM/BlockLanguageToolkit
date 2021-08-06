@@ -5,12 +5,13 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import com.ils.blt.common.BLTProperties;
 import com.inductiveautomation.ignition.common.model.ApplicationScope;
 import com.inductiveautomation.ignition.common.project.Project;
-import com.inductiveautomation.ignition.common.project.ProjectResource;
-import com.inductiveautomation.ignition.common.project.ProjectVersion;
+import com.inductiveautomation.ignition.common.project.RuntimeProject;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
@@ -117,17 +118,19 @@ public class ProcessNodeSynchronizer {
     	// We need to pass something serializable to the panel, thus the list of resources
     	// We also need to make sure this is up-to-date.
     	Map<ProjectResourceKey,ProjectResource> map = new HashMap<>();
-    	List<Project> projects = context.getProjectManager().getProjectsFull(ProjectVersion.Staging);
-    	for( Project project:projects ) {
-    		if( !project.isEnabled() || project.getId()==-1 ) continue;
+    	List<String> projectNames = context.getProjectManager().getProjectNames();
+    	for( String name:projectNames ) {
+    		Optional<RuntimeProject> optional = context.getProjectManager().getProject(name);
+    		Project project = optional.get();
+    		if( !project.isEnabled() || project.getName().equals(Project.GLOBAL_PROJECT_NAME )) continue;
     		List<ProjectResource> reslist = project.getResources();
     		for( ProjectResource res:reslist ) {
-    			if( res.getModuleId().equalsIgnoreCase(BLTProperties.MODULE_ID)) {
+    			if(res.getResourceId().getResourceType().getModuleId().equalsIgnoreCase(BLTProperties.MODULE_ID)) {
     				if( res.getResourceType().equals(BLTProperties.APPLICATION_RESOURCE_TYPE) || 
     						res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ||
     						res.getResourceType().equals(BLTProperties.FAMILY_RESOURCE_TYPE) ||
     						res.getResourceType().equals(BLTProperties.FOLDER_RESOURCE_TYPE)   ) {
-    					map.put(new ProjectResourceKey(project.getId(),res.getResourceId()),res);
+    					map.put(new ProjectResourceKey(project.getName(),res.getResourceId()),res);
     				}
     			}
     		}

@@ -29,14 +29,13 @@ import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
-import com.ils.blt.gateway.tag.SetName;
 import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.JavaToPython;
 import com.ils.common.PythonToJava;
+import com.ils.common.log.ILSLogger;
+import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.script.ScriptManager;
-import com.inductiveautomation.ignition.common.util.LogUtil;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 
 /**
@@ -53,7 +52,7 @@ import com.inductiveautomation.ignition.gateway.model.GatewayContext;
  */
 public class ProxyHandler   {
 	private final static String CLSS = "ProxyHandler";
-	private final LoggerEx log;
+	private final ILSLogger log;
 	private GatewayContext context = null;
 	private final PythonToJava toJavaTranslator;
 	private final JavaToPython toPythonTranslator;
@@ -79,7 +78,7 @@ public class ProxyHandler   {
 	 * Initialize with instances of the classes to be controlled.
 	 */
 	private ProxyHandler() {
-		log = LogUtil.getLogger(getClass().getPackage().getName());
+		log = LogMaker.getLogger(getClass().getPackage().getName());
 		toJavaTranslator = new PythonToJava();
 		toPythonTranslator = new JavaToPython();
 		// Create an instance of each callback method
@@ -151,27 +150,27 @@ public class ProxyHandler   {
 	}
 
 	
-	public ProxyBlock createBlockInstance(String classNm,UUID parentId,UUID blockId,long projectId,String name) {
+	public ProxyBlock createBlockInstance(String classNm,UUID parentId,UUID blockId,String projectName,String name) {
 		String className = removeXomFromClassName(classNm);  // EREIAM JH - temporary fix for existing XOM projects.
 		ProxyBlock block = new ProxyBlock(context,className,parentId,blockId);
-		log.debugf("%s.createBlockInstance --- python proxy for %s, project %d",CLSS,className,projectId); 
+		log.debugf("%s.createBlockInstance --- python proxy for %s, project %d",CLSS,className,projectName); 
 		if( createBlockCallback.compileScript() ) {
 			synchronized(createBlockCallback) {
 				PyDictionary pyDictionary = new PyDictionary();  // Empty
-				createBlockCallback.initializeLocalsMap(context.getProjectManager().getProjectScriptManager(projectId));
+				createBlockCallback.initializeLocalsMap(context.getProjectManager().getProjectScriptManager(projectName));
 				createBlockCallback.setLocalVariable(0,new PyString(className));
 				createBlockCallback.setLocalVariable(1,new PyString(parentId.toString()));
 				createBlockCallback.setLocalVariable(2,new PyString(blockId.toString()));
 				createBlockCallback.setLocalVariable(3,new PyString(name));
 				createBlockCallback.setLocalVariable(4,pyDictionary);
 				log.debugf("%s.createBlockInstance --- executing create script for %s",CLSS,className); 
-				createBlockCallback.execute(context.getProjectManager().getProjectScriptManager(projectId));
+				createBlockCallback.execute(context.getProjectManager().getProjectScriptManager(projectName));
 
 				// Contents of list are Hashtable<String,?>
 				PyObject pyBlock = (PyObject)pyDictionary.get("instance");
 				if( pyBlock!=null ) {
 					block.setPythonBlock(pyBlock);
-					BlockProperty[] props = getBlockProperties(context.getProjectManager().getProjectScriptManager(projectId),pyBlock);
+					BlockProperty[] props = getBlockProperties(context.getProjectManager().getProjectScriptManager(projectName),pyBlock);
 					for(BlockProperty prop:props) {
 						if(prop!=null) block.addProperty(prop);
 					}

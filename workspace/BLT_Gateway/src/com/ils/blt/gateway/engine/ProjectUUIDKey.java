@@ -6,23 +6,23 @@ import java.util.UUID;
 
 //====================================== ProjectUUIDKey =================================
 /**
- * Class for keyed storage by projectId, UUID.
+ * Class for keyed storage by project name, UUID.
  */
 public class ProjectUUIDKey implements Serializable {
 	private static final long serialVersionUID = 6221391411649992726L;
-	private long projectId;
+	private String projectName;
 	private UUID uuid;
 	
 	/**
 	 * Constructor: No arg version required for serialization.
 	 */
-	public ProjectUUIDKey(long projid,UUID id) {
-		this.projectId = projid;
+	public ProjectUUIDKey(String projnam,UUID id) {
+		this.projectName = projnam;
 		this.uuid = id;
 	}
-	public long getProjectId() { return projectId; }
+	public String getProjectName() { return projectName; }
 	public UUID getUUID() { return uuid; }
-	public void setProjectId(long id) { this.projectId=id; }
+	public void setProjectName(String nam) { this.projectName=nam; }
 	public void setUUD(UUID id) { this.uuid=id; }
 
 	// So that class may be used as a map key
@@ -41,6 +41,6 @@ public class ProjectUUIDKey implements Serializable {
 	}
 	@Override
 	public int hashCode() {
-		return (int)(this.projectId*100000+uuid.hashCode());
+		return (int)(this.projectName.hashCode()*100000+uuid.hashCode());
 	}
 }

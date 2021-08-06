@@ -10,6 +10,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.io.IOException;
 import java.util.Enumeration;
+import java.util.Optional;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -43,8 +44,8 @@ import com.inductiveautomation.ignition.client.util.action.StateChangeAction;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.licensing.LicenseState;
-import com.inductiveautomation.ignition.common.project.Project;
-import com.inductiveautomation.ignition.common.project.ProjectResource;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 import com.inductiveautomation.ignition.common.script.ScriptManager;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
 import com.inductiveautomation.ignition.designer.gui.IconUtil;
@@ -200,7 +201,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		// Setup the diagram workspace
 		workspace = new DiagramWorkspace(context);
 		rootNode = new GeneralPurposeTreeNode(context);
-		context.getProjectBrowserRoot().getProjectFolder().addChild(rootNode);
+		context.getProjectBrowserRoot().addChild(rootNode);
 		context.registerResourceWorkspace(workspace);
 		nodeStatusManager.createRootResourceStatus(rootNode);
 		// Instantiate the notification handler so that we have notifications
@@ -266,15 +267,15 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 
 	public boolean attachDiagrams() { return diagramsAttached; }
 	@Override
-	public String getResourceCategoryKey(Project project,ProjectResource resource) {
+	public String getResourceCategoryKey(ProjectResourceId resourceId) {
 		// There is only one resource category that we are exporting
-		if( resource.getResourceType().equalsIgnoreCase(BLTProperties.APPLICATION_RESOURCE_TYPE) ) {
+		if( resourceId.getResourceType().getTypeId().equalsIgnoreCase(BLTProperties.APPLICATION_RESOURCE_TYPE) ) {
 			return PREFIX+".Export.Application.Category";
 		}
-		else if( resource.getResourceType().equalsIgnoreCase(BLTProperties.FAMILY_RESOURCE_TYPE) ) {
+		else if( resourceId.getResourceType().getTypeId().equalsIgnoreCase(BLTProperties.FAMILY_RESOURCE_TYPE) ) {
 			return PREFIX+".Export.Family.Category";
 		}
-		else if( resource.getResourceType().equalsIgnoreCase(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
+		else if( resourceId.getResourceType().getTypeId().equalsIgnoreCase(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
 			return PREFIX+".Export.Diagram.Category";
 		}
 		else { 
@@ -367,7 +368,8 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 
 		if (node.getProjectResource() != null && node.getProjectResource().getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
 			if (diagram.getName().equals(node.getName())) {
-				ProjectResource bob = node.getProjectResource();
+				Optional<ProjectResource> optional = node.getProjectResource();
+				ProjectResource bob = optional.get();
 				ret = app;
 			}
 		}
@@ -416,7 +418,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 			catch (IOException ioe) {
 //				logger.warnf("%s: open io exception (%s)",CLSS,ioe.getLocalizedMessage());
 			}
-			ProcessDiagramView diagram = new ProcessDiagramView(res.getResourceId(),sd, context);
+			ProcessDiagramView diagram = new ProcessDiagramView(res.getResourc,sd, context);
 			for( Block blk:diagram.getBlocks()) {
 				ProcessBlockView pbv = (ProcessBlockView)blk;
 				if (pbv.isDiagnosis()) {

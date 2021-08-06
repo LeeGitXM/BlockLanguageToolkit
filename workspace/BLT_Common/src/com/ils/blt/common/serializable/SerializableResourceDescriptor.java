@@ -2,6 +2,8 @@ package com.ils.blt.common.serializable;
 
 import java.io.Serializable;
 
+import com.inductiveautomation.ignition.common.project.Project;
+
 
 /**
  * Use this class to describe the resources known to
@@ -16,7 +18,7 @@ public class SerializableResourceDescriptor implements Serializable {
 	private String id;
 	private String className;
 	private String path;
-	private long projectId;
+	private String projectName;
 	private long resourceId;
 	private String type;
 	
@@ -25,7 +27,7 @@ public class SerializableResourceDescriptor implements Serializable {
 		id = "";
 		className = "";
 		path = "";
-		projectId = -1;
+		projectName = Project.GLOBAL_PROJECT_NAME;
 		resourceId = -1;
 		type = "";
 	}
@@ -34,7 +36,7 @@ public class SerializableResourceDescriptor implements Serializable {
 	public String getId() {return id;}
 	public String getName() { return name; }
 	public String getPath() { return path; }
-	public long getProjectId() {return projectId;}
+	public String getProjectName() {return projectName;}
 	public long getResourceId() {return resourceId;}
 	public String getType() {return type;}
 	
@@ -42,7 +44,7 @@ public class SerializableResourceDescriptor implements Serializable {
 	public void setId(String id) {this.id = id;}
 	public void setName(String nam) { if(nam!=null) name=nam; }
 	public void setPath(String p) { if(p!=null) path=p; }
-	public void setProjectId(long projectId) {this.projectId = projectId;}
+	public void setProjectName(String name) {this.projectName = name;}
 	public void setResourceId(long resourceId) {this.resourceId = resourceId;}
 	public void setType(String type) {this.type = type;}
 

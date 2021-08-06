@@ -33,9 +33,10 @@ import com.ils.blt.designer.NotificationHandler;
 import com.ils.common.log.ILSLogger;
 import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.Quality;
+import com.inductiveautomation.ignition.common.model.values.QualityCode;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
+import com.inductiveautomation.ignition.common.project.resource.ResourcePath;
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 import com.inductiveautomation.ignition.common.sqltags.model.types.ExpressionType;
 import com.inductiveautomation.ignition.common.util.AbstractChangeable;
@@ -64,7 +65,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	private final UUID id;
 	private String name = "UNSET";
 	private UUID encapsulationBlockID = null;  // Used only if this diagram represents a sub-workspace
-	private final long resourceId;
+	private final ProjectResourceId resourceId;
 	private DiagramState state = DiagramState.ACTIVE;
 	private DesignerContext context;
 	private boolean dirty = false;   // A newly created diagram is "dirty" until it is saved
@@ -78,7 +79,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	 * @param resid
 	 * @param diagram
 	 */
-	public ProcessDiagramView (long resid,SerializableDiagram diagram, DesignerContext context) {
+	public ProcessDiagramView (ProjectResourceId resid,SerializableDiagram diagram, DesignerContext context) {
 		this(resid,diagram.getId(),diagram.getName());
 		if( DEBUG ) log.infof("%s.ProcessDiagramView: for diagram %s", CLSS, diagram.getName());
 		this.state = diagram.getState();
@@ -105,7 +106,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 						AnchorPoint terminus = new ProcessAnchorView(blockb,b);
 						this.addConnection(origin,terminus);   // AnchorPoints
 						// Update most recent value from serialized connection anchor point
-						QualifiedValue qv = new BasicQualifiedValue(a.getLastValue(),new BasicQuality(a.getLastQuality(),Quality.Level.Good));
+						QualifiedValue qv = new BasicQualifiedValue(a.getLastValue(),QualityCode.Good);
 						blocka.recordLatestValue(origin.getId().toString(), qv);
 					}
 					else {
@@ -146,7 +147,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	 * @param uuid
 	 * @param nam
 	 */
-	public ProcessDiagramView(long resId,UUID uuid, String nam) {
+	public ProcessDiagramView(ProjectResourceId resId,UUID uuid, String nam) {
 		this.id = uuid;
 		this.resourceId = resId;
 		this.name = nam;
@@ -475,8 +476,8 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	public String getName() {return name;}
 
 	@Override
-	public long getResourceId() {
-		return resourceId;
+	public ResourcePath getResourcePath() {
+		return resourceId.getResourcePath();
 	}
 	
 	public String getWatermark() {return watermark;}

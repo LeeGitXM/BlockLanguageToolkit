@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.ils.blt.common.BLTProperties;
-import com.inductiveautomation.ignition.common.project.ProjectVersion;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 
 /**
@@ -22,13 +21,11 @@ import com.inductiveautomation.ignition.gateway.model.GatewayContext;
  */
 public class RootNode extends ProcessNode {
 	private static final long serialVersionUID = 4266822873285521574L;
-	private static String TAG = "RootNode";
+	private static String CLSS = "RootNode";
 	protected final GatewayContext context;   // Use to get project name
 	// The child key is resourceId (which is immutable)
-	private final Map <Long,Map<Long,ProcessNode>>childrenByProjectId;
-	private final Map<String,Long> projectIdByName;
+	private final Map <String,Map<Long,ProcessNode>>childrenByProjectName;
 
-	
 	/**
 	 * Constructor: 
 	 * @param ctx Gateway context 
@@ -36,26 +33,18 @@ public class RootNode extends ProcessNode {
 	public RootNode(GatewayContext ctx) { 
 		super("root",null,BLTProperties.ROOT_FOLDER_UUID);
 		this.context = ctx;
-		this.projectIdByName = new HashMap<String,Long>();
-		this.childrenByProjectId = new HashMap<Long,Map<Long,ProcessNode>>();
+		this.childrenByProjectName = new HashMap<>();
 	}
 	
-	public void addChild(ProcessNode child,long childProjectId) {
-		log.debugf("%s.addChild: %s[%s]",TAG,getName(),child.getName());
-		long key = childProjectId;
-		String projectName = context.getProjectManager().getProject(childProjectId,ProjectVersion.Staging);
-		if( projectName==null ) {
-			log.warnf("%s.addChild: No name for projectId %d. No child added.",TAG,childProjectId);
-			return;
-		}
-		// If the project name now has a new Id, we've done an "overwrite".
-		// The old projectId has no resources.
-		projectIdByName.put(projectName,key);
+	public void addChild(ProcessNode child,String childProjectName) {
+		log.debugf("%s.addChild: %s[%s]",CLSS,getName(),child.getName());
+		String key = childProjectName;
 		
-		Map<Long,ProcessNode>map = childrenByProjectId.get(key);
+		
+		Map<Long,ProcessNode>map = childrenByProjectName.get(key);
 		if( map==null ) {
 			map = new HashMap<Long,ProcessNode>();
-			childrenByProjectId.put(key, map);
+			childrenByProjectName.put(key, map);
 		}
 		map.put(child.getResourceId(),child);
 	}
@@ -65,22 +54,22 @@ public class RootNode extends ProcessNode {
 	 */
 	@Override
 	public void addChild(ProcessNode child) {
-		log.errorf("%s.addChild: ERROR use addChild(child,projectId) for a RootNode",TAG);
+		log.errorf("%s.addChild: ERROR use addChild(child,projectId) for a RootNode",CLSS);
 	}
 	
 	
 	
-	public Collection<Long> allProjects() {
-		return projectIdByName.values();
+	public Collection<String> allProjects() {
+		return childrenByProjectName.keySet();
 	}
 	/**
 	 * Create a flat list of nodes of all sorts known to belong to the project.
 	 * @param queryProjectId
 	 * @return the list of application, family, folder and diagram nodes in the project
 	 */
-	public List<ProcessNode> allNodesForProject(Long queryProjectId) {
+	public List<ProcessNode> allNodesForProject(String queryName) {
 		List<ProcessNode> nodes = new ArrayList<ProcessNode>();
-		Map<Long,ProcessNode> map = childrenByProjectId.get(queryProjectId);
+		Map<Long,ProcessNode> map = childrenByProjectName.get(queryName);
 		if( map!=null) {
 			Collection<ProcessNode> children = map.values();
 			if( children!=null) {
@@ -90,7 +79,7 @@ public class RootNode extends ProcessNode {
 			}
 		}
 		else {
-			log.debugf("%s.allNodesForProject: No nodes found for project %d", TAG,queryProjectId.longValue());
+			log.debugf("%s.allNodesForProject: No nodes found for project %d", CLSS,queryName);
 		}
 		return nodes;
 	}
@@ -101,27 +90,12 @@ public class RootNode extends ProcessNode {
 		}
 		list.add(root);
 	}
-	
-	/**
-	 * Do a search to get the name of the project for this node.
-	 * @return
-	 */
-	public String getProjectName() {
-		String name = "";
-		for( String key:projectIdByName.keySet()) {
-			if(projectIdByName.get(key).longValue()==projectId ) {
-				name = key;
-				break;
-			}	
-		}
-		return name;	
-	}
  
 	/**
 	 * Remove the children of a project. 
 	 */
-	public void removeChildFromProjectRoot(Long childProjectId,ProcessNode node) {
-		Map<Long,ProcessNode> map = childrenByProjectId.get(childProjectId);
+	public void removeChildFromProjectRoot(String childProjectName,ProcessNode node) {
+		Map<Long,ProcessNode> map = childrenByProjectName.get(childProjectName);
 		if( map!=null) map.remove(node.getResourceId());	
 	}
 	
@@ -129,7 +103,7 @@ public class RootNode extends ProcessNode {
 	 * Remove all traces of a project. 
 	 * NOTE: The project name to Id mapping remains.
 	 */
-	public void removeProject(Long projectToRemove) {
-		childrenByProjectId.remove(projectToRemove);	
+	public void removeProject(String projectToRemove) {
+		childrenByProjectName.remove(projectToRemove);	
 	}
 }

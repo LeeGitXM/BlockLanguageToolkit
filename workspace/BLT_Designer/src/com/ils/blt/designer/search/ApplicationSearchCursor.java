@@ -2,7 +2,7 @@ package com.ils.blt.designer.search;
 
 import java.util.Enumeration;
 
-import com.inductiveautomation.ignition.common.project.ProjectResource;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.findreplace.SearchObjectCursor;
@@ -28,7 +28,7 @@ public class ApplicationSearchCursor extends SearchObjectCursor {
 	public Object next() {
 		Object so = null;   // Search Object
 		if( index==0 ) {
-			application = context.getProject().getResource(resId);
+			application = context.getProject().getLocalResource(resId);
 			String rootName = getRootName();
 			so = new ApplicationNameSearchObject(context,rootName,application.getName());
 			log.infof("%s.next %s",TAG,application.getName());

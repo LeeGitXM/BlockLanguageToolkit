@@ -506,12 +506,12 @@ public class ModelManager implements ProjectListener  {
 	 */
 	public List<SerializableResourceDescriptor> queryControllerResources() {
 		List<SerializableResourceDescriptor> result = new ArrayList<SerializableResourceDescriptor>();
-		for( Long projectId:root.allProjects() ) {
-			for(ProcessNode node: root.allNodesForProject(projectId)) {
+		for( String projectName:root.allProjects() ) {
+			for(ProcessNode node: root.allNodesForProject(projectName)) {
 				if(node==null) continue;
 				SerializableResourceDescriptor sd = new SerializableResourceDescriptor();
 				sd.setName(node.getName());
-				sd.setProjectId(projectId.longValue());
+				sd.setProjectName(projectName);
 				sd.setResourceId(node.getResourceId());
 				if( node instanceof ProcessApplication ) sd.setType(BLTProperties.APPLICATION_RESOURCE_TYPE);
 				else if( node instanceof ProcessFamily ) sd.setType(BLTProperties.FAMILY_RESOURCE_TYPE);
@@ -579,7 +579,7 @@ public class ModelManager implements ProjectListener  {
      * Analyze only the staging project resources and update the controller.
      */
     @Override
-    public void projectAdded(Project staging, Project published) {
+    public void projectAdded(String projectName) {
         if( staging!=null ) {
             if( staging.isEnabled() && staging.getId()!=-1 ) {
                 long projectId = staging.getId();
@@ -600,7 +600,7 @@ public class ModelManager implements ProjectListener  {
 	 * but we have no way of relaying that fact.
 	 */
 	@Override
-	public void projectDeleted(long projectId) {
+	public void projectDeleted(String projectName) {
 		log.infof("%s.projectDeleted: (id=%d)",CLSS,projectId);
 		if( projectId<0 ) return;
 		deleteProjectResources(projectId);
@@ -617,7 +617,7 @@ public class ModelManager implements ProjectListener  {
 	 * @see com.inductiveautomation.ignition.gateway.project.ProjectListener#projectUpdated(com.inductiveautomation.ignition.common.project.Project, com.inductiveautomation.ignition.common.project.ProjectVersion)
 	 */
 	@Override
-	public void projectUpdated(Project diff, ProjectVersion vers) { 
+	public void projectUpdated(String projectName) { 
 		if( vers!=ProjectVersion.Staging ) return;  // Consider only the "Staging" version
 		if(DEBUG) log.infof("%s.projectUpdated: %s (%d)  %s",CLSS,diff.getName(),diff.getId(),vers.toString());
 		long projectId = diff.getId();
@@ -957,12 +957,13 @@ public class ModelManager implements ProjectListener  {
 	 * @param resourceId the identity of the model resource
 	 * @param model the diagram logic
 	 */
-	private void addModifyFolderResource(long projectId,ProjectResource res) {
-		if(DEBUG) log.infof("%s.addFolderResource: %s(%d)",CLSS,res.getName(),res.getResourceId());
-		UUID self = res.getDataAsUUID();
+	private void addModifyFolderResource(String projectName,ProjectResource res) {
+		if(DEBUG) log.infof("%s.addFolderResource: %s(%s)",CLSS,res.getResourceId().getProjectName(),res.getResourceId().getResourcePath().getFolderPath());
+		String uuidString = new String(res.getData());
+		UUID self = UUID.fromString(uuidString);
 		ProcessNode node = nodesByUUID.get(self);
 		if( node==null ) {
-			node = new ProcessNode(res.getName(),res.getParentUuid(),self);
+			node = new ProcessNode(res.getResourceName(),res.getParent().self);
 			node.setResourceId(res.getResourceId());
 			node.setProjectId(projectId);
 			// Add in the new Folder
@@ -970,7 +971,7 @@ public class ModelManager implements ProjectListener  {
 			nodesByKey.put(key,node);
 			addToHierarchy(projectId,node);
 		}
-		else if(node.getProjectName() != projectId) {
+		else if(node.getProjectName().equalsIgnoreCase(projectName) ){
 			// The same UUID, but a different project, is a different resource
 			// Check the node and parent UUIDs:
 			//     if they haven't already been migrated, do it here.
@@ -1005,7 +1006,7 @@ public class ModelManager implements ProjectListener  {
 	 * @param projectId the identity of a project
 	 * @param node the node to be added
 	 */
-	private void addToHierarchy(long projectId,ProcessNode node) {
+	private void addToHierarchy(String projectName,ProcessNode node) {
 		if(DEBUG) log.infof("%s.addToHierarchy: %s (%d:%s)",CLSS,node.getName(),node.getResourceId(),node.getSelf().toString());
 		UUID self     = node.getSelf();
 		nodesByUUID.put(self, node);
@@ -1013,11 +1014,11 @@ public class ModelManager implements ProjectListener  {
 		// If the parent is null, then we're the top of the chain for our project
 		// Add the node to the root.
 		if( node.getParent()==null )  {
-			root.addChild(node,projectId);
+			root.addChild(node,projectName);
 			if(DEBUG) log.infof("%s.addToHierarchy: %s is a ROOT (null parent)",CLSS,node.getName());
 		}
 		else if( node.getParent().equals(BLTProperties.ROOT_FOLDER_UUID) )  {
-			root.addChild(node,projectId);
+			root.addChild(node,projectName);
 			if(DEBUG) log.infof("%s.addToHierarchy: %s is a ROOT (parent is root folder)",CLSS,node.getName());
 		}
 		else {
@@ -1052,9 +1053,9 @@ public class ModelManager implements ProjectListener  {
 	 * @param projectId the identity of a project.
 	 * @param resourceId root of the resource tree to delete.
 	 */
-	public void deleteResource(long projectId,long resourceId) {
-		if(DEBUG) log.infof("%s.deleteResource: %d:%d",CLSS,projectId,resourceId);
-		ProjectResourceKey key = new ProjectResourceKey(projectId,resourceId);
+	public void deleteResource(String projectName,long resourceId) {
+		if(DEBUG) log.infof("%s.deleteResource: %s:%d",CLSS,projectName,resourceId);
+		ProjectResourceKey key = new ProjectResourceKey(projectName,resourceId);
 		ProcessNode head = nodesByKey.get(key);
 		DiagramState nodeState = DiagramState.ACTIVE;
 		if( head!=null ) {
@@ -1120,11 +1121,11 @@ public class ModelManager implements ProjectListener  {
 	}
 	
 	// Delete all process nodes for a given project.
-	private void deleteProjectResources(long projectId) {
-		if(DEBUG) log.infof("%s.deleteProjectResources: proj = %d",CLSS,projectId);
-		List<ProcessNode> nodes = root.allNodesForProject(projectId);
+	private void deleteProjectResources(String projectName) {
+		if(DEBUG) log.infof("%s.deleteProjectResources: proj = %s",CLSS,projectName);
+		List<ProcessNode> nodes = root.allNodesForProject(projectName);
 		for(ProcessNode node:nodes) {
-			deleteResource(projectId,node.getResourceId());
+			deleteResource(projectName,node.getResourceId());
 		}
 		Long pid = new Long(projectId);
 		root.removeProject(pid);
@@ -1147,7 +1148,7 @@ public class ModelManager implements ProjectListener  {
 			ObjectMapper mapper = new ObjectMapper();
 			sa = mapper.readValue(json, SerializableApplication.class);
 			if( sa!=null ) {
-				sa.setName(res.getName());
+				sa.setName(res.getProjectName());
 				if(DEBUG) log.infof("%s.deserializeApplicationResource: Successfully deserialized application %s",CLSS,sa.getName());
 				
 			}
@@ -1168,7 +1169,7 @@ public class ModelManager implements ProjectListener  {
 	 * @param projId the identifier of the project
 	 * @param res
 	 */ 
-	public SerializableDiagram deserializeDiagramResource(long projId,ProjectResource res) {
+	public SerializableDiagram deserializeDiagramResource(String projName,ProjectResource res) {
 		byte[] serializedObj = res.getData();
 		SerializableDiagram sd = null;
 		try{
@@ -1179,7 +1180,7 @@ public class ModelManager implements ProjectListener  {
 			mapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL,true);
 			sd = mapper.readValue(json, SerializableDiagram.class);
 			if( sd!=null ) {
-				sd.setName(res.getName());       // Name comes from the resource
+				sd.setName(res.getResourceName());       // Name comes from the resource
 				if(DEBUG) log.infof("%s.deserializeDiagramResource: Successfully deserialized diagram %s",CLSS,sd.getName());
 				sd.setResourceId(res.getResourceId());
 				if( DEBUG ) {
@@ -1213,7 +1214,7 @@ public class ModelManager implements ProjectListener  {
 			ObjectMapper mapper = new ObjectMapper();
 			sf = mapper.readValue(json, SerializableFamily.class);
 			if( sf!=null ) {
-				sf.setName(res.getName());     // Resource is the source of the name.
+				sf.setName(res.getResourceName());     // Resource is the source of the name.
 				if(DEBUG) log.infof("%s.deserializeFamilyResource: Successfully deserialized family %s",CLSS,sf.getName());
 			}
 			else {

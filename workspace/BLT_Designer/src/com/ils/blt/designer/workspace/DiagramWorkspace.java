@@ -91,9 +91,7 @@ import com.ils.common.log.ILSLogger;
 import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.client.designable.DesignableContainer;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
-import com.inductiveautomation.ignition.client.sqltags.ClientTagManager;
-import com.inductiveautomation.ignition.client.sqltags.tree.TagPathTreeNode;
-import com.inductiveautomation.ignition.client.sqltags.tree.TagTreeNode;
+import com.inductiveautomation.ignition.client.tags.model.ClientTagManager;
 import com.inductiveautomation.ignition.client.util.LocalObjectTransferable;
 import com.inductiveautomation.ignition.client.util.action.BaseAction;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
@@ -102,12 +100,11 @@ import com.inductiveautomation.ignition.common.config.ObservablePropertySet;
 import com.inductiveautomation.ignition.common.execution.ExecutionManager;
 import com.inductiveautomation.ignition.common.execution.impl.BasicExecutionEngine;
 import com.inductiveautomation.ignition.common.model.ApplicationScope;
-import com.inductiveautomation.ignition.common.project.ProjectResource;
-import com.inductiveautomation.ignition.common.project.ProjectScope;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
 import com.inductiveautomation.ignition.common.sqltags.model.Tag;
-import com.inductiveautomation.ignition.common.sqltags.model.TagPath;
 import com.inductiveautomation.ignition.common.sqltags.model.TagProp;
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
+import com.inductiveautomation.ignition.common.tags.model.TagPath;
 import com.inductiveautomation.ignition.common.xmlserialization.SerializationException;
 import com.inductiveautomation.ignition.designer.UndoManager;
 import com.inductiveautomation.ignition.designer.blockandconnector.AbstractBlockWorkspace;
@@ -136,7 +133,8 @@ import com.inductiveautomation.ignition.designer.model.menu.JMenuMerge;
 import com.inductiveautomation.ignition.designer.model.menu.MenuBarMerge;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractNavTreeNode;
 import com.inductiveautomation.ignition.designer.navtree.model.ProjectBrowserRoot;
-import com.inductiveautomation.ignition.designer.sqltags.tree.dnd.NodeListTransferable;
+import com.inductiveautomation.ignition.designer.tags.tree.dnd.NodeListTransferable;
+import com.inductiveautomation.ignition.designer.tags.tree.node.TagTreeNode;
 import com.jidesoft.action.CommandBar;
 import com.jidesoft.action.DockableBarManager;
 import com.jidesoft.docking.DockContext;
@@ -179,7 +177,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	 * Constructor:
 	 */
 	public DiagramWorkspace(DesignerContext ctx) {
-		super(ProjectScope.PROJECT);
+		super();
 		this.context = ctx;
 		this.editActionHandler = new BlockActionHandler(this,context);
 		this.executionEngine = new BasicExecutionEngine(1,CLSS);
@@ -697,7 +695,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	// Output on the right half -- unless the tagpath starts with "Connections". Then we make
 	// Sources/Sinks
 	private void handleDiagramDrop(Object droppedOn, DropTargetDropEvent event) {
-		DataFlavor flava = NodeListTransferable.FLAVOR_NODELIST;
+		DataFlavor flava = NodeListTransferable.FLAVOR_NODE_INFO_LIST;
 		if (event.isDataFlavorSupported(flava)) {
 			try {
 				Object node = event.getTransferable().getTransferData(flava);

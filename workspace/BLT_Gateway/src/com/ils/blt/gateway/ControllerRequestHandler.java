@@ -47,25 +47,24 @@ import com.ils.blt.gateway.engine.ProcessDiagram;
 import com.ils.blt.gateway.engine.ProcessFamily;
 import com.ils.blt.gateway.engine.ProcessNode;
 import com.ils.blt.gateway.proxy.ProxyHandler;
-import com.ils.blt.gateway.tag.TagHandler;
 import com.ils.common.ClassList;
 import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.help.HelpRecordProxy;
+import com.ils.common.log.ILSLogger;
+import com.ils.common.log.LogMaker;
 import com.ils.common.persistence.ToolkitProperties;
 import com.ils.common.persistence.ToolkitRecordHandler;
+import com.ils.common.tag.TagFactory;
 import com.ils.common.watchdog.AcceleratedWatchdogTimer;
 import com.inductiveautomation.ignition.common.datasource.DatasourceStatus;
 import com.inductiveautomation.ignition.common.model.ApplicationScope;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.Quality;
+import com.inductiveautomation.ignition.common.model.values.QualityCode;
 import com.inductiveautomation.ignition.common.project.Project;
-import com.inductiveautomation.ignition.common.project.ProjectResource;
-import com.inductiveautomation.ignition.common.project.ProjectVersion;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
-import com.inductiveautomation.ignition.common.util.LogUtil;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.gateway.datasource.Datasource;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 
@@ -81,8 +80,8 @@ import simpleorm.dataset.SQuery;
  *  This class is a singleton for easy access throughout the application.
  */
 public class ControllerRequestHandler implements ToolkitRequestHandler  {
-	private final static String TAG = "ControllerRequestHandler";
-	private final LoggerEx log;
+	private final static String CLSS = "ControllerRequestHandler";
+	private final ILSLogger log;
 	private GatewayContext context = null;
 	private static ControllerRequestHandler instance = null;
 	private final BlockExecutionController controller = BlockExecutionController.getInstance();
@@ -90,13 +89,13 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	private final PythonRequestHandler pyHandler;
 	private ToolkitRecordHandler toolkitRecordHandler;
 	private final UtilityFunctions fcns;
-	private TagHandler tagHandler; 
+	private TagFactory tagHandler; 
     
 	/**
 	 * Initialize with instances of the classes to be controlled.
 	 */
 	private ControllerRequestHandler() {
-		log = LogUtil.getLogger(getClass().getPackage().getName());
+		log = LogMaker.getLogger(getClass().getPackage().getName());
 		pyHandler = new PythonRequestHandler();
 		fcns = new UtilityFunctions();
 	}
@@ -165,7 +164,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 */
 	public ProcessBlock createInstance(String className,UUID parentId,UUID blockId) {
 		
-		log.debugf("%s.createInstance of %s (%s:%s)",TAG,className,(parentId==null?"null":parentId.toString()),blockId.toString());
+		log.debugf("%s.createInstance of %s (%s:%s)",CLSS,className,(parentId==null?"null":parentId.toString()),blockId.toString());
 		ProcessBlock block = null;
 		try {
 			Class<?> clss = Class.forName(className);
@@ -174,26 +173,26 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		}
 		catch(InvocationTargetException ite ) {
 			Throwable cause = ite.getCause();
-			log.warn(String.format("%s.createInstance %s: Invocation of constructor failed (%s)",TAG,
+			log.warn(String.format("%s.createInstance %s: Invocation of constructor failed (%s)",CLSS,
 					className,(cause==null?"No cause available":cause.getLocalizedMessage())),cause); 
 		}
 		catch(NoSuchMethodException nsme ) {
-			log.warnf("%s.createInstance %s: Three argument constructor not found (%s)",TAG,className,nsme.getMessage()); 
+			log.warnf("%s.createInstance %s: Three argument constructor not found (%s)",CLSS,className,nsme.getMessage()); 
 		}
 		catch( ClassNotFoundException cnf ) {
-			log.debugf("%s.createInstance: Java class %s not found - trying Python",TAG,className);
+			log.debugf("%s.createInstance: Java class %s not found - trying Python",CLSS,className);
 			ProxyHandler ph = ProxyHandler.getInstance();
 			ProcessDiagram diagram = controller.getDiagram(parentId);
 			if( diagram!=null ) {
-				long projectId = diagram.getProjectId();
-				block = ph.createBlockInstance(className,parentId,blockId,projectId,"");
+				String projectName = diagram.getProjectName();
+				block = ph.createBlockInstance(className,parentId,blockId,projectName,"");
 			}
 		}
 		catch( InstantiationException ie ) {
-			log.warnf("%s.createInstance: Error instantiating %s (%s)",TAG,className,ie.getLocalizedMessage()); 
+			log.warnf("%s.createInstance: Error instantiating %s (%s)",CLSS,className,ie.getLocalizedMessage()); 
 		}
 		catch( IllegalAccessException iae ) {
-			log.warnf("%s.createInstance: Security exception creating %s (%s)",TAG,className,iae.getLocalizedMessage()); 
+			log.warnf("%s.createInstance: Security exception creating %s (%s)",CLSS,className,iae.getLocalizedMessage()); 
 		}
 		return block;
 	}
@@ -203,9 +202,9 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	@Override
 	public void createTag(DataType type,String path) {
 		String provider = getProductionTagProvider();
-		tagHandler.createTag(provider,type,path);
+		tagHandler.createTag(provider,path,type);
 		provider = getIsolationTagProvider();
-		tagHandler.createTag(provider,type,path);
+		tagHandler.createTag(provider,path,type);
 	}
 	@Override
 	public boolean diagramExists(String uuidString) {
@@ -214,7 +213,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			diagramUUID = UUID.fromString(uuidString);
 		}
 		catch(IllegalArgumentException iae) {
-			log.warnf("%s.diagramExists: Diagram UUID string is illegal (%s), creating new",TAG,uuidString);
+			log.warnf("%s.diagramExists: Diagram UUID string is illegal (%s), creating new",CLSS,uuidString);
 			diagramUUID = UUID.nameUUIDFromBytes(uuidString.getBytes());
 		}
 		ProcessDiagram diagram = controller.getDiagram(diagramUUID);
@@ -242,7 +241,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			}
 		}
 		catch(IllegalArgumentException iae) {
-			log.warnf("%s.getBlockId: Diagram UUID string is illegal (%s)",TAG,diagramId);
+			log.warnf("%s.getBlockId: Diagram UUID string is illegal (%s)",CLSS,diagramId);
 		}
 		return id;
 	}
@@ -259,7 +258,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	@Override
 	public synchronized List<BlockProperty> getBlockProperties(String className,long projectId,long resourceId, UUID blockId) {
 		// If the instance doesn't exist, create one
-		log.debugf("%s.getBlockProperties of %s (%s)",TAG,className,blockId.toString());
+		log.debugf("%s.getBlockProperties of %s (%s)",CLSS,className,blockId.toString());
 		List<BlockProperty> results = new ArrayList<>();
 		ProcessDiagram diagram = controller.getDiagram(projectId, resourceId);
 		ProcessBlock block = null;
@@ -267,13 +266,13 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		BlockProperty[] props = null;
 		if(block!=null) {
 			props = block.getProperties();  // Existing block
-			log.tracef("%s.getProperties existing %s = %s",TAG,block.getClass().getName(),props.toString());
+			log.tracef("%s.getProperties existing %s = %s",CLSS,block.getClass().getName(),props.toString());
 		}
 		else {
 			block = createInstance(className,(diagram!=null?diagram.getSelf():null),blockId);  // Block is not (yet) attached to a diagram
 			if(block!=null) {
 				props = block.getProperties();
-				log.tracef("%s.getProperties new %s = %s",TAG,block.getClass().getName(),props.toString());
+				log.tracef("%s.getProperties new %s = %s",CLSS,block.getClass().getName(),props.toString());
 			}
 		}
 		for(BlockProperty prop:props) {
@@ -299,7 +298,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			property = block.getProperty(propertyName);  // Existing block
 		}
 		else {
-			log.warnf("%s.getProperty Block not found for %s.%s",TAG,parentId.toString(),blockId.toString());
+			log.warnf("%s.getProperty Block not found for %s.%s",CLSS,parentId.toString(),blockId.toString());
 		}
 		return property;
 	}
@@ -314,21 +313,21 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 				Object obj = cls.newInstance();
 				if( obj instanceof ProcessBlock ) {
 					PalettePrototype bp = ((ProcessBlock)obj).getBlockPrototype();
-					log.tracef("%s.getBlockPrototypes: Adding %s on %s",TAG,bp.getPaletteLabel(),bp.getTabName());
+					log.tracef("%s.getBlockPrototypes: Adding %s on %s",CLSS,bp.getPaletteLabel(),bp.getTabName());
 					results.add(bp);
 				}
 				else {
-					log.warnf("%s: Class %s not a ProcessBlock",TAG,cls.getName());
+					log.warnf("%s: Class %s not a ProcessBlock",CLSS,cls.getName());
 				}
 			} 
 			catch (InstantiationException ie) {
-				log.warnf("%s.getBlockPrototypes: Exception instantiating block (%s)",TAG,ie.getLocalizedMessage());
+				log.warnf("%s.getBlockPrototypes: Exception instantiating block (%s)",CLSS,ie.getLocalizedMessage());
 			} 
 			catch (IllegalAccessException iae) {
-				log.warnf("%s.getBlockPrototypes: Access exception (%s)",TAG,iae.getMessage());
+				log.warnf("%s.getBlockPrototypes: Access exception (%s)",CLSS,iae.getMessage());
 			}
 			catch (Exception ex) {
-				log.warnf("%s.getBlockPrototypes: Runtime exception (%s)",TAG,ex.getMessage(),ex);
+				log.warnf("%s.getBlockPrototypes: Runtime exception (%s)",CLSS,ex.getMessage(),ex);
 			}
 		}
 		// Now add prototypes from Python-defined blocks
@@ -338,12 +337,12 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		try {
 			List<PalettePrototype> prototypes = phandler.getPalettePrototypes();
 			for( PalettePrototype pp:prototypes) {
-				log.tracef("%s.getBlockPrototypes: Adding python %s on %s",TAG,pp.getPaletteLabel(),pp.getTabName());
+				log.tracef("%s.getBlockPrototypes: Adding python %s on %s",CLSS,pp.getPaletteLabel(),pp.getTabName());
 				results.add(pp);
 			}
 		}
 		catch (Exception ex) {
-			log.warnf("%s.getBlockPrototypes: Runtime exception (%s)",TAG,ex.getMessage(),ex);
+			log.warnf("%s.getBlockPrototypes: Runtime exception (%s)",CLSS,ex.getMessage(),ex);
 		}
 		return results;
 	}
@@ -363,7 +362,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			}
 		}
 		catch(IllegalArgumentException iae) {
-			log.warnf("%s.getBlockState: Diagram UUID string is illegal (%s)",TAG,diagramId);
+			log.warnf("%s.getBlockState: Diagram UUID string is illegal (%s)",CLSS,diagramId);
 		}
 		return state;
 	}
@@ -426,7 +425,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			}
 		}
 		catch(IllegalArgumentException iae) {
-			log.warnf("%s.getDatabaseForUUID: %s is an illegal UUID (%s)",TAG,nodeId,iae.getMessage());
+			log.warnf("%s.getDatabaseForUUID: %s is an illegal UUID (%s)",CLSS,nodeId,iae.getMessage());
 		}
 		return db;
 	}
@@ -594,7 +593,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			property = getBlockProperty(diagramUUID,blockUUID,propertyName);
 		}
 		catch(IllegalArgumentException iae) {
-			log.warnf("%s.getPropertyBinding: Diagram or block UUID string is illegal (%s,%s),",TAG,diagramId,blockId);
+			log.warnf("%s.getPropertyBinding: Diagram or block UUID string is illegal (%s,%s),",CLSS,diagramId,blockId);
 		}
 		String binding = property.getBinding();
 		if( binding==null ) binding = "";
@@ -611,7 +610,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			property = getBlockProperty(diagramUUID,blockUUID,propertyName);
 		}
 		catch(IllegalArgumentException iae) {
-			log.warnf("%s.getPropertyValue: Diagram or block UUID string is illegal (%s,%s),",TAG,diagramId,blockId);
+			log.warnf("%s.getPropertyValue: Diagram or block UUID string is illegal (%s,%s),",CLSS,diagramId,blockId);
 		}
 		return property.getValue();
 	}
@@ -666,7 +665,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			}
 		}
 		catch(IllegalArgumentException iae) {
-			log.warnf("%s.getProviderForUUID: %s is an illegal UUID (%s)",TAG,nodeId,iae.getMessage());
+			log.warnf("%s.getProviderForUUID: %s is an illegal UUID (%s)",CLSS,nodeId,iae.getMessage());
 		}
 		return provider;
 	}
@@ -690,7 +689,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			}
 		}
 		catch(IllegalArgumentException iae) {
-			log.warnf("%s.getTimeOfLastBlockStateChange: Diagram UUID string is illegal (%s)",TAG,diagramId);
+			log.warnf("%s.getTimeOfLastBlockStateChange: Diagram UUID string is illegal (%s)",CLSS,diagramId);
 		}
 		return date;
 	}
@@ -728,7 +727,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		ProcessDiagram diagram = controller.getDiagram(projectId.longValue(), resid.longValue());
 		if( diagram==null ) {
 			// Node is most likely an application or family
-			log.debugf("%s.isAlerting: No diagram found in project %d with id = %d",TAG,projectId.longValue(),resid.longValue());
+			log.debugf("%s.isAlerting: No diagram found in project %d with id = %d",CLSS,projectId.longValue(),resid.longValue());
 			return false;
 		}
 		return pyHandler.isAlerting(diagram);
@@ -749,7 +748,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			}
 		}
 		else {
-			log.warnf("%s.listBlocksConnectedAtPort: no diagram found for %s",TAG,diauuid.toString());
+			log.warnf("%s.listBlocksConnectedAtPort: no diagram found for %s",CLSS,diauuid.toString());
 		}
 		return descriptors;
 	}
@@ -764,7 +763,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			if(blk!=null) descriptors = controller.listBlocksDownstreamOf(diauuid,blk.getBlockId(),false);
 		}
 		else {
-			log.warnf("%s.listBlocksDownstreamOf: no diagram found for id %s",TAG,diagramId);
+			log.warnf("%s.listBlocksDownstreamOf: no diagram found for id %s",CLSS,diagramId);
 		}
 		return descriptors;
 	}
@@ -787,11 +786,11 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 					}
 				}
 				else {
-					log.warnf("%s.listBlocksForTag: no diagram found for id %s",TAG,diagId.toString());
+					log.warnf("%s.listBlocksForTag: no diagram found for id %s",CLSS,diagId.toString());
 				}
 			}
 		}
-		log.warnf("%s.listBlocksForTag: %s returns %d blocks",TAG,tagpath,results.size());
+		log.warnf("%s.listBlocksForTag: %s returns %d blocks",CLSS,tagpath,results.size());
 		return results;
 	}
 	public synchronized List<SerializableBlockStateDescriptor> listBlocksGloballyDownstreamOf(String diagramId, String blockName) {
@@ -803,12 +802,12 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			if(blk!=null) descriptors = controller.listBlocksDownstreamOf(diauuid,blk.getBlockId(),true);
 		}
 		else {
-			log.warnf("%s.listBlocksGloballyDownstreamOf: no diagram found for %s",TAG,diagramId);
+			log.warnf("%s.listBlocksGloballyDownstreamOf: no diagram found for %s",CLSS,diagramId);
 		}
 		return descriptors;
 	}
 	public synchronized List<SerializableBlockStateDescriptor> listBlocksGloballyUpstreamOf(String diagramId, String blockName) {
-		log.tracef("%s.listBlocksGloballyUpstreamOf: diagramId %s:%s",TAG,diagramId,blockName);
+		log.tracef("%s.listBlocksGloballyUpstreamOf: diagramId %s:%s",CLSS,diagramId,blockName);
 		List<SerializableBlockStateDescriptor> descriptors = new ArrayList<>();
 		UUID diauuid = makeUUID(diagramId);
 		ProcessDiagram diagram = controller.getDiagram(diauuid);
@@ -818,13 +817,13 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 				descriptors = controller.listBlocksUpstreamOf(diauuid,blk.getBlockId(),true);
 			}
 			else {
-				log.warnf("%s.listBlocksGloballyUpstreamOf: block %s not found on diagram %s",TAG,blockName,diagramId);
+				log.warnf("%s.listBlocksGloballyUpstreamOf: block %s not found on diagram %s",CLSS,blockName,diagramId);
 			}
 		}
 		else {
-			log.warnf("%s.listBlocksGloballyUpstreamOf: no diagram found for %s",TAG,diagramId);
+			log.warnf("%s.listBlocksGloballyUpstreamOf: no diagram found for %s",CLSS,diagramId);
 		}
-		log.tracef("%s.listBlocksGloballyUpstreamOf: diagramId %s returning %d descriptors",TAG,diagramId,descriptors.size());
+		log.tracef("%s.listBlocksGloballyUpstreamOf: diagramId %s returning %d descriptors",CLSS,diagramId,descriptors.size());
 		return descriptors;
 	}
 	
@@ -851,7 +850,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			}
 		}
 		else {
-			log.warnf("%s.listBlocksInDiagram: no diagram found for %s",TAG,diagramId);
+			log.warnf("%s.listBlocksInDiagram: no diagram found for %s",CLSS,diagramId);
 		}
 		//log.infof("%s.listBlocksInDiagram: diagramId %s returning %d descriptors",TAG,diagramId,descriptors.size());
 		return descriptors;
@@ -861,7 +860,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * @return a list of state descriptors for blocks that are of the specified class.
 	 */
 	public List<SerializableBlockStateDescriptor> listBlocksOfClass(String className) {
-		log.debugf("%s.listBlocksOfClass: %s",TAG,className);
+		log.debugf("%s.listBlocksOfClass: %s",CLSS,className);
 		List<SerializableBlockStateDescriptor> descriptors = new ArrayList<>();
 		List<SerializableResourceDescriptor> diagrams = controller.getDiagramDescriptors();
 		for(SerializableResourceDescriptor diag:diagrams) {
@@ -870,7 +869,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 				if( desc.getClassName().equals(className)) descriptors.add(desc);
 			}
 		}
-		log.debugf("%s.listBlocksOfClass: %s returning %d descriptors",TAG,className,descriptors.size());
+		log.debugf("%s.listBlocksOfClass: %s returning %d descriptors",CLSS,className,descriptors.size());
 		return descriptors;
 	}
 	
@@ -884,14 +883,14 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			if(blk!=null) descriptors = controller.listBlocksUpstreamOf(diauuid,blk.getBlockId(),false);
 		}
 		else {
-			log.warnf("%s.listBlocksUpstreamOf: no diagram found for %s",TAG,diagramId);
+			log.warnf("%s.listBlocksUpstreamOf: no diagram found for %s",CLSS,diagramId);
 		}
 		return descriptors;
 	}
 
 	@Override
 	public synchronized List<SerializableBlockStateDescriptor> listConfigurationErrors() {
-		log.tracef("%s.listConfigurationErrors:",TAG);
+		log.tracef("%s.listConfigurationErrors:",CLSS);
 		List<SerializableBlockStateDescriptor> result = new ArrayList<>();
 		List<SerializableResourceDescriptor> descriptors = controller.getDiagramDescriptors();
 		try {
@@ -910,7 +909,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			}
 		}
 		catch(Exception ex) {
-			log.debug(TAG+".listConfigurationErrors: Exception ("+ex.getMessage()+")",ex);
+			log.debug(CLSS+".listConfigurationErrors: Exception ("+ex.getMessage()+")",ex);
 		}
 		return result;
 	}
@@ -1033,7 +1032,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			}
 		}
 		else {
-			log.warnf("%s.listSinksForSource: Block %s not found, not a source/input or not bound",TAG,blockId);
+			log.warnf("%s.listSinksForSource: Block %s not found, not a source/input or not bound",CLSS,blockId);
 		}
 		return results;
 	}
@@ -1076,13 +1075,13 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			}
 		}
 		else {
-			log.warnf("%s.listSourcesForSink: Block %s not found, not a sink/output or not bound",TAG,blockId);
+			log.warnf("%s.listSourcesForSink: Block %s not found, not a sink/output or not bound",CLSS,blockId);
 		}
 		return results;
 	}
 	@Override
 	public synchronized List<SerializableBlockStateDescriptor> listSubscriptionErrors() {
-		log.tracef("%s.listSubscriptionErrors:",TAG);
+		log.tracef("%s.listSubscriptionErrors:",CLSS);
 		List<SerializableBlockStateDescriptor> result = new ArrayList<>();
 		List<SerializableResourceDescriptor> descriptors = controller.getDiagramDescriptors();
 		try {
@@ -1103,14 +1102,14 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			}
 		}
 		catch(Exception ex) {
-			log.debug(TAG+".listConfigurationErrors: Exception ("+ex.getMessage()+")",ex);
+			log.debug(CLSS+".listConfigurationErrors: Exception ("+ex.getMessage()+")",ex);
 		}
 		return result;
 	}
 	
 	@Override
 	public synchronized List<SerializableBlockStateDescriptor> listUnresponsiveBlocks(double hours,String className) {
-		log.tracef("%s.listUnresponsiveBlocks: Hrs %f, class %s,",TAG,hours,className);
+		log.tracef("%s.listUnresponsiveBlocks: Hrs %f, class %s,",CLSS,hours,className);
 		List<SerializableBlockStateDescriptor> result = new ArrayList<>();
 		List<SerializableResourceDescriptor> descriptors = controller.getDiagramDescriptors();
 		long interval = (long)(hours*3600*1000);  // mses
@@ -1136,7 +1135,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			}
 		}
 		catch(Exception ex) {
-			log.debug(TAG+".listConfigurationErrors: Exception ("+ex.getMessage()+")",ex);
+			log.debug(CLSS+".listConfigurationErrors: Exception ("+ex.getMessage()+")",ex);
 		}
 		return result;
 	}
@@ -1168,14 +1167,14 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * @param value the result of the block's computation
 	 */
 	public void postValue(String parentId,String blockId,String port,String value)  {
-		log.tracef("%s.postValue - %s = %s on %s",TAG,blockId,value,port);
+		log.tracef("%s.postValue - %s = %s on %s",CLSS,blockId,value,port);
 		try {
 			UUID diagramuuid = UUID.fromString(parentId);
 			UUID blockuuid   = UUID.fromString(blockId);
 			postValue(diagramuuid,blockuuid,port,value,BLTProperties.QUALITY_GOOD) ;
 		}
 		catch(IllegalArgumentException iae) {
-			log.warnf("%s.postValue: one of %s or %s illegal UUID (%s)",TAG,parentId,blockId,iae.getMessage());
+			log.warnf("%s.postValue: one of %s or %s illegal UUID (%s)",CLSS,parentId,blockId,iae.getMessage());
 		}
 	}
 	/**
@@ -1189,22 +1188,22 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * @param quality of the reported output
 	 */
 	public void postValue(UUID parentuuid,UUID blockId,String port,String value,String quality)  {
-		log.tracef("%s.postValue - %s = %s (%s) on %s",TAG,blockId,value,quality,port);
+		log.tracef("%s.postValue - %s = %s (%s) on %s",CLSS,blockId,value,quality,port);
 		try {
 			ProcessDiagram diagram = controller.getDiagram(parentuuid);
 			if( diagram!=null) {
 				ProcessBlock block = diagram.getBlock(blockId);
-				QualifiedValue qv = new BasicQualifiedValue(value,new BasicQuality(quality,
-						(quality.equalsIgnoreCase(BLTProperties.QUALITY_GOOD)?Quality.Level.Good:Quality.Level.Bad)));
+				QualifiedValue qv = new BasicQualifiedValue(value,
+						(quality.equalsIgnoreCase(BLTProperties.QUALITY_GOOD)?QualityCode.Good:QualityCod.Bad));
 				OutgoingNotification note = new OutgoingNotification(block,port,qv);
 				controller.acceptCompletionNotification(note);
 			}
 			else {
-				log.warnf("%s.postValue: no diagram found for %s",TAG,parentuuid);
+				log.warnf("%s.postValue: no diagram found for %s",CLSS,parentuuid);
 			}
 		}
 		catch(IllegalArgumentException iae) {
-			log.warnf("%s.postValue: one of %s or %s illegal UUID (%s)",TAG,parentuuid,blockId,iae.getMessage());
+			log.warnf("%s.postValue: one of %s or %s illegal UUID (%s)",CLSS,parentuuid,blockId,iae.getMessage());
 		}
 	}
 	/**
@@ -1219,7 +1218,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			blockUUID = UUID.fromString(blockId);
 		}
 		catch(IllegalArgumentException iae) {
-			log.warnf("%s.propagateBlockState: Diagram or block UUID string is illegal (%s, %s), creating new",TAG,diagramId,blockId);
+			log.warnf("%s.propagateBlockState: Diagram or block UUID string is illegal (%s, %s), creating new",CLSS,diagramId,blockId);
 			diagramUUID = UUID.nameUUIDFromBytes(diagramId.getBytes());
 			blockUUID = UUID.nameUUIDFromBytes(blockId.getBytes());
 		}
@@ -1268,16 +1267,16 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			resource.setData(bytes);
 			Project project = context.getProjectManager().getProject(projectId, ApplicationScope.GATEWAY, ProjectVersion.Staging);
 			Project diff = project.getEmptyCopy();
-			log.infof("%s.saveResource: Saving, resource %s (%s)",TAG,resource.getName(),resource.getResourceType());
+			log.infof("%s.saveResource: Saving, resource %s (%s)",CLSS,resource.getName(),resource.getResourceType());
 			diff.putResource(resource);
 			context.getProjectManager().saveProject(diff, null, null, "Updated aux structure", true);
 
 		}
 		catch(JsonProcessingException jpe) {
-			log.warnf("%s.saveResource: Exception serializing application, resource %d (%s)",TAG,resource.getResourceId(),jpe.getMessage());
+			log.warnf("%s.saveResource: Exception serializing application, resource %d (%s)",CLSS,resource.getResourceId(),jpe.getMessage());
 		}
 		catch(Exception ex) {
-			log.warnf("%s.saveResource: Exception saving project, resource %d (%s)",TAG,resource.getResourceId(),ex.getMessage());
+			log.warnf("%s.saveResource: Exception saving project, resource %d (%s)",CLSS,resource.getResourceId(),ex.getMessage());
 		}
 	}
 	/**
@@ -1315,10 +1314,10 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		if( diagram!=null) {
 			ProcessBlock block = diagram.getBlockByName(blockName);
 			if( block!=null ) block.reset();
-			else log.warnf("%s.resetBlock: block %s not found on diagram %s",TAG,blockName,diagram.getName());
+			else log.warnf("%s.resetBlock: block %s not found on diagram %s",CLSS,blockName,diagram.getName());
 		}
 		else {
-			log.warnf("%s.resetBlock: no diagram found for %s",TAG,diagramId);
+			log.warnf("%s.resetBlock: no diagram found for %s",CLSS,diagramId);
 		}
 	}
 	@Override
@@ -1328,7 +1327,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			diagramUUID = UUID.fromString(diagramId);
 		}
 		catch(IllegalArgumentException iae) {
-			log.warnf("%s.resetDiagram: Diagram UUID string is illegal (%s), creating new",TAG,diagramId);
+			log.warnf("%s.resetDiagram: Diagram UUID string is illegal (%s), creating new",CLSS,diagramId);
 			diagramUUID = UUID.nameUUIDFromBytes(diagramId.getBytes());
 		}
 		BlockExecutionController.getInstance().resetDiagram(diagramUUID);	
@@ -1343,10 +1342,10 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 				block.stop();
 				block.start();
 			}
-			else log.warnf("%s.restartBlock: block %s not found on diagram %s",TAG,blockName,diagram.getName());
+			else log.warnf("%s.restartBlock: block %s not found on diagram %s",CLSS,blockName,diagram.getName());
 		}
 		else {
-			log.warnf("%s.restartBlock: no diagram found for %s",TAG,diagramId);
+			log.warnf("%s.restartBlock: no diagram found for %s",CLSS,diagramId);
 		}
 	}
 	@Override
@@ -1377,7 +1376,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			diagramUUID = UUID.fromString(diagramId);
 		}
 		catch(IllegalArgumentException iae) {
-			log.warnf("%s.sendSignal: Diagram UUID string is illegal (%s), creating new",TAG,diagramId);
+			log.warnf("%s.sendSignal: Diagram UUID string is illegal (%s), creating new",CLSS,diagramId);
 			diagramUUID = UUID.nameUUIDFromBytes(diagramId.getBytes());
 		}
 		ProcessDiagram diagram = BlockExecutionController.getInstance().getDiagram(diagramUUID);
@@ -1388,7 +1387,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			BlockExecutionController.getInstance().acceptBroadcastNotification(broadcast);
 		}
 		else {
-			log.warnf("%s.sendSignal: Unable to find diagram %s for %s command to %s",TAG,diagramId,command,blockName);
+			log.warnf("%s.sendSignal: Unable to find diagram %s for %s command to %s",CLSS,diagramId,command,blockName);
 			success = Boolean.FALSE;
 		}
 		return success;
@@ -1401,20 +1400,20 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			diagramUUID = UUID.fromString(diagramId);
 		}
 		catch(IllegalArgumentException iae) {
-			log.warnf("%s.sendTimestampedSignal: Diagram UUID string is illegal (%s), creating new",TAG,diagramId);
+			log.warnf("%s.sendTimestampedSignal: Diagram UUID string is illegal (%s), creating new",CLSS,diagramId);
 			diagramUUID = UUID.nameUUIDFromBytes(diagramId.getBytes());
 		}
 		ProcessDiagram diagram = BlockExecutionController.getInstance().getDiagram(diagramUUID);
 		if( diagram!=null ) {
 			// Create a broadcast notification
-			log.warnf("%s.sendTimestampedSignal: Sending a signal to diagram %s for %s command",TAG,diagramId,command);
+			log.warnf("%s.sendTimestampedSignal: Sending a signal to diagram %s for %s command",CLSS,diagramId,command);
 			Signal sig = new Signal(command,message,argument);
 			BroadcastNotification broadcast = new BroadcastNotification(diagram.getSelf(),TransmissionScope.LOCAL,
 					                              new BasicQualifiedValue(sig,new BasicQuality(),new Date(time)));
 			BlockExecutionController.getInstance().acceptBroadcastNotification(broadcast);
 		}
 		else {
-			log.warnf("%s.sendTimestampedSignal: Unable to find diagram %s for %s command",TAG,diagramId,command);
+			log.warnf("%s.sendTimestampedSignal: Unable to find diagram %s for %s command",CLSS,diagramId,command);
 			success = Boolean.FALSE;
 		}
 		return success;
@@ -1441,7 +1440,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			}
 		}
 		catch(IllegalArgumentException iae) {
-			log.warnf("%s.setApplicationState: Illegal state (%s) supplied (%s)",TAG,state,iae.getMessage());
+			log.warnf("%s.setApplicationState: Illegal state (%s) supplied (%s)",CLSS,state,iae.getMessage());
 		}
 	}
 
@@ -1491,7 +1490,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 				updateProperty(diagram.getState(),block,existingProperty,property);
 			}
 			else {
-				log.warnf("%s.setBlockProperty: Property %s not found in block %s", TAG,property.getName(),block.getName());
+				log.warnf("%s.setBlockProperty: Property %s not found in block %s", CLSS,property.getName(),block.getName());
 			}
 		}
 	}
@@ -1531,15 +1530,15 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 					controller.sendPropertyNotification(block.getBlockId().toString(),pname,new BasicQualifiedValue(value));
 				}
 				else{
-					log.warnf("%s.setBlockPropertyValue: Unable to find property %s in block %s:%s",TAG,pname,diagramId,bname,diagram.getName());
+					log.warnf("%s.setBlockPropertyValue: Unable to find property %s in block %s:%s",CLSS,pname,diagramId,bname,diagram.getName());
 				}
 			}
 			else{
-				log.warnf("%s.setBlockPropertyValue: Unable to find block %s in diagram %s",TAG,diagramId,bname,diagram.getName());
+				log.warnf("%s.setBlockPropertyValue: Unable to find block %s in diagram %s",CLSS,diagramId,bname,diagram.getName());
 			}
 		}
 		else{
-			log.warnf("%s.setBlockPropertyValue: Unable to find diagram %s for block %s",TAG,diagramId,bname);
+			log.warnf("%s.setBlockPropertyValue: Unable to find diagram %s for block %s",CLSS,diagramId,bname);
 		}
 	}
 	public void setBlockState(String diagramId,String bname,String stateName ) {
@@ -1555,15 +1554,15 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 					block.notifyOfStatus();
 				}
 				catch(IllegalArgumentException iae) {
-					log.warnf("%s.setBlockState: State %s in block %s:%s is not a legal truth value",TAG,stateName,bname,diagram.getName());
+					log.warnf("%s.setBlockState: State %s in block %s:%s is not a legal truth value",CLSS,stateName,bname,diagram.getName());
 				}
 			}
 			else{
-				log.warnf("%s.setBlockState: Unable to find block %s in diagram %s",TAG,diagramId,bname,diagram.getName());
+				log.warnf("%s.setBlockState: Unable to find block %s in diagram %s",CLSS,diagramId,bname,diagram.getName());
 			}
 		}
 		else{
-			log.warnf("%s.setBlockState: Unable to find diagram %s for block %s",TAG,diagramId,bname);
+			log.warnf("%s.setBlockState: Unable to find diagram %s for block %s",CLSS,diagramId,bname);
 		}
 	}
 	
@@ -1574,7 +1573,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	public void setContext(GatewayContext cntx) {
 		this.context = cntx;
 		toolkitRecordHandler = new ToolkitRecordHandler(context); 
-		tagHandler = new TagHandler(context);
+		tagHandler = new TagFactory(context);
 	}
 
 
@@ -1592,7 +1591,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 				diagram.setState(ds);
 			}
 			catch( IllegalArgumentException iae) {
-				log.warnf("%s.setDiagramState: Unrecognized state(%s) sent to %s (%s)",TAG,state,diagram.getName());
+				log.warnf("%s.setDiagramState: Unrecognized state(%s) sent to %s (%s)",CLSS,state,diagram.getName());
 			}
 		}
 	}
@@ -1612,7 +1611,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 				diagram.setState(ds);
 			}
 			catch( IllegalArgumentException iae) {
-				log.warnf("%s.setDiagramState: Unrecognized state(%s) sent to %s (%s)",TAG,state,diagram.getName());
+				log.warnf("%s.setDiagramState: Unrecognized state(%s) sent to %s (%s)",CLSS,state,diagram.getName());
 			}
 		}
 	}
@@ -1664,7 +1663,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 */
 	public void triggerStatusNotifications() {
 		BlockExecutionController.getInstance().triggerStatusNotifications();
-		log.debugf("%s.triggerStatusNotifications: Complete.",TAG);
+		log.debugf("%s.triggerStatusNotifications: Complete.",CLSS);
 	}
 
 
@@ -1755,7 +1754,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	private void updateProperty(DiagramState ds,ProcessBlock block,BlockProperty existingProperty,BlockProperty newProperty) {
 		if( !existingProperty.isEditable() )  return;
 		
-		log.debugf("%s.updateProperty old: %s, new:%s",TAG,existingProperty.toString(),newProperty.toString());
+		log.debugf("%s.updateProperty old: %s, new:%s",CLSS,existingProperty.toString(),newProperty.toString());
 		if( !existingProperty.getBindingType().equals(newProperty.getBindingType()) ) {
 			// If the binding has changed - fix subscriptions.
 			controller.removeSubscription(block, existingProperty);
@@ -1784,7 +1783,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		else {
 			// The event came explicitly from the designer/client. Send event whether it changed or not.
 			if( existingProperty.getBindingType().equals(BindingType.NONE) && newProperty.getValue()!=null   )   {
-				log.debugf("%s.setProperty sending event ...",TAG);
+				log.debugf("%s.setProperty sending event ...",CLSS);
 				BlockPropertyChangeEvent event = new BlockPropertyChangeEvent(block.getBlockId().toString(),newProperty.getName(),
 						existingProperty.getValue(),newProperty.getValue());
 				block.propertyChange(event);

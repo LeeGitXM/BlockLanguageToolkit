@@ -2,6 +2,8 @@ package com.ils.blt.gateway.engine;
 
 import java.io.Serializable;
 
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
+
 
 //====================================== ProjectResourceKey =================================
 /**
@@ -10,8 +12,8 @@ import java.io.Serializable;
  */
 public class ProjectResourceKey implements Serializable {
 	private static final long serialVersionUID = 6331391411649992726L;
-	private long projectId;
-	private long resourceId;
+	private String projectName;
+	private ProjectResourceId resourceId;
 	
 	/**
 	 * Constructor: No arg version required for serialization.
@@ -19,14 +21,14 @@ public class ProjectResourceKey implements Serializable {
 	public ProjectResourceKey() {
 	}
 	
-	public ProjectResourceKey(long projid,long resid) {
-		this.projectId = projid;
+	public ProjectResourceKey(String name,ProjectResourceId resid) {
+		this.projectName = name;
 		this.resourceId = resid;
 	}
-	public long getProjectId() { return projectId; }
-	public long getResourceId() { return resourceId; }
-	public void setProjectId(long id) { this.projectId=id; }
-	public void setResourceId(long id) { this.resourceId=id; }
+	public String getProjectName() { return projectName; }
+	public ProjectResourceId getResourceId() { return resourceId; }
+	public void setProjectName(String nam) { this.projectName=nam; }
+	public void setResourceId(ProjectResourceId id) { this.resourceId=id; }
 
 	// So that class may be used as a map key
 	// Same projectId and resourceId is sufficient to prove equality
@@ -35,7 +37,7 @@ public class ProjectResourceKey implements Serializable {
 		boolean result = false;
 		if( arg instanceof ProjectResourceKey) {
 			ProjectResourceKey that = (ProjectResourceKey)arg;
-			if( (this.getProjectName()==that.getProjectName()) &&
+			if( this.getProjectName().equals(that.getProjectName()) &&
 					(this.getResourceId()==that.getResourceId())   ) {
 				result = true;
 			}
@@ -44,6 +46,6 @@ public class ProjectResourceKey implements Serializable {
 	}
 	@Override
 	public int hashCode() {
-		return (int)(this.projectId*100000+this.resourceId);
+		return (int)(this.projectName.hashCode()*100000+this.resourceId.hashCode());
 	}
 }

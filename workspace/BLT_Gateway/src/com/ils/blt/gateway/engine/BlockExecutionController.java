@@ -264,6 +264,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		// Activate all of the blocks in the diagram.
 		modelManager.startBlocks();
 		// Once blocks are started, start tag subscriptions
+		tagListener.setTagReader(tagReader);
 		tagListener.restartSubscriptions(context);
 	}
 	

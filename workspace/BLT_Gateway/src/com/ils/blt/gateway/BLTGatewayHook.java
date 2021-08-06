@@ -6,6 +6,7 @@ package com.ils.blt.gateway;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.wicket.markup.html.WebMarkupContainer;
 
@@ -23,7 +24,7 @@ import com.ils.common.persistence.ToolkitRecordHandler;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.licensing.LicenseState;
 import com.inductiveautomation.ignition.common.project.Project;
-import com.inductiveautomation.ignition.common.project.ProjectVersion;
+import com.inductiveautomation.ignition.common.project.RuntimeProject;
 import com.inductiveautomation.ignition.common.script.ScriptManager;
 import com.inductiveautomation.ignition.gateway.clientcomm.ClientReqSession;
 import com.inductiveautomation.ignition.gateway.model.AbstractGatewayModuleHook;
@@ -46,7 +47,6 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	private final String prefix = "BLT";
 	private transient GatewayRpcDispatcher dispatcher = null;
 	private transient ModelManager mmgr = null;
-	private ToolkitRecordHandler toolkitHandler;
 	private final ILSLogger log;
 	private ToolkitRecord record = null;
 	private final ControllerRequestHandler requestHandler;
@@ -97,18 +97,19 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	@Override
 	public void startup(LicenseState licenseState) {
 		log.info(CLSS+".startup()");
-		this.toolkitHandler = new ToolkitRecordHandler(context);
 		this.mmgr = new ModelManager(context);
 		BlockExecutionController controller = BlockExecutionController.getInstance();
 		controller.setDelegate(mmgr);
 
 
 		// Analyze existing projects - skip the global project and any that are disabled.
-		List<Project> projects = context.getProjectManager().getProjectsFull(ProjectVersion.Staging);
-		for( Project project:projects ) {
+		List<String> projectNames = context.getProjectManager().getProjectNames();
+		for( String name:projectNames ) {
+			Optional<RuntimeProject> optional = context.getProjectManager().getProject(name);
+			RuntimeProject project = optional.get();
 			if( !project.isEnabled() || project.getName().equals(Project.GLOBAL_PROJECT_NAME) ) continue;
 				log.infof(CLSS+".startup() - adding project %s", project.getName());
-				mmgr.projectAdded(project,null); 
+				mmgr.projectAdded(project.getName()); 
 		}
 
 		// Register for changes to our permanent settings
@@ -127,7 +128,7 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	}
 
 	@Override
-	public Object getRPCHandler(ClientReqSession session, Long projectId) {
+	public Object getRPCHandler(ClientReqSession session, String projectName) {
 		return dispatcher;
 	}
 	

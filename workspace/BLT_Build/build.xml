@@ -43,7 +43,6 @@
 		 <fileset dir="${basedir}/../../external/lib" includes="logback*.jar" />
 		 <fileset dir="${basedir}/../../external/lib" includes="log4j*.jar" />
 		 <fileset dir="${basedir}/../../external/lib" includes="lucene*.jar" />
-		 <fileset dir="${basedir}/../../external/lib" includes="miglayout*.jar" />
 		 <fileset dir="${basedir}/../../external/lib" includes="prefuse*.jar" />
 		 <fileset dir="${basedir}/../../external/lib" includes="slf4j-*.jar" />
 		 <fileset dir="${basedir}/../../external/lib" includes="sqlite-jdbc*.jar" />

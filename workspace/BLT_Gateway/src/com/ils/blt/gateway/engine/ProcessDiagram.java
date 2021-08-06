@@ -66,11 +66,11 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 	 * @param diagm the serializable version of this object.
 	 * @param parent 
 	 */
-	public ProcessDiagram(SerializableDiagram diagm,UUID parent,long projId) { 
+	public ProcessDiagram(SerializableDiagram diagm,UUID parent,String projName) { 
 		super(diagm.getName(),parent,diagm.getId());
 		this.state = diagm.getState();
 		this.resourceId = diagm.getResourceId();
-		this.projectId = projId;
+		this.projectName = projName;
 		blocks = new HashMap<UUID,ProcessBlock>();
 		connectionMap = new HashMap<ConnectionKey,ProcessConnection>();
 		displays = new HashMap<>();
@@ -186,7 +186,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 					// Set the proper timer
 					if(DiagramState.ACTIVE.equals(state)) pb.setTimer(controller.getTimer());
 					else if(DiagramState.ISOLATED.equals(state)) pb.setTimer(controller.getSecondaryTimer());
-					pb.setProjectName(projectId);
+					pb.setProjectName(projectName);
 					blocks.put(pb.getBlockId(), pb);
 					if( DEBUG ) log.infof("%s.createBlocks: New block %s(%d)", CLSS, pb.getName(), pb.hashCode());
 
@@ -719,7 +719,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 	 * Stop all subscriptions for properties in blocks in this diagram
 	 */
 	public void stopSubscriptions() {
-		if( DEBUG ) log.infof("%s.stopSubscriptions: project %d:%s",CLSS,projectId,getName());
+		if( DEBUG ) log.infof("%s.stopSubscriptions: project %s:%s",CLSS,projectName,getName());
 		for( ProcessBlock pb:getProcessBlocks()) {
 			for(BlockProperty bp:pb.getProperties()) {
 				if(DEBUG && bp.getBinding()!=null && !bp.getBinding().isEmpty()) {

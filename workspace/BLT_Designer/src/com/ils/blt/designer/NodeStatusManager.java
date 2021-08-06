@@ -15,10 +15,10 @@ import com.ils.blt.common.notification.NotificationChangeListener;
 import com.ils.blt.common.notification.NotificationKey;
 import com.ils.blt.designer.navtree.GeneralPurposeTreeNode;
 import com.ils.blt.designer.navtree.NavTreeNodeInterface;
+import com.ils.common.log.ILSLogger;
+import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
-import com.inductiveautomation.ignition.common.project.ProjectResource;
-import com.inductiveautomation.ignition.common.util.LogUtil;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceNavTreeNode;
 
@@ -44,11 +44,11 @@ import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceN
  */
 public class NodeStatusManager implements NotificationChangeListener   {
 	private static String TAG = "NodeStatusManager";
-	private final LoggerEx log;
+	private final ILSLogger log;
 	public final DesignerContext context;
 	private final ApplicationRequestHandler handler;
 	private final NotificationHandler notificationHandler;
-	private final Long projectId;
+	private final String projectName;
 	private final Map<Long,Set<Long>>  childrenByResourceId;
 	private final Map<Long,StatusEntry> statusByResourceId;
 	
@@ -57,11 +57,11 @@ public class NodeStatusManager implements NotificationChangeListener   {
 	 * The handler. There should be only one - owned by the hook instance
 	 */
 	public NodeStatusManager(DesignerContext ctx,ApplicationRequestHandler h) {
-		this.log = LogUtil.getLogger(getClass().getPackage().getName());
+		this.log = LogMaker.getLogger(getClass().getPackage().getName());
 		this.context = ctx;
 		this.handler = h;
 		this.notificationHandler = NotificationHandler.getInstance();
-		this.projectId = new Long(context.getProject().getId());
+		this.projectName = context.getProject().getName();
 		childrenByResourceId = new HashMap<>();
 		statusByResourceId = new HashMap<>();
 	}
@@ -108,7 +108,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 		Long key = new Long(BLTProperties.ROOT_RESOURCE_ID);
 		Long parentKey = new Long(BLTProperties.ROOT_PARENT_ID); 
 		if( statusByResourceId.get(key) == null ) {
-			DiagramState s = handler.getDiagramState(projectId, key);  
+			DiagramState s = handler.getDiagramState(projectName, key);  
 			statusByResourceId.put(key,new StatusEntry(node,parentKey,s));
 		}
 		if( childrenByResourceId.get(key) == null ) {
@@ -341,7 +341,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 // ================================ Notification Change Listener =========================================
 @Override
 public void diagramStateChange(long resId, String state) {
-	StatusEntry se = statusByResourceId.get(new Long(resId));
+	StatusEntry se = statusByResourceId.get(resId);
 	se.setAlerting(state.equalsIgnoreCase("true"));
 	se.getNode().reload();
 }

@@ -28,12 +28,11 @@ import com.ils.blt.gateway.engine.ProcessDiagram;
 import com.ils.blt.gateway.engine.PropertyChangeEvaluationTask;
 import com.ils.common.log.ILSLogger;
 import com.ils.common.log.LogMaker;
+import com.ils.common.tag.TagReader;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.Quality;
+import com.inductiveautomation.ignition.common.model.values.QualityCode;
 import com.inductiveautomation.ignition.common.sqltags.model.Tag;
-import com.inductiveautomation.ignition.common.sqltags.model.TagProp;
 import com.inductiveautomation.ignition.common.tags.model.SecurityContext;
 import com.inductiveautomation.ignition.common.tags.model.TagManager;
 import com.inductiveautomation.ignition.common.tags.model.TagPath;
@@ -52,7 +51,7 @@ import com.inductiveautomation.ignition.gateway.model.GatewayContext;
  *           on the state of the diagram (e.g. ISOLATION mode).
  */
 public class TagListener implements TagChangeListener   {
-	private static final String TAG = "TagListener";
+	private static final String CLSS = "TagListener";
 	private static int THREAD_POOL_SIZE = 10;   // Notification threads
 	private static final boolean DEBUG = false;
 	private final ILSLogger log;
@@ -63,6 +62,7 @@ public class TagListener implements TagChangeListener   {
 	private boolean stopped = true;
 	private final BlockExecutionController controller;
 	private final ExecutorService threadPool;
+	private TagReader tagReader = null;
 	
 	/**
 	 * Constructor: 
@@ -99,7 +99,7 @@ public class TagListener implements TagChangeListener   {
 	 */
 	public synchronized void defineSubscription(ProcessBlock block,BlockProperty property,String tagPath) {
 		
-		if( log.isTraceEnabled() || DEBUG  ) log.infof("%s.defineSubscription: %s:%s=%s",TAG,block.getName(),property.getName(),tagPath);
+		if( log.isTraceEnabled() || DEBUG  ) log.infof("%s.defineSubscription: %s:%s=%s",CLSS,block.getName(),property.getName(),tagPath);
 		if( tagPath!=null && tagPath.length() >0  ) {
 			boolean needToStartSubscription = false;
 			BlockPropertyPair key = new BlockPropertyPair(block,property);
@@ -113,13 +113,13 @@ public class TagListener implements TagChangeListener   {
 			}
 			if( list.contains(key))  {   
 				// Duplicate request, nothing to do
-				if( log.isTraceEnabled() || DEBUG) log.infof("%s.defineSubscription: %s:%s already subscribes to: %s",TAG,block.getName(),property.getName(),tagPath);
+				if( log.isTraceEnabled() || DEBUG) log.infof("%s.defineSubscription: %s:%s already subscribes to: %s",CLSS,block.getName(),property.getName(),tagPath);
 				return;
 			}
 			
 			list.add(key);
 			tagMap.put(key,tagPath);
-			if( log.isTraceEnabled() || DEBUG ) log.infof("%s.defineSubscription: %s:%s now subscribes to: %s (%s)",TAG,block.getName(),property.getName(),
+			if( log.isTraceEnabled() || DEBUG ) log.infof("%s.defineSubscription: %s:%s now subscribes to: %s (%s)",CLSS,block.getName(),property.getName(),
 					tagPath,(needToStartSubscription?"START":"PIGGY-BACK"));
 			if(!stopped ) {
 				if(needToStartSubscription) startSubscriptionForTag(tagPath);
@@ -179,14 +179,14 @@ public class TagListener implements TagChangeListener   {
 	 */
 	public synchronized void removeSubscription(ProcessBlock block,BlockProperty property,String tagPath) {
 		if( tagPath==null) return;    // There was no subscription
-		//log.debugf("%s.removeSubscription: considering %s:%s=%s",TAG,block.getName(),property.getName(),tagPath);
+		//log.debugf("%s.removeSubscription: considering %s:%s=%s",CLSS,block.getName(),property.getName(),tagPath);
 		List<BlockPropertyPair> list = blockMap.get(tagPath.toUpperCase());
 		if(list==null) return;
 		BlockPropertyPair key = new BlockPropertyPair(block,property);
 		list.remove(key);
 		// Once the list is empty, we cancel the subscription
 		if(list.isEmpty()) {
-			if( log.isTraceEnabled() || DEBUG  ) log.infof("%s.removeSubscription: cancelled %s:%s=%s",TAG,block.getName(),property.getName(),tagPath);
+			if( log.isTraceEnabled() || DEBUG  ) log.infof("%s.removeSubscription: cancelled %s:%s=%s",CLSS,block.getName(),property.getName(),tagPath);
 			blockMap.remove(tagPath.toUpperCase());
 			if(!stopped) {
 				// If we're running unsubscribe
@@ -194,10 +194,10 @@ public class TagListener implements TagChangeListener   {
 				try {
 					TagPath tp = TagPathParser.parse(tagPath);
 					tmgr.unsubscribeAsync(tp, this);
-					if( log.isTraceEnabled() || DEBUG  ) log.infof("%s.removeSubscription: unsubscribed to %s",TAG,tagPath);
+					if( log.isTraceEnabled() || DEBUG  ) log.infof("%s.removeSubscription: unsubscribed to %s",CLSS,tagPath);
 				}
 				catch(IOException ioe) {
-					log.errorf("%s.removeSubscription (%s)",TAG,ioe.getMessage());
+					log.errorf("%s.removeSubscription (%s)",CLSS,ioe.getMessage());
 				}
 			}
 		}
@@ -214,11 +214,11 @@ public class TagListener implements TagChangeListener   {
 		TagManager tmgr = context.getTagManager();
 		try {
 			TagPath tp = TagPathParser.parse(tagPath);
-			if( log.isTraceEnabled() || DEBUG  ) log.infof("%s.stopSubscription: %s",TAG,tagPath);
+			if( log.isTraceEnabled() || DEBUG  ) log.infof("%s.stopSubscription: %s",CLSS,tagPath);
 			tmgr.unsubscribeAsync(tp, this);
 		}
 		catch(IOException ioe) {
-			log.warnf("%s.stopSubscription: Error tag %s (%s)",TAG,tagPath,ioe.getMessage());
+			log.warnf("%s.stopSubscription: Error tag %s (%s)",CLSS,tagPath,ioe.getMessage());
 		}
 	}
 	/**
@@ -227,7 +227,7 @@ public class TagListener implements TagChangeListener   {
 	 */
 	public synchronized void restartSubscriptions(GatewayContext ctxt) {
 		this.context = ctxt;
-		log.infof("%s.restartSubscriptions  ...",TAG);
+		log.infof("%s.restartSubscriptions  ...",CLSS);
 		for( String tagPath:blockMap.keySet()) {
 			startSubscriptionForTag(tagPath);
 		}
@@ -244,7 +244,7 @@ public class TagListener implements TagChangeListener   {
 		TagManager tmgr = context.getTagManager();
 		List<BlockPropertyPair> list = blockMap.get(tagPath.toUpperCase());    // Should never be null
 		if( list==null || list.size()==0 ) {
-			log.warnf("%s.startSubscriptionForTag: %s - found no block/properties",TAG,tagPath);
+			log.warnf("%s.startSubscriptionForTag: %s - found no block/properties",CLSS,tagPath);
 			return;
 		}
 		// The tag path must be in canonical form which includes the provider name in brackets.
@@ -252,11 +252,10 @@ public class TagListener implements TagChangeListener   {
 		if( providerName.length()>0) {
 			try {
 				TagPath tp = TagPathParser.parse(tagPath);
-				Tag tag = tmgr.getTag(tp);
-				if( tag!=null ) {
-					QualifiedValue value = tag.getValue();
-					if( log.isTraceEnabled() || DEBUG ) log.infof("%s.startSubscriptionForTag: %s = %s (%s at %s)",TAG,
-							tp.toStringFull(),value.getValue(),
+				QualifiedValue value = tagReader.readTag(tagPath);
+				if( value!=null ) {
+					if( DEBUG ) log.infof("%s.startSubscriptionForTag: %s = %s (%s at %s)",CLSS,
+							tagPath,value.getValue(),
 							(value.getQuality().isGood()?"GOOD":"BAD"),
 							dateFormatter.format(value.getTimestamp()));
 					// Do not pass along nulls -- tag was never set
@@ -274,25 +273,25 @@ public class TagListener implements TagChangeListener   {
 					tmgr.subscribeAsync(tp, this);
 				}
 				else {
-					log.errorf("%s.startSubscriptionForTag: Failed. (%s unknown to provider %s)",TAG,tp.toStringFull(),providerName);
+					log.errorf("%s.startSubscriptionForTag: Failed. (%s unknown to provider %s)",CLSS,tagPath);
 					setPropertiesForBadTag(list,"Unknown to provider");
 				}
 			}
 			catch(IOException ioe) {
-				log.errorf("%s.startSubscriptionForTag (%s)",TAG,ioe.getMessage());
+				log.errorf("%s.startSubscriptionForTag (%s)",CLSS,ioe.getMessage());
 				setPropertiesForBadTag(list,"IOException:"+ioe.getMessage());
 			}
 			catch(IllegalArgumentException iae) {
-				log.errorf("%s.startSubscriptionForTag - illegal argument for %s (%s)",TAG,tagPath,iae.getMessage());
+				log.errorf("%s.startSubscriptionForTag - illegal argument for %s (%s)",CLSS,tagPath,iae.getMessage());
 				setPropertiesForBadTag(list,"IllegalArgument:"+iae.getMessage());
 			}
 			catch(Exception ex) {
-				log.errorf("%s.startSubscriptionForTag - Exception %s (%s)",TAG,ex.getMessage(),tagPath);
+				log.errorf("%s.startSubscriptionForTag - Exception %s (%s)",CLSS,ex.getMessage(),tagPath);
 				setPropertiesForBadTag(list,"ExceptionSubscribing:"+tagPath);
 			}
 		}
 		else {
-			log.errorf("%s.startSubscriptionForTag: Provider name is not provided in tag path (%s)",TAG,tagPath);
+			log.errorf("%s.startSubscriptionForTag: Provider name is not provided in tag path (%s)",CLSS,tagPath);
 			setPropertiesForBadTag(list,"No provider");
 		}
 	}
@@ -301,7 +300,7 @@ public class TagListener implements TagChangeListener   {
 	 * Shutdown completely.
 	 */
 	public void stop() {
-		log.infof("%s.stop tagListener, shutdown executor",TAG);
+		log.infof("%s.stop tagListener, shutdown executor",CLSS);
 		for( String tagPath:blockMap.keySet()) {
 			stopSubscription(tagPath);
 		}
@@ -335,17 +334,17 @@ public class TagListener implements TagChangeListener   {
 	@Override
 	public synchronized void tagChanged(TagChangeEvent event) {
 		TagPath tp = event.getTagPath();
-		Tag tag = event.getTag();
-		if( tag!=null && tag.getValue()!=null && tp!=null ) {
+		QualifiedValue value = tagReader.readTag(tagPath);
+		if( value!=null && value.getValue()!=null && tp!=null ) {
 			try {
-				if( log.isTraceEnabled() || DEBUG ) log.infof("%s.tagChanged: %s received %s (%s at %s)",TAG,tp.toStringFull(),
-						tag.getValue().getValue(),
-						(tag.getValue().getQuality().isGood()?"GOOD":"BAD"),
-						dateFormatter.format(tag.getValue().getTimestamp()));
+				if( DEBUG ) log.infof("%s.tagChanged: %s received %s (%s at %s)",CLSS,tp.toStringFull(),
+						value.getValue(),
+						value.getQuality().isGood()?"GOOD":"BAD",
+						dateFormatter.format(value.getTimestamp()));
 				// The subscription may be to the fully qualified tag path
 				List<BlockPropertyPair> list = blockMap.get(tp.toStringFull().toUpperCase());
 				if( list==null || list.size()==0 ) {
-					log.warnf("%s.tagChanged: %s - no current user for tag, unsubscribing",TAG,tp.toStringFull());
+					log.warnf("%s.tagChanged: %s - no current user for tag, unsubscribing",CLSS,tp.toStringFull());
 					stopSubscription(tp.toStringFull().toUpperCase());
 					blockMap.remove(tp.toStringFull().toUpperCase());
 					return;
@@ -357,30 +356,32 @@ public class TagListener implements TagChangeListener   {
 					ProcessDiagram parent = controller.getDiagram(block.getParentId());
 					if( parent!=null ) {
 						if( !parent.getState().equals(DiagramState.DISABLED)) {
-							updateProperty(block,property,tag.getValue());
+							updateProperty(block,property,value);
 						}
 						else {
-							log.warnf("%s.tagChanged: %s - block %s in disabled diagram, ignored",TAG,tp.toStringFull(),block.getName(),parent.getName());
+							log.warnf("%s.tagChanged: %s - block %s in disabled diagram, ignored",CLSS,tp.toStringFull(),block.getName(),parent.getName());
 						}
 					}
 					else {
-						log.warnf("%s.tagChanged: %s, subscriber %s has no parent diagram",TAG,tp.toStringFull(),block.getName());
+						log.warnf("%s.tagChanged: %s, subscriber %s has no parent diagram",CLSS,tp.toStringFull(),block.getName());
 					}
 				}			
 			}
 			catch(Exception ex) {
-				log.error(TAG+".tagChanged exception ("+ex.getMessage()+")",ex);
+				log.error(CLSS+".tagChanged exception ("+ex.getMessage()+")",ex);
 			}
 		}
 		else if(tag!=null && tag.getValue()==null) {
 			// Missing value
-			log.warnf("%s.tagChanged: Tag (%s) has no value (ignored)",TAG,(tp==null?"null":tp.toStringFull()));
+			log.warnf("%s.tagChanged: Tag (%s) has no value (ignored)",CLSS,(tp==null?"null":tp.toStringFull()));
 		}
 		else {
 			// Tag or path is null
-			log.warnf("%s.tagChanged: Unknown tag (%s) or tag path (%s)",TAG,(tag==null?"null":tag.getName()),(tp==null?"null":tp.toStringFull()));
+			log.warnf("%s.tagChanged: Unknown tag (%s) or tag path (%s)",CLSS,(tag==null?"null":tag.getName()),(tp==null?"null":tp.toStringFull()));
 		}
 	}
+	
+	public void setTagReader(TagReader rdr) { this.tagReader = rdr; }
 	
 	private String providerNameFromPath(String tagPath) {
 		String provider = "";
@@ -399,7 +400,7 @@ public class TagListener implements TagChangeListener   {
 			Object val = value.getValue();
 			if( val==null ) {
 				if( property.getType().equals(PropertyType.BOOLEAN) ) val = TruthValue.UNKNOWN;
-				else if( property.getType().equals(PropertyType.DOUBLE) ) val = new Double(Double.NaN);
+				else if( property.getType().equals(PropertyType.DOUBLE) ) val = Double.NaN;
 				else val = "";
 			}
 			// Convert any floats to doubles
@@ -419,16 +420,16 @@ public class TagListener implements TagChangeListener   {
 					// Set property with no notifications
 					property.setValue(val);
 					// The tag subscription acts as a pseudo input. Use the QualifiedValue
-					if( DEBUG || log.isTraceEnabled()  ) log.infof("%s.updateProperty: inout change for %s:%s = %s",TAG,block.getName(),property.getName(),val.toString());
+					if( DEBUG || log.isTraceEnabled()  ) log.infof("%s.updateProperty: inout change for %s:%s = %s",CLSS,block.getName(),property.getName(),val.toString());
 					IncomingNotification notice = new IncomingNotification(property.getName(),value);
 					threadPool.execute(new IncomingValueChangeTask(block,notice));	
 			}
 			else {
-				log.warnf("%s.updateProperty: %s property no longer bound (%s)",TAG,property.getName(),property.getBindingType());
+				log.warnf("%s.updateProperty: %s property no longer bound (%s)",CLSS,property.getName(),property.getBindingType());
 			}
 		}
 		catch(Exception ex) {
-			log.warnf("%s.updateProperty: Failed to execute change event (%s)",TAG,ex.getLocalizedMessage()); 
+			log.warnf("%s.updateProperty: Failed to execute change event (%s)",CLSS,ex.getLocalizedMessage()); 
 		}
 	}
 	
@@ -446,27 +447,27 @@ public class TagListener implements TagChangeListener   {
 			Tag tag = tmgr.getTag(tp);
 			if( tag!=null ) {
 				value = tag.getValue();
-				if( DEBUG || log.isTraceEnabled() ) log.infof("%s.updatePropertyValueDirectlyFromTag: %s = %s (%s at %s)",TAG,
+				if( DEBUG || log.isTraceEnabled() ) log.infof("%s.updatePropertyValueDirectlyFromTag: %s = %s (%s at %s)",CLSS,
 						tp.toStringFull(),value.getValue(),
 						(value.getQuality().isGood()?"GOOD":"BAD"),
 						dateFormatter.format(value.getTimestamp()));
 
 				if(value.getValue()==null ) {
-					Quality q = new BasicQuality("Tag returned a null",Quality.Level.Bad);
+					QualityCode q = QualityCode.Bad;
 					value = new BasicQualifiedValue(null,q);
 				}
 			}
 			else {
-				log.errorf("%s.updatePropertyValueDirectlyFromTag: Failed. (%s unknown to provider)",TAG,tp.toStringFull());
+				log.errorf("%s.updatePropertyValueDirectlyFromTag: Failed. (%s unknown to provider)",CLSS,tp.toStringFull());
 			}
 		}
         catch(IllegalArgumentException iae ) {
-            Quality q = new BasicQuality("Illegal tag format",Quality.Level.Bad);
+            QualityCode q = QualityCode.Bad;
             value = new BasicQualifiedValue(null,q);
-            log.errorf("%s.updatePropertyValueDirectlyFromTag: Failed for %s. (%s)",TAG,tagPath,iae.getMessage());
+            log.errorf("%s.updatePropertyValueDirectlyFromTag: Failed for %s. (%s)",CLSS,tagPath,iae.getMessage());
         }
 		catch(IOException ioe ) {
-			Quality q = new BasicQuality("Tag returned a null",Quality.Level.Bad);
+			QualityCode q = QualityCode.Bad;
 			value = new BasicQualifiedValue(null,q);
 		}
 		updateProperty(block,property,value);
@@ -480,7 +481,7 @@ public class TagListener implements TagChangeListener   {
 			// Reject blocks that are in a disabled diagram
 			ProcessDiagram parent = controller.getDiagram(block.getParentId());
 			if( parent!=null ) {
-				Quality q = new BasicQuality("Tag returned a null",Quality.Level.Bad);
+				QualityCode q = QualityCode.Bad;
 				updateProperty(block,property,new BasicQualifiedValue(null,q));	
 			}
 		}		
@@ -493,7 +494,7 @@ public class TagListener implements TagChangeListener   {
 			// Reject blocks that are in a disabled diagram
 			ProcessDiagram parent = controller.getDiagram(block.getParentId());
 			if( parent!=null ) {
-				Quality q = new BasicQuality(errMessage,Quality.Level.Bad);
+				QualityCode q = QualityCode.Bad;
 				updateProperty(block,property,new BasicQualifiedValue(null,q));	
 			}
 		}		

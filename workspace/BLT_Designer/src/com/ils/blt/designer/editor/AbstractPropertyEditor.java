@@ -4,7 +4,7 @@
 package com.ils.blt.designer.editor;
 
 import com.inductiveautomation.ignition.client.util.gui.SlidingPane;
-import com.inductiveautomation.ignition.common.project.ProjectResource;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
 
 /**
  * This abstract class, adds a shutdown method to a SlidingPane (a JPanel) used as content for the property editor

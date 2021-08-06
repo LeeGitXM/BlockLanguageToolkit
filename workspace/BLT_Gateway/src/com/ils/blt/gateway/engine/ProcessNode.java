@@ -1,5 +1,5 @@
 /**
- *   (c) 2014-2018  ILS Automation. All rights reserved. 
+ *   (c) 2014-2021  ILS Automation. All rights reserved. 
  */
 package com.ils.blt.gateway.engine;
 
@@ -13,8 +13,8 @@ import java.util.UUID;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.common.GeneralPurposeDataContainer;
-import com.inductiveautomation.ignition.common.util.LogUtil;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
+import com.ils.common.log.ILSLogger;
+import com.ils.common.log.LogMaker;
 
 /**
  * A process node is a folder of type: application, family, folder, or diagram.
@@ -25,13 +25,13 @@ public class ProcessNode implements Serializable {
 	private static final long serialVersionUID = 6280701183405134254L;
 	private final static String PATH_SEPARATOR = ":";
 	private final Map<Long,ProcessNode> children;   // Key by resourceId
-	protected final LoggerEx log;
+	protected final ILSLogger log;
 	private String name;
 	protected UUID parent;
-	protected long projectId = -1;
+	protected String projectName = "";
 	protected long resourceId = -1;   // Resource set when serialized.
 	protected final UUID self;
-	private final String TAG = "ProcessNode";
+	private final String CLSS = "ProcessNode";
 	private GeneralPurposeDataContainer auxiliaryData;
 	
 	/**
@@ -46,12 +46,12 @@ public class ProcessNode implements Serializable {
 		this.name = nam;
 		this.auxiliaryData = new GeneralPurposeDataContainer();
 		this.children = new HashMap<Long,ProcessNode>();
-		this.log = LogUtil.getLogger(getClass().getPackage().getName());
+		this.log = LogMaker.getLogger(this);
 	}
 
 	public void addChild(ProcessNode child)    { 
-		children.put(new Long(child.getResourceId()),child);
-		log.debugf("%s.addChild: %s[%s]",TAG,getName(),child.getName());
+		children.put(child.getResourceId(),child);
+		log.debugf("%s.addChild: %s[%s]",CLSS,getName(),child.getName());
 	}
 
 	// So that class is comparable
@@ -77,9 +77,9 @@ public class ProcessNode implements Serializable {
 	 */
 	public UUID getParent() { return this.parent; }
 	public long getResourceId() { return this.resourceId; }
-	public long getProjectId() {return projectId;}
+	public String getProjectName() {return projectName;}
 	public void setParent(UUID p) { this.parent = p; }
-	public void setProjectId(long projectId) {this.projectId = projectId;}
+	public void setProjectName(String nam) {this.projectName = nam;}
 	
 	/**
 	 * Create a list of descendants by recursing through the children. Add
@@ -118,14 +118,14 @@ public class ProcessNode implements Serializable {
 	public int hashCode() {
 		return this.getSelf().hashCode();
 	}	
-	public void removeChild(ProcessNode child) { children.remove(new Long(child.getResourceId()));} 
+	public void removeChild(ProcessNode child) { children.remove(child.getResourceId());} 
 	public void setName(String nam) { this.name = nam; }
 	public void setResourceId(long resourceId) {this.resourceId = resourceId;}
 	public SerializableResourceDescriptor toResourceDescriptor() {
 		SerializableResourceDescriptor descriptor = new SerializableResourceDescriptor();
 		descriptor.setName(getName());
 		descriptor.setId(self.toString());
-		descriptor.setProjectName(projectId);
+		descriptor.setProjectName(projectName);
 		descriptor.setResourceId(resourceId);
 		descriptor.setType(BLTProperties.FOLDER_RESOURCE_TYPE);
 		return descriptor;
