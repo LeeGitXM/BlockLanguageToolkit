@@ -15,13 +15,13 @@ import com.ils.blt.gateway.engine.ProcessApplication;
 import com.ils.blt.gateway.engine.ProcessDiagram;
 import com.ils.blt.gateway.engine.ProcessFamily;
 import com.ils.blt.gateway.engine.ProcessNode;
+import com.ils.common.log.ILSLogger;
+import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.Quality;
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataQuality;
-import com.inductiveautomation.ignition.common.util.LogUtil;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
 
 /**
  * This class exposes python-callable requests directed at the execution engine. 
@@ -29,8 +29,8 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  * implemented in python.
  */
 public class PythonRequestHandler   {
-	private static final String TAG = "PythonRequestHandler";
-	private static LoggerEx log = LogUtil.getLogger(PythonRequestHandler.class.getPackage().getName());
+	private static final String CLSS = "PythonRequestHandler";
+	private static ILSLogger log = LogMaker.getLogger(PythonRequestHandler.class);
 	private final BlockExecutionController controller = BlockExecutionController.getInstance();
 	private static String alerterClassName = null;
 	
@@ -39,7 +39,7 @@ public class PythonRequestHandler   {
 	 * Traverse the parent nodes until we find an Application. If there 
 	 * are none in our ancestry, return null.
 	 * 
-	 * @param nodeId identifier for the node, a string version of a UUID
+	 * @param nodeId idenILSLoggertifier for the node, a string version of a UUID
 	 * @return the ancestrial application
 	 */
 	public ProcessApplication getApplication(String nodeId)  {

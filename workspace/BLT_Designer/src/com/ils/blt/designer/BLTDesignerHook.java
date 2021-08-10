@@ -366,7 +366,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	public AbstractResourceNavTreeNode applicationForDiagram(AbstractResourceNavTreeNode app, AbstractResourceNavTreeNode node, ProcessDiagramView diagram) {
 		AbstractResourceNavTreeNode ret = null;
 
-		if (node.getProjectResource() != null && node.getProjectResource().getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
+		if (node.getProjectResource() != null && node.getResourceId().getResourceType().getTypeId().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
 			if (diagram.getName().equals(node.getName())) {
 				Optional<ProjectResource> optional = node.getProjectResource();
 				ProjectResource bob = optional.get();
@@ -374,7 +374,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 			}
 		}
 		else {
-			if (node.getProjectResource() != null && node.getProjectResource().getResourceType().equals(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
+			if (node.getProjectResource() != null && node.getResourceId().getResourceType().equals(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
 				app = node;
 			}
 			Enumeration<AbstractResourceNavTreeNode> enumer = node.children();
@@ -398,9 +398,9 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 
 	public String parseChildForDiagnosisName(AbstractResourceNavTreeNode theNode, String name) {
 		String ret = "";
-		if (theNode.getProjectResource().getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
-
-			ProjectResource res = context.getProject().getResource(theNode.getProjectResource().getResourceId());	
+		if (theNode.getResourceId().getResourceType().getTypeId().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
+			Optional<ProjectResource> optional = theNode.getProjectResource();
+			ProjectResource res = optional.get();
 			String json = new String(res.getData());
 			SerializableDiagram sd = null;
 			ObjectMapper mapper = new ObjectMapper();
@@ -418,7 +418,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 			catch (IOException ioe) {
 //				logger.warnf("%s: open io exception (%s)",CLSS,ioe.getLocalizedMessage());
 			}
-			ProcessDiagramView diagram = new ProcessDiagramView(res.getResourc,sd, context);
+			ProcessDiagramView diagram = new ProcessDiagramView(res.getResourceId(),sd, context);
 			for( Block blk:diagram.getBlocks()) {
 				ProcessBlockView pbv = (ProcessBlockView)blk;
 				if (pbv.isDiagnosis()) {

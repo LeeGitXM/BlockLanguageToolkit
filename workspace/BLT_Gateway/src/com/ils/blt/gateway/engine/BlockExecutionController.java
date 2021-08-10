@@ -43,6 +43,7 @@ import com.ils.common.watchdog.AcceleratedWatchdogTimer;
 import com.ils.common.watchdog.WatchdogTimer;
 import com.inductiveautomation.ignition.common.model.ApplicationScope;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 import com.inductiveautomation.ignition.gateway.clientcomm.GatewaySessionManager;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 
@@ -317,8 +318,8 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	public ModelManager getDelegate() {
 		return modelManager;
 	}
-	public ProcessDiagram getDiagram(long projectId,long resourceId) {
-		return modelManager.getDiagram(projectId,resourceId);
+	public ProcessDiagram getDiagram(ProjectResourceId resourceId) {
+		return modelManager.getDiagram(resourceId);
 	}
 	@Override
 	public ProcessDiagram getDiagram(String diagramIdString) {

@@ -15,6 +15,7 @@ import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.common.GeneralPurposeDataContainer;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 
 /**
@@ -66,13 +67,12 @@ public interface ToolkitRequestHandler  {
 	 *          This method is for internal use in the designer.
 	 * 
 	 * @param className class name of the block
-	 * @param projectId id of the project
-	 * @param resourceId identifier of the resource that is the diagram holding the block
+	 * @param resId identifier of the resource that is the diagram holding the block
 	 * @param blockId UUID of the block
 	 *
 	 * @return an array of block properties for the subject block
 	 */
-	public List<BlockProperty> getBlockProperties(String className,long projectId,long resourceId,UUID blockId) ;
+	public List<BlockProperty> getBlockProperties(String className,ProjectResourceId resid,UUID blockId) ;
 	
 	/**
 	 * Obtain a list of prototypes suitable for display on the block palette
@@ -128,11 +128,10 @@ public interface ToolkitRequestHandler  {
 	 */
 	public SerializableResourceDescriptor getDiagramForBlock(String blockId) ;
 	/**
-	 * @param projectId id of the project, a Long
-	 * @param resourceId identifier of the resource that is the diagram holding the block, a Long
+	 * @param id identifier of the resource that is the diagram holding the block
 	 * @return the current state of the specified diagram.
 	 */
-	public DiagramState getDiagramState(Long projectId, Long resourceId) ;
+	public DiagramState getDiagramState(ProjectResourceId id) ;
 	/**
 	 * @param diagramId String representation of the diagram's internal Id.
 	 * @return the current state of that diagram.
@@ -221,11 +220,10 @@ public interface ToolkitRequestHandler  {
 	 */
 	public String getWindowsBrowserPath();
 	/**
-	 * @param projectId id of the project, a Long
-	 * @param resourceId the diagram expressed as a resource
+	 * @param id the diagram expressed as a resource
 	 * @return the alert state of the specified diagram;
 	 */
-	public boolean isAlerting(Long projectId, Long resourceId) ;
+	public boolean isAlerting(ProjectResourceId id) ;
 	
 	/**
 	 * @return whether or not the engine is running
@@ -383,14 +381,13 @@ public interface ToolkitRequestHandler  {
 	/**
 	 * Execute the getAux extension function in Gateway scope for the indicated node.
 	 * Inform the designer of the results via a notification
-	 * @param projectId project identifier
 	 * @param resid the resourceId of an application to be refreshed
 	 * @param nodeId identifier of the node to be 
 	 * @param provider tag provider
 	 * @param db datasource
 	 * @return the auxiliary data as stored in the database
 	 */
-	public GeneralPurposeDataContainer readAuxData(long projectId,long resid,String nodeId,String provider,String db);
+	public GeneralPurposeDataContainer readAuxData(ProjectResourceId resid,String nodeId,String provider,String db);
 	/** Update a single property for a block 
 	 * @param duuid diagram unique Id
 	 * @param buuid block unique Id
@@ -416,11 +413,10 @@ public interface ToolkitRequestHandler  {
 	public void resetDiagram(String diagramId) ;
 	/**
 	 * Determine whether or not the indicated resource is known to the controller.
-	 * @param projectId id of the project, a Long
 	 * @param resid identifier of the resource that is the diagram holding the block, a Long
 	 * @return true if the resource is found
 	 */
-	public boolean resourceExists(Long projectId,Long resid) ;
+	public boolean resourceExists(ProjectResourceId resid) ;
 	/**
 	 * Execute stop() then start() on a specified block
 	 * @param diagramId id of the parent diagram
@@ -513,7 +509,7 @@ public interface ToolkitRequestHandler  {
 	 * @param state the new state of the block. The value will be coerced into a truth-value in the gateway 
 	 */
 	public void setBlockState(String diagramId,String bname,String state );
-	public void setDiagramState(Long projectId, Long resourceId, String state) ;
+	public void setDiagramState(ProjectResourceId resid, String state) ;
 	public void setDiagramState(String diagramId, String state);
 	/**
 	 * Save a value into the HSQL database table associated with the toolkit. The 
@@ -546,13 +542,12 @@ public interface ToolkitRequestHandler  {
 	public void updateBlockAnchors(UUID duuid,UUID buuid, Collection<SerializableAnchor> anchors ) ;
 	/**
 	 * Execute the setAux extension function in Gateway scope for the indicated node
-	 * @param projectId project identifier
 	 * @param resid the resourceId of an application to be refreshed
 	 * @param nodeId identifier of node or block affected.
 	 * @param container the new auxiliary data
 	 * @param provider tag provider
 	 * @param db datasource
 	 */
-	public void writeAuxData(long projectId,long resid,String nodeId,GeneralPurposeDataContainer container,String provider,String db);
+	public void writeAuxData(ProjectResourceId resid,String nodeId,GeneralPurposeDataContainer container,String provider,String db);
 
 }

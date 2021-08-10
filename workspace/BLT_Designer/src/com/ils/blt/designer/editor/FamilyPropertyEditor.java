@@ -28,7 +28,7 @@ import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayException;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.project.Project;
-import com.inductiveautomation.ignition.common.project.ProjectResource;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
 import com.inductiveautomation.ignition.designer.IgnitionDesigner;
 import com.inductiveautomation.ignition.designer.gateway.DTGatewayInterface;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
@@ -170,7 +170,7 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor implements Noti
 				log.warnf("%s.saveResource: Failed to obtain lock on resource save (%s)",CLSS,resource.getName());
 			}
 			// Update the project
-			DTGatewayInterface.getInstance().saveProject(IgnitionDesigner.getFrame(), proj, false, "Committing ...");  // Don't publish	
+			DTGatewayInterface.getInstance().saveProjectAs(IgnitionDesigner.getFrame(), proj, false, "Committing ...");  // Don't publish	
 		}
 		catch(GatewayException ge) {
 			log.warnf("%s.run: Exception saving project %d (%s)",CLSS,proj.getName(),ge.getMessage());

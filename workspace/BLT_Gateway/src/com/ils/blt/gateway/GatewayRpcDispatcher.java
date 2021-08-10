@@ -1,5 +1,5 @@
 /**
- *   (c) 2014-2016  ILS Automation. All rights reserved.
+ *   (c) 2014-2021  ILS Automation. All rights reserved.
  */
 package com.ils.blt.gateway;
 
@@ -24,9 +24,10 @@ import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.common.GeneralPurposeDataContainer;
+import com.ils.common.log.ILSLogger;
+import com.ils.common.log.LogMaker;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
-import com.inductiveautomation.ignition.common.util.LogUtil;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 
 
@@ -42,8 +43,8 @@ import com.inductiveautomation.ignition.gateway.model.GatewayContext;
  *        all returns must be serializable. But we come close.
  */
 public class GatewayRpcDispatcher   {
-	private static String TAG = "GatewayRpcDispatcher";
-	private final LoggerEx log;
+	private static String CLSS = "GatewayRpcDispatcher";
+	private final ILSLogger log;
 	private final ControllerRequestHandler requestHandler;
 
 	/**
@@ -51,7 +52,7 @@ public class GatewayRpcDispatcher   {
 	 * @param ctx Gateway context
 	 */
 	public GatewayRpcDispatcher(GatewayContext ctx) {
-		this.log = LogUtil.getLogger(getClass().getPackage().getName());
+		this.log = LogMaker.getLogger(this);
 		this.requestHandler = ControllerRequestHandler.getInstance();
 	}
 	
@@ -83,7 +84,7 @@ public class GatewayRpcDispatcher   {
 	 * @return True if we've discovered the specified block.
 	 */
 	public Boolean diagramExists(String uuidString) {
-		return new Boolean(requestHandler.diagramExists(uuidString));
+		return requestHandler.diagramExists(uuidString);
 	}
 
 	public String getApplicationName(String uuid) {
@@ -102,24 +103,23 @@ public class GatewayRpcDispatcher   {
 	 * Query the specified block for its properties. If the block does not exist, create it, given the
 	 * specified class name. In the case of a new block, its diagram may also need to be created. 
 	 * 
-	 * @param projectId project identifier
 	 * @param resourceId resource identifier
 	 * @param blockId block UUID as a string
 	 * @param className of the block
 	 * @return properties for the block
 	 */
-	public List<String> getBlockProperties(String className,Long projectId,Long resourceId,String blockId) {
-		log.debugf("%s.getBlockProperties: %s %d:%d %s",TAG,className,projectId.longValue(),resourceId.longValue(),blockId);
+	public List<String> getBlockProperties(String className,ProjectResourceId resourceId,String blockId) {
+		log.debugf("%s.getBlockProperties: %s %d:%d %s",CLSS,className,resourceId,blockId);
 		UUID blockUUID = null;
 		try {
 			blockUUID = UUID.fromString(blockId);
 		}
 		catch(IllegalArgumentException iae) {
-			log.warnf("%s.getBlockProperties: Block UUID string is illegal (%s), creating new",TAG,blockId);
+			log.warnf("%s.getBlockProperties: Block UUID string is illegal (%s), creating new",CLSS,blockId);
 			blockUUID = UUID.nameUUIDFromBytes(blockId.getBytes());
 		}
 		List<BlockProperty> propertyList = requestHandler.
-					getBlockProperties(className,projectId.longValue(),resourceId.longValue(),blockUUID);
+					getBlockProperties(className,resourceId,blockUUID);
 		List<String> result = null;
 		if( propertyList!=null ) {
 			result = new ArrayList<String>();
@@ -131,9 +131,10 @@ public class GatewayRpcDispatcher   {
 			}			
 		}
 		else {
-			log.warnf("%s: getBlockProperties: %s block %d:%d has no properties",TAG,className,projectId.longValue(),resourceId.longValue());
+			log.warnf("%s: getBlockProperties: %s block %d:%s has no properties",CLSS,className,resourceId.getProjectName(),
+					resourceId.getResourcePath().getPath().toString());
 		}
-		if( result!=null) log.debugf("%s.getBlockProperties: %s = %s",TAG,className,result.toString());
+		if( result!=null) log.debugf("%s.getBlockProperties: %s = %s",CLSS,className,result.toString());
 		return result;
 	}
 	/** The blocks implemented in Java are expected to reside in a jar named "block-definition.jar".
@@ -165,25 +166,25 @@ public class GatewayRpcDispatcher   {
 	public String getConnectionAttributes(Long proj, Long res,String connectionId,String json) {
 		long projectId = proj.longValue();
 		long resourceId = res.longValue();
-		log.debugf("%s.getConnectionAttributes: %d:%d:%s =\n%s",TAG,projectId,resourceId,connectionId,json);
+		log.debugf("%s.getConnectionAttributes: %d:%d:%s =\n%s",CLSS,projectId,resourceId,connectionId,json);
 		
 		ObjectMapper mapper = new ObjectMapper();
 		Hashtable<String, Hashtable<String, String>> propertiesTable;
 		try {
 			propertiesTable = mapper.readValue(json, new TypeReference<Hashtable<String,Hashtable<String,String>>>(){});
 			Hashtable<String,Hashtable<String,String>> results = requestHandler.getConnectionAttributes(projectId,resourceId,connectionId,propertiesTable);
-			log.debugf("%s: created table = %s",TAG,results);
+			log.debugf("%s: created table = %s",CLSS,results);
 			json =  mapper.writeValueAsString(results);
-			log.debugf("%s: JSON=%s",TAG,json);
+			log.debugf("%s: JSON=%s",CLSS,json);
 		} 
 		catch (JsonParseException jpe) {
-			log.warnf("%s: getConnectionAttributes: parsing exception (%s)",TAG,jpe.getLocalizedMessage());
+			log.warnf("%s: getConnectionAttributes: parsing exception (%s)",CLSS,jpe.getLocalizedMessage());
 		} 
 		catch (JsonMappingException jme) {
-			log.warnf("%s: getConnectionAttributes: mapping exception(%s)",TAG,jme.getLocalizedMessage());
+			log.warnf("%s: getConnectionAttributes: mapping exception(%s)",CLSS,jme.getLocalizedMessage());
 		} 
 		catch (IOException ioe) {
-			log.warnf("%s: getConnectionAttributes: io exception(%s)",TAG,ioe.getLocalizedMessage());
+			log.warnf("%s: getConnectionAttributes: io exception(%s)",CLSS,ioe.getLocalizedMessage());
 		}
 		return json;
 	}
@@ -230,13 +231,13 @@ public class GatewayRpcDispatcher   {
 				results.add(json);
 			} 
 			catch (JsonParseException jpe) {
-				log.warnf("%s: getDiagramDescriptors: parsing exception (%s)",TAG,jpe.getLocalizedMessage());
+				log.warnf("%s: getDiagramDescriptors: parsing exception (%s)",CLSS,jpe.getLocalizedMessage());
 			} 
 			catch (JsonMappingException jme) {
-				log.warnf("%s: getDiagramDescriptors: mapping exception(%s)",TAG,jme.getLocalizedMessage());
+				log.warnf("%s: getDiagramDescriptors: mapping exception(%s)",CLSS,jme.getLocalizedMessage());
 			} 
 			catch (IOException ioe) {
-				log.warnf("%s: getDiagramDescriptors: io exception(%s)",TAG,ioe.getLocalizedMessage());
+				log.warnf("%s: getDiagramDescriptors: io exception(%s)",CLSS,ioe.getLocalizedMessage());
 			}
 
 		}
@@ -246,8 +247,8 @@ public class GatewayRpcDispatcher   {
 		return requestHandler.getDiagramForBlock(blockId);
 	}
 
-	public String getDiagramState(Long projectId,Long resourceId) {
-		return requestHandler.getDiagramState(projectId,resourceId).name();
+	public String getDiagramState(ProjectResourceId resourceId) {
+		return requestHandler.getDiagramState(resourceId).name();
 	}
 
 	public String getDiagramState(String diagramId) {
@@ -272,7 +273,7 @@ public class GatewayRpcDispatcher   {
 			hostname = host.getHostName();
 		} 
 		catch (UnknownHostException ex) {
-			log.warnf("%s: getHostname: unknown host exception (%s)",TAG,ex.getLocalizedMessage());
+			log.warnf("%s: getHostname: unknown host exception (%s)",CLSS,ex.getLocalizedMessage());
 		}
 		return hostname;
 	}
@@ -292,7 +293,7 @@ public class GatewayRpcDispatcher   {
 			json = mapper.writeValueAsString(desc);
 		}
 		catch (JsonProcessingException jpe) {
-			log.warnf("%s.getInternalState: Exception (%s)",TAG,jpe.getLocalizedMessage());
+			log.warnf("%s.getInternalState: Exception (%s)",CLSS,jpe.getLocalizedMessage());
 		}
 		return json;
 	}
@@ -328,7 +329,7 @@ public class GatewayRpcDispatcher   {
 
     public Boolean isAlerting(Long projectId,Long resourceId) {
     	boolean result = requestHandler.isAlerting(projectId, resourceId);
-    	return new Boolean(result);
+    	return result;
     }
 
 	public List<SerializableBlockStateDescriptor> listBlocksConnectedAtPort(String diagramId,String blockId,String portName) {
@@ -433,10 +434,8 @@ public class GatewayRpcDispatcher   {
 	 * @param db datasource
 	 * @return aux data from database
 	 */
-	public GeneralPurposeDataContainer readAuxData(Long projId,Long resid,String nodeId,String provider,String db) {
-		long projectId = projId.longValue();
-		long resourceId = resid.longValue();
-		return requestHandler.readAuxData(projectId,resourceId, nodeId,provider, db);
+	public GeneralPurposeDataContainer readAuxData(ProjectResourceId resid,String nodeId,String provider,String db) {
+		return requestHandler.readAuxData(resid, nodeId,provider, db);
 	}
 	/** Change the name of a block
 	 * 
@@ -472,8 +471,8 @@ public class GatewayRpcDispatcher   {
 	public void restartBlock(String diagramId,String blockId) {
 		requestHandler.restartBlock(diagramId,blockId);
 	}
-	public Boolean resourceExists(Long projectId,Long resourceId) {
-		return new Boolean(requestHandler.resourceExists(projectId.longValue(), resourceId.longValue()));
+	public Boolean resourceExists(ProjectResourceId resourceId) {
+		return requestHandler.resourceExists(resourceId);
 	}
 	/**
 	 * 
@@ -484,11 +483,11 @@ public class GatewayRpcDispatcher   {
 	 * @return true if the signal was sent successfully
 	 */
 	public Boolean sendLocalSignal(String uuidString, String command,String message,String arg) {
-		log.tracef("%s.sendLocalSignal: %s %s %s %s",TAG,uuidString,command,message,arg);
-		return new Boolean(requestHandler.sendLocalSignal(uuidString,command,message,arg));
+		log.tracef("%s.sendLocalSignal: %s %s %s %s",CLSS,uuidString,command,message,arg);
+		return requestHandler.sendLocalSignal(uuidString,command,message,arg);
 	}
 	public boolean sendSignal(String diagramId,String blockName,String command,String message) {
-		return new Boolean(requestHandler.sendSignal(diagramId,blockName,command,message));
+		return requestHandler.sendSignal(diagramId,blockName,command,message);
 	}
 	/**
 	 * 
@@ -500,7 +499,7 @@ public class GatewayRpcDispatcher   {
 	 * @return true if the signal was sent successfully
 	 */
 	public Boolean sendTimestampedSignal(String uuidString, String command,String message,String arg,Long time) {
-		return new Boolean(requestHandler.sendTimestampedSignal(uuidString,command,message,arg,time.longValue()));
+		return requestHandler.sendTimestampedSignal(uuidString,command,message,arg,time.longValue());
 	}
 
 
@@ -519,7 +518,7 @@ public class GatewayRpcDispatcher   {
 	 * @param json JSON representation of the complete property list for the block.
 	 */
 	public void setBlockProperties(String diagramId,String blockId, String json) {
-		log.debugf("%s.setBlockProperties: %s %s: %s", TAG, diagramId, blockId, json);
+		log.debugf("%s.setBlockProperties: %s %s: %s", CLSS, diagramId, blockId, json);
 		// Deserialize the JSON
 		ObjectMapper mapper = new ObjectMapper();
 		try {
@@ -528,13 +527,13 @@ public class GatewayRpcDispatcher   {
 			requestHandler.setBlockProperties(getBlockUUID(diagramId),getBlockUUID(blockId),properties);
 		} 
 		catch (JsonParseException jpe) {
-			log.warnf("%s.setBlockProperties: parse exception (%s)",TAG,jpe.getLocalizedMessage());
+			log.warnf("%s.setBlockProperties: parse exception (%s)",CLSS,jpe.getLocalizedMessage());
 		}
 		catch(JsonMappingException jme) {
-			log.warnf("%s.setBlockProperties: mapping exception (%s)",TAG,jme.getLocalizedMessage());
+			log.warnf("%s.setBlockProperties: mapping exception (%s)",CLSS,jme.getLocalizedMessage());
 		}
 		catch(IOException ioe) {
-			log.warnf("%s.setBlockProperties: IO exception (%s)",TAG,ioe.getLocalizedMessage());
+			log.warnf("%s.setBlockProperties: IO exception (%s)",CLSS,ioe.getLocalizedMessage());
 		}; 
 	}
 
@@ -550,7 +549,7 @@ public class GatewayRpcDispatcher   {
 	 * @param json JSON representation of the property
 	 */
 	public void setBlockProperty(String diagramId,String blockId, String json) {
-		log.debugf("%s.setBlockProperty: %s %s: %s", TAG, diagramId, blockId, json);
+		log.debugf("%s.setBlockProperty: %s %s: %s", CLSS, diagramId, blockId, json);
 		// Deserialize the JSON
 		ObjectMapper mapper = new ObjectMapper();
 		try {
@@ -558,13 +557,13 @@ public class GatewayRpcDispatcher   {
 			requestHandler.setBlockProperty(getBlockUUID(diagramId),getBlockUUID(blockId),property);
 		} 
 		catch (JsonParseException jpe) {
-			log.warnf("%s.setBlockProperty: parse exception (%s)",TAG,jpe.getLocalizedMessage());
+			log.warnf("%s.setBlockProperty: parse exception (%s)",CLSS,jpe.getLocalizedMessage());
 		}
 		catch(JsonMappingException jme) {
-			log.warnf("%s.setBlockProperty: mapping exception (%s)",TAG,jme.getLocalizedMessage());
+			log.warnf("%s.setBlockProperty: mapping exception (%s)",CLSS,jme.getLocalizedMessage());
 		}
 		catch(IOException ioe) {
-			log.warnf("%s.setBlockProperty: IO exception (%s)",TAG,ioe.getLocalizedMessage());
+			log.warnf("%s.setBlockProperty: IO exception (%s)",CLSS,ioe.getLocalizedMessage());
 		}; 
 	}
 	
@@ -630,12 +629,12 @@ public class GatewayRpcDispatcher   {
 	}
 
 	public void startController() {
-		log.infof("%s.startController ...",TAG);
+		log.infof("%s.startController ...",CLSS);
 		requestHandler.startController();
 	}
 
 	public void stopController() {
-		log.infof("%s.stopController ...",TAG);
+		log.infof("%s.stopController ...",CLSS);
 		requestHandler.stopController();
 	}
 
@@ -647,7 +646,7 @@ public class GatewayRpcDispatcher   {
 			requestHandler.triggerStatusNotifications();
 		}
 		catch( Exception ex) {
-			log.errorf(TAG+".triggerStatusNotification: EXCEPTION", ex);
+			log.errorf(CLSS+".triggerStatusNotification: EXCEPTION", ex);
 		}
 	}
 
@@ -668,16 +667,16 @@ public class GatewayRpcDispatcher   {
 			requestHandler.updateBlockAnchors(diagramUUID,blockUUID,anchors);
 		} 
 		catch (JsonParseException jpe) {
-			log.warnf("%s.updateBlockAnchors: parse exception (%s)",TAG,jpe.getLocalizedMessage());
+			log.warnf("%s.updateBlockAnchors: parse exception (%s)",CLSS,jpe.getLocalizedMessage());
 		}
 		catch(JsonMappingException jme) {
-			log.warnf("%s.updateBlockAnchors: mapping exception (%s)",TAG,jme.getLocalizedMessage());
+			log.warnf("%s.updateBlockAnchors: mapping exception (%s)",CLSS,jme.getLocalizedMessage());
 		}
 		catch(IOException ioe) {
-			log.warnf("%s.updateBlockAnchors: IO exception (%s)",TAG,ioe.getLocalizedMessage());
+			log.warnf("%s.updateBlockAnchors: IO exception (%s)",CLSS,ioe.getLocalizedMessage());
 		}
 		catch(IllegalArgumentException iae) {
-			log.warnf("%s.sendLocalSignal: Diagram or block UUID string is illegal (%s,%s), creating new",TAG,diagramId,blockId);
+			log.warnf("%s.sendLocalSignal: Diagram or block UUID string is illegal (%s,%s), creating new",CLSS,diagramId,blockId);
 		}
 	}
 
@@ -688,7 +687,7 @@ public class GatewayRpcDispatcher   {
 			blockUUID = UUID.fromString(blockId);
 		}
 		catch(IllegalArgumentException iae) {
-			log.warnf("%s: getBlockProperties: Block UUID string is illegal (%s), creating new",TAG,blockId);
+			log.warnf("%s: getBlockProperties: Block UUID string is illegal (%s), creating new",CLSS,blockId);
 			blockUUID = UUID.nameUUIDFromBytes(blockId.getBytes());
 		}
 		return blockUUID;
@@ -699,9 +698,7 @@ public class GatewayRpcDispatcher   {
 	 * @param provider tag provider
 	 * @param db datasource
 	 */
-	public void writeAuxData(Long projId,Long resid,String nodeId,GeneralPurposeDataContainer container,String provider,String db) {
-		long projectId = projId.longValue();
-		long resourceId = resid.longValue();
-		requestHandler.writeAuxData(projectId,resourceId, nodeId,container,provider, db);
+	public void writeAuxData(ProjectResourceId resid,String nodeId,GeneralPurposeDataContainer container,String provider,String db) {
+		requestHandler.writeAuxData(resid, nodeId,container,provider, db);
 	}
 }

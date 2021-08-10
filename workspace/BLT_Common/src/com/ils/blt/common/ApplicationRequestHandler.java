@@ -24,6 +24,7 @@ import com.ils.common.log.ILSLogger;
 import com.ils.common.log.LogMaker;
 import com.ils.common.persistence.ToolkitProperties;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 
 
@@ -160,7 +161,6 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * it will be created.
 	 * 
 	 * @param className class of the block
-	 * @param projectId id of the project
 	 * @param resourceId corresponding to the diagram
 	 * @param blockId UUID of the block
 
@@ -168,7 +168,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<BlockProperty> getBlockProperties(String className,long projectId,long resourceId,UUID blockId) {
+	public List<BlockProperty> getBlockProperties(String className,ProjectResourceId resourceId,UUID blockId) {
 		log.debugf("%s.getBlockProperties: for block %s (%s)",CLSS,blockId.toString(),className);
 		List<BlockProperty> result = null;
 		List<String> jsonList = new ArrayList<String>();
@@ -325,11 +325,11 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * @return the current state of the specified diagram.
 	 */
 	@Override
-	public DiagramState getDiagramState(Long projectId, Long resourceId) {
+	public DiagramState getDiagramState(ProjectResourceId resourceId) {
 		DiagramState result = DiagramState.ACTIVE;
 		try {
 			String state = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "getDiagramState",projectId,resourceId);
+					BLTProperties.MODULE_ID, "getDiagramState",resourceId);
 			log.debugf("%s.getDiagramState ... %s",CLSS,result.toString());
 			result = DiagramState.valueOf(state);
 		}
@@ -1240,7 +1240,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		}
 	}
 	@Override
-	public void setDiagramState(Long projectId, Long resourceId, String state) {
+	public void setDiagramState(ProjectResourceId resourceId, String state) {
 		log.debugf("%s.setDiagramState ... %d:%d %s",CLSS,projectId.longValue(),resourceId.longValue(),state);
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
@@ -1292,14 +1292,14 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		log.infof("%s.setTimeFactor ... %s",CLSS,String.valueOf(factor));
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "setTimeFactor",new Double(factor));
+					BLTProperties.MODULE_ID, "setTimeFactor",factor);
 		}
 		catch(Exception ge) {
 			log.infof("%s.setTimeFactor: GatewayException (%s:%s)",CLSS,ge.getClass().getName(),ge.getMessage());
 		}
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.SFC_MODULE_ID, "setTimeFactor",new Double(factor));
+					BLTProperties.SFC_MODULE_ID, "setTimeFactor",factor);
 		}
 		catch(Exception ignore) {}
 	}
@@ -1420,7 +1420,6 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	}
 	/**
 	 * Execute the setAux extension function in Gateway scope, for the specified resource.
-	 * @param projId project identifier
 	 * @param resid the resourceId of a node to be written
 	 * @param nodeId
 	 * @param container
@@ -1428,11 +1427,11 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * @param db data source
 	 */
 	@Override
-	public synchronized void writeAuxData(long projId,long resid,String nodeId,GeneralPurposeDataContainer container,String provider,String database) {
+	public synchronized void writeAuxData(ProjectResourceId resid,String nodeId,GeneralPurposeDataContainer container,String provider,String database) {
 		//log.infof("%s.writeAuxData: proj %d, res %d, (%s,%s)",CLSS,projId,root,provider,database);
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "writeAuxData",projId,resid,nodeId,container,provider,database);
+					BLTProperties.MODULE_ID, "writeAuxData",resid,nodeId,container,provider,database);
 		}
 		catch(Exception ge) {
 			log.infof("%s.writeAuxData: GatewayException (%s)",CLSS,ge.getMessage());

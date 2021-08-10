@@ -1,7 +1,7 @@
 package com.ils.blt.common;
 
 import com.ils.blt.common.block.BlockConstants;
-import com.inductiveautomation.ignition.common.sqltags.model.TagPath;
+import com.inductiveautomation.ignition.common.tags.model.TagPath;
 
 /**
  * This class presents several static utility methods dealing with

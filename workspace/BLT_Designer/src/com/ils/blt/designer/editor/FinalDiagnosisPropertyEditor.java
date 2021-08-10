@@ -4,8 +4,6 @@
 package com.ils.blt.designer.editor;
 
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.beans.PropertyChangeEvent;
@@ -28,7 +26,6 @@ import javax.swing.SwingUtilities;
 
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
-import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.block.ActiveState;
 import com.ils.blt.common.notification.NotificationChangeListener;
@@ -48,9 +45,8 @@ import com.ils.common.log.LogMaker;
 import com.ils.common.ui.DualListBox;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
-import com.inductiveautomation.ignition.common.project.ProjectResource;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
-import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceNavTreeNode;
 
 import net.miginfocom.swing.MigLayout;
 

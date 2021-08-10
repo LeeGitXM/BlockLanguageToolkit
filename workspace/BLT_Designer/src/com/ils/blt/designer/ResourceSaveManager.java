@@ -64,7 +64,7 @@ public class ResourceSaveManager implements Runnable {
 		accumulateNodeResources(root,diff);
 		
 		try {
-			DTGatewayInterface.getInstance().saveProject(IgnitionDesigner.getFrame(), diff, true, "Committing/Publishing ...");  // publish		
+			DTGatewayInterface.getInstance().saveProjectAs(IgnitionDesigner.getFrame(), diff, true, "Committing/Publishing ...");  // publish		
 		}
 		catch(GatewayException ge) {
 			log.warnf("%s.saveAll: Exception saving project resource %d (%s)",CLSS,root.getProjectResource().getResourceId(),ge.getMessage());

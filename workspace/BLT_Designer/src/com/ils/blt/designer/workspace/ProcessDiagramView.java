@@ -163,7 +163,8 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	 */
 	public void initBlockProperties(ProcessBlockView block) {
 		if( appRequestHandler!=null ) {
-			List<BlockProperty> properties = appRequestHandler.getBlockProperties(block.getClassName(),context.getProject().getId(),resourceId,block.getId());
+			List<BlockProperty> properties = appRequestHandler.getBlockProperties(block.getClassName(),
+					context.getProject().getResourceId(),block.getId());
 			for(BlockProperty bp:properties) {
 				block.setProperty(bp);
 			}

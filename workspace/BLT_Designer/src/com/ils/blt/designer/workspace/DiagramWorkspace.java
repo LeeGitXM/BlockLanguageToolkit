@@ -1,5 +1,5 @@
 /**
- *   (c) 2014-2020  ILS Automation. All rights reserved.
+ *   (c) 2014-2021  ILS Automation. All rights reserved.
  */
 package com.ils.blt.designer.workspace;
 
@@ -140,6 +140,10 @@ import com.jidesoft.action.DockableBarManager;
 import com.jidesoft.docking.DockContext;
 import com.jidesoft.docking.DockingManager;
 import com.jidesoft.swing.JideButton;
+import com.kenai.jffi.Platform.OS;
+import com.sun.java.swing.action.AlignLeftAction;
+import com.sun.java.swing.action.AlignRightAction;
+import com.sun.java.swing.action.HelpAction;
 
 /**
  * A Diagram workspace is a container that occupies the DockManager workspace
@@ -844,7 +848,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	// and properties
 	public void handleBlockDrop(Object droppedOn, DropTargetDropEvent event) {
 		try {
-			DataFlavor flava = NodeListTransferable.FLAVOR_NODELIST;
+			DataFlavor flava = NodeListTransferable.FLAVOR_NODE_INFO_LIST;
 			if (event.isDataFlavorSupported(flava)) {
 				Object node = event.getTransferable().getTransferData(flava);
 				if (node instanceof ArrayList && ((ArrayList) node).size() == 1) {
@@ -2082,7 +2086,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		public void actionPerformed(ActionEvent e) {
 			block.setSignalAnchorDisplayed(false);
 			if( !diagram.isDirty()) {
-				BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(diagram.getResourceId());
+				BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(diagram.getResourcePath());
 				if( tab!=null ) workspace.saveDiagramResource(tab);
 			}
 			block.fireStateChanged();

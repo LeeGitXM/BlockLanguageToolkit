@@ -5,6 +5,7 @@ import java.util.UUID;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.block.AttributeDisplay;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 
 
 
@@ -21,8 +22,8 @@ public class SerializableDiagram {
 	private SerializableConnection[] connections;
 	private UUID id = null;
 	private String name = "UNSET";
-	private UUID encapsulationBlockID = null;   // Applies only to diagrams that are sub-workspaces of an encapsulation
-	private long resourceId = -1;
+	private UUID encapsulationBlockID = null;   // Only for diagrams that are sub-workspaces of an encapsulation
+	private ProjectResourceId resourceId;
 	private DiagramState state = DiagramState.ACTIVE;
 	private String watermark = "";
 	private boolean dirty = false;
@@ -40,7 +41,7 @@ public class SerializableDiagram {
 	public UUID getEncapsulationBlockId() {return encapsulationBlockID;}
 	public UUID getId() {return id;}
 	public String getName() { return name; }
-	public long getResourceId() {return resourceId;}
+	public ProjectResourceId getResourceId() { return this.resourceId; }
 	public DiagramState getState() {return state;}
 	public String getWatermark() {return watermark;}
 	public boolean isDirty() {return dirty;}
@@ -52,7 +53,7 @@ public class SerializableDiagram {
 	public void setEncapsulationBlockId(UUID parentId) {this.encapsulationBlockID = parentId;}
 	public void setId(UUID id) {this.id = id;}
 	public void setName(String nam) { if(nam!=null) name=nam; }
-	public void setResourceId(long resourceId) {this.resourceId = resourceId;}
+	public void setResourceId(ProjectResourceId resid) { this.resourceId = resid; }
 	public void setState(DiagramState state) {this.state = state;}
 	public void setWatermark(String mark) { this.watermark = mark; }
 	

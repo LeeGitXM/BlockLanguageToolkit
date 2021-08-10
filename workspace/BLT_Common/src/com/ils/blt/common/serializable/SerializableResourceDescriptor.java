@@ -2,7 +2,10 @@ package com.ils.blt.common.serializable;
 
 import java.io.Serializable;
 
+import com.ils.blt.common.BLTProperties;
 import com.inductiveautomation.ignition.common.project.Project;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
+import com.inductiveautomation.ignition.common.project.resource.ResourceType;
 
 
 /**
@@ -15,37 +18,37 @@ import com.inductiveautomation.ignition.common.project.Project;
 public class SerializableResourceDescriptor implements Serializable {
 	private static final long serialVersionUID = 5498197358912286066L;
 	private String name;
-	private String id;
 	private String className;
 	private String path;
 	private String projectName;
-	private long resourceId;
 	private String type;
 	
 	public SerializableResourceDescriptor() {	
 		name="UNSET";
-		id = "";
 		className = "";
 		path = "";
 		projectName = Project.GLOBAL_PROJECT_NAME;
-		resourceId = -1;
 		type = "";
 	}
 	
 	public String getClassName() {return className;}
-	public String getId() {return id;}
 	public String getName() { return name; }
 	public String getPath() { return path; }
 	public String getProjectName() {return projectName;}
-	public long getResourceId() {return resourceId;}
+	/**
+	 * Create a project resource id from components of the descriptor
+	 * @return a resource id
+	 */
+	public ProjectResourceId getResourceId() {
+		ResourceType rtype = new ResourceType(BLTProperties.MODULE_ID,type);
+		ProjectResourceId resourceId = new ProjectResourceId(projectName,rtype,path);
+		return resourceId;}
 	public String getType() {return type;}
 	
 	public void setClassName(String className) {this.className = className;}
-	public void setId(String id) {this.id = id;}
 	public void setName(String nam) { if(nam!=null) name=nam; }
 	public void setPath(String p) { if(p!=null) path=p; }
 	public void setProjectName(String name) {this.projectName = name;}
-	public void setResourceId(long resourceId) {this.resourceId = resourceId;}
 	public void setType(String type) {this.type = type;}
 
 }

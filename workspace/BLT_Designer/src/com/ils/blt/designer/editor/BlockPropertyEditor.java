@@ -18,6 +18,7 @@ import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.ils.blt.designer.workspace.WorkspaceRepainter;
 import com.ils.common.persistence.ToolkitProperties;
 import com.ils.common.tag.TagUtility;
+import com.inductiveautomation.ignition.common.project.resource.ResourcePath;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignableContainer;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
@@ -102,15 +103,15 @@ public class BlockPropertyEditor extends AbstractPropertyEditor   {
 	 */
 	public void saveDiagram() {
 		if( !diagram.isDirty()) {
-			BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(diagram.getResourceId());
+			BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(diagram.getResourcePath());
 			if( tab!=null )  workspace.saveDiagramResource(tab);
 		}
 	}
 	/**
 	 * Save a diagram that is not the current.
 	 */
-	public void saveDiagram(long resid) {
-		BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resid);
+	public void saveDiagram(ResourcePath path) {
+		BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(path);
 		if( tab!=null )  workspace.saveDiagramResource(tab);
 	}
 	

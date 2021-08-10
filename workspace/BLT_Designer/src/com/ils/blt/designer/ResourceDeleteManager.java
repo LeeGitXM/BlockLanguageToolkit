@@ -7,7 +7,7 @@ import java.util.List;
 import com.ils.blt.common.BLTProperties;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayException;
 import com.inductiveautomation.ignition.common.project.Project;
-import com.inductiveautomation.ignition.common.project.ProjectResource;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.IgnitionDesigner;
@@ -60,7 +60,7 @@ public class ResourceDeleteManager {
 		if( !diff.getDeletedResources().isEmpty() ) {
 			// Update the project with these nodes (informs the gateway also)
 			try {
-				DTGatewayInterface.getInstance().saveProject(IgnitionDesigner.getFrame(), diff, false, "Committing ...");  // Do not publish
+				DTGatewayInterface.getInstance().saveProjectAs(IgnitionDesigner.getFrame(), diff, false, "Committing ...");  // Do not publish
 			}
 			catch(GatewayException ge) {
 				log.warnf("%s.deleteInProject: Exception deleting project resources under %d (%s)",TAG,rootId,ge.getMessage());

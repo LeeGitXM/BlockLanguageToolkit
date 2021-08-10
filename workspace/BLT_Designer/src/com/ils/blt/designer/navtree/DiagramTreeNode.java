@@ -55,7 +55,8 @@ import com.inductiveautomation.ignition.common.execution.impl.BasicExecutionEngi
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.ProjectChangeListener;
-import com.inductiveautomation.ignition.common.project.ProjectResource;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 import com.inductiveautomation.ignition.designer.UndoManager;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignableContainer;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
@@ -79,7 +80,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	private static final String PREFIX = BLTProperties.BUNDLE_PREFIX;  // Required for some defaults
 	protected DesignerContext context;
 	private boolean dirty = false;     
-	protected final long resourceId;
+	protected final ProjectResourceId resourceId;
 	private final ExecutionManager executionEngine;
 	protected final DiagramWorkspace workspace;
 	private SaveDiagramAction saveAction = null;
@@ -223,12 +224,12 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	public void closeAndCommit() {
 		log.debugf("%s.closeAndCommit: res %d",TAG,resourceId);
 		if( workspace.isOpen(resourceId) ) {
-			DesignableContainer c = workspace.findDesignableContainer(resourceId);
+			DesignableContainer c = workspace.findDesignableContainer(resourceId.getResourcePath());
 			BlockDesignableContainer container = (BlockDesignableContainer)c;
 			ProcessDiagramView diagram = (ProcessDiagramView)container.getModel();
 			diagram.setDirty(false);
 			diagram.unregisterChangeListeners();
-			workspace.close(resourceId);
+			workspace.close(resourceId.getResourcePath());
 		}
 		setIcon(getIcon());
 		refresh();
@@ -242,7 +243,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		// If the diagram is open on a tab, call the workspace method to update the project resource
 		// from the diagram view. This method handles re-paint of the background.
 
-		BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resourceId);
+		BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resourceId.getResourcePath());
 		if( tab!=null ) {
 
 			ProcessDiagramView view = (ProcessDiagramView)tab.getModel();
@@ -272,7 +273,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	public void setIcon(Icon icon) { super.setIcon(icon); }  // Make public
 	
 	@Override
-	public long getResourceId() { return this.resourceId; }
+	public ProjectResourceId getResourceId() { return this.resourceId; }
 	
 	/**
 	 * This is the resource ..

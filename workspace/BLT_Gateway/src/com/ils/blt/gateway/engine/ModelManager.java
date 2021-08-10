@@ -36,6 +36,7 @@ import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.ProjectListener;
 import com.inductiveautomation.ignition.common.project.ProjectVersion;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
@@ -230,9 +231,9 @@ public class ModelManager implements ProjectListener  {
 
 	 * @return the specified diagram. If not found, return null. 
 	 */
-	public ProcessDiagram getDiagram(long projectId,long resourceId) {
+	public ProcessDiagram getDiagram(ProjectResourceId resourceId) {
 		ProcessDiagram diagram = null;
-		ProjectResourceKey key = new ProjectResourceKey(projectId,resourceId);
+		ProjectResourceKey key = new ProjectResourceKey(resourceId);
 		ProcessNode node = nodesByKey.get(key);
 		if( node instanceof ProcessDiagram ) diagram = (ProcessDiagram)node;
 		return diagram;
@@ -262,9 +263,9 @@ public class ModelManager implements ProjectListener  {
 	public synchronized List<SerializableResourceDescriptor> getDiagramDescriptors(String projectName) {
 		List<SerializableResourceDescriptor> result = new ArrayList<>();
 		// First obtain a list of diagrams by recursively descending the tree
-		Long projectId = context.getProjectManager().getProjectId(projectName);
+		Long projectId = context.getProjectManager().getProject(projectName);
 		if( projectId!=null) {
-			List<ProcessNode> nodes = root.allNodesForProject(projectId);
+			List<ProcessNode> nodes = root.allNodesForProject(projectName);
 			// For each diagram discovered, create a tree path.
 			for(ProcessNode node:nodes) {
 				if( node instanceof ProcessDiagram ) {
@@ -462,8 +463,7 @@ public class ModelManager implements ProjectListener  {
 					}
 				}
 			}
-		}
-		
+		}	
 	}
 	// Node must be in the nav-tree. Include project name.
 	public String pathForNode(UUID nodeId) {
@@ -881,7 +881,7 @@ public class ModelManager implements ProjectListener  {
 	 * @param startup
 	 */
 	private void addModifyFamilyResource(long projectId,ProjectResource res,boolean startup) {
-		if(DEBUG) log.infof("%s.addModifyFamilyResource: %s(%d)",CLSS,res.getName(),res.getResourceId());
+		if(DEBUG) log.infof("%s.addModifyFamilyResource: %s(%d)",CLSS,res.getResourceName(),res.getResourceId());
 		SerializableFamily sf = deserializeFamilyResource(projectId,res);
 		if( sf!=null ) {
 			ProcessFamily family = new ProcessFamily(sf,res.getParentUuid());

@@ -4,6 +4,7 @@
 package com.ils.blt.designer;
 
 import java.util.concurrent.locks.ReentrantLock;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.ApplicationRequestHandler;
@@ -13,7 +14,7 @@ import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayException;
 import com.inductiveautomation.ignition.common.project.Project;
-import com.inductiveautomation.ignition.common.project.ProjectResource;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.IgnitionDesigner;
@@ -84,8 +85,7 @@ public class ResourceUpdateManager implements Runnable {
 
 			if(res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
 				// If the resource is open and it is dirty then we need to save it
-				long resourceId = res.getResourceId();
-				BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resourceId);
+				BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(res.getResourcePath());
 				if( tab!=null ) {
 					// If the diagram is open on a tab, call the workspace method to update the project resource
 					// from the diagram view. This method handles re-paint of the background.

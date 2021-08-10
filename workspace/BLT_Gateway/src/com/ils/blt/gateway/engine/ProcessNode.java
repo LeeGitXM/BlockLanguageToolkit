@@ -8,13 +8,14 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.log.ILSLogger;
 import com.ils.common.log.LogMaker;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
+import com.inductiveautomation.ignition.common.project.resource.ResourcePath;
 
 /**
  * A process node is a folder of type: application, family, folder, or diagram.
@@ -24,13 +25,11 @@ import com.ils.common.log.LogMaker;
 public class ProcessNode implements Serializable {
 	private static final long serialVersionUID = 6280701183405134254L;
 	private final static String PATH_SEPARATOR = ":";
-	private final Map<Long,ProcessNode> children;   // Key by resourceId
+	private final Map<ProjectResourceId,ProcessNode> children;   // Key by resourceId
 	protected final ILSLogger log;
 	private String name;
-	protected UUID parent;
-	protected String projectName = "";
-	protected long resourceId = -1;   // Resource set when serialized.
-	protected final UUID self;
+	protected ResourcePath parent;
+	protected ProjectResourceId resourceId;   // Resource set when serialized.
 	private final String CLSS = "ProcessNode";
 	private GeneralPurposeDataContainer auxiliaryData;
 	
@@ -40,12 +39,12 @@ public class ProcessNode implements Serializable {
 	 * @param parent UUID of the parent of this node.
 	 * @param me UUID of this node 
 	 */
-	public ProcessNode(String nam, UUID parent, UUID me) { 
-		this.self = me;
+	public ProcessNode(String nam, ResourcePath parent, ProjectResourceId me) { 
+		this.resourceId = me;
 		this.parent = parent;
 		this.name = nam;
 		this.auxiliaryData = new GeneralPurposeDataContainer();
-		this.children = new HashMap<Long,ProcessNode>();
+		this.children = new HashMap<>();
 		this.log = LogMaker.getLogger(this);
 	}
 
@@ -61,7 +60,7 @@ public class ProcessNode implements Serializable {
 		boolean result = false;
 		if( arg instanceof ProcessNode) {
 			ProcessNode that = (ProcessNode)arg;
-			if( this.getSelf().equals(that.getSelf()) ) {
+			if( this.getResourceId().equals(that.getResourceId()) ) {
 				result = true;
 			}
 		}
@@ -72,14 +71,13 @@ public class ProcessNode implements Serializable {
 	public Collection<ProcessNode> getChildren() { return children.values(); }
 	public String getName() {return name;}
 	/**
-	 * @return the UUID of the parent of this node.
+	 * @return the resource path of the parent of this node.
 	 *         The parent of the root node is null.
 	 */
-	public UUID getParent() { return this.parent; }
-	public long getResourceId() { return this.resourceId; }
-	public String getProjectName() {return projectName;}
-	public void setParent(UUID p) { this.parent = p; }
-	public void setProjectName(String nam) {this.projectName = nam;}
+	public ResourcePath getParent() { return this.parent; }
+	public ProjectResourceId getResourceId() { return this.resourceId; }
+	public String getProjectName() {return resourceId.getProjectName();}
+	public void setParent(ResourcePath p) { this.parent = p; }
 	
 	/**
 	 * Create a list of descendants by recursing through the children. Add
@@ -91,10 +89,6 @@ public class ProcessNode implements Serializable {
 		}
 		descendants.add(this);
 	}
-	/**
-	 * @return the UUID of this node
-	 */
-	public UUID getSelf() { return this.self; }
 
 	/**
 	 * Traverse the parentage prepending names to produce a tree path.
@@ -102,31 +96,30 @@ public class ProcessNode implements Serializable {
 	 * Use nodesByUUID to help converting our UUIDs to objects
 	 * @return
 	 */
-	public String getTreePath(Map<UUID,ProcessNode> nodesByUUID) {
+	public String getTreePath(Map<ResourcePath,ProcessNode> nodesByPath) {
 		StringBuffer buf = new StringBuffer(name);
-		ProcessNode parentNode = nodesByUUID.get(getParent());
+		ProcessNode parentNode = nodesByPath.get(getParent());
 		while(parentNode!=null) {
 			buf.insert(0,PATH_SEPARATOR);
 			buf.insert(0,parentNode.getName());
 			if( parentNode.getParent()==null) break;
-			parentNode = nodesByUUID.get(parentNode.getParent());
+			parentNode = nodesByPath.get(parentNode.getParent());
 		}
 		buf.insert(0,PATH_SEPARATOR);  // Leading colon
 		return buf.toString();
 	}
 	@Override
 	public int hashCode() {
-		return this.getSelf().hashCode();
+		return this.getResourceId().hashCode();
 	}	
 	public void removeChild(ProcessNode child) { children.remove(child.getResourceId());} 
 	public void setName(String nam) { this.name = nam; }
-	public void setResourceId(long resourceId) {this.resourceId = resourceId;}
+	public void setResourceId(ProjectResourceId resid) {this.resourceId = resid;}
 	public SerializableResourceDescriptor toResourceDescriptor() {
 		SerializableResourceDescriptor descriptor = new SerializableResourceDescriptor();
 		descriptor.setName(getName());
-		descriptor.setId(self.toString());
-		descriptor.setProjectName(projectName);
-		descriptor.setResourceId(resourceId);
+		descriptor.setPath(resourceId.getResourcePath().getPath().toString());
+		descriptor.setProjectName(resourceId.getProjectName());
 		descriptor.setType(BLTProperties.FOLDER_RESOURCE_TYPE);
 		return descriptor;
 	}

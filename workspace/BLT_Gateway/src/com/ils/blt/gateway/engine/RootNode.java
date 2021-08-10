@@ -31,7 +31,7 @@ public class RootNode extends ProcessNode {
 	 * @param ctx Gateway context 
 	 */
 	public RootNode(GatewayContext ctx) { 
-		super("root",null,BLTProperties.ROOT_FOLDER_UUID);
+		super(BLTProperties.ROOT_FOLDER_NAME,null,BLTProperties.ROOT_FOLDER_UUID);
 		this.context = ctx;
 		this.childrenByProjectName = new HashMap<>();
 	}

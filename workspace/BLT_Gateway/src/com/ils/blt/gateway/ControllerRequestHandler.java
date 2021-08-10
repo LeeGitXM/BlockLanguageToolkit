@@ -64,6 +64,7 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualityCode;
 import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 import com.inductiveautomation.ignition.gateway.datasource.Datasource;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
@@ -256,11 +257,11 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * @return the properties of an existing or new block.
 	 */
 	@Override
-	public synchronized List<BlockProperty> getBlockProperties(String className,long projectId,long resourceId, UUID blockId) {
+	public synchronized List<BlockProperty> getBlockProperties(String className,ProjectResourceId resourceId, UUID blockId) {
 		// If the instance doesn't exist, create one
 		log.debugf("%s.getBlockProperties of %s (%s)",CLSS,className,blockId.toString());
 		List<BlockProperty> results = new ArrayList<>();
-		ProcessDiagram diagram = controller.getDiagram(projectId, resourceId);
+		ProcessDiagram diagram = controller.getDiagram(resourceId);
 		ProcessBlock block = null;
 		if( diagram!=null ) block = diagram.getBlock(blockId);
 		BlockProperty[] props = null;
@@ -479,9 +480,9 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * @return the current state of the specified diagram as a DiagramState.
 	 */
 	@Override
-	public synchronized DiagramState getDiagramState(Long projectId,Long resourceId) {
+	public synchronized DiagramState getDiagramState(ProjectResourceId resourceId) {
 		DiagramState state = DiagramState.ACTIVE;
-		ProcessDiagram diagram = controller.getDiagram(projectId, resourceId);
+		ProcessDiagram diagram = controller.getDiagram(resourceId);
 		if( diagram!=null ) {
 			state = diagram.getState();
 		}

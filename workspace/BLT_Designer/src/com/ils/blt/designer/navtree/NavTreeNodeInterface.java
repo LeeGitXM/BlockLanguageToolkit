@@ -1,20 +1,20 @@
 /**
- *   (c) 2013-2014  ILS Automation. All rights reserved. 
+ *   (c) 2013-2021  ILS Automation. All rights reserved. 
  */
 package com.ils.blt.designer.navtree;
 
-
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 
 /**
  * This interface defines a NavTreeNode with methods used by the NodeStatusManager. 
  */
 public interface NavTreeNodeInterface  {
 	/**
-	 * There are times when the project resource has been delete 
+	 * There are times when the project resource has been deleted 
 	 * and all we have to go on is the resourceId
 	 * @return the resource identified with the node when it was created.
 	 */
-	public long getResourceId();
+	public ProjectResourceId getResourceId();
 	/**
 	 * Clean up any linkages in preparation for the node being deleted.
 	 */

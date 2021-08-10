@@ -19,6 +19,7 @@ import com.ils.common.log.ILSLogger;
 import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceNavTreeNode;
 
@@ -43,7 +44,7 @@ import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceN
  *  The resourceId is known to both the view code and the nav tree.
  */
 public class NodeStatusManager implements NotificationChangeListener   {
-	private static String TAG = "NodeStatusManager";
+	private static String CLSS = "NodeStatusManager";
 	private final ILSLogger log;
 	public final DesignerContext context;
 	private final ApplicationRequestHandler handler;
@@ -79,7 +80,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 			DiagramState s = handler.getDiagramState(projectId, key);
 			se = new StatusEntry(node,parentResourceId,s);
 			se.setAlerting(handler.isAlerting(projectId, key));
-			notificationHandler.addNotificationChangeListener(NotificationKey.keyForAlert(resourceId), TAG, this);
+			notificationHandler.addNotificationChangeListener(NotificationKey.keyForAlert(resourceId), CLSS, this);
 			statusByResourceId.put(key,se);
 		}
 		// We had a "provisional" entry 
@@ -94,7 +95,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 			childrenByResourceId.put(parentKey,set);
 		}
 		set.add(key);
-		log.debugf("%s.createResourceStatus: %s (%d:%d) %s",TAG,(node==null?"":node.getName()),parentResourceId,resourceId,
+		log.debugf("%s.createResourceStatus: %s (%d:%d) %s",CLSS,(node==null?"":node.getName()),parentResourceId,resourceId,
 				                                           (se.getState()==null?"":se.getState().name()));
 	}
 	
@@ -104,7 +105,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 	 * @param node of resource tree
 	 */
 	public void createRootResourceStatus(AbstractResourceNavTreeNode node) {
-		log.tracef("%s.newRootResource",TAG);
+		log.tracef("%s.newRootResource",CLSS);
 		Long key = new Long(BLTProperties.ROOT_RESOURCE_ID);
 		Long parentKey = new Long(BLTProperties.ROOT_PARENT_ID); 
 		if( statusByResourceId.get(key) == null ) {
@@ -122,7 +123,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 	 * @param resourceId
 	 */
 	public void deleteResource(long resourceId ) {
-		log.debugf("%s.deleteResource(%d)",TAG,resourceId);
+		log.debugf("%s.deleteResource(%d)",CLSS,resourceId);
 		Long key = new Long(resourceId);
 		StatusEntry se = statusByResourceId.get(resourceId);
 		if( se!=null ) {
@@ -158,7 +159,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 		if( se!=null ) {
 			result = se.getState();
 		}
-		log.tracef("%s.getResourceState: %s(%d) = %s",TAG,(se==null?"null":se.getName()),resourceId,result.name());
+		log.tracef("%s.getResourceState: %s(%d) = %s",CLSS,(se==null?"null":se.getName()),resourceId,result.name());
 		return result;
 	}
 	
@@ -168,7 +169,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 	 * @return the AbstractResourceNavTreeNode associated with the specified resourceId.
 	 */
 	public AbstractResourceNavTreeNode findNode(long resourceId) {
-		log.debugf("%s.findNode(%d)",TAG,resourceId);
+		log.debugf("%s.findNode(%d)",CLSS,resourceId);
 		Long key = new Long(resourceId);
 		AbstractResourceNavTreeNode node = null;
 		StatusEntry se = statusByResourceId.get(key);
@@ -218,8 +219,8 @@ public class NodeStatusManager implements NotificationChangeListener   {
 	 * A state change, is of necessity, accompanied by a save. Clear the dirty count.
 	 * We explicitly synchronize with the gateway, but cache the result.
      */
-	public void setResourceState(long resourceId,DiagramState bs,boolean informGateway) {
-		if( informGateway ) handler.setDiagramState(projectId, new Long(resourceId), bs.name());
+	public void setResourceState(ProjectResourceId resourceId,DiagramState bs,boolean informGateway) {
+		if( informGateway ) handler.setDiagramState(resourceId, bs.name());
 		StatusEntry se = statusByResourceId.get(resourceId);
 		if( se!=null ) {
 			se.setState(bs);
@@ -228,14 +229,14 @@ public class NodeStatusManager implements NotificationChangeListener   {
 			se = new StatusEntry(bs);
 			statusByResourceId.put(resourceId,se);
 		}
-		log.tracef("%s.setResourceState: %s(%d) = %s",TAG,se.getName(),resourceId,bs.name());
+		log.tracef("%s.setResourceState: %s(%d) = %s",CLSS,se.getName(),resourceId,bs.name());
 	}
 	/**
 	 * Called after a save from the main menu. Update the status
 	 * of the nav-tree nodes.
 	 */
 	public void updateAll() {
-		log.debugf("%s.updateAll()",TAG);
+		log.debugf("%s.updateAll()",CLSS);
 		for(Long key:statusByResourceId.keySet()) {
 			StatusEntry se = statusByResourceId.get(key);
 			if( se!=null ) {
@@ -251,9 +252,9 @@ public class NodeStatusManager implements NotificationChangeListener   {
 	 * @param resourceId
 	 * @return the resourceId associated with the parent of the one specified
 	 */
-	public long parentResourceId(long resourceId) {
-		log.debugf("%s.findNode(%d)",TAG,resourceId);
-		Long key = new Long(resourceId);
+	public long parentResourceId(ProjectResourceId resourceId) {
+		log.debugf("%s.findNode(%d)",CLSS,resourceId);
+		ProjectResourceId key = resourceId;
 		long result = 0;
 		StatusEntry se = statusByResourceId.get(key);
 		if( se!=null ) result = se.getParent();
