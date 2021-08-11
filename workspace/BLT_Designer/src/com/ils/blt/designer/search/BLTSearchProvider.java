@@ -1,16 +1,13 @@
 package com.ils.blt.designer.search;
 
-import java.awt.Frame;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.swing.JComponent;
-
 import com.ils.blt.common.BLTProperties;
 import com.inductiveautomation.ignition.common.gui.progress.TaskProgressListener;
-import com.inductiveautomation.ignition.common.project.ProjectResource;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.findreplace.SearchObject;

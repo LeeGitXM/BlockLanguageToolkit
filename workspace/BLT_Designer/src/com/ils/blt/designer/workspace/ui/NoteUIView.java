@@ -21,7 +21,6 @@ import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.designer.workspace.ProcessBlockView;
-import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockComponent;
 
 /** Draw a free-form text (or html) note in a box. */

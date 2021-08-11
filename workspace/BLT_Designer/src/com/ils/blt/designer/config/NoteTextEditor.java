@@ -33,7 +33,6 @@ import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.ils.blt.designer.workspace.WorkspaceRepainter;
 import com.inductiveautomation.ignition.common.BundleUtil;
-import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
 import net.miginfocom.swing.MigLayout;
 

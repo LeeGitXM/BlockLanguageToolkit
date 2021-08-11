@@ -2,7 +2,7 @@ package com.ils.blt.designer;
 
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayException;
 import com.inductiveautomation.ignition.common.project.Project;
-import com.inductiveautomation.ignition.common.project.ProjectResource;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.IgnitionDesigner;

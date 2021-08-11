@@ -140,10 +140,6 @@ import com.jidesoft.action.DockableBarManager;
 import com.jidesoft.docking.DockContext;
 import com.jidesoft.docking.DockingManager;
 import com.jidesoft.swing.JideButton;
-import com.kenai.jffi.Platform.OS;
-import com.sun.java.swing.action.AlignLeftAction;
-import com.sun.java.swing.action.AlignRightAction;
-import com.sun.java.swing.action.HelpAction;
 
 /**
  * A Diagram workspace is a container that occupies the DockManager workspace

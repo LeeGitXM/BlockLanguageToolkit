@@ -19,11 +19,11 @@ import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-import net.miginfocom.swing.MigLayout;
-
 import com.ils.blt.common.BLTProperties;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
+
+import net.miginfocom.swing.MigLayout;
 /**
  * Display a dialog that defines the file save path.
  *    ExportDialog ed = new ExportDialog("Attribute Editor");

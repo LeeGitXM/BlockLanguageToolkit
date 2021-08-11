@@ -19,10 +19,10 @@ import javax.swing.tree.TreeSelectionModel;
 import com.ils.blt.common.BusinessRules;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
-import com.inductiveautomation.ignition.designer.tags.tree.TagRenderer;
 import com.inductiveautomation.ignition.common.tags.model.TagPath;
 import com.inductiveautomation.ignition.common.tags.paths.parser.TagPathParser;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
+import com.inductiveautomation.ignition.designer.tags.tree.TagRenderer;
 import com.inductiveautomation.ignition.designer.tags.tree.node.TagTreeNode;
 
 /**

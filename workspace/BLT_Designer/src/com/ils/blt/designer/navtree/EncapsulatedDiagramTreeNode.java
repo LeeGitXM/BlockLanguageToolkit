@@ -6,7 +6,7 @@ package com.ils.blt.designer.navtree;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
-import com.inductiveautomation.ignition.common.project.ProjectResource;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
 /**

@@ -21,12 +21,12 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.WindowConstants;
 
-import net.miginfocom.swing.MigLayout;
-
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.common.persistence.ToolkitProperties;
-import com.inductiveautomation.ignition.common.sqltags.model.TagProviderMeta;
+import com.inductiveautomation.ignition.common.tags.model.TagProviderProps;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
+
+import net.miginfocom.swing.MigLayout;
 
 /**
  * Allow the user to define database connections and tag providers. This
@@ -48,10 +48,6 @@ public class ExternalInterfaceConfigurationDialog extends JDialog {
 	protected JComboBox<String> secondaryProviderBox;
 	protected JTextField mainTimeFactorField;
 	protected JTextField secondaryTimeFactorField;
-	private int primaryDatabaseInitialSelection = -1;
-	private int secondaryDatabaseInitialSelection = -1;
-	private int primaryProviderInitialSelection = -1;
-	private int secondaryProviderInitialSelection = -1;
 	
 	public ExternalInterfaceConfigurationDialog(DesignerContext ctx) {
 		super(ctx.getFrame());
@@ -79,21 +75,17 @@ public class ExternalInterfaceConfigurationDialog extends JDialog {
 		// Databases
 		internalPanel.add(createLabel("Setup.Database"),"");
 		mainDatabaseBox  = createDatabaseCombo("Setup.ProductionDatabase.tooltip",ToolkitProperties.TOOLKIT_PROPERTY_DATABASE,false);
-		primaryDatabaseInitialSelection = mainDatabaseBox.getSelectedIndex();
 		internalPanel.add(mainDatabaseBox, "");
 		
 		secondaryDatabaseBox = createDatabaseCombo("Setup.IsolationDatabase.tooltip",ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_DATABASE,true);
-		secondaryDatabaseInitialSelection = secondaryDatabaseBox.getSelectedIndex();
 		internalPanel.add(secondaryDatabaseBox, "wrap");
 		
 		// Tag providers
 		internalPanel.add(createLabel("Setup.Provider"),"");
 		mainProviderBox = createProviderCombo("Setup.ProductionProvider.tooltip",ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER,false);
-		primaryProviderInitialSelection = mainProviderBox.getSelectedIndex();
 		internalPanel.add(mainProviderBox, "");
 		
 		secondaryProviderBox = createProviderCombo("Setup.IsolationProvider.tooltip",ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER,true);
-		secondaryProviderInitialSelection = secondaryProviderBox.getSelectedIndex();
 		internalPanel.add(secondaryProviderBox, "wrap");
 		
 		// Time factor
@@ -161,14 +153,14 @@ public class ExternalInterfaceConfigurationDialog extends JDialog {
 	 */
 	private JComboBox<String> createProviderCombo(String bundle,String key,boolean isIsolation) {
 		JComboBox<String> box = new JComboBox<String>();
-		List<TagProviderMeta> providers = context.getTagManager().getProviderInformation();
+		List<TagProviderProps> providers = context.getTagManager().getProviderProperties();
 		box.removeAllItems();
 		box.addItem("");
-		for(TagProviderMeta meta:providers) {
+		for(TagProviderProps meta:providers) {
 			if( meta.getName().length()>0 ) box.addItem(meta.getName());
 		}
 		String currentValue = requestHandler.getToolkitProperty(key);
-		if( currentValue.length()==0 && !isIsolation ) currentValue = context.getDefaultSQLTagsProviderName();
+		if( currentValue.length()==0 && !isIsolation ) currentValue = context.getDefaultTagProviderName();
 		box.setSelectedItem(currentValue);
 		// If the current value wasn't in the list, then add it.
 		if( box.getSelectedIndex()<0 ) {
@@ -250,7 +242,7 @@ public class ExternalInterfaceConfigurationDialog extends JDialog {
 						"Production tag provider must be configured.",
 						"Unset provider warning",
 						JOptionPane.WARNING_MESSAGE);
-				mainProviderBox.setSelectedItem(context.getDefaultSQLTagsProviderName());
+				mainProviderBox.setSelectedItem(context.getTagManager().getDefaultProvider().getName());
 			}
 			else {
 				result = true;

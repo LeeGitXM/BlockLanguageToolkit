@@ -174,7 +174,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		List<String> jsonList = new ArrayList<String>();
 		try {
 			jsonList = (List<String>)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "getBlockProperties",className,new Long(projectId),new Long(resourceId),blockId.toString());
+					BLTProperties.MODULE_ID, "getBlockProperties",className,resourceId,blockId.toString());
 		}
 		catch(Exception ge) {
 			log.infof("%s.getBlockProperties: GatewayException (%s)",CLSS,ge.getMessage());
@@ -592,15 +592,15 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * Determine whether or not the diagram is alerting.
 	 */
 	@Override
-	public boolean isAlerting(Long projectId,Long resid) {
+	public boolean isAlerting(ProjectResourceId resid) {
 		Boolean result = null;
 		try {
 			result = (Boolean)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "isAlerting",projectId,resid);
-			log.debugf("%s.isAlerting ...%d:%d = %s",CLSS,projectId,resid,result);
+					BLTProperties.MODULE_ID, "isAlerting",resid);
+			log.debugf("%s.isAlerting ...%s:%s = %s",CLSS,resid.getProjectName(),resid.getResourcePath().getPath().toString(),result);
 		}
 		catch(Exception ge) {
-			log.infof("%s.isAlerting: GatewayException (%s) for project %d, resource %d",CLSS,ge.getMessage(),projectId.longValue(),resid.longValue());
+			log.infof("%s.isAlerting: GatewayException (%s) for project %s, resource %s",CLSS,ge.getMessage(),resid.getProjectName(),resid.getResourcePath().getPath().toString());
 		}
 		if( result==null ) return false;
 		return result.booleanValue();
@@ -1025,12 +1025,12 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * Determine whether or not the indicated resource is known to the controller.
 	 */
 	@Override
-	public boolean resourceExists(Long projectId,Long resid) {
+	public boolean resourceExists(ProjectResourceId resid) {
 		Boolean result = null;
 		try {
 			result = (Boolean)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "resourceExists",projectId,resid);
-			log.debugf("%s.resourceExists ...%d:%d = %s",CLSS,projectId,resid,result);
+					BLTProperties.MODULE_ID, "resourceExists",resid);
+			log.debugf("%s.resourceExists ...%s:%s = %s",CLSS,resid.getProjectName(),resid.getResourcePath().getPath().toString(),result);
 		}
 		catch(Exception ge) {
 			log.infof("%s.resourceExists: GatewayException (%s)",CLSS,ge.getMessage());
@@ -1241,10 +1241,10 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	}
 	@Override
 	public void setDiagramState(ProjectResourceId resourceId, String state) {
-		log.debugf("%s.setDiagramState ... %d:%d %s",CLSS,projectId.longValue(),resourceId.longValue(),state);
+		log.debugf("%s.setDiagramState ... %s:%s %s",CLSS,resourceId.getProjectName(),resourceId.getResourcePath().getPath().toString(),state);
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "setDiagramState",projectId,resourceId,state);
+					BLTProperties.MODULE_ID, "setDiagramState",resourceId,state);
 
 		}
 		catch(Exception ge) {
@@ -1275,7 +1275,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		log.infof("%s.setTestTimeOffset ... %s",CLSS,String.valueOf(offset));
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "setTestTimeOffset",new Long(offset));
+					BLTProperties.MODULE_ID, "setTestTimeOffset",offset);
 		}
 		catch(Exception ge) {
 			log.infof("%s.setTestTimeOffset: GatewayException (%s:%s)",CLSS,ge.getClass().getName(),ge.getMessage());
@@ -1436,5 +1436,15 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		catch(Exception ge) {
 			log.infof("%s.writeAuxData: GatewayException (%s)",CLSS,ge.getMessage());
 		}
+	}
+
+	/**
+	 * Not implemented. The only time that the application should read from the database is in the case of an import -
+	 * snd that is a Gateway function.
+	 */
+	@Override
+	public GeneralPurposeDataContainer readAuxData(ProjectResourceId resid, String nodeId, String provider, String db) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

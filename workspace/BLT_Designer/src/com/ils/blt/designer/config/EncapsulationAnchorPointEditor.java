@@ -29,8 +29,6 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 
-import net.miginfocom.swing.MigLayout;
-
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.connection.ConnectionType;
@@ -42,6 +40,8 @@ import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
+
+import net.miginfocom.swing.MigLayout;
 
 /**
  * This is an editor for encapsulation blocks. We allow the user to define anchor points. 

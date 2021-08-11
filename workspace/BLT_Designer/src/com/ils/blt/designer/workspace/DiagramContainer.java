@@ -11,10 +11,8 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 
 import com.ils.blt.common.UtilityFunctions;
-import com.ils.blt.common.block.BlockProperty;
 import com.inductiveautomation.ignition.designer.blockandconnector.AbstractBlockWorkspace;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignableContainer;
-import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.BlockDiagramModel;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.ConnectionPainter;
 import com.inductiveautomation.ignition.designer.blockandconnector.routing.EdgeRouter;

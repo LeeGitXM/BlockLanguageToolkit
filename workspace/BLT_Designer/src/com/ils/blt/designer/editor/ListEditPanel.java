@@ -25,11 +25,10 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 
-import net.miginfocom.swing.MigLayout;
-
-import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
+
+import net.miginfocom.swing.MigLayout;
 
 /**
  * Display a panel to edit lists of strings using a list box.

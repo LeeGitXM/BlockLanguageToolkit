@@ -11,6 +11,7 @@ import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.common.GeneralPurposeDataContainer;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 
 
@@ -131,8 +132,8 @@ public class ApplicationScriptFunctions   {
 	/**
 	 * @return the current state of the specified diagram.
 	 */
-	public static DiagramState getDiagramState(Long projectId, Long resourceId)  {
-		return handler.getDiagramState(projectId,resourceId);
+	public static DiagramState getDiagramState(ProjectResourceId resourceId)  {
+		return handler.getDiagramState(resourceId);
 	}
 	/**
 	 * @return the current state of the specified diagram.
@@ -230,8 +231,8 @@ public class ApplicationScriptFunctions   {
 	/**
 	 * @return the alert state of the specified diagram;
 	 */
-	public static boolean isAlerting(Long projectId, Long resourceId) {
-		return handler.isAlerting(projectId, resourceId);
+	public static boolean isAlerting(ProjectResourceId resourceId) {
+		return handler.isAlerting(resourceId);
 	}
 	/**
 	 * Query a block in the gateway for list of the blocks connected to the named port. 
@@ -638,7 +639,7 @@ public class ApplicationScriptFunctions   {
 	 * @param provider tag provider
 	 * @param db datasource
 	 */
-	public static void writeAuxData(long projId,long resid,String id,GeneralPurposeDataContainer container,String provider,String database) {
-		handler.writeAuxData(projId,resid, id,container, provider, database);
+	public static void writeAuxData(ProjectResourceId resid,String id,GeneralPurposeDataContainer container,String provider,String database) {
+		handler.writeAuxData(resid, id,container, provider, database);
 	}
 }

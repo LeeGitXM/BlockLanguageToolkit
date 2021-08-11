@@ -15,12 +15,12 @@ import javax.swing.JPanel;
 import javax.swing.WindowConstants;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-import net.miginfocom.swing.MigLayout;
-
 import com.ils.blt.common.BLTProperties;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
+
+import net.miginfocom.swing.MigLayout;
 
 public class ImportDialog extends JDialog implements ActionListener {
 	private final static String TAG = "ImportDialog";

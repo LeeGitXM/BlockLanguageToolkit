@@ -18,12 +18,12 @@ import javax.swing.JFileChooser;
 import javax.swing.WindowConstants;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-import net.miginfocom.swing.MigLayout;
-
 import com.ils.blt.common.BLTProperties;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
+
+import net.miginfocom.swing.MigLayout;
 /**
  * Display a dialog to export a diagram.
  *    ExportDialog ed = new ExportDialog("Attribute Editor");
