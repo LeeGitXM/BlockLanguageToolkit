@@ -13,7 +13,7 @@
 	<property name="jar.dir" value="${root.dir}/external/lib" />
 	<property name="sdk.dir" value="${root.dir}/ignition-79/lib" />
 	<property name="common.jar.name" value="ils-common.jar" />
-	<property name="common.bin.dir" value="${root.dir}/ils-common/bin" />
+	<property name="common.bin.dir" value="${root.dir}/ils-common/ILS_Common/bin" />
 	<property name="common.src.dir" value="${root.dir}/ils-common/ILS_Common/src" />
 	<property name="block.jar.name" value="block-definition.jar" />
 	<property name="block.bin.dir" value="${root.dir}/blt/workspace/Block/bin" />
