@@ -1,5 +1,5 @@
 /**
- *   (c) 2014-2021  ILS Automation. All rights reserved. 
+d *   (c) 2014-2021  ILS Automation. All rights reserved. 
  */
 package com.ils.blt.gateway.engine;
 
@@ -90,6 +90,13 @@ public class ProcessNode implements Serializable {
 		descendants.add(this);
 	}
 
+	/**
+	 * Create a string path from the nade name and parent path
+	 */
+	public String getPath() {
+		String path = String.format("%s/%s", parent.getPath().toString(),name);
+		return path;
+	}
 	/**
 	 * Traverse the parentage prepending names to produce a tree path.
 	 * The full path does NOT include the project name.

@@ -16,6 +16,7 @@ import com.ils.blt.gateway.engine.ModelManager;
 import com.ils.blt.gateway.engine.ProcessNode;
 import com.ils.blt.gateway.engine.ProjectNode;
 import com.ils.blt.gateway.engine.RootNode;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 
 /**
  * A provider of {@link ProcessNode}s.
@@ -50,8 +51,8 @@ public class ProcessNodeProvider implements ITreeProvider<ProcessNode> {
     public Iterator<ProcessNode> getRoots() {
     	RootNode root = modelManager.getRootNode();
     	Collection<ProcessNode> roots = new ArrayList<>();
-    	for(Long pid:root.allProjects() ){
-    		ProjectNode pn = new ProjectNode(root,UUID.randomUUID(),pid.longValue());
+    	for(String name:root.allProjects() ){
+    		ProjectNode pn = new ProjectNode(root,UUID.randomUUID(),name);
     		roots.add(pn);
     	}
         return roots.iterator();

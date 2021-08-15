@@ -28,17 +28,17 @@ import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.SerializableFamily;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
+import com.ils.common.log.ILSLogger;
+import com.ils.common.log.LogMaker;
 import com.ils.common.persistence.ToolkitProperties;
 import com.ils.common.persistence.ToolkitRecordHandler;
 import com.inductiveautomation.ignition.common.model.ApplicationScope;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.ProjectListener;
-import com.inductiveautomation.ignition.common.project.ProjectVersion;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
-import com.inductiveautomation.ignition.common.util.LogUtil;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
+import com.inductiveautomation.ignition.common.project.resource.ResourceType;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 
 /**
@@ -59,14 +59,14 @@ public class ModelManager implements ProjectListener  {
 	private static final String CLSS = "ModelManager";
 	private static final boolean DEBUG = false;
 	private final GatewayContext context;
-	private final LoggerEx log;
+	private final ILSLogger log;
 	/** Access nodes by either UUID or tree path */
 	private RootNode root;
 	private final Map<ProjectUUIDKey,UUID> uuidMigrationMap;
 	private final Map<Long,UUID> uuidByProjectId;
 	private final Map<ProjectResourceKey,ProcessNode> nodesByKey; 
-	private final Map<UUID,ProcessNode> orphansByUUID;
-	private final Map<UUID,ProcessNode> nodesByUUID;
+	private final Map<ProjectResourceId,ProcessNode> orphansByProjectId;
+	private final Map<ProjectResourceId,ProcessNode> nodesByProjecID;
 	private final BlockExecutionController controller = BlockExecutionController.getInstance();
 	private final ScriptExtensionManager extensionManager = ScriptExtensionManager.getInstance();
 	private ToolkitRecordHandler toolkitHandler;
@@ -80,16 +80,18 @@ public class ModelManager implements ProjectListener  {
 	 */
 	public ModelManager(GatewayContext ctx) { 
 		this.context = ctx;
-		this.log = LogUtil.getLogger(getClass().getPackage().getName());
+		this.log = LogMaker.getLogger(getClass().getPackage().getName());
 		this.toolkitHandler = new ToolkitRecordHandler(context);
 		
 		nodesByKey = new HashMap<>();
-		orphansByUUID = new HashMap<UUID,ProcessNode>();
-		nodesByUUID = new HashMap<UUID,ProcessNode>();
+		orphansByProjectId = new HashMap<>();
+		nodesByProjecID = new HashMap<>();
 		uuidByProjectId = new HashMap<>();
 		uuidMigrationMap = new HashMap<>();
-		root = new RootNode(context);
-		nodesByUUID.put(root.getSelf(), root);
+		ResourceType rtype = new ResourceType(BLTProperties.MODULE_ID,BLTProperties.FOLDER_RESOURCE_TYPE);
+		ProjectResourceId resourceId = new ProjectResourceId(BLTProperties.UNDEFINED,rtype,BLTProperties.ROOT_FOLDER_NAME);
+		root = new RootNode(context,resourceId);
+		nodesByProjecID.put(root.getResourceId(), root);
 		
 		List<Project> projects = context.getProjectManager().getProjectsFull(ProjectVersion.Staging);
 		for(Project p:projects) {
@@ -107,7 +109,7 @@ public class ModelManager implements ProjectListener  {
 	 * @param diagram the diagram to be added
 	 */
 	public void addTemporaryDiagram(ProcessDiagram diagram) {
-		nodesByUUID.put(diagram.getSelf(),diagram);
+		nodesByProjecID.put(diagram.getResourceId(),diagram);
 	}
 	
 	/**
@@ -207,7 +209,7 @@ public class ModelManager implements ProjectListener  {
 	 */
 	public ProcessDiagram getDiagram(UUID diagramId) {
 		ProcessDiagram diagram = null;
-		ProcessNode node = nodesByUUID.get(diagramId);
+		ProcessNode node = nodesByProjecID.get(diagramId);
 		if( node instanceof ProcessDiagram ) diagram = (ProcessDiagram)node;
 		return diagram;
 	}
@@ -220,7 +222,7 @@ public class ModelManager implements ProjectListener  {
 	 * @return the specified diagram. If not found, return null. 
 	 */
 	public ProcessNode getProcessNode(UUID nodeId) {
-		ProcessNode node = nodesByUUID.get(nodeId);
+		ProcessNode node = nodesByProjecID.get(nodeId);
 		return node;
 	}
 	
@@ -274,7 +276,7 @@ public class ModelManager implements ProjectListener  {
 					descriptor.setId(node.getSelf().toString());
 					descriptor.setProjectId(projectId);
 					descriptor.setResourceId(node.getResourceId());
-					descriptor.setPath(node.getTreePath(nodesByUUID));
+					descriptor.setPath(node.getTreePath(nodesByProjecID));
 					descriptor.setType(BLTProperties.DIAGRAM_RESOURCE_TYPE);
 					result.add(descriptor);
 				}
@@ -303,7 +305,7 @@ public class ModelManager implements ProjectListener  {
 					descriptor.setId(node.getSelf().toString());
 					descriptor.setProjectId(projectId);
 					descriptor.setResourceId(node.getResourceId());
-					descriptor.setPath(node.getTreePath(nodesByUUID));
+					descriptor.setPath(node.getTreePath(nodesByProjecID));
 					descriptor.setType(BLTProperties.DIAGRAM_RESOURCE_TYPE);
 					result.add(descriptor);
 				}
@@ -324,7 +326,7 @@ public class ModelManager implements ProjectListener  {
 					node.getName().equals(famName) ) {
 					UUID parentId = node.getParent();
 					while(parentId!=null) {
-						ProcessNode parent = nodesByUUID.get(parentId);
+						ProcessNode parent = nodesByProjecID.get(parentId);
 						if( parent.getClass().equals(app.getClass()) &&
 							parent.getName().equals(node.getName())      ) {
 							fam = (ProcessFamily)parent;
@@ -468,10 +470,10 @@ public class ModelManager implements ProjectListener  {
 	// Node must be in the nav-tree. Include project name.
 	public String pathForNode(UUID nodeId) {
 		String path = "";
-		ProcessNode node = nodesByUUID.get(nodeId);
+		ProcessNode node = nodesByProjecID.get(nodeId);
 		if( node!=null) {
 			// treePath includes "root", replace this with project.
-			path = node.getTreePath(nodesByUUID);
+			path = node.getTreePath(nodesByProjecID);
 			path = path.substring(5); // Strip off :root
 			String projectName = root.getProjectName();
 			path = projectName+path;
@@ -486,9 +488,9 @@ public class ModelManager implements ProjectListener  {
 	 * @param Id the UUID of the diagram to be removed
 	 */
 	public void removeTemporaryDiagram(UUID Id) {
-		ProcessDiagram diagram = (ProcessDiagram)nodesByUUID.get(Id);
+		ProcessDiagram diagram = (ProcessDiagram)nodesByProjecID.get(Id);
 		if( diagram!=null ) {
-			nodesByUUID.remove(diagram.getSelf());
+			nodesByProjecID.remove(diagram.getSelf());
 			// Remove any subscriptions
 			for( ProcessBlock pb:diagram.getProcessBlocks()) {
 				for(BlockProperty bp:pb.getProperties()) {
@@ -533,8 +535,8 @@ public class ModelManager implements ProjectListener  {
 			root.removeChild(child);
 		}
 		nodesByKey.clear();
-		orphansByUUID.clear();
-		nodesByUUID.clear();
+		orphansByProjectId.clear();
+		nodesByProjecID.clear();
 		root = new RootNode(context);
 		if(DEBUG) log.infof("%s.removeAllDiagrams ... complete",CLSS);
 	}
@@ -700,7 +702,7 @@ public class ModelManager implements ProjectListener  {
 			application.setProjectId(projectId);
 			application.setAuxiliaryData(sa.getAuxiliaryData());
 			UUID self = application.getSelf();
-			ProcessNode node = nodesByUUID.get(self);
+			ProcessNode node = nodesByProjecID.get(self);
 			if( node==null ) {
 				// Add in the new Application
 				ProjectResourceKey key = new ProjectResourceKey(projectId,res.getResourceId());
@@ -772,7 +774,7 @@ public class ModelManager implements ProjectListener  {
 		SerializableDiagram sd = deserializeDiagramResource(projectId,res);
 
 		if( sd!=null ) {
-			ProcessDiagram diagram = (ProcessDiagram)nodesByUUID.get(sd.getId());
+			ProcessDiagram diagram = (ProcessDiagram)nodesByProjecID.get(sd.getId());
 			if( diagram==null) {   // this is usually run during gateway start up.
 				// Create a new diagram
 				if(DEBUG) log.infof("%s.addModifyDiagramResource: Creating diagram %s(%s) %s", CLSS,res.getName(),
@@ -889,7 +891,7 @@ public class ModelManager implements ProjectListener  {
 			family.setProjectId(projectId);
 			family.setAuxiliaryData(sf.getAuxiliaryData());
 			UUID self = family.getSelf();
-			ProcessNode node = nodesByUUID.get(self);
+			ProcessNode node = nodesByProjecID.get(self);
 			if( node==null ) {
 				// Add in the new Family
 				ProjectResourceKey key = new ProjectResourceKey(projectId,res.getResourceId());
@@ -961,7 +963,7 @@ public class ModelManager implements ProjectListener  {
 		if(DEBUG) log.infof("%s.addFolderResource: %s(%s)",CLSS,res.getResourceId().getProjectName(),res.getResourceId().getResourcePath().getFolderPath());
 		String uuidString = new String(res.getData());
 		UUID self = UUID.fromString(uuidString);
-		ProcessNode node = nodesByUUID.get(self);
+		ProcessNode node = nodesByProjecID.get(self);
 		if( node==null ) {
 			node = new ProcessNode(res.getResourceName(),res.getParent().self);
 			node.setResourceId(res.getResourceId());
@@ -1009,7 +1011,7 @@ public class ModelManager implements ProjectListener  {
 	private void addToHierarchy(String projectName,ProcessNode node) {
 		if(DEBUG) log.infof("%s.addToHierarchy: %s (%d:%s)",CLSS,node.getName(),node.getResourceId(),node.getSelf().toString());
 		UUID self     = node.getSelf();
-		nodesByUUID.put(self, node);
+		nodesByProjecID.put(self, node);
 		
 		// If the parent is null, then we're the top of the chain for our project
 		// Add the node to the root.
@@ -1024,19 +1026,19 @@ public class ModelManager implements ProjectListener  {
 		else {
 			// If the parent is already in the tree, simply add the node as a child
 			// Otherwise add to our list of orphans
-			ProcessNode parent = nodesByUUID.get(node.getParent());
+			ProcessNode parent = nodesByProjecID.get(node.getParent());
 			if( parent!=null && parent.getProjectName()!=node.getProjectName()) {
 				// We need to use the migrated parent
 				ProjectUUIDKey pukey = new ProjectUUIDKey(node.getProjectName(),parent.getSelf());	 		
 				if( uuidMigrationMap.get(pukey) != null ) {
 					UUID parentuuid = uuidMigrationMap.get(pukey);
-					parent = nodesByUUID.get(parentuuid);
+					parent = nodesByProjecID.get(parentuuid);
 				}
 			}
 	
 			if(parent==null ) {
 				if(DEBUG) log.infof("%s.addToHierarchy: %s is an ORPHAN (parent is %s)",CLSS,node.getName(),node.getParent().toString());
-				orphansByUUID.put(self, node);
+				orphansByProjectId.put(self, node);
 			}
 			else {
 				if(DEBUG) log.infof("%s.addToHierarchy: %s is a CHILD of %s",CLSS,node.getName(),parent.getName());
@@ -1084,7 +1086,7 @@ public class ModelManager implements ProjectListener  {
 				nodesByKey.remove(nodekey);
 				
 				if( node.getParent()!=null ) {
-					ProcessNode parent = nodesByUUID.get(node.getParent());
+					ProcessNode parent = nodesByProjecID.get(node.getParent());
 					if( parent!=null ) {
 						parent.removeChild(node);
 						if( parent.getSelf().equals(root.getSelf())) {
@@ -1093,7 +1095,7 @@ public class ModelManager implements ProjectListener  {
 					}
 				}
 				// Finally remove from the node maps
-				nodesByUUID.remove(node.getSelf());
+				nodesByProjecID.remove(node.getSelf());
 				// Invoke the proper extension function on a delete
 				// NOTE: Need to use keys for class names
 				String classKey = ScriptConstants.DIAGRAM_CLASS_NAME;
@@ -1246,8 +1248,8 @@ public class ModelManager implements ProjectListener  {
 	 */
 	private void resolveOrphans() {
 		List<ProcessNode> reconciledOrphans = new ArrayList<ProcessNode>();
-		for( ProcessNode orphan:orphansByUUID.values()) {
-			ProcessNode parent = nodesByUUID.get(orphan.getParent());
+		for( ProcessNode orphan:orphansByProjectId.values()) {
+			ProcessNode parent = nodesByProjecID.get(orphan.getParent());
 			// If is now resolved, remove node from orphan list and
 			// add as child of parent. Recurse it's children.
 			if(parent!=null ) {
@@ -1257,7 +1259,7 @@ public class ModelManager implements ProjectListener  {
 					if( uuidMigrationMap.get(pukey) != null ) {
 						UUID parentuuid = uuidMigrationMap.get(pukey);
 						orphan.setParent(parentuuid);
-						parent = nodesByUUID.get(parentuuid);
+						parent = nodesByProjecID.get(parentuuid);
 					}
 				}
 				
@@ -1268,9 +1270,9 @@ public class ModelManager implements ProjectListener  {
 			}
 		}
 		for( ProcessNode orphan:reconciledOrphans) {
-			ProcessNode parent = nodesByUUID.get(orphan.getParent());
+			ProcessNode parent = nodesByProjecID.get(orphan.getParent());
 			parent.addChild(orphan);
-			orphansByUUID.remove(orphan.getSelf());
+			orphansByProjectId.remove(orphan.getSelf());
 		}
 	}
 }

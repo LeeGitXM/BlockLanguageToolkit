@@ -8,12 +8,12 @@ import java.util.Map;
 import java.util.Optional;
 
 import com.ils.blt.common.BLTProperties;
+import com.ils.common.log.ILSLogger;
+import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.common.model.ApplicationScope;
 import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.RuntimeProject;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
-import com.inductiveautomation.ignition.common.util.LogUtil;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 
 /**
@@ -23,7 +23,7 @@ import com.inductiveautomation.ignition.gateway.model.GatewayContext;
  */
 public class ProcessNodeSynchronizer {
     private final static String TAG = "ProcessNodeSynchronizer";
-    private final LoggerEx log;
+    private final ILSLogger log;
     private final ModelManager modelManager;
     private final List<ProjectResourceKey> nodesToDelete;
     private final Map<ProjectResourceKey,ProjectResource> resourceMap;
@@ -31,7 +31,7 @@ public class ProcessNodeSynchronizer {
      * Constructor.
      */
     public ProcessNodeSynchronizer() {
-    	this.log = LogUtil.getLogger(getClass().getPackage().getName());
+    	this.log = LogMaker.getLogger(this);
     	this.modelManager = BlockExecutionController.getInstance().getDelegate();
     	this.nodesToDelete = new ArrayList<>();
     	this.resourceMap = createResourceMap(modelManager.getContext());
@@ -47,7 +47,7 @@ public class ProcessNodeSynchronizer {
     	for(ProjectResourceKey key:resourceMap.keySet()) {
     		if( nodeMap.get(key)==null) {
     			log.infof("%s.createMissingResources: ADDING node %d:%d %s (project resource not represented)", TAG,key.getProjectName(),key.getResourceId(),
-    					resourceMap.get(key).getName());
+    					resourceMap.get(key).getProjectName());
     			modelManager.analyzeResource(key.getProjectName(), resourceMap.get(key),true);
     		}
     	}
@@ -88,7 +88,7 @@ public class ProcessNodeSynchronizer {
     	RootNode root = modelManager.getRootNode();
     	for( ProcessNode child:nodes) {
     		if( !child.getSelf().equals(root.getSelf()) && modelManager.getProcessNode(child.getParent())==null ) {
-    			ProjectResourceKey key = new ProjectResourceKey(child.getProjectName(),child.getResourceId());
+    			ProjectResourceKey key = new ProjectResourceKey(child.getResourceId());
     			nodesToDelete.add(key);
     			log.infof("%s.removeOrphans: DELETING node %d:%d (has no parent)", TAG,key.getProjectName(),key.getResourceId());
     		}
@@ -130,7 +130,7 @@ public class ProcessNodeSynchronizer {
     						res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ||
     						res.getResourceType().equals(BLTProperties.FAMILY_RESOURCE_TYPE) ||
     						res.getResourceType().equals(BLTProperties.FOLDER_RESOURCE_TYPE)   ) {
-    					map.put(new ProjectResourceKey(project.getName(),res.getResourceId()),res);
+    					map.put(new ProjectResourceKey(res.getResourceId()),res);
     				}
     			}
     		}

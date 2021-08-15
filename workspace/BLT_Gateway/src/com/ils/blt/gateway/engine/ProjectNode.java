@@ -1,11 +1,14 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved. 
+ *   (c) 2014-2021  ILS Automation. All rights reserved. 
  */
 package com.ils.blt.gateway.engine;
 
 import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
+
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
+import com.inductiveautomation.ignition.common.project.resource.ResourcePath;
 
 /**
  * A project node is a construction solely for the use of the status panel
@@ -22,11 +25,9 @@ public class ProjectNode extends ProcessNode {
 	 * @param me UUID of this node 
 	 * @param projName the project
 	 */
-	public ProjectNode(RootNode rootNode, UUID me, String projName) { 
-		super("",rootNode.self,me);
-		this.projectName = projName;
+	public ProjectNode(RootNode rootNode, ProjectResourceId me) { 
+		super(me.getProjectName(),rootNode.getResourceId().getResourcePath(),me);
 		this.root = rootNode;
-		setName(projectName);
 	}
 
 	public void addChild(ProjectNode child)    { 
@@ -34,24 +35,20 @@ public class ProjectNode extends ProcessNode {
 	}
 
 	public Collection<ProcessNode> getChildren() { 
-		return root.allNodesForProject(projectName); 
+		return root.allNodesForProject(this.resourceId.getProjectName()); 
 	}
 
 
 	public void setProjectName(String name) {
 		throw new UnsupportedOperationException();
 	}
-	/**
-	 * @return the UUID of this node
-	 */
-	public UUID getSelf() { return this.self; }
 
 	/**
 	 * Normally the tree path does not include the project, so is not appropriate here.
 	 * @return
 	 */
 	@Override
-	public String getTreePath(Map<UUID,ProcessNode> nodesByUUID) {
+	public String getTreePath(Map<ResourcePath,ProcessNode> nodesByPath) {
 		throw new UnsupportedOperationException();
 	} 
 	@Override

@@ -1,5 +1,5 @@
 /**
- *   (c) 2012-2013  ILS Automation. All rights reserved. 
+ *   (c) 2012-2021  ILS Automation. All rights reserved. 
  */
 package com.ils.blt.gateway.engine;
 
@@ -10,6 +10,9 @@ import java.util.List;
 import java.util.Map;
 
 import com.ils.blt.common.BLTProperties;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
+import com.inductiveautomation.ignition.common.project.resource.ResourcePath;
+import com.inductiveautomation.ignition.common.project.resource.ResourceType;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 
 /**
@@ -24,14 +27,14 @@ public class RootNode extends ProcessNode {
 	private static String CLSS = "RootNode";
 	protected final GatewayContext context;   // Use to get project name
 	// The child key is resourceId (which is immutable)
-	private final Map <String,Map<Long,ProcessNode>>childrenByProjectName;
+	private final Map <String,Map<ProjectResourceId,ProcessNode>>childrenByProjectName;
 
 	/**
 	 * Constructor: 
 	 * @param ctx Gateway context 
 	 */
-	public RootNode(GatewayContext ctx) { 
-		super(BLTProperties.ROOT_FOLDER_NAME,null,BLTProperties.ROOT_FOLDER_UUID);
+	public RootNode(GatewayContext ctx,ProjectResourceId id) { 
+		super(BLTProperties.ROOT_FOLDER_NAME,ResourcePath.createModuleRoot(BLTProperties.MODULE_ID),id);
 		this.context = ctx;
 		this.childrenByProjectName = new HashMap<>();
 	}
@@ -41,9 +44,9 @@ public class RootNode extends ProcessNode {
 		String key = childProjectName;
 		
 		
-		Map<Long,ProcessNode>map = childrenByProjectName.get(key);
+		Map<ProjectResourceId,ProcessNode>map = childrenByProjectName.get(key);
 		if( map==null ) {
-			map = new HashMap<Long,ProcessNode>();
+			map = new HashMap<>();
 			childrenByProjectName.put(key, map);
 		}
 		map.put(child.getResourceId(),child);
@@ -69,7 +72,7 @@ public class RootNode extends ProcessNode {
 	 */
 	public List<ProcessNode> allNodesForProject(String queryName) {
 		List<ProcessNode> nodes = new ArrayList<ProcessNode>();
-		Map<Long,ProcessNode> map = childrenByProjectName.get(queryName);
+		Map<ProjectResourceId,ProcessNode> map = childrenByProjectName.get(queryName);
 		if( map!=null) {
 			Collection<ProcessNode> children = map.values();
 			if( children!=null) {
@@ -95,7 +98,7 @@ public class RootNode extends ProcessNode {
 	 * Remove the children of a project. 
 	 */
 	public void removeChildFromProjectRoot(String childProjectName,ProcessNode node) {
-		Map<Long,ProcessNode> map = childrenByProjectName.get(childProjectName);
+		Map<ProjectResourceId,ProcessNode> map = childrenByProjectName.get(childProjectName);
 		if( map!=null) map.remove(node.getResourceId());	
 	}
 	
