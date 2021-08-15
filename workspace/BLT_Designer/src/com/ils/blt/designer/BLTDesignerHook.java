@@ -209,8 +209,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		// Query the gateway for latest notifications from all blocks
 		appRequestHandler.triggerStatusNotifications();
 		
-		ILSLogger root = LogMaker.getLogger(Logger.ROOT_LOGGER_NAME);
-		root.setLevel(Level.INFO);
+		LogMaker.getLogger(Logger.ROOT_LOGGER_NAME);
 	}
 	
 	public NodeStatusManager getNavTreeStatusManager() { return nodeStatusManager; }
