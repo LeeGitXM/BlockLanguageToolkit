@@ -164,7 +164,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	public void initBlockProperties(ProcessBlockView block) {
 		if( appRequestHandler!=null ) {
 			List<BlockProperty> properties = appRequestHandler.getBlockProperties(block.getClassName(),
-					context.getProject().getResourceId(),block.getId());
+					resourceId,block.getId());
 			for(BlockProperty bp:properties) {
 				block.setProperty(bp);
 			}
@@ -704,8 +704,9 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		log.infof("%s.bindingChange: %s binding = %s",CLSS,getName(),binding);
 	} 
 	@Override
-	public void diagramStateChange(long resId, String stateString) {
-		log.infof("%s.diagramStateChange: %s (%d vs %d) state = %s",CLSS,getName(),resId,getResourceId(),stateString);
+	public void diagramStateChange(ProjectResourceId resId, String stateString) {
+		log.infof("%s.diagramStateChange: %s %s state = %s",
+				CLSS,getName(),resId.getProjectName(),resId.getResourcePath().getPath().toString(),stateString);
 	}
 	// Let the blocks subscribe to their own name changes
 	@Override

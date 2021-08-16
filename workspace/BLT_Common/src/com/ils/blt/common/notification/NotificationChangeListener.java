@@ -6,6 +6,7 @@ package com.ils.blt.common.notification;
 import java.util.EventListener;
 
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 
 
 /**
@@ -20,7 +21,7 @@ public interface NotificationChangeListener extends EventListener  {
 	 * @param resourceId the resource Id of the affected diagram
 	 * @param state the state of the reporting block
 	 */
-	public void diagramStateChange(long resourceId,String state);
+	public void diagramStateChange(ProjectResourceId resourceId,String state);
 	/**
 	 * A property binding has changed
 	 */

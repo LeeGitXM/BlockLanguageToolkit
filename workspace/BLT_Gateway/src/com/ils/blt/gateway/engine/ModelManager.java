@@ -222,7 +222,7 @@ public class ModelManager implements ProjectListener  {
 	 * @return the specified diagram. If not found, return null. 
 	 */
 	public ProcessNode getProcessNode(UUID nodeId) {
-		ProcessNode node = nodesByProjecID.get(nodeId);
+		ProcessNode node = nodesByProjectId.get(nodeId);
 		return node;
 	}
 	
