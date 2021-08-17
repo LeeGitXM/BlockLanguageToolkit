@@ -144,17 +144,6 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	public void clearWatermark(String diagramId) {
 		controller.sendWatermarkNotification(diagramId,"");
 	}
-
-	/**
-	 * Delete the tag for both production and isolation
-	 */
-	@Override
-	public void deleteTag(String path) {
-		String provider = getProductionTagProvider();
-		tagHandler.deleteTag(provider,path);
-		provider = getIsolationTagProvider();
-		tagHandler.deleteTag(provider,path);
-	}
 	
 	/**
 	 * Create an instance of a named class. If the class is not found in the JVM, try Python 
@@ -206,6 +195,16 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		tagHandler.createTag(provider,path,type);
 		provider = getIsolationTagProvider();
 		tagHandler.createTag(provider,path,type);
+	}
+	/**
+	 * Delete the tag for both production and isolation
+	 */
+	@Override
+	public void deleteTag(String path) {
+		String provider = getProductionTagProvider();
+		tagHandler.deleteTag(provider,path);
+		provider = getIsolationTagProvider();
+		tagHandler.deleteTag(provider,path);
 	}
 	@Override
 	public boolean diagramExists(String uuidString) {

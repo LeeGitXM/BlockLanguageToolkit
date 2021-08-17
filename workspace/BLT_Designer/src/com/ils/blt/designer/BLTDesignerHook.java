@@ -268,13 +268,13 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	@Override
 	public String getResourceCategoryKey(ProjectResourceId resourceId) {
 		// There is only one resource category that we are exporting
-		if( resourceId.getResourceType().getTypeId().equalsIgnoreCase(BLTProperties.APPLICATION_RESOURCE_TYPE) ) {
+		if( resourceId.getResourceType().equals(BLTProperties.APPLICATION_RESOURCE_TYPE) ) {
 			return PREFIX+".Export.Application.Category";
 		}
-		else if( resourceId.getResourceType().getTypeId().equalsIgnoreCase(BLTProperties.FAMILY_RESOURCE_TYPE) ) {
+		else if( resourceId.getResourceType().equals(BLTProperties.FAMILY_RESOURCE_TYPE) ) {
 			return PREFIX+".Export.Family.Category";
 		}
-		else if( resourceId.getResourceType().getTypeId().equalsIgnoreCase(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
+		else if( resourceId.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
 			return PREFIX+".Export.Diagram.Category";
 		}
 		else { 

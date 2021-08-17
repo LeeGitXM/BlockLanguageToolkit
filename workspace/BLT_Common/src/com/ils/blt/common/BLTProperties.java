@@ -7,6 +7,8 @@ package com.ils.blt.common;
 import java.awt.Color;
 import java.util.UUID;
 
+import com.inductiveautomation.ignition.common.project.resource.ResourceType;
+
 
 /**
  *  Define an interface for accessing module properties .
@@ -20,11 +22,10 @@ public interface BLTProperties   {
 	public final static String BLOCK_JAR_NAME = "block-definition";
 	
 	
-	public final static String APPLICATION_RESOURCE_TYPE   = "blt.application";
-	public final static String DIAGRAM_RESOURCE_TYPE       = "blt.diagram";
-	public final static String FAMILY_RESOURCE_TYPE        = "blt.family";
-//	public final static String FAMILY_FOLDER_TYPE          = "blt.familyFolder";
-	public final static String FOLDER_RESOURCE_TYPE        = "__folder";
+	public final static ResourceType APPLICATION_RESOURCE_TYPE   = new ResourceType(MODULE_ID,"blt.application");
+	public final static ResourceType DIAGRAM_RESOURCE_TYPE       = new ResourceType(MODULE_ID,"blt.diagram");
+	public final static ResourceType FAMILY_RESOURCE_TYPE        = new ResourceType(MODULE_ID,"blt.family");
+	public final static ResourceType FOLDER_RESOURCE_TYPE        = new ResourceType(MODULE_ID,"__folder");
 	
 	public final static String DIAGRAM_SCRIPT_PACKAGE      = "system.ils.blt.diagram";
 	

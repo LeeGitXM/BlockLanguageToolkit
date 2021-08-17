@@ -24,7 +24,7 @@ public class ProcessApplication extends ProcessNode {
 	 * @param parent UUID of the parent of this node.
 	 * @param self UUID of this node 
 	 */
-	public ProcessApplication(String name,UUID parent,UUID self) { 
+	public ProcessApplication(String name,ProjectPath parent,ProjectResourceId self) { 
 		super(name,parent,self);
 	}
 	

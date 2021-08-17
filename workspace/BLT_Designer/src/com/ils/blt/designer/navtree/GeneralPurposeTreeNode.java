@@ -80,7 +80,9 @@ import com.inductiveautomation.ignition.common.execution.ExecutionManager;
 import com.inductiveautomation.ignition.common.execution.impl.BasicExecutionEngine;
 import com.inductiveautomation.ignition.common.model.ApplicationScope;
 import com.inductiveautomation.ignition.common.project.Project;
+import com.inductiveautomation.ignition.common.project.ProjectListener;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 import com.inductiveautomation.ignition.designer.IgnitionDesigner;
 import com.inductiveautomation.ignition.designer.UndoManager;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
@@ -100,7 +102,7 @@ import com.inductiveautomation.ignition.designer.navtree.model.FolderNode;
  * 
  * Leaf nodes are of type DiagramNode.
  */
-public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInterface, ProjectChangeListener {
+public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInterface {
 	private static final String CLSS = "GeneralPurposeTreeNode";
 	public static final String BLT_CUT_OPERATION = "BLTCUT";
 	public static final String BLT_COPY_OPERATION = "BLTCOPY";
@@ -135,7 +137,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	 * @param ctx the designer context
 	 */
 	public GeneralPurposeTreeNode(DesignerContext ctx) {
-		super(ctx, BLTProperties.MODULE_ID, ApplicationScope.GATEWAY,BLTProperties.ROOT_FOLDER_UUID);
+		super(ctx, BLTProperties.FOLDER_RESOURCE_TYPE, ApplicationScope.DESIGNER);
 		this.setName(BLTProperties.ROOT_FOLDER_NAME);
 		this.resourceId = BLTProperties.ROOT_RESOURCE_ID;
 		this.executionEngine = new BasicExecutionEngine(1,CLSS);
@@ -259,16 +261,13 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		}
 		return ike;
 	}
-	@Override
-	public long getResourceId() { return this.resourceId; }
+
 	
 	@Override
 	public String getWorkspaceName() {
 		return DiagramWorkspace.key;
 	}
-	// Dirtiness refers to internal state, independent of children.
-	public boolean isDirty() { return this.dirty; }
-	public void setDirty(boolean flag) { this.dirty = flag; }
+
 	// Use the state for Applications and Families to remember whether to 
 	// configure production or isolation databases
 	public DiagramState getState() { return this.state; }
@@ -374,8 +373,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		}
 	}
 
-	// Unsubscribe as a project change listener
-	public void prepareForDeletion() { uninstall(); }
+
 
 	// Note: dirtiness for deletes is taken care of in the delete action
 	@Override
@@ -388,24 +386,9 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		super.projectResourceModified(res, changeType);
 	}
 
-	@Override
-	public void projectUpdated(Project diff) {
-		logger.infof("%s.projectUpdated ...",CLSS);
-		super.projectUpdated(diff);
-	}
 
-	/**
-	 * Either our state or the state of another node changed, annotate our state. 
-	 * Dirtiness for a nav tree node means that one or more of its descendent diagrams
-	 * is dirty.
-	 * Note: This method should ONLY be called from the node status manager.
-	 */
-	public void updateUI(boolean dty) {
-		logger.debugf("%s.updateUI: %d dirty = %s",CLSS,resourceId,(dty?"true":"false"));
-//		setItalic(dty);    // EREIAM JH - Disabled until italic system fixed
-		if( treeSaveAction!=null ) treeSaveAction.setEnabled(dty);
-		refresh();  // Update the UI
-	}
+
+
 
 	/**
 	 * Exclude cut and paste which are currently not supported.
@@ -1558,8 +1541,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 												renameDiagnosis(sd, pbv);
 												continue;
 											}
-										}
-											
+										}										
 										sd.setDirty(true);    // Dirty because gateway doesn't know about it yet
 										sd.setState(DiagramState.DISABLED);
 										newResourceUUID = sd.getId();
@@ -2178,7 +2160,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 
 	@SuppressWarnings("unchecked")
 	private void parseNodeForConflicts(List<String> nameList, AbstractResourceNavTreeNode theNode, StringBuffer buf) {
-		if (theNode.getProjectResource().getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
+		if (theNode.getProjectResource().get().getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
 			ProjectResource res = context.getProject().getResource(theNode.getProjectResource().getResourceId());	
 			String json = new String(res.getData());
 			SerializableDiagram sd = null;
@@ -2238,5 +2220,36 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				parseNodeForConflicts(nameList, aNode, buf);
 			}
 		}
+	}
+
+	@Override
+	public void projectUpdated(Project diff) {
+		logger.infof("%s.projectUpdated ...",CLSS);
+		super.projectUpdated(diff);
+	}
+	
+	// ************************ NavTreeNodeInterface **************************
+	// These methods are used by the NodeStatusManager
+	@Override
+	public ProjectResourceId getResourceId() { return this.resourceId; }
+	// Dirtiness refers to internal state, independent of children.
+	@Override
+	public boolean isDirty() { return this.dirty; }
+	public void setDirty(boolean flag) { this.dirty = flag; }
+	// Unsubscribe as a project change listener
+	@Override
+	public void prepareForDeletion() { uninstall(); }
+	/**
+	 * Either our state or the state of another node changed, annotate our state. 
+	 * Dirtiness for a nav tree node means that one or more of its descendent diagrams
+	 * is dirty.
+	 * Note: This method should ONLY be called from the node status manager.
+	 */
+	@Override
+	public void updateUI(boolean dty) {
+		logger.debugf("%s.updateUI: %d dirty = %s",CLSS,resourceId,(dty?"true":"false"));
+		setItalic(dty);   // NOTE: italic system may be broken ?
+		if( treeSaveAction!=null ) treeSaveAction.setEnabled(dty);
+		refresh();  // Update the UI
 	}
 }
