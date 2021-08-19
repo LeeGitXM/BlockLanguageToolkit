@@ -47,8 +47,13 @@ public class SourceConnection extends Input implements ProcessBlock {
 	public SourceConnection(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
 	}
+	
+	/* Not sure why this was added, removed PAH 8/19/21
 	@Override
 	public String getClassName() {return BlockConstants.BLOCK_CLASS_SOURCE;}
+	*/
+	
+	
 	/**
 	 * A source block has has a special form of the explanation method in that
 	 * the explanation is derived from the most recent block to write to its

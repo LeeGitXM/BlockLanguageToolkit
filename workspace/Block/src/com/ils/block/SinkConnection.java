@@ -43,8 +43,10 @@ public class SinkConnection extends Output implements ProcessBlock {
 		initialize();
 	}
 	
-	@Override  // why override this???
+	/* Not sure why this was added, removed PAH 8/19/21
+	@Override
 	public String getClassName() {return BlockConstants.BLOCK_CLASS_SINK;}
+	*/
 	
 	/**
 	 * On reset, set the value of the backing tag to "UNSET". This prevents
