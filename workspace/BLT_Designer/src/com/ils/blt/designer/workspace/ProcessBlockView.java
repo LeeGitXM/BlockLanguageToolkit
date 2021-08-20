@@ -34,6 +34,7 @@ import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.log.ILSLogger;
 import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockComponent;
 import com.inductiveautomation.ignition.designer.blockandconnector.blockui.AnchorDescriptor;
@@ -617,7 +618,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 
 	// =================================== NotificationChangeListener =====================
 	@Override
-	public void diagramStateChange(long resourceId, String s) {	
+	public void diagramStateChange(ProjectResourceId resourceId, String s) {	
 	}
 
 	@Override

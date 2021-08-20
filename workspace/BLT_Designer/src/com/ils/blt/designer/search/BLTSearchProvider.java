@@ -6,28 +6,28 @@ import java.util.Iterator;
 import java.util.List;
 
 import com.ils.blt.common.BLTProperties;
+import com.ils.common.log.ILSLogger;
+import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.common.gui.progress.TaskProgressListener;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
-import com.inductiveautomation.ignition.common.util.LogUtil;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.findreplace.SearchObject;
 import com.inductiveautomation.ignition.designer.findreplace.SearchObjectAggregator;
 import com.inductiveautomation.ignition.designer.findreplace.SearchProvider;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
 public class BLTSearchProvider implements SearchProvider {
-	private final String TAG = "SAISearchProvider";
+	private final String CLSS = "SAISearchProvider";
 	public final static int SEARCH_APPLICATION = 1;
 	public final static int SEARCH_FAMILY = 2;
 	public final static int SEARCH_DIAGRAM = 4;
 	public final static int SEARCH_BLOCK = 8;
 	public final static int SEARCH_PROPERTY = 16;
-	private final LoggerEx log;
+	private final ILSLogger log;
 	private final DesignerContext context;
 	
 	public BLTSearchProvider(DesignerContext ctx ) {
 		this.context = ctx;
-		this.log = LogUtil.getLogger(getClass().getPackage().getName());
+		this.log = LogMaker.getLogger(this);
 	}
 
 	@Override
@@ -70,25 +70,25 @@ public class BLTSearchProvider implements SearchProvider {
 		if( selectedCategories.contains("Property") ) searchKey += SEARCH_PROPERTY;
 		
 		if( selectedCategories.contains("Diagram") || selectedCategories.contains("Block") ) {
-			resources = context.getProject().getResourcesOfType(BLTProperties.MODULE_ID, BLTProperties.DIAGRAM_RESOURCE_TYPE);
+			resources = context.getProject().getResourcesOfType(BLTProperties.DIAGRAM_RESOURCE_TYPE);
 			for(ProjectResource res:resources) {
-				log.infof("%s.retrieveSearchableObjects resId = %d",TAG,res.getResourceId());
-				agg.add(new DiagramSearchCursor(context,res.getResourceId(),searchKey));
+				log.infof("%s.retrieveSearchableObjects resId = %d",CLSS,res.getResourceId());
+				agg.add(new DiagramSearchCursor(context,res,searchKey));
 			}
 		}
 		if( selectedCategories.contains("Application") ) {
-			resources = context.getProject().getResourcesOfType(BLTProperties.MODULE_ID, BLTProperties.APPLICATION_RESOURCE_TYPE);
+			resources = context.getProject().getResourcesOfType(BLTProperties.APPLICATION_RESOURCE_TYPE);
 			for(ProjectResource res:resources) {
-				log.infof("%s.retrieveSearchableObjects resId = %d",TAG,res.getResourceId());
-				agg.add(new ApplicationSearchCursor(context,res.getResourceId()));
+				log.infof("%s.retrieveSearchableObjects resId = %d",CLSS,res.getResourceId());
+				agg.add(new ApplicationSearchCursor(context,res));
 			}
 		}
 		
 		if( selectedCategories.contains("Family") ) {
-			resources = context.getProject().getResourcesOfType(BLTProperties.MODULE_ID, BLTProperties.FAMILY_RESOURCE_TYPE);
+			resources = context.getProject().getResourcesOfType(BLTProperties.FAMILY_RESOURCE_TYPE);
 			for(ProjectResource res:resources) {
-				log.infof("%s.retrieveSearchableObjects resId = %d",TAG,res.getResourceId());
-				agg.add(new FamilySearchCursor(context,res.getResourceId()));
+				log.infof("%s.retrieveSearchableObjects resId = %d",CLSS,res.getResourceId());
+				agg.add(new FamilySearchCursor(context,res));
 			}
 		}
 		return agg;
@@ -96,13 +96,13 @@ public class BLTSearchProvider implements SearchProvider {
 
 	@Override
 	public void selectObjects(SelectedObjectsHandler arg0) {
-		log.infof("%s.selectObjects",TAG);
+		log.infof("%s.selectObjects",CLSS);
 		
 	}
 
 	@Override
 	public String selectedObjectsToString(List<Object> arg0) {
-		log.infof("%s.selectedObjectsToString",TAG);
+		log.infof("%s.selectedObjectsToString",CLSS);
 		return null;
 	}
 	

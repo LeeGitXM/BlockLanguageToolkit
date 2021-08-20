@@ -47,6 +47,7 @@ import com.ils.common.watchdog.WatchdogObserver;
 import com.ils.common.watchdog.WatchdogTimer;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 
 
 /**
@@ -1060,7 +1061,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	// ===================================== Notification Change Listener =======================================
 	// The only method implemented is value change. This is interpreted to be a change to aux data
 	@Override
-	public void diagramStateChange(long resId, String s) {}
+	public void diagramStateChange(ProjectResourceId resId, String s) {}
 	@Override
 	public void bindingChange(String pname,String bindTo) {}
 	@Override

@@ -356,7 +356,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	
 	public GeneralPurposeTreeNode findApplicationForDiagram(ProcessDiagramView diagram) {
 		NodeStatusManager mgr = getNavTreeStatusManager();
-		GeneralPurposeTreeNode rtNode = (GeneralPurposeTreeNode)mgr.findNode(-1);
+		GeneralPurposeTreeNode rtNode = (GeneralPurposeTreeNode)mgr.findNode(diagram.getResourceId());
 		AbstractResourceNavTreeNode ret = applicationForDiagram(null, rtNode, diagram);
 		return (ret == null?null:(GeneralPurposeTreeNode)ret);
 

@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -54,7 +55,6 @@ import com.inductiveautomation.ignition.common.execution.ExecutionManager;
 import com.inductiveautomation.ignition.common.execution.impl.BasicExecutionEngine;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.project.Project;
-import com.inductiveautomation.ignition.common.project.ProjectChangeListener;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 import com.inductiveautomation.ignition.designer.UndoManager;
@@ -62,7 +62,6 @@ import com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignab
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
 import com.inductiveautomation.ignition.designer.gui.IconUtil;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
-import com.inductiveautomation.ignition.designer.model.DesignerProjectContext;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractNavTreeNode;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceNavTreeNode;
 
@@ -78,7 +77,6 @@ import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceN
 public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavTreeNodeInterface,NotificationChangeListener,ProjectChangeListener  {
 	private static final String TAG = "DiagramTreeNode";
 	private static final String PREFIX = BLTProperties.BUNDLE_PREFIX;  // Required for some defaults
-	protected DesignerContext context;
 	private boolean dirty = false;     
 	protected final ProjectResourceId resourceId;
 	private final ExecutionManager executionEngine;
@@ -104,13 +102,13 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	 * @param ws the tabbed workspace holding the diagrams
 	 */
 	public DiagramTreeNode(DesignerContext context,ProjectResource resource,DiagramWorkspace ws) {
-		this.context = context;
+		super(context,resource.getResourcePath());
 		this.executionEngine = new BasicExecutionEngine(1,TAG);
 		this.resourceId = resource.getResourceId();
 		this.workspace = ws;
 		statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
-		setName(resource.getName());
-		setText(resource.getName());
+		setName(resource.getResourceName());
+		setText(resource.getResourceName());
 		
 		alertBadge =iconFromPath("Block/icons/badges/bell.png");
 		defaultIcon = IconUtil.getIcon("unknown");
@@ -275,13 +273,6 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	@Override
 	public ProjectResourceId getResourceId() { return this.resourceId; }
 	
-	/**
-	 * This is the resource ..
-	 */
-	@Override
-	public ProjectResource getProjectResource() {
-		return context.getProject().getResource(resourceId);
-	}
 
 	/**
 	 * Return an icon appropriate to the diagram state and whether or not it is displayed.
@@ -535,7 +526,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
     	}
 
     	public void actionPerformed(final ActionEvent e) {
-    		if( resourceId<0 ) return;   // Do nothing
+    		if( resourceId==null ) return;   // Do nothing
     		try {
     			EventQueue.invokeLater(new Runnable() {
     				public void run() {
@@ -564,7 +555,8 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
     							}
 
     							if( output.canWrite() ) {
-    								ProjectResource res = context.getProject().getResource(resourceId);
+    								Optional<ProjectResource> optional = context.getProject().getResource(resourceId);
+    								ProjectResource res = optional.get();
     								if( res!=null ) {
 
     									byte[] bytes = res.getData();

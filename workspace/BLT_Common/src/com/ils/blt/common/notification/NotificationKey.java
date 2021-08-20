@@ -3,6 +3,7 @@
  */
 package com.ils.blt.common.notification;
 
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 
 /**
  * This class contains static methods for generating keys for the
@@ -15,8 +16,9 @@ public class NotificationKey
 	 * @return  a push-notification key for a diagram alert status. 
 	 * 			The Id is simply the resource Id.
 	 */
-	public static String keyForAlert(long resid) {
-		return String.format("A:%d",resid);
+	public static String keyForAlert(ProjectResourceId resid) {
+		String key = resid.getResourcePath().getPath().toString();
+		return String.format("A:%s",key);
 	}
 	/**
 	 * @param blkid string version of the block's UUID
@@ -48,8 +50,9 @@ public class NotificationKey
 	 * @return  a push-notification key for a diagram. The Id is
 	 *         the diagram's resource Id.
 	 */
-	public static String keyForDiagram(long resourceId) {
-		return String.format("D:%d",resourceId);
+	public static String keyForDiagram(ProjectResourceId resourceId) {
+		String key = resourceId.getResourcePath().getPath().toString();
+		return String.format("D:%s",key);
 	}
 	/**
 	 * @param blkid string version of the block's UUID

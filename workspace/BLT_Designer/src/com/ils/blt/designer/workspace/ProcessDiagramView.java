@@ -476,9 +476,14 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 
 	public String getName() {return name;}
 
+	// Required by the Block and Connector framework
 	@Override
 	public ResourcePath getResourcePath() {
 		return resourceId.getResourcePath();
+	}
+	
+	public ProjectResourceId getResourceId() {
+		return resourceId;
 	}
 	
 	public String getWatermark() {return watermark;}

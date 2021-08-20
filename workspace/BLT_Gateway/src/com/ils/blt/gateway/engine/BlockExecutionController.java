@@ -665,7 +665,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	 * @param val new state (true implies alerting).
 	 */
 	@Override
-	public void sendAlertNotification(long resid, String val) {
+	public void sendAlertNotification(ProjectResourceId resid, String val) {
 		String key = NotificationKey.keyForAlert(resid);
 		try {
 			sessionManager.sendNotification(ApplicationScope.DESIGNER, BLTProperties.MODULE_ID, key, val);
@@ -764,7 +764,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	 * @param val new state
 	 */
 	@Override
-	public void sendStateNotification(long resourceId, String val) {
+	public void sendStateNotification(ProjectResourceId resourceId, String val) {
 		String key = NotificationKey.keyForDiagram(resourceId);
 		try {
 			sessionManager.sendNotification(ApplicationScope.DESIGNER, BLTProperties.MODULE_ID, key, val);

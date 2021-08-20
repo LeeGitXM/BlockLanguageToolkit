@@ -107,12 +107,13 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * @param uuidString unique identifier of he diagram as a string
 	 */
 	@Override
-	public boolean diagramExists(String uuidString) {
+	public boolean diagramExists(ProjectResourceId resourceId) {
 		boolean result = false;
+		
 		try {
 			Boolean value = (Boolean)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "diagramExists",uuidString);
-			log.debugf("%s.diagramExists  ...%s = %s",CLSS,uuidString,result);
+					BLTProperties.MODULE_ID, "diagramExists",resourceId);
+			log.debugf("%s.diagramExists  ...%s = %s",CLSS,resourceId,result);
 			if( value!=null ) result = value.booleanValue();
 		}
 		catch(Exception ge) {
@@ -124,13 +125,13 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * @param uuid unique identifier of he application as a string
 	 */
 	@Override
-	public String getApplicationName(String uuid) {
-		String name = "NULL UUID";
-		if( uuid!=null) {
-			log.infof("%s.getApplicationName... %s",CLSS,uuid);
+	public String getApplicationName(ProjectResourceId resourceId) {
+		String name = "NULL";
+		if( resourceId!=null) {
+			log.infof("%s.getApplicationName... %s",CLSS,resourceId);
 			try {
 				name = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-						BLTProperties.MODULE_ID, "getApplicationName",uuid);
+						BLTProperties.MODULE_ID, "getApplicationName",resourceId);
 			}
 			catch(Exception ex) {
 				log.infof("%s.getApplicationName: Exception (%s)",CLSS,ex.getMessage());
@@ -145,7 +146,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * @return the id of the named block.
 	 */
 	@Override
-	public String getBlockId(String diagramId, String blockName) {
+	public String getBlockId(ProjectResourceId diagramId, String blockName) {
 		String id = "UNKNOWN";
 		try {
 			id = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
@@ -262,7 +263,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * @return database name
 	 */
 	@Override
-	public String getDatabaseForUUID(String uuid) {
+	public String getDatabaseForId(ProjectResourceId uuid) {
 		String db = "NONE";
 		if( uuid!=null) {
 			log.infof("%s.getDatabaseForUUID... %s",CLSS,uuid);
@@ -281,7 +282,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * @return a descriptor for the diagram that corresponds to that Id.
 	 */
 	@Override
-	public SerializableResourceDescriptor getDiagram(String diagramId)  {
+	public SerializableResourceDescriptor getDiagram(ProjectResourceId diagramId)  {
 		SerializableResourceDescriptor result = null;
 		try {
 			result = (SerializableResourceDescriptor)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
@@ -338,28 +339,12 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		}
 		return result;
 	}
-	/**
-	 * @return the current state of the specified diagram.
-	 */
-	@Override
-	public DiagramState getDiagramState(String diagramId) {
-		DiagramState result = DiagramState.ACTIVE;
-		try {
-			String state = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "getDiagramState",diagramId);
-			log.debugf("%s.getDiagramState ... %s",CLSS,result.toString());
-			result = DiagramState.valueOf(state);
-		}
-		catch(Exception ge) {
-			log.infof("%s.getDiagramState: GatewayException (%s)",CLSS,ge.getMessage());
-		}
-		return result;
-	}
+
 	/**
 	 * @return an explanation for the state of a block.
 	 */
 	@Override
-	public String getExplanation(String diagramId,String blockId) {
+	public String getExplanation(ProjectResourceId diagramId,String blockId) {
 		String reason="";
 
 		try {
@@ -372,7 +357,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		return reason;
 	}
 	@Override
-	public String getFamilyName(String uuid) {
+	public String getFamilyName(ProjectResourceId uuid) {
 		String name = "NULL UUID";
 		if( uuid!=null ) {
 			log.infof("%s.getFamilyName... %s",CLSS,uuid);
@@ -407,7 +392,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * @return internal details of a block for debugging purposes.
 	 */
 	@Override
-	public SerializableBlockStateDescriptor getInternalState(String diagramId,String blockId) {
+	public SerializableBlockStateDescriptor getInternalState(ProjectResourceId diagramId,String blockId) {
 		//log.infof("%s.getInternalState ... %s,%s",TAG,diagramId,blockId);
 		SerializableBlockStateDescriptor result = new SerializableBlockStateDescriptor();
 		String json = null;
@@ -479,7 +464,8 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * @return the binding (tag path) of a specified block property. If there is no binding,
 	 *         return an empty string.
 	 */
-	public Object getPropertyBinding(String diagramId,String blockId,String propertyName) {
+	@Override
+	public Object getPropertyBinding(ProjectResourceId diagramId,String blockId,String propertyName) {
 		Object result = null;
 		try {
 			result = GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
@@ -497,7 +483,8 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * @param propertyName name of the property for which a value is to be returned
 	 * @return the value of a specified block property.
 	 */
-	public Object getPropertyValue(String diagramId,String blockId,String propertyName) {
+	@Override
+	public Object getPropertyValue(ProjectResourceId diagramId,String blockId,String propertyName) {
 		Object result = null;
 		try {
 			result = GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
@@ -517,7 +504,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * @return database name
 	 */
 	@Override
-	public String getProviderForUUID(String uuid) {
+	public String getProviderForId(ProjectResourceId uuid) {
 		String provider = "NONE";
 		if( uuid!=null) {
 			log.infof("%s.getProviderForUUID... %s",CLSS,uuid);
@@ -531,7 +518,8 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		}
 		return provider;
 	}
-	public Date getTimeOfLastBlockStateChange(String diagramId, String blockName) {
+	@Override
+	public Date getTimeOfLastBlockStateChange(ProjectResourceId diagramId, String blockName) {
 		Date result = null;
 		try {
 			result = (Date)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
@@ -615,7 +603,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<SerializableBlockStateDescriptor> listBlocksConnectedAtPort(String diagramId,String blockId,String portName) {
+	public List<SerializableBlockStateDescriptor> listBlocksConnectedAtPort(ProjectResourceId diagramId,String blockId,String portName) {
 		List<SerializableBlockStateDescriptor> result = null;
 		try {
 			result = (List<SerializableBlockStateDescriptor> )GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
@@ -629,7 +617,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<SerializableBlockStateDescriptor> listBlocksDownstreamOf(String diagramId, String blockName) {
+	public List<SerializableBlockStateDescriptor> listBlocksDownstreamOf(ProjectResourceId diagramId, String blockName) {
 		List<SerializableBlockStateDescriptor> result = null;
 		try {
 			result = (List<SerializableBlockStateDescriptor> )GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
@@ -661,7 +649,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<SerializableBlockStateDescriptor> listBlocksInDiagram(String diagramId) {
+	public List<SerializableBlockStateDescriptor> listBlocksInDiagram(ProjectResourceId diagramId) {
 		List<SerializableBlockStateDescriptor> result = null;
 		try {
 			result = (List<SerializableBlockStateDescriptor> )GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
@@ -697,7 +685,8 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * @return a list of blocks downstream of the specified block.
 	 */
 	@SuppressWarnings("unchecked")
-	public List<SerializableBlockStateDescriptor> listBlocksGloballyDownstreamOf(String diagramId,String blockId) {
+	@Override
+	public List<SerializableBlockStateDescriptor> listBlocksGloballyDownstreamOf(ProjectResourceId diagramId,String blockId) {
 		List<SerializableBlockStateDescriptor> result = null;
 		try {
 			result = (List<SerializableBlockStateDescriptor> )GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
@@ -717,7 +706,8 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * @return a list of blocks upstream of the specified block.
 	 */
 	@SuppressWarnings("unchecked")
-	public List<SerializableBlockStateDescriptor> listBlocksGloballyUpstreamOf(String diagramId,String blockId) {
+	@Override
+	public List<SerializableBlockStateDescriptor> listBlocksGloballyUpstreamOf(ProjectResourceId diagramId,String blockId) {
 		List<SerializableBlockStateDescriptor> result = null;
 		try {
 			result = (List<SerializableBlockStateDescriptor> )GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
@@ -730,7 +720,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	}
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<SerializableBlockStateDescriptor> listBlocksUpstreamOf(String diagramId, String blockId) {
+	public List<SerializableBlockStateDescriptor> listBlocksUpstreamOf(ProjectResourceId diagramId, String blockId) {
 		List<SerializableBlockStateDescriptor> result = null;
 		try {
 			result = (List<SerializableBlockStateDescriptor> )GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
@@ -774,7 +764,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		List<SerializableBlockStateDescriptor> result = null;
 		try {
 			result = (List<SerializableBlockStateDescriptor>)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "listUnresponsiveBlocks",new Double(hours),className);
+					BLTProperties.MODULE_ID, "listUnresponsiveBlocks",hours,className);
 		}
 		catch(Exception ge) {
 			log.infof("%s.listUnresponsiveBlocks: GatewayException (%s)",CLSS,ge.getMessage());
@@ -790,7 +780,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 */
 	@SuppressWarnings({ "unchecked" })
 	@Override
-	public List<SerializableBlockStateDescriptor> listDiagramBlocksOfClass(String diagramId,String className) {
+	public List<SerializableBlockStateDescriptor> listDiagramBlocksOfClass(ProjectResourceId diagramId,String className) {
 		log.debugf("%s.getDiagramBlocksOfClass: for diagram %s (%s)",CLSS,diagramId,className);
 		List<SerializableBlockStateDescriptor> blockList = new ArrayList<>();
 		try {
@@ -839,7 +829,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<SerializableBlockStateDescriptor> listSinksForSource(String diagramId, String blockId) {
+	public List<SerializableBlockStateDescriptor> listSinksForSource(ProjectResourceId diagramId, String blockId) {
 		List<SerializableBlockStateDescriptor> blockList = new ArrayList<>();
 		try {
 			blockList = (List<SerializableBlockStateDescriptor>)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
@@ -854,7 +844,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<SerializableBlockStateDescriptor> listSourcesForSink(String diagramId, String blockId) {
+	public List<SerializableBlockStateDescriptor> listSourcesForSink(ProjectResourceId diagramId, String blockId) {
 		List<SerializableBlockStateDescriptor> blockList = new ArrayList<>();
 		try {
 			blockList = (List<SerializableBlockStateDescriptor>)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
@@ -867,7 +857,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	}
 	
 	@Override
-	public String pathForBlock(String diagramId,String blockName) {
+	public String pathForBlock(ProjectResourceId diagramId,String blockName) {
 		String path = "";
 		try {
 			path = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
@@ -884,7 +874,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 *         root is a slash representing the top node of the navigation tree.
 	 */
 	@Override
-	public String pathForNode(String nodeId) {
+	public String pathForNode(ProjectResourceId nodeId) {
 		String path = "";
 		try {
 			path = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
@@ -902,7 +892,8 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * @param port anchor for the incoming connection
 	 * @param value new value
 	 */
-	public void postResult(String diagramId,String blockId,String port,String value) {
+	@Override
+	public void postResult(ProjectResourceId diagramId,String blockId,String port,String value) {
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 					BLTProperties.MODULE_ID, "postResult",diagramId,blockId,port,value);
@@ -916,7 +907,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * the output connections.
 	 */
 	@Override
-	public void propagateBlockState(String diagramId,String blockId) {
+	public void propagateBlockState(ProjectResourceId diagramId,String blockId) {
 		log.debugf("%s.propagateBlockState ...",CLSS);
 
 		try {
@@ -928,32 +919,21 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		}
 	}
 	/**
-	 * Execute the getAux extension function in Gateway scope, for the specified resource.
-	 * @param projId project identifier
-	 * @param resid the resourceId of a node to be read
-	 * @param nodeId node identifier
-	 * @param provider tag provider
-	 * @param db data source
-	 * @return auxiliary data as read from the database
+	 * Not implemented. The only time that the application should read from the database is in the case of an import -
+	 * snd that is a Gateway function.
 	 */
-	public synchronized GeneralPurposeDataContainer readAuxData(long projId,long resid,String nodeId,String provider,String database) {
-		//log.infof("%s.readAuxData: proj %d, res %d, (%s,%s)",CLSS,projId,root,provider,database);
-		GeneralPurposeDataContainer container = new GeneralPurposeDataContainer();
-		try {
-			container = (GeneralPurposeDataContainer)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "readAuxData",projId,resid,nodeId,provider,database);
-		}
-		catch(Exception ge) {
-			log.infof("%s.readAuxData: GatewayException (%s)",CLSS,ge.getMessage());
-		}
-		return container;
+	@Override
+	public GeneralPurposeDataContainer readAuxData(ProjectResourceId resid, String nodeId, String provider, String db) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	/** Change the name of a block 
 	 * @param duuid diagram unique Id
 	 * @param buuid block unique Id
 	 * @param name the new name
 	 */
-	public void renameBlock(String duuid,String buuid,String name ) {
+	@Override
+	public void renameBlock(ProjectResourceId duuid,String buuid,String name ) {
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 				BLTProperties.MODULE_ID, "renameBlock",duuid,buuid,name);
@@ -979,7 +959,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * Execute reset() on a specified block
 	 */
 	@Override
-	public void resetBlock(String diagramId,String blockName) {
+	public void resetBlock(ProjectResourceId diagramId,String blockName) {
 		log.debugf("%s.resetBlock ...",CLSS);
 
 		try {
@@ -995,7 +975,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * Execute reset() on every block on the diagram
 	 */
 	@Override
-	public void resetDiagram(String diagramId) {
+	public void resetDiagram(ProjectResourceId diagramId) {
 		log.debugf("%s.resetDiagram ...",CLSS);
 
 		try {
@@ -1010,7 +990,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * Execute reset() on a specified block
 	 */
 	@Override
-	public void restartBlock(String diagramId,String blockName) {
+	public void restartBlock(ProjectResourceId diagramId,String blockName) {
 		log.debugf("%s.restartBlock ...",CLSS);
 
 		try {
@@ -1050,7 +1030,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * @param arg an argument.
 	 */
 	@Override
-	public boolean sendLocalSignal(String diagramId, String command,String message,String arg) {
+	public boolean sendLocalSignal(ProjectResourceId diagramId, String command,String message,String arg) {
 		log.infof("%s.sendLocalSignal for %s %s %s %s...",CLSS,diagramId,command,message,arg);
 		boolean result = false;
 		try {
@@ -1073,7 +1053,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * @return true on success
 	 */
 	@Override
-	public boolean sendSignal(String diagramId,String blockName,String command,String message) {
+	public boolean sendSignal(ProjectResourceId diagramId,String blockName,String command,String message) {
 		log.infof("%s.sendSignal for %s:%s %s %s...",CLSS,diagramId,blockName,command,message);
 		boolean result = false;
 		try {
@@ -1099,7 +1079,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * @param command string of the signal.
 	 */
 	@Override
-	public boolean sendTimestampedSignal(String diagramId, String command,String message,String arg,long time) {
+	public boolean sendTimestampedSignal(ProjectResourceId diagramId, String command,String message,String arg,long time) {
 		log.infof("%s.sendTimestampedSignal for %s %s %s %s...",CLSS,diagramId,command,message,arg);
 		boolean result = false;
 		try {
@@ -1135,7 +1115,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * @param buuid block unique Id
 	 */
 	@Override
-	public void setBlockProperties(UUID duuid,UUID buuid, Collection<BlockProperty> props ) {
+	public void setBlockProperties(ProjectResourceId duuid,UUID buuid, Collection<BlockProperty> props ) {
 		String diagId  = duuid.toString();
 		String blockId = buuid.toString();
 		ObjectMapper mapper = new ObjectMapper();
@@ -1163,7 +1143,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * @param property the changed property
 	 */
 	@Override
-	public void setBlockProperty(UUID duuid,UUID buuid,BlockProperty property ) {
+	public void setBlockProperty(ProjectResourceId duuid,UUID buuid,BlockProperty property ) {
 		String diagId  = duuid.toString();
 		String blockId = buuid.toString();
 		ObjectMapper mapper = new ObjectMapper();
@@ -1193,7 +1173,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * @param pname the changed property
 	 * @param value the new binding of the property. The value must be a legal tag path 
 	 */
-	public void setBlockPropertyBinding(String diagramId,String blockId,String pname,String value ) {
+	public void setBlockPropertyBinding(ProjectResourceId diagramId,String blockId,String pname,String value ) {
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 				BLTProperties.MODULE_ID, "setBlockPropertyBinding", diagramId,blockId, pname,value);
@@ -1211,7 +1191,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * @param value the new value of the property. The value will be coerced into the correct data type in the gateway 
 	 */
 	@Override
-	public void setBlockPropertyValue(String diagramId,String bname,String pname,String value )  {
+	public void setBlockPropertyValue(ProjectResourceId diagramId,String bname,String pname,String value )  {
 		log.debugf("%s.setBlockPropertyValue: %s %s %s=%s", CLSS, diagramId,bname, pname,value);
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
@@ -1229,7 +1209,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * @param state the new state of the block. The value will be coerced into a truth-value in the gateway 
 	 */
 	@Override
-	public void setBlockState(String diagramId,String bname,String state ) {
+	public void setBlockState(ProjectResourceId diagramId,String bname,String state ) {
 		log.debugf("%s.setBlockState ... %s:%s %s",CLSS,diagramId,bname,state);
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
@@ -1252,18 +1232,6 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		}
 	}
 
-	@Override
-	public void setDiagramState(String diagramId, String state) {
-		log.debugf("%s.setDiagramState ... %s %s",CLSS,diagramId,state);
-		try {
-			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "setDiagramState",diagramId,state);
-
-		}
-		catch(Exception ge) {
-			log.infof("%s.setDiagramState: GatewayException (%s)",CLSS,ge.getMessage());
-		}
-	}
 	/**
 	 * Tell the testing timer about the difference between test time
 	 * and current time.
@@ -1334,7 +1302,8 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * @param diagramId identifier of diagram to get the watermark
 	 * @param text to be displayed
 	 */
-	public void setWatermark(String diagramId,String text) {
+	@Override
+	public void setWatermark(ProjectResourceId diagramId,String text) {
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 									BLTProperties.MODULE_ID, "setWatermark",diagramId,text);
@@ -1397,7 +1366,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * @param buuid block unique Id
 	 */
 	@Override
-	public void updateBlockAnchors(UUID duuid,UUID buuid, Collection<SerializableAnchor> anchors ) {
+	public void updateBlockAnchors(ProjectResourceId duuid,UUID buuid, Collection<SerializableAnchor> anchors ) {
 		String diagId  = duuid.toString();
 		String blockId = buuid.toString();
 		ObjectMapper mapper = new ObjectMapper();
@@ -1436,15 +1405,5 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		catch(Exception ge) {
 			log.infof("%s.writeAuxData: GatewayException (%s)",CLSS,ge.getMessage());
 		}
-	}
-
-	/**
-	 * Not implemented. The only time that the application should read from the database is in the case of an import -
-	 * snd that is a Gateway function.
-	 */
-	@Override
-	public GeneralPurposeDataContainer readAuxData(ProjectResourceId resid, String nodeId, String provider, String db) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 }

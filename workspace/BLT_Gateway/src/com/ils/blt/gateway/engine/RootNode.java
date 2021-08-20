@@ -12,7 +12,6 @@ import java.util.Map;
 import com.ils.blt.common.BLTProperties;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 import com.inductiveautomation.ignition.common.project.resource.ResourcePath;
-import com.inductiveautomation.ignition.common.project.resource.ResourceType;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 
 /**
@@ -93,7 +92,6 @@ public class RootNode extends ProcessNode {
 		}
 		list.add(root);
 	}
- 
 	/**
 	 * Remove the children of a project. 
 	 */

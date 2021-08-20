@@ -38,6 +38,13 @@ public interface ToolkitRequestHandler  {
 	 */
 	public void clearController();
 	/**
+	 * Create a resource descriptor from its string components
+	 * @param project name
+	 * @param resource path
+	 * @param resource type
+	 */
+	public ProjectResourceId createResourceId(String projectName,String path, String type);
+	/**
 	 * Create a SQLTag memory tag given its path and data type. The path must contain the
 	 * provider name in brackets.
 	 */
@@ -52,14 +59,14 @@ public interface ToolkitRequestHandler  {
 	 * @param diagramId string representation of the diagram's unique id
 	 * @return true if the referenced diagram exists in the gateway
 	 */
-	public boolean diagramExists(String diagramId) ;
+	public boolean diagramExists(ProjectResourceId diagramId) ;
 
 	/**
-	 * @param uuid string representation of the application's unique id
+	 * @param resourceId string representation of the application's unique id
 	 * @return the name of the application that is equal to or
 	 *         superior to the node with the specified UUID
 	 */
-	public String getApplicationName(String uuid);
+	public String getApplicationName(ProjectResourceId resourceId);
 	
 	/**
 	 * Obtain a list of BlockProperty objects for the specified block. 
@@ -107,7 +114,7 @@ public interface ToolkitRequestHandler  {
 	 * @param uuid the uniqueId (string) of any node in the nav tree.
 	 * @return database name
 	 */
-	public String getDatabaseForUUID(String uuid);
+	public String getDatabaseForId(ProjectResourceId id);
 	
 	/**
 	 * It appears that there is no way in the client to obtain a list of data sources
@@ -120,7 +127,7 @@ public interface ToolkitRequestHandler  {
 	 * @param diagramId String representation of the diagram's internal Id.
 	 * @return a descriptor for the diagram that corresponds to that Id.
 	 */
-	public SerializableResourceDescriptor getDiagram(String diagramId) ;
+	public SerializableResourceDescriptor getDiagram(ProjectResourceId diagramId) ;
 	
 	/**
 	 * @param blockId String representation of the block's internal Id.
@@ -132,24 +139,19 @@ public interface ToolkitRequestHandler  {
 	 * @return the current state of the specified diagram.
 	 */
 	public DiagramState getDiagramState(ProjectResourceId id) ;
-	/**
-	 * @param diagramId String representation of the diagram's internal Id.
-	 * @return the current state of that diagram.
-	 */
-	public DiagramState getDiagramState(String diagramId);
 	
 	/**
 	 * @param uuid identifier of any node as a string
 	 * @return the name of the family that is equal to or
 	 *         superior to the node with the specified UUID
 	 */
-	public String getFamilyName(String uuid);
+	public String getFamilyName(ProjectResourceId uuid);
 	/**
 	 * @param diagramId string representation of the diagram's unique id
 	 * @param blockId identifier of the block within the diagram
 	 * @return an explanation for the state of a block.
 	 */
-	public String getExplanation(String diagramId,String blockId);
+	public String getExplanation(ProjectResourceId diagramId,String blockId);
 	
 	/**
 	 * @param diagramId identifier of the diagram owning the block, a String
@@ -184,14 +186,14 @@ public interface ToolkitRequestHandler  {
 	 * @return the binding associated with a specified block property. If there is no 
 	 *         binding, an empty string is returned.
 	 */
-	public Object getPropertyBinding(String diagramId,String blockId,String propertyName) ;
+	public Object getPropertyBinding(ProjectResourceId diagramId,String blockId,String propertyName) ;
 	/**
 	 * @param diagramId identifier of the diagram owning the block, a String
 	 * @param blockId identifier of the block within the diagram, a String
 	 * @param propertyName name of the property for which a value is to be returned
 	 * @return the value of a specified block property.
 	 */
-	public Object getPropertyValue(String diagramId,String blockId,String propertyName) ;
+	public Object getPropertyValue(ProjectResourceId diagramId,String blockId,String propertyName) ;
 	/**
 	 * Find the parent application or diagram of the entity referenced by
 	 * the supplied id. Test the state and return the name of the appropriate
@@ -199,13 +201,13 @@ public interface ToolkitRequestHandler  {
 	 * @param uuid the uniqueId (string) of any node in the nav tree.
 	 * @return tag provider name
 	 */
-	public String getProviderForUUID(String uuid);
+	public String getProviderForUUID(ProjectResourceId uuid);
 	/**
 	 * @param diagramId string representation of the diagram's unique id
 	 * @param blockName name of the block within the diagram
 	 * @return the time at which the block last changed its state
 	 */
-	public Date getTimeOfLastBlockStateChange(String diagramId, String blockName) ;
+	public Date getTimeOfLastBlockStateChange(ProjectResourceId diagramId, String blockName) ;
 	/**
 	 * Acquire a value from the HSQL database table associated with the toolkit. A
 	 * null is returned if the string is not found.
@@ -236,7 +238,7 @@ public interface ToolkitRequestHandler  {
 	 * @param blockName name of the block within the diagram
 	 * @return a list of blocks downstream of the specified block.
 	 */
-	public List<SerializableBlockStateDescriptor> listBlocksDownstreamOf(String diagramId,String blockName);
+	public List<SerializableBlockStateDescriptor> listBlocksDownstreamOf(ProjectResourceId diagramId,String blockName);
 	/**
 	 * List all blocks that have properties bound to the supplied tag path. 
 	 * @param tagpath the path for the tag of interest.
@@ -251,13 +253,13 @@ public interface ToolkitRequestHandler  {
 	 * @param portName port of the anchor of interest
 	 * @return a list of blocks connected to the named port.
 	 */
-	public List<SerializableBlockStateDescriptor> listBlocksConnectedAtPort(String diagramId,String blockId,String portName) ;
+	public List<SerializableBlockStateDescriptor> listBlocksConnectedAtPort(ProjectResourceId diagramId,String blockId,String portName) ;
 	/**
 	 * Query a diagram in the gateway for list of its blocks. 
 	 * @param diagramId of the parent diagram
 	 * @return a list of blocks belonging to the diagram.
 	 */
-	public List<SerializableBlockStateDescriptor> listBlocksInDiagram(String diagramId) ;
+	public List<SerializableBlockStateDescriptor> listBlocksInDiagram(ProjectResourceId diagramId) ;
 	/**
 	 * Query a diagram in the gateway for list of its blocks that are downstream
 	 * of the specified block. If any of those blocks are sinks, then continue
@@ -266,7 +268,7 @@ public interface ToolkitRequestHandler  {
 	 * @param blockName name of the block within the diagram
 	 * @return a list of blocks downstream of the specified block.
 	 */
-	public List<SerializableBlockStateDescriptor> listBlocksGloballyDownstreamOf(String diagramId,String blockName); 
+	public List<SerializableBlockStateDescriptor> listBlocksGloballyDownstreamOf(ProjectResourceId diagramId,String blockName); 
 	/**
 	 * Query a diagram in the gateway for list of its blocks that are upstream
 	 * of the specified block. If any of those blocks are sources, then continue
@@ -275,7 +277,7 @@ public interface ToolkitRequestHandler  {
 	 * @param blockName name of the block within the diagram
 	 * @return a list of blocks upstream of the specified block.
 	 */
-	public List<SerializableBlockStateDescriptor> listBlocksGloballyUpstreamOf(String diagramId,String blockName); 
+	public List<SerializableBlockStateDescriptor> listBlocksGloballyUpstreamOf(ProjectResourceId diagramId,String blockName); 
 	/**
 	 * @param className fully qualified class name of blocks to be listed
 	 * @return a list of state descriptors for blocks that are of the specified class.
@@ -288,7 +290,7 @@ public interface ToolkitRequestHandler  {
 	 * @param blockName name of the block within the diagram
 	 * @return a list of blocks upstream of the specified block..
 	 */
-	public List<SerializableBlockStateDescriptor> listBlocksUpstreamOf(String diagramId,String blockName); 
+	public List<SerializableBlockStateDescriptor> listBlocksUpstreamOf(ProjectResourceId diagramId,String blockName); 
 	/**
 	 * The result is a list of SerializableBlockState descriptors for those 
 	 * blocks in any project that have configuration issues. Descriptor attributes
@@ -348,7 +350,7 @@ public interface ToolkitRequestHandler  {
 	 * @param blockId Id of the source block
 	 * @return a list of blocks logically connected to the source.
 	 */
-	public List<SerializableBlockStateDescriptor> listSinksForSource(String diagramId,String blockId) ;
+	public List<SerializableBlockStateDescriptor> listSinksForSource(ProjectResourceId diagramId,String blockId) ;
 	/**
 	 * Query the gateway for list of its source blocks associated with the
 	 * specified sink. The blocks that are returned are not constrained
@@ -357,27 +359,27 @@ public interface ToolkitRequestHandler  {
 	 * @param blockId Id of the sink block  
 	 * @return a list of blocks logically connected to the sink.
 	 */
-	public List<SerializableBlockStateDescriptor> listSourcesForSink(String diagramId,String blockId) ;
+	public List<SerializableBlockStateDescriptor> listSourcesForSink(ProjectResourceId diagramId,String blockId) ;
 	/** 
 	 * @param diagramId of the parent diagram
 	 * @param blockName name of the block within the diagram
 	 * @return a colon-separated path to the specified block. The path includes
 	 *         the project name.
 	 */
-	public String pathForBlock(String diagramId,String blockName);
+	public String pathForBlock(ProjectResourceId diagramId,String blockName);
 	/** 
 	 * @param nodeId UUID as a String of a node in the navigation tree
 	 * @return a slash-separated path to the specified node. The path 
 	 *         root is a slash representing the top node of the navigation tree.
 	 */
-	public String pathForNode(String nodeId);
+	public String pathForNode(ProjectResourceId nodeId);
 	/**
 	 * Execute propagate() on a specified block. Send its current state
 	 * to the outputs.
 	 * @param diagramId id of the parent diagram
 	 * @param blockId id of the subject block as a string
 	 */
-	public void propagateBlockState(String diagramId,String blockId) ;
+	public void propagateBlockState(ProjectResourceId diagramId,String blockId) ;
 	/**
 	 * Execute the getAux extension function in Gateway scope for the indicated node.
 	 * Inform the designer of the results via a notification
@@ -393,7 +395,7 @@ public interface ToolkitRequestHandler  {
 	 * @param buuid block unique Id
 	 * @param name the new name
 	 */
-	public void renameBlock(String duuid,String buuid,String name ) ;
+	public void renameBlock(ProjectResourceId duuid,String buuid,String name ) ;
 	/**
 	 * Rename a SQLTag given its path and new name. The path must contain the
 	 * provider name in brackets.
@@ -404,13 +406,13 @@ public interface ToolkitRequestHandler  {
 	 * @param diagramId of the parent diagram
 	 * @param blockName name of the block within the diagram 
 	 */
-	public void resetBlock(String diagramId,String blockName) ;
+	public void resetBlock(ProjectResourceId diagramId,String blockName) ;
 
 	/**
 	 * Execute reset() on every block on the diagram
 	 *  @param diagramId id of the parent diagram
 	 */
-	public void resetDiagram(String diagramId) ;
+	public void resetDiagram(ProjectResourceId diagramId) ;
 	/**
 	 * Determine whether or not the indicated resource is known to the controller.
 	 * @param resid identifier of the resource that is the diagram holding the block, a Long
@@ -422,7 +424,7 @@ public interface ToolkitRequestHandler  {
 	 * @param diagramId id of the parent diagram
 	 * @param blockName name of the block within the diagram 
 	 */
-	public void restartBlock(String diagramId,String blockName) ;
+	public void restartBlock(ProjectResourceId diagramId,String blockName) ;
 	/**
 	 * Send a signal to all blocks of a particular class on a specified diagram.
 	 * This is a "local" transmission. The diagram is specified by a tree-path.
@@ -434,7 +436,7 @@ public interface ToolkitRequestHandler  {
 	 * @param arg also a component of the transmitted signal
 	 * @return true if the signal was sent
 	 */
-	public boolean sendLocalSignal(String diagramId,String command,String message,String arg) ;
+	public boolean sendLocalSignal(ProjectResourceId diagramId,String command,String message,String arg) ;
 	/**
 	 * Send a signal directly to a specified block.
 	 * This is a "local" transmission. The signal timestamp is "now".
@@ -445,7 +447,7 @@ public interface ToolkitRequestHandler  {
 	 * @param message command payload
 	 * @return true on success
 	 */
-	public boolean sendSignal(String diagramId,String blockName,String command,String message);
+	public boolean sendSignal(ProjectResourceId diagramId,String blockName,String command,String message);
 	/**
 	 * Send a signal to all blocks of a particular class on a specified diagram.
 	 * This is a "local" transmission. The diagram is specified by a tree-path.
@@ -458,7 +460,7 @@ public interface ToolkitRequestHandler  {
 	 * @param time unix time, milli-seconds since the start of the epoch
 	 * @return true if the signal was sent 
 	 */
-	public boolean sendTimestampedSignal(String diagramId,String command,String message,String arg,long time) ;
+	public boolean sendTimestampedSignal(ProjectResourceId diagramId,String command,String message,String arg,long time) ;
 	
 	/**
 	 * Set the state of every diagram that is a member of the application to
@@ -473,13 +475,13 @@ public interface ToolkitRequestHandler  {
 	 * @param buuid block unique Id
 	 * @param props a collection of properties with changes
 	 */
-	public void setBlockProperties(UUID duuid,UUID buuid, Collection<BlockProperty> props ) ;
+	public void setBlockProperties(ProjectResourceId duuid,UUID buuid, Collection<BlockProperty> props ) ;
 	/** Update a single property for a block 
 	 * @param duuid diagram unique Id
 	 * @param buuid block unique Id
 	 * @param property the changed property
 	 */
-	public void setBlockProperty(UUID duuid,UUID buuid,BlockProperty property ) ;
+	public void setBlockProperty(ProjectResourceId duuid,UUID buuid,BlockProperty property ) ;
 	
 	/** Change the binding on a block property in such a way that the block and UI
 	 * are notified of the change.
@@ -489,7 +491,7 @@ public interface ToolkitRequestHandler  {
 	 * @param prop the changed property
 	 * @param value the new binding of the property. The value must be a legal tag path 
 	 */
-	public void setBlockPropertyBinding(String diagramId,String blockId,String prop,String value ) ;
+	public void setBlockPropertyBinding(ProjectResourceId diagramId,String blockId,String prop,String value ) ;
 	
 	/** Change the value of a block property in such a way that the block and UI
 	 * are notified of the change.
@@ -499,7 +501,7 @@ public interface ToolkitRequestHandler  {
 	 * @param pname the changed property
 	 * @param value the new value of the property. The value will be coerced into the correct data type in the gateway 
 	 */
-	public void setBlockPropertyValue(String diagramId,String bname,String pname,String value ) ;
+	public void setBlockPropertyValue(ProjectResourceId diagramId,String bname,String pname,String value ) ;
 
 	/** 
 	 * Drive a block to the specified state. 
@@ -508,9 +510,9 @@ public interface ToolkitRequestHandler  {
 	 * @param bname block name
 	 * @param state the new state of the block. The value will be coerced into a truth-value in the gateway 
 	 */
-	public void setBlockState(String diagramId,String bname,String state );
+	public void setBlockState(ProjectResourceId diagramId,String bname,String state );
 	public void setDiagramState(ProjectResourceId resid, String state) ;
-	public void setDiagramState(String diagramId, String state);
+	
 	/**
 	 * Save a value into the HSQL database table associated with the toolkit. The 
 	 * table contains name-value pairs, so any name is allowable.
@@ -539,7 +541,7 @@ public interface ToolkitRequestHandler  {
 	 * @param buuid block unique Id
 	 * @param anchors  a pre-provided list of anchors that will be augmented by this call
 	 */
-	public void updateBlockAnchors(UUID duuid,UUID buuid, Collection<SerializableAnchor> anchors ) ;
+	public void updateBlockAnchors(ProjectResourceId duuid,UUID buuid, Collection<SerializableAnchor> anchors ) ;
 	/**
 	 * Execute the setAux extension function in Gateway scope for the indicated node
 	 * @param resid the resourceId of an application to be refreshed

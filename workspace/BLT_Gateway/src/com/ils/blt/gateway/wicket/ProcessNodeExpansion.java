@@ -5,12 +5,12 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.UUID;
 
 import org.apache.wicket.MetaDataKey;
 import org.apache.wicket.Session;
 
 import com.ils.blt.gateway.engine.ProcessNode;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 
 /**
  * Custom expansion state:
@@ -28,7 +28,7 @@ public class ProcessNodeExpansion implements Set<ProcessNode>, Serializable {
 	private static MetaDataKey<ProcessNodeExpansion> KEY = new MetaDataKey<ProcessNodeExpansion>() {
 		private static final long serialVersionUID = -2564082437478673765L;
 	};
-	private Set<UUID> ids = new HashSet<UUID>();
+	private Set<ProjectResourceId> ids = new HashSet<>();
 	private boolean inverse = false;
 	
 	public void collapseAll(){
@@ -45,11 +45,11 @@ public class ProcessNodeExpansion implements Set<ProcessNode>, Serializable {
 	public boolean add(ProcessNode foo)
 	{
 		if (inverse) {
-			return ids.remove(foo.getSelf());
+			return ids.remove(foo.getResourceId());
 		}
 		else
 		{
-			return ids.add(foo.getSelf());
+			return ids.add(foo.getResourceId());
 		}
 	}
 
@@ -60,11 +60,11 @@ public class ProcessNodeExpansion implements Set<ProcessNode>, Serializable {
 
 		if (inverse)
 		{
-			return ids.add(foo.getSelf());
+			return ids.add(foo.getResourceId());
 		}
 		else
 		{
-			return ids.remove(foo.getSelf());
+			return ids.remove(foo.getResourceId());
 		}
 	}
 
@@ -74,10 +74,10 @@ public class ProcessNodeExpansion implements Set<ProcessNode>, Serializable {
 		ProcessNode foo = (ProcessNode)o;
 
 		if (inverse) {
-			return !ids.contains(foo.getSelf());
+			return !ids.contains(foo.getResourceId());
 		}
 		else {
-			return ids.contains(foo.getSelf());
+			return ids.contains(foo.getResourceId());
 		}
 	}
 

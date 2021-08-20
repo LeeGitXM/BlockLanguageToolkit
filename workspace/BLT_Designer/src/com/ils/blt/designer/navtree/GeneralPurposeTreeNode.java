@@ -80,7 +80,6 @@ import com.inductiveautomation.ignition.common.execution.ExecutionManager;
 import com.inductiveautomation.ignition.common.execution.impl.BasicExecutionEngine;
 import com.inductiveautomation.ignition.common.model.ApplicationScope;
 import com.inductiveautomation.ignition.common.project.Project;
-import com.inductiveautomation.ignition.common.project.ProjectListener;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 import com.inductiveautomation.ignition.designer.IgnitionDesigner;
@@ -100,7 +99,8 @@ import com.inductiveautomation.ignition.designer.navtree.model.FolderNode;
  * 
  * An OK action calls extension functions.
  * 
- * Leaf nodes are of type DiagramNode.
+ * Leaf nodes are of type DiagramNode. 
+ * Note that a FolderNode is an AbstractResourceNavTreeNode
  */
 public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInterface {
 	private static final String CLSS = "GeneralPurposeTreeNode";
@@ -139,7 +139,6 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	public GeneralPurposeTreeNode(DesignerContext ctx) {
 		super(ctx, BLTProperties.FOLDER_RESOURCE_TYPE, ApplicationScope.DESIGNER);
 		this.setName(BLTProperties.ROOT_FOLDER_NAME);
-		this.resourceId = BLTProperties.ROOT_RESOURCE_ID;
 		this.executionEngine = new BasicExecutionEngine(1,CLSS);
 		this.requestHandler = new ApplicationRequestHandler();
 		deleteNodeAction = null;
@@ -171,12 +170,11 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	 * @param resource the project resource
 	 * @param self UUID of the node itself
 	 */
-	public GeneralPurposeTreeNode(DesignerContext context,ProjectResource resource,UUID self) {
-		super(context,resource.getModuleId(),resource.getApplicationScope(),self);
-		this.resourceId = resource.getResourceId();
+	public GeneralPurposeTreeNode(DesignerContext context,ProjectResource resource) {
+		super(context,resource,ApplicationScope.DESIGNER);
 		this.executionEngine = new BasicExecutionEngine(1,CLSS);
 		this.requestHandler = new ApplicationRequestHandler();
-		setName(resource.getName());      // Also sets text for tree
+		setName(resource.getResourceName());      // Also sets text for tree
 		deleteNodeAction = new DeleteNodeAction(this);
 		copyBranchAction = new CopyAction(this);
 		pasteBranchAction = new PasteAction(this);
@@ -185,11 +183,11 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		workspace = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getWorkspace();
 		statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
 		alertBadge =iconFromPath("Block/icons/badges/bell.png");
-		if(resource.getResourceType().equalsIgnoreCase(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
+		if(resource.getResourceType().equals(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
 			closedIcon = iconFromPath("Block/icons/navtree/application_folder_closed.png");
 			openIcon = iconFromPath("Block/icons/navtree/application_folder.png");
 		} 
-		else if(resource.getResourceType().equalsIgnoreCase(BLTProperties.FAMILY_RESOURCE_TYPE)) { 
+		else if(resource.getResourceType().equals(BLTProperties.FAMILY_RESOURCE_TYPE)) { 
 			closedIcon = iconFromPath("Block/icons/navtree/family24.png");
 			openIcon = iconFromPath("Block/icons/navtree/family24.png");
 		}
@@ -213,7 +211,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		GeneralPurposeTreeNode theNode = this;
 
 		AbstractResourceNavTreeNode node = nearestNonFolderNode(theNode);
-		if (node != null && node.getProjectResource() != null && node.getProjectResource().getResourceType().equals(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
+		if (node != null && node.getProjectResource() != null && node.getResourceId().getResourceType().equals(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
 			ret = true;
 		}
 		return ret;				
@@ -221,7 +219,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	
 	protected AbstractResourceNavTreeNode nearestNonFolderNode(GeneralPurposeTreeNode node) {
 		AbstractResourceNavTreeNode ret = node;
-		while (ret != null && ret.getProjectResource() != null && ret.getProjectResource().getResourceType().equals(BLTProperties.FOLDER_RESOURCE_TYPE)) { // generic folder, go up
+		while (ret != null && ret.getProjectResource() != null && ret.getResourceId().getResourceType().equals(BLTProperties.FOLDER_RESOURCE_TYPE)) { // generic folder, go up
 			if (ret != null && ret.getParent() instanceof AbstractResourceNavTreeNode) {
 				ret = (AbstractResourceNavTreeNode)ret.getParent();
 			} else {
@@ -251,8 +249,6 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		return ike;
 	}
 	
-	public UUID getUUID() { return this.folderId; }
-	
 	@Override
 	public Icon getIcon() {
 		Icon ike  = closedIcon;
@@ -280,8 +276,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		try {
 			List <SerializableResourceDescriptor> descriptors = requestHandler.listResourceNodes();
 			for( SerializableResourceDescriptor descriptor : descriptors ) {
-				logger.info("Res: "+descriptor.getProjectId()+":"+descriptor.getResourceId()+" "+
-						descriptor.getType()+" ("+descriptor.getName()+":"+descriptor.getId()+")");
+				logger.info("Res: "+descriptor.getName()+" "+descriptor.getResourceId().getProjectName()+":"+descriptor.getResourceId().getResourcePath().getPath().toString()+" "+
+						descriptor.getType().toString());
 			}
 		} 
 		catch (Exception ex) {
@@ -297,10 +293,10 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	public void listProjectBLTResources() {
 		List <ProjectResource> resources = context.getProject().getResources();
 		for( ProjectResource res : resources ) {
-			if( res.getModuleId()==null || res.getModuleId().length()==0) continue;
-			if( !res.getResourceType().startsWith("blt")) continue;     // List only diagram resources
-			logger.info("Res: "+res.getResourceId()+" "+res.getResourceType()+" "+res.getModuleId()+" ("+res.getName()+
-					":"+res.getParentUuid()+")");
+			if( res.getResourcePath().getModuleId()==null || res.getResourcePath().getModuleId().length()==0) continue;
+			if( !res.getResourceType().getTypeId().toString().startsWith("blt")) continue;     // List only diagram resources
+			logger.info("Res: "+res.getResourceName()+" "+res.getResourceId().getProjectName()+":"+res.getResourceId().getResourcePath().getPath().toString()+" "+
+					res.getResourceType().getTypeId().toString());
 		}
 	}
 	public String nextFreeName(AbstractResourceNavTreeNode node,String root) {
@@ -318,7 +314,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			while(walker.hasMoreElements()) {
 				AbstractResourceNavTreeNode child = (AbstractResourceNavTreeNode)walker.nextElement();
 				ProjectResource cres = child.getProjectResource();
-				if( cres.getName().equals(newName)) {
+				if( cres.getResourceName().equals(newName)) {
 					foundMatch=true;
 					break;
 				}
@@ -364,7 +360,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			ApplicationPropertyEditor appEditor = new ApplicationPropertyEditor(context,sap,resource);
 			workspace.getPropertyEditorFrame().setEditor(appEditor) ;
 		} 
-		else if(resource.getResourceType().equalsIgnoreCase(BLTProperties.FAMILY_RESOURCE_TYPE)) {
+		else if(resource.getResourceType().equals(BLTProperties.FAMILY_RESOURCE_TYPE)) {
 			SerializableFamily sfam = recursivelyDeserializeFamily(this);
 			logger.infof("%s.onSelected: selected family %s (%d)",CLSS,sfam.getName(),resourceId);
 			FamilyPropertyEditor famEditor = new FamilyPropertyEditor(context,sfam,resource);
@@ -434,8 +430,6 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				throw new IllegalArgumentException();
 			}
 			statusManager.createResourceStatus(node,resourceId, res.getResourceId());
-			// Note: This shouldn't be necessary - plus it causes problems on a delete (when we search for resources to delete)
-			//executionEngine.executeOnce(new ResourceUpdateManager(workspace,res));   /// Creates, syncs resource
 		}
 		else {
 			logger.debugf("%s.createChildNode: REUSE %s->%s",CLSS,this.getName(),node.getName());

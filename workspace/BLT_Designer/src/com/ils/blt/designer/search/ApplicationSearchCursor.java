@@ -2,9 +2,9 @@ package com.ils.blt.designer.search;
 
 import java.util.Enumeration;
 
+import com.ils.common.log.ILSLogger;
+import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
-import com.inductiveautomation.ignition.common.util.LogUtil;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.findreplace.SearchObjectCursor;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractNavTreeNode;
@@ -14,24 +14,22 @@ public class ApplicationSearchCursor extends SearchObjectCursor {
 	private final String TAG = "DiagramSearchCursor";
 	private final DesignerContext context;
 	private ProjectResource application; 
-	private final LoggerEx log;
-	private final long resId;
+	private final ILSLogger log;
 	private int index = 0;
 	
-	public ApplicationSearchCursor(DesignerContext ctx,long res) {
+	public ApplicationSearchCursor(DesignerContext ctx,ProjectResource res) {
 		this.context = ctx;
-		this.resId = res;
-		this.log = LogUtil.getLogger(getClass().getPackage().getName());
+		this.application = res;
+		this.log = LogMaker.getLogger(this);
 		this.index = 0;
 	}
 	@Override
 	public Object next() {
 		Object so = null;   // Search Object
 		if( index==0 ) {
-			application = context.getProject().getLocalResource(resId);
 			String rootName = getRootName();
-			so = new ApplicationNameSearchObject(context,rootName,application.getName());
-			log.infof("%s.next %s",TAG,application.getName());
+			so = new ApplicationNameSearchObject(context,rootName,application.getResourceName());
+			log.infof("%s.next %s",TAG,application.getResourceName());
 		}
 		index++;
 		return so;

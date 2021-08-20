@@ -20,6 +20,7 @@ import com.ils.blt.designer.workspace.ui.AnchorSide;
 import com.ils.common.log.ILSLogger;
 import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorPoint;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorType;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
@@ -212,7 +213,7 @@ public class BasicAnchorPoint extends AnchorPoint implements NotificationChangeL
 	@Override
 	public void bindingChange(String pname,String value) {}
 	@Override
-	public void diagramStateChange(long resId, String alerting) {}
+	public void diagramStateChange(ProjectResourceId resId, String alerting) {}
 	@Override
 	public void nameChange(String name) {}
 	@Override
