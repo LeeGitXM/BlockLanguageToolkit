@@ -43,7 +43,7 @@ public class PythonRequestHandler   {
 	 * @return the ancestrial application
 	 */
 	public ProcessApplication getApplication(String nodeId)  {
-		//log.infof("%s.getApplication, node = %s ",TAG,nodeId);
+		//log.infof("%s.getApplication, node = %s ",CLSS,nodeId);
 		ProcessApplication app = null;
 		try {
 			UUID uuid = UUID.fromString(nodeId);
@@ -52,14 +52,14 @@ public class PythonRequestHandler   {
 			while( node!=null ) {
 				if( node instanceof ProcessApplication ) {
 					app = (ProcessApplication)node;
-					//log.infof("%s.getApplication, found application = %s ",TAG,app.getName());
+					//log.infof("%s.getApplication, found application = %s ",CLSS,app.getName());
 					break;
 				}
 				node = controller.getProcessNode(node.getParent());
 			}
 		}
 		catch(IllegalArgumentException iae) {
-			log.warnf("%s.getApplication: %s is an illegal UUID (%s)",TAG,nodeId,iae.getMessage());
+			log.warnf("%s.getApplication: %s is an illegal UUID (%s)",CLSS,nodeId,iae.getMessage());
 		}
 		return app;
 	}
@@ -73,7 +73,7 @@ public class PythonRequestHandler   {
 	 * @return the referenced block
 	 */
 	public ProcessBlock getBlock(String parent,String blockId)  {
-		log.tracef("%s.getBlock, diagram.block = %s.%s ",TAG,parent,blockId);
+		log.tracef("%s.getBlock, diagram.block = %s.%s ",CLSS,parent,blockId);
 		ProcessBlock block = null;
 		try {
 			UUID parentuuid = UUID.fromString(parent);
@@ -85,7 +85,7 @@ public class PythonRequestHandler   {
 			}
 		}
 		catch(IllegalArgumentException iae) {
-			log.warnf("%s.getBlock: on of %s or %s is an illegal UUID (%s)",TAG,parent,blockId,iae.getMessage());
+			log.warnf("%s.getBlock: on of %s or %s is an illegal UUID (%s)",CLSS,parent,blockId,iae.getMessage());
 		}
 		return block;
 	}
@@ -128,10 +128,10 @@ public class PythonRequestHandler   {
 			}
 		}
 		catch(IllegalArgumentException iae) {
-			log.warnf("%s.getDefaultDatabase: %s is an illegal UUID (%s)",TAG,uuidString,iae.getMessage());
+			log.warnf("%s.getDefaultDatabase: %s is an illegal UUID (%s)",CLSS,uuidString,iae.getMessage());
 		}
-		if( !dbName.isEmpty() ) log.debugf("%s.getDefaultDatabase: %s ",TAG,dbName);
-		else                   log.warnf("%s.getDefaultDatabase: Database for diagram %s not found,",TAG,uuidString);
+		if( !dbName.isEmpty() ) log.debugf("%s.getDefaultDatabase: %s ",CLSS,dbName);
+		else                   log.warnf("%s.getDefaultDatabase: Database for diagram %s not found,",CLSS,uuidString);
 		return dbName;
 	}
 	/**
@@ -152,7 +152,7 @@ public class PythonRequestHandler   {
 	 *         the specified diagram
 	 */
 	public String getDefaultTagProvider(String uuidString)  {
-		log.tracef("%s.getDefaultTagProvider, node = %s ",TAG,uuidString);
+		log.tracef("%s.getDefaultTagProvider, node = %s ",CLSS,uuidString);
 		String provider = "";
 		try {
 			UUID uuid = UUID.fromString(uuidString);
@@ -168,9 +168,9 @@ public class PythonRequestHandler   {
 			}
 		}
 		catch(IllegalArgumentException iae) {
-			log.warnf("%s.getDefaultTagProvider: %s is an illegal UUID (%s)",TAG,uuidString,iae.getMessage());
+			log.warnf("%s.getDefaultTagProvider: %s is an illegal UUID (%s)",CLSS,uuidString,iae.getMessage());
 		}
-		if( provider.isEmpty() ) log.warnf("%s.getDefaultTagProvider: Provider for diagram %s not found,",TAG,uuidString);
+		if( provider.isEmpty() ) log.warnf("%s.getDefaultTagProvider: Provider for diagram %s not found,",CLSS,uuidString);
 		return provider;
 	}
 	/**
@@ -180,7 +180,7 @@ public class PythonRequestHandler   {
 	 * @return the diagram
 	 */
 	public ProcessDiagram getDiagram(String diagramId)  {
-		log.tracef("%s.getDiagram, diagram = %s ",TAG,diagramId);
+		log.tracef("%s.getDiagram, diagram = %s ",CLSS,diagramId);
 		ProcessDiagram diag = null;
 		try {
 			UUID diagramuuid = UUID.fromString(diagramId);
@@ -190,7 +190,7 @@ public class PythonRequestHandler   {
 			}
 		}
 		catch(IllegalArgumentException iae) {
-			log.warnf("%s.getDiagram: %s is an illegal UUID (%s)",TAG,diagramId,iae.getMessage());
+			log.warnf("%s.getDiagram: %s is an illegal UUID (%s)",CLSS,diagramId,iae.getMessage());
 		}
 		return diag;
 	}
@@ -202,7 +202,7 @@ public class PythonRequestHandler   {
 	 * @return the ancestrial family
 	 */
 	public ProcessFamily getFamily(String nodeId)  {
-		log.tracef("%s.getFamily, node = %s ",TAG,nodeId);
+		log.tracef("%s.getFamily, node = %s ",CLSS,nodeId);
 		ProcessFamily fam = null;
 		try {
 			UUID nodeuuid = UUID.fromString(nodeId);
@@ -217,7 +217,7 @@ public class PythonRequestHandler   {
 			}
 		}
 		catch(IllegalArgumentException iae) {
-			log.warnf("%s.getFamily: %s is an illegal UUID (%s)",TAG,nodeId,iae.getMessage());
+			log.warnf("%s.getFamily: %s is an illegal UUID (%s)",CLSS,nodeId,iae.getMessage());
 		}
 		return fam;
 	}
@@ -253,7 +253,7 @@ public class PythonRequestHandler   {
 	 * @param time timestamp of the notification
 	 */
 	public void postValue(String parent,String id,String port,String value,String quality,long time)  {
-		log.debugf("%s.postValue - %s = %s (%s) on %s",TAG,id,value.toString(),quality.toString(),port);
+		log.debugf("%s.postValue - %s = %s (%s) on %s",CLSS,id,value.toString(),quality.toString(),port);
 		
 		try {
 			UUID uuid = UUID.fromString(id);
@@ -272,7 +272,7 @@ public class PythonRequestHandler   {
 			}
 		}
 		catch(IllegalArgumentException iae) {
-			log.warnf("%s.postValue: one of %s or %s illegal UUID (%s)",TAG,parent,id,iae.getMessage());
+			log.warnf("%s.postValue: one of %s or %s illegal UUID (%s)",CLSS,parent,id,iae.getMessage());
 		}
 	}
 	
@@ -286,7 +286,7 @@ public class PythonRequestHandler   {
 	 * @param time timestamp of the notification
 	 */
 	public void sendConnectionNotification(String id, String port, String value,String quality,long time)  {
-		log.tracef("%s.sendConnectionNotification - %s = %s on %s",TAG,id,value.toString(),port);
+		log.tracef("%s.sendConnectionNotification - %s = %s on %s",CLSS,id,value.toString(),port);
 		controller.sendConnectionNotification(id, port, new BasicQualifiedValue(value,
 				new BasicQuality(quality,(quality.equalsIgnoreCase("good")?Quality.Level.Good:Quality.Level.Bad)),
 				new Date(time)));
@@ -299,7 +299,7 @@ public class PythonRequestHandler   {
 	 * @param value the result of the block's computation
 	 */
 	public void sendPropertyNotification(String id, String port, String value)  {
-		log.tracef("%s.sendConnectionNotification - %s = %s on %s",TAG,id,value.toString(),port);
+		log.tracef("%s.sendConnectionNotification - %s = %s on %s",CLSS,id,value.toString(),port);
 		controller.sendConnectionNotification(id, port, new BasicQualifiedValue(value));
 	}
 	/**
@@ -312,7 +312,7 @@ public class PythonRequestHandler   {
 	 * @param time the time associated with this signal
 	 */
 	public void sendTimestampedSignal(String parent,String command,String message,String arg,long time)  {
-		log.debugf("%s.sendLocalSignal - %s = %s %s %s ",TAG,parent,command,message,arg);
+		log.debugf("%s.sendLocalSignal - %s = %s %s %s ",CLSS,parent,command,message,arg);
 		ControllerRequestHandler.getInstance().sendTimestampedSignal(parent,command,message,arg,time);
 		
 	}
@@ -337,7 +337,7 @@ public class PythonRequestHandler   {
 	 */
 	public void updateTag(String parent,String tagPath,String data,String quality,long time)  {
 		if( tagPath==null || tagPath.isEmpty() ) return;   // Fail silently
-		log.debugf("%s.updateTag - %s = %s %s %s %d ",TAG,parent,tagPath,data,quality,time);
+		log.debugf("%s.updateTag - %s = %s %s %s %d ",CLSS,parent,tagPath,data,quality,time);
 
 		UUID diagId = UUID.fromString(parent);
 		Quality q = DataQuality.GOOD_DATA;

@@ -16,6 +16,8 @@ import javax.swing.JTree;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
+import com.inductiveautomation.ignition.client.tags.tree.TagRenderer;
+import com.inductiveautomation.ignition.client.tags.tree.node.TagTreeNode;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
 import net.miginfocom.swing.MigLayout;
@@ -35,7 +37,7 @@ class TagSelectorPane extends JPanel {
 	private final ApplicationPropertyEditor editor;
 	private String selectedPath = "";
 	private final JTree tagTree;
-	private final TagRenderer cellRenderer;
+	private final TagRenderer tagRenderer;
 	private final TreeSelectionModel tagTreeSelectionModel;
 	public static final Dimension TREE_SIZE = new Dimension(300,250);
 	
@@ -51,17 +53,16 @@ class TagSelectorPane extends JPanel {
 		JPanel mainPanel = new JPanel(new BorderLayout());
 		setPreferredSize(ApplicationPropertyEditor.PANEL_SIZE);
 		
-		this.cellRenderer = new TagRenderer();
+		this.tagRenderer = new TagRenderer();
 		//setLayout(new BorderLayout());
 		tagTree = new JTree();
 		tagTree.setOpaque(true);
-		tagTree.setCellRenderer(cellRenderer);
-		tagTree.setModel(context.getTagBrowser().getSqlTagTreeModel());
+		tagTree.setCellRenderer(tagRenderer);
+		tagTree.setModel(context.getTagBrowser().
 		tagTreeSelectionModel = tagTree.getSelectionModel();
 		tagTreeSelectionModel.setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 		tagTree.setBackground(getBackground());
-		cellRenderer.setBackgroundSelectionColor(Color.cyan);
-		cellRenderer.setBackgroundNonSelectionColor(getBackground());
+		tagRenderer.setBackground(Color.cyan);
 		JScrollPane treePane = new JScrollPane(tagTree);
 		treePane.setPreferredSize(TREE_SIZE);
 		mainPanel.add(treePane,BorderLayout.CENTER);

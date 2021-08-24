@@ -1,13 +1,16 @@
 package com.ils.blt.designer;
 
-import com.inductiveautomation.ignition.client.gateway_interface.GatewayException;
-import com.inductiveautomation.ignition.common.project.Project;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.ils.common.log.ILSLogger;
+import com.ils.common.log.LogMaker;
+import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
+import com.inductiveautomation.ignition.client.gateway_interface.GatewayInterface;
+import com.inductiveautomation.ignition.common.project.ChangeOperation;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
-import com.inductiveautomation.ignition.common.util.LogUtil;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
-import com.inductiveautomation.ignition.designer.IgnitionDesigner;
-import com.inductiveautomation.ignition.designer.gateway.DTGatewayInterface;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
+import com.inductiveautomation.ignition.designer.project.ResourceNotFoundException;
 
 
 /**
@@ -19,8 +22,8 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
  *
  */
 public class ResourceCreateManager implements Runnable {
-	private static final String TAG = "ResourceCreateManager";
-	private static final LoggerEx logger = LogUtil.getLogger(ResourceCreateManager.class.getPackage().getName());
+	private static final String CLSS = "ResourceCreateManager";
+	private final ILSLogger log;
 	private static DesignerContext context = null;
 	private final ProjectResource res;
 	private final ThreadCounter counter = ThreadCounter.getInstance();
@@ -28,6 +31,7 @@ public class ResourceCreateManager implements Runnable {
 	public ResourceCreateManager(ProjectResource pr) {
 		this.res = pr;
 		this.counter.incrementCount();
+		this.log = LogMaker.getLogger(this);
 	}
 	
 	/**
@@ -37,23 +41,28 @@ public class ResourceCreateManager implements Runnable {
 	public static void setContext(DesignerContext ctx) {
 		context = ctx;
 	}
-	
+	/**
+	 *  Now save the resource, as it is.
+	 */
 	@Override
 	public void run() {
 		if( res!=null ) {
-			// Now save the resource, as it is.
-			Project diff = context.getProject().getEmptyCopy();
-			context.updateResource(res);   // Force an update
-
-			diff.putResource(res, true);    // Mark as dirty for our controller as resource listener
 			try {
-				DTGatewayInterface.getInstance().saveProject(IgnitionDesigner.getFrame(), diff, false, "Committing ...");  // Don't publish
+				context.getProject().createResource(res);
+				GatewayInterface gw = GatewayConnectionManager.getInstance().getGatewayInterface();
+				ChangeOperation.ModifyResourceOperation co = ChangeOperation.ModifyResourceOperation.newModifyOp(res,res.getResourceSignature());
+				List<ChangeOperation> ops = new ArrayList<>();
+				ops.add(co);
+				gw.pushProject(ops);
 			}
-			catch(GatewayException ge) {
-				logger.warnf("%s.run: Exception saving project resource %d (%s)",TAG,res.getResourceId(),ge.getMessage());
+			catch(ResourceNotFoundException rnf) {
+				log.warnf("%s.run: Project resource not found %s:%s (%s)",CLSS,res.getResourceId().getProjectName(),
+						res.getResourceId().getResourcePath().getPath().toString(),rnf.getMessage());
 			}
-			Project project = context.getProject();
-			project.applyDiff(diff,false);
+			catch(Exception ex) {
+				log.warnf("%s.run: Exception creating resource %s:%s (%s)",CLSS,res.getResourceId().getProjectName(),
+						res.getResourceId().getResourcePath().getPath().toString(),ex.getMessage());
+			}
 		}
 		this.counter.decrementCount();
 	}

@@ -116,7 +116,7 @@ public class BlockInternalsViewer extends JDialog {
 
 	private void queryBlock() {
 		ApplicationRequestHandler handler = new ApplicationRequestHandler();
-		SerializableBlockStateDescriptor descriptor = handler.getInternalState(diagram.getId().toString(), block.getId().toString());
+		SerializableBlockStateDescriptor descriptor = handler.getInternalState(diagram.getResourceId(), block.getId().toString());
 		if( descriptor!=null ) {
 			attributes = descriptor.getAttributes();
 			activities = descriptor.getActivities();

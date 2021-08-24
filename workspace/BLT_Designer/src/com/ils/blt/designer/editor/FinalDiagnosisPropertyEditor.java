@@ -12,6 +12,7 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 import javax.swing.JCheckBox;
@@ -140,10 +141,11 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		this.diagramTreeNode = (DiagramTreeNode) nodeStatusMgr.findNode(diagram.getResourceId());
 		this.appNode = this.diagramTreeNode.getApplicationTreeNode();
 		if (this.appNode == null) {
-			log.errorf("**** ERROR APPLICATION NOT FOUND ****");
+			log.errorf("%s **** ERROR APPLICATION NOT FOUND ****");
 			// Need to somehow bail here and let the user know they are screwed!
 		}
-		this.applicationResource = appNode.getProjectResource();
+		Optional<ProjectResource> optional = appNode.getProjectResource();
+		this.applicationResource = optional.get();
 		
 		// Somehow I need to get the serializable application, I have the tree node that represents the 
 		// application and I have the resource for the application.  
@@ -185,7 +187,7 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 	public void shutdown() {
 		notificationHandler.removeNotificationChangeListener(key,CLSS);
 		save();
-		requestHandler.writeAuxData(context.getProject().getId(), diagram.getResourceId(), block.getId().toString(), model, provider, database);
+		requestHandler.writeAuxData( diagram.getResourceId(), block.getId().toString(), model, provider, database);
 		if (DEBUG) log.infof("%s.shutdown: writing aux data",CLSS);
 	}
 	
@@ -464,7 +466,7 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 	protected JFormattedTextField createDoubleField(String bundle,String text) {	
 		final JFormattedTextField field = new JFormattedTextField(NumberFormat.getInstance());
 		double dbl = fcns.coerceToDouble(text);
-		field.setValue(new Double(dbl));
+		field.setValue(dbl);
 		field.setPreferredSize(NAME_BOX_SIZE);
 		field.setEditable(true);
 		field.setToolTipText(rb.getString(bundle));
@@ -476,7 +478,7 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 	protected JFormattedTextField createIntegerField(String bundle,String text) {	
 		final JFormattedTextField field = new JFormattedTextField(NumberFormat.getInstance());
 		int i = fcns.coerceToInteger(text);
-		field.setValue(new Integer(i));
+		field.setValue(i);
 		field.setPreferredSize(NAME_BOX_SIZE);
 		field.setEditable(true);
 		field.setToolTipText(rb.getString(bundle));
@@ -519,7 +521,7 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 	// ============================================== PropertyChange listener ==========================================
 	@Override
 	public void propertyChange(PropertyChangeEvent event) {
-		if (event.getPropertyName().equalsIgnoreCase(DualListBox.PROPERTY_CHANGE_UPDATE)) {
+		if (event.getPropertyName().equalsIgnoreCase("PROPERTY_CHANGE_UPDATE")) {   // What is this?
 			save();
 		}
 
@@ -528,7 +530,7 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 	@Override
 	public void bindingChange(String pname,String binding) {}
 	@Override
-	public void diagramStateChange(long resId, String state) {}
+	public void diagramStateChange(String path, String state) {}
 	@Override
 	public void nameChange(String name) {}
 	@Override

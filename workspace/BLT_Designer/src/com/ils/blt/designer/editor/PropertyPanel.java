@@ -699,7 +699,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 		});
 	}
 	@Override
-	public void diagramStateChange(long resId, String state) {}
+	public void diagramStateChange(String path, String state) {}
 	// We get this when another entity changes a property. We just need to re-display.
 	@Override
 	public void nameChange(String name) {}

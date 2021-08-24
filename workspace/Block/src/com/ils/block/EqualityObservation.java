@@ -70,9 +70,9 @@ public class EqualityObservation extends AbstractProcessBlock implements Process
 	 */
 	private void initialize() {
 		setName("EqualityObservation");
-		BlockProperty db = new BlockProperty(BlockConstants.BLOCK_PROPERTY_DEADBAND,new Double(deadband),PropertyType.DOUBLE,true);
+		BlockProperty db = new BlockProperty(BlockConstants.BLOCK_PROPERTY_DEADBAND,deadband,PropertyType.DOUBLE,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_DEADBAND, db);
-		BlockProperty targ = new BlockProperty(BLOCK_PROPERTY_NOMINAL,new Double(nominal),PropertyType.DOUBLE,true);
+		BlockProperty targ = new BlockProperty(BLOCK_PROPERTY_NOMINAL,nominal,PropertyType.DOUBLE,true);
 		setProperty(BLOCK_PROPERTY_NOMINAL, targ);
 		
 		// Define a single input

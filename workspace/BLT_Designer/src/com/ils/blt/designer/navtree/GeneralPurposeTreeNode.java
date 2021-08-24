@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.swing.Icon;
@@ -57,11 +58,11 @@ import com.ils.blt.common.serializable.SerializableFolder;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.common.serializable.UUIDResetHandler;
 import com.ils.blt.designer.BLTDesignerHook;
+import com.ils.blt.designer.DiagramUpdateManager;
 import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.ResourceCreateManager;
 import com.ils.blt.designer.ResourceDeleteManager;
 import com.ils.blt.designer.ResourceSaveManager;
-import com.ils.blt.designer.ResourceUpdateManager;
 import com.ils.blt.designer.ThreadCounter;
 import com.ils.blt.designer.editor.ApplicationPropertyEditor;
 import com.ils.blt.designer.editor.FamilyPropertyEditor;
@@ -76,6 +77,7 @@ import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.client.util.action.BaseAction;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
 import com.inductiveautomation.ignition.common.BundleUtil;
+import com.inductiveautomation.ignition.common.config.ConfigurationProperty.Option;
 import com.inductiveautomation.ignition.common.execution.ExecutionManager;
 import com.inductiveautomation.ignition.common.execution.impl.BasicExecutionEngine;
 import com.inductiveautomation.ignition.common.model.ApplicationScope;
@@ -313,7 +315,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			Enumeration walker = node.children();
 			while(walker.hasMoreElements()) {
 				AbstractResourceNavTreeNode child = (AbstractResourceNavTreeNode)walker.nextElement();
-				ProjectResource cres = child.getProjectResource();
+				Optional<ProjectResource> option = child.getProjectResource();
+				ProjectResource cres = option.get();
 				if( cres.getResourceName().equals(newName)) {
 					foundMatch=true;
 					break;
@@ -333,15 +336,15 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	@Override
 	public void onEdit(String newTextValue) {
 		// Sanitize name
-		if (!NAME_PATTERN.matcher(newTextValue).matches()) {
+		if (!isValid(newTextValue) ) {
 			ErrorUtil.showError(BundleUtil.get().getString(PREFIX+".InvalidName", newTextValue));
 			return;
 		}
-		String oldName = getProjectResource().getName();
+		String oldName = getResourceId().getResourcePath().getName();
 		try {
 			logger.infof("%s.onEdit: alterName from %s to %s",CLSS,oldName,newTextValue);
 			context.structuredRename(resourceId, newTextValue);
-			executionEngine.executeOnce(new ResourceUpdateManager(workspace,getProjectResource()));
+			executionEngine.executeOnce(new DiagramUpdateManager(workspace,getProjectResource()));
 		}
 		catch (IllegalArgumentException ex) {
 			ErrorUtil.showError(CLSS+".onEdit: "+ex.getMessage());
@@ -352,7 +355,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	@Override
 	public synchronized void onSelected() {
 		//UndoManager.getInstance().setSelectedContext(GeneralPurposeTreeNode.class);
-		ProjectResource resource = context.getProject().getResource(resourceId);
+		Optional<ProjectResource> resource = context.getProject().getResource(resourceId);
 		if( resource==null) return;
 		if(resource.getResourceType().equalsIgnoreCase(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
 			SerializableApplication sap = recursivelyDeserializeApplication(this);

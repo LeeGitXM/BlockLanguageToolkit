@@ -100,8 +100,8 @@ public class NotificationHandler implements PushNotificationListener {
 						// Listener is the node status manager - // Refresh the bell badges on the Nav tree
 						//log.infof("%s.receiveNotification: diagram key=%s - notifying %s of %s",CLSS,key,
 						//		listener.getClass().getName(),payload.toString());
-						long resourceId = Long.parseLong(key.substring(2));
-						listener.diagramStateChange(resourceId, payload);
+						String path = key.substring(2);
+						listener.diagramStateChange(path, payload);
 					}
 				}
 				else {
@@ -134,8 +134,8 @@ public class NotificationHandler implements PushNotificationListener {
 								  //listener.getClass().getName(),payload.toString());
 						// Listener is a diagram, the value is the new state. 
 						// The diagram is expected to ignore all but its own resId
-						long resourceId = Long.parseLong(key.substring(2));
-						listener.diagramStateChange(resourceId, payload);
+						String path = key.substring(2);
+						listener.diagramStateChange(path, payload);
 					}
 				}
 				else {

@@ -8,6 +8,7 @@ import java.util.Enumeration;
 import java.util.UUID;
 
 import com.ils.blt.common.ApplicationRequestHandler;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
@@ -37,7 +38,7 @@ public class NavTreeLocator {
 	 * We use the parentId, append the node name to construct the path. It is colon-separated
 	 * with a leading colon for the root.
 	 */
-	public void locate(String parentId,String name) {
+	public void locate(ProjectResourceId parentId,String name) {
 		ApplicationRequestHandler handler = new ApplicationRequestHandler();
 		String path = handler.pathForNode(parentId);
 		if( path!=null ) {
@@ -82,9 +83,9 @@ public class NavTreeLocator {
 	 * Select an item in the navigation tree given its id. The path is colon-separated
 	 * with a leading colon for the root.
 	 */
-	public void locate(UUID nodeId) {
+	public void locate(ProjectResourceId nodeId) {
 		ApplicationRequestHandler handler = new ApplicationRequestHandler();
-		String path = handler.pathForNode(nodeId.toString());
+		String path = handler.pathForNode(nodeId);
 		if( path!=null ) {
 			ProjectBrowserRoot project = context.getProjectBrowserRoot();
 			AbstractNavTreeNode root = null;

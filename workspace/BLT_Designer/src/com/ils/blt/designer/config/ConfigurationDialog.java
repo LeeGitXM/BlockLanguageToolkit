@@ -158,7 +158,7 @@ public class ConfigurationDialog extends JDialog {
 	protected JFormattedTextField createDoubleField(String bundle,String text) {	
 		final JFormattedTextField field = new JFormattedTextField(NumberFormat.getInstance());
 		double dbl = fcns.coerceToDouble(text);
-		field.setValue(new Double(dbl));
+		field.setValue(dbl);
 		field.setPreferredSize(NAME_BOX_SIZE);
 		field.setEditable(true);
 		field.setToolTipText(rb.getString(bundle));

@@ -11,6 +11,7 @@ import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.common.GeneralPurposeDataContainer;
+import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 
@@ -41,8 +42,15 @@ public class ApplicationScriptFunctions   {
 	 * Clear any watermark currently on a diagram.
 	 * @param diagramId the diagram identifier as a string
 	 */
-	public static void clearWatermark(String diagramId) {
+	public static void clearWatermark(ProjectResourceId diagramId) {
 		handler.clearWatermark(diagramId);
+	}
+	/**
+	 * Create a ProjectResourceId object from String components. This is designed for Python
+	 * scripts to easily generate resourceId inputs to the various methods.
+	 */
+	public static ProjectResourceId createResourceId(String projectName, String path, String type) {
+		return handler.createResourceId(projectName, path, type);
 	}
 	/**
 	 * Create a SQLTag memory tag given its path and data type. The path must contain the
@@ -59,11 +67,18 @@ public class ApplicationScriptFunctions   {
 		handler.deleteTag(path);
 	}
 	/**
-	 * @param uuid id of the application
+	 * Determine whether or not the indicated diagram is known to the controller.
+	 * @param uuidString unique identifier of he diagram as a string
+	 */
+	public static boolean diagramExists(ProjectResourceId resourceId) {
+		return handler.diagramExists(resourceId);
+	}
+	/**
+	 * @param resourceId id of the application
 	 * @return the application name
 	 */
-	public static String getApplicationName(String uuid) {
-		return handler.getApplicationName(uuid);
+	public static String getApplicationName(ProjectResourceId resourceId) {
+		return handler.getApplicationName(resourceId);
 	}
 	
 	/**
@@ -81,13 +96,13 @@ public class ApplicationScriptFunctions   {
 	 * @param blockName name of the block within the diagram
 	 * @return the id of the specified block.
 	 */
-	public static String getBlockId(String diagramId, String blockName) {
+	public static String getBlockId(ProjectResourceId diagramId, String blockName) {
 		return handler.getBlockId(diagramId,blockName);
 	}
 	/**
 	 * @return the current state of the controller.
 	 */
-	public static String getBlockState(String diagramId,String blockName) {
+	public static String getBlockState(ProjectResourceId diagramId,String blockName) {
 		return handler.getBlockState(diagramId,blockName);
 	}
 	/**
@@ -97,8 +112,8 @@ public class ApplicationScriptFunctions   {
 		return handler.getControllerState();
 	}
 
-	public static String getDatabaseForUUID(String uuid) {
-		return handler.getDatabaseForUUID(uuid);
+	public static String getDatabaseForId(ProjectResourceId uuid) {
+		return handler.getDatabaseForId(uuid);
 	}
 	
 	public static List<String> getDatasourceNames() {
@@ -108,7 +123,7 @@ public class ApplicationScriptFunctions   {
 	 * @param diagramId String representation of the diagram's internal Id.
 	 * @return a descriptor for the diagram that corresponds to that Id.
 	 */
-	public static SerializableResourceDescriptor getDiagram(String diagramId)  {
+	public static SerializableResourceDescriptor getDiagram(ProjectResourceId diagramId)  {
 		return handler.getDiagram(diagramId);
 	}
 	
@@ -136,25 +151,19 @@ public class ApplicationScriptFunctions   {
 		return handler.getDiagramState(resourceId);
 	}
 	/**
-	 * @return the current state of the specified diagram.
-	 */
-	public static DiagramState getDiagramState(String diagramId)  {
-		return handler.getDiagramState(diagramId);
-	}
-	/**
 	 * @return an explanation for the state of a block.
 	 */
-	public static String getExplanation(String diagramId,String blockId) {
+	public static String getExplanation(ProjectResourceId diagramId,String blockId) {
 		return handler.getExplanation(diagramId,blockId);
 	}
 
-	public static String getFamilyName(String uuid) {
+	public static String getFamilyName(ProjectResourceId uuid) {
 		return handler.getFamilyName(uuid);
 	}
 	/**
 	 * @return the the internal state of a block.
 	 */
-	public static SerializableBlockStateDescriptor getInternalState(String diagramId,String blockId) {
+	public static SerializableBlockStateDescriptor getInternalState(ProjectResourceId diagramId,String blockId) {
 		return handler.getInternalState(diagramId,blockId);
 	}
 	/**
@@ -191,7 +200,7 @@ public class ApplicationScriptFunctions   {
 	 * @param propertyName name of the property for which a value is to be returned
 	 * @return the binding (tag path) of a specified block property.
 	 */
-	public static Object getPropertyBinding(String diagramId,String blockId,String propertyName) {
+	public static Object getPropertyBinding(ProjectResourceId diagramId,String blockId,String propertyName) {
 		return handler.getPropertyBinding(diagramId,blockId,propertyName);
 	}
 	/**
@@ -200,7 +209,7 @@ public class ApplicationScriptFunctions   {
 	 * @param propertyName name of the property for which a value is to be returned
 	 * @return the value of a specified block property.
 	 */
-	public static Object getPropertyValue(String diagramId,String blockId,String propertyName) {
+	public static Object getPropertyValue(ProjectResourceId diagramId,String blockId,String propertyName) {
 		return handler.getPropertyValue(diagramId,blockId,propertyName);
 	}
 	/**
@@ -208,7 +217,7 @@ public class ApplicationScriptFunctions   {
 	 * @param blockName name of the block within the diagram
 	 * @return the time at which the block last changed its state
 	 */
-	public static Date getTimeOfLastBlockStateChange(String diagramId, String blockName) {
+	public static Date getTimeOfLastBlockStateChange(ProjectResourceId diagramId, String blockName) {
 		return handler.getTimeOfLastBlockStateChange(diagramId,blockName);
 	}
 	/**
@@ -241,7 +250,7 @@ public class ApplicationScriptFunctions   {
 	 * @param portName of the anchor of interest
 	 * @return a list of blocks connected to the named port.
 	 */
-	public static List<SerializableBlockStateDescriptor> listBlocksConnectedAtPort(String diagramId,String blockId,String portName) {
+	public static List<SerializableBlockStateDescriptor> listBlocksConnectedAtPort(ProjectResourceId diagramId,String blockId,String portName) {
 		return handler.listBlocksConnectedAtPort(diagramId,blockId,portName);
 	}
 	/**
@@ -250,7 +259,7 @@ public class ApplicationScriptFunctions   {
 	 * @param diagramId identifier of the diagram owning the block, a String
 	 * @return a list of blocks downstream of the block specified, in the diagram.
 	 */
-	public static List<SerializableBlockStateDescriptor> listBlocksDownstreamOf(String diagramId,String blockName){
+	public static List<SerializableBlockStateDescriptor> listBlocksDownstreamOf(ProjectResourceId diagramId,String blockName){
 		return handler.listBlocksDownstreamOf(diagramId,blockName);
 	}
 	/**
@@ -269,7 +278,7 @@ public class ApplicationScriptFunctions   {
 	 * @param blockName name of the block within the diagram
 	 * @return a list of blocks downstream of the specified block.
 	 */
-	public static List<SerializableBlockStateDescriptor> listBlocksGloballyDownstreamOf(String diagramId,String blockName) {
+	public static List<SerializableBlockStateDescriptor> listBlocksGloballyDownstreamOf(ProjectResourceId diagramId,String blockName) {
 		return handler.listBlocksGloballyDownstreamOf(diagramId, blockName);
 	}
 	/**
@@ -280,7 +289,7 @@ public class ApplicationScriptFunctions   {
 	 * @param blockName name of the block within the diagram that is the starting point
 	 * @return a list of blocks upstream of the specified block.
 	 */
-	public static List<SerializableBlockStateDescriptor> listBlocksGloballyUpstreamOf(String diagramId,String blockName) {
+	public static List<SerializableBlockStateDescriptor> listBlocksGloballyUpstreamOf(ProjectResourceId diagramId,String blockName) {
 		return handler.listBlocksGloballyUpstreamOf(diagramId, blockName);
 	}
 	/**
@@ -288,7 +297,7 @@ public class ApplicationScriptFunctions   {
 	 * @param diagramId identifier of the diagram owning the blocks, a String 
 	 * @return a list of blocks belonging to the diagram.
 	 */
-	public static List<SerializableBlockStateDescriptor> listBlocksInDiagram(String diagramId) {
+	public static List<SerializableBlockStateDescriptor> listBlocksInDiagram(ProjectResourceId diagramId) {
 		return handler.listBlocksInDiagram(diagramId);
 	}
 	/**
@@ -305,7 +314,7 @@ public class ApplicationScriptFunctions   {
 	 * @param blockName name of the block within the diagram that is the starting point
 	 * @return a list of blocks upstream of the block specified, in the diagram.
 	 */
-	public static List<SerializableBlockStateDescriptor> listBlocksUpstreamOf(String diagramId,String blockName){
+	public static List<SerializableBlockStateDescriptor> listBlocksUpstreamOf(ProjectResourceId diagramId,String blockName){
 		return handler.listBlocksUpstreamOf(diagramId,blockName);
 	}
 	/**
@@ -348,7 +357,7 @@ public class ApplicationScriptFunctions   {
 	 *         specified class.
 	 */
 	@SuppressWarnings({ "rawtypes" })
-	public static List listDiagramBlocksOfClass(String diagramId,String className) {
+	public static List listDiagramBlocksOfClass(ProjectResourceId diagramId,String className) {
 		return handler.listDiagramBlocksOfClass(diagramId,className);
 	}
 	/**
@@ -378,7 +387,7 @@ public class ApplicationScriptFunctions   {
 	 * @param blockId Id of the source block
 	 * @return a list of blocks logically connected to the source.
 	 */
-	public static List<SerializableBlockStateDescriptor> listSinksForSource(String diagramId,String blockId) {
+	public static List<SerializableBlockStateDescriptor> listSinksForSource(ProjectResourceId diagramId,String blockId) {
 		return handler.listSinksForSource(diagramId,blockId);
 	}
 	/**
@@ -389,7 +398,7 @@ public class ApplicationScriptFunctions   {
 	 * @param blockId Id of the sink block 
 	 * @return a list of blocks logically connected to the sink.
 	 */
-	public static List<SerializableBlockStateDescriptor> listSourcesForSink(String diagramId,String blockId) {
+	public static List<SerializableBlockStateDescriptor> listSourcesForSink(ProjectResourceId diagramId,String blockId) {
 		return handler.listSourcesForSink(diagramId,blockId);
 	}
 	/** 
@@ -398,7 +407,7 @@ public class ApplicationScriptFunctions   {
 	 * @return a colon-separated path to the specified block. The path includes
 	 *         the project name
 	 */
-	public static String pathForBlock(String diagramId,String blockName) {
+	public static String pathForBlock(ProjectResourceId diagramId,String blockName) {
 		return handler.pathForBlock(diagramId,blockName);
 	}
 	/** 
@@ -406,7 +415,7 @@ public class ApplicationScriptFunctions   {
 	 * @return a slash-separated path to the specified node. The path 
 	 *         root is a slash representing the top node of the navigation tree.
 	 */
-	public static String pathForNode(String nodeId) {
+	public static String pathForNode(ProjectResourceId nodeId) {
 		return handler.pathForNode(nodeId);
 	}
 	/**
@@ -416,14 +425,14 @@ public class ApplicationScriptFunctions   {
 	 * @param port connection on which to receive the output
 	 * @param value to be propagated
 	 */
-	public static void postResult(String diagramId,String blockId,String port,String value) {
+	public static void postResult(ProjectResourceId diagramId,String blockId,String port,String value) {
 		handler.postResult(diagramId,blockId, port, value);
 	}
 	/**
 	 * @param diagramId the parent diagram
 	 * @param blockId of the block within the diagram
 	 */
-	public static void propagateBlockState(String diagramId,String blockId) {
+	public static void propagateBlockState(ProjectResourceId diagramId,String blockId) {
 		handler.propagateBlockState(diagramId,blockId);
 	}
 	/**
@@ -444,15 +453,15 @@ public class ApplicationScriptFunctions   {
 	 * @param provider tag provider
 	 * @param db datasource
 	 */
-	public static GeneralPurposeDataContainer readAuxData(long projId,long resid,String nodeId,String provider,String database) {
-		return handler.readAuxData(projId,resid, nodeId,provider, database);
+	public static GeneralPurposeDataContainer readAuxData(ProjectResourceId resid,String nodeId,String provider,String database) {
+		return handler.readAuxData(resid, nodeId,provider, database);
 	}
 	/** Update a single property for a block 
 	 * @param duuid diagram unique Id
 	 * @param buuid block unique Id
 	 * @param name the new name
 	 */
-	public static void renameBlock(String duuid,String buuid,String name ) {
+	public static void renameBlock(ProjectResourceId duuid,String buuid,String name ) {
 		handler.renameBlock(duuid, buuid, name);
 	}
 	/**
@@ -467,14 +476,14 @@ public class ApplicationScriptFunctions   {
 	 * @param diagramId the parent diagram
 	 * @param blockId of the block to be reset
 	 */
-	public static void resetBlock(String diagramId,String blockId) {
+	public static void resetBlock(ProjectResourceId diagramId,String blockId) {
 		handler.resetBlock(diagramId,blockId);
 	}
 	/**
 	 * Execute reset() on every block inside the controller
 	 * @param diagramId diagram identifier, a string
 	 */
-	public static void resetDiagram(String diagramId) {
+	public static void resetDiagram(ProjectResourceId diagramId) {
 		handler.resetDiagram(diagramId);
 	}
 	/**
@@ -482,7 +491,7 @@ public class ApplicationScriptFunctions   {
 	 * @param diagramId diagram identifier, a string
 	 * @param blockId block identifier, a string
 	 */
-	public static void restartBlock(String diagramId,String blockId) {
+	public static void restartBlock(ProjectResourceId diagramId,String blockId) {
 		handler.restartBlock(diagramId,blockId);
 	}
 	/**
@@ -495,7 +504,7 @@ public class ApplicationScriptFunctions   {
 	 * @param arg a modifier meant to distinguish who receives the signal, e.e class name
 	 * @return true on success
 	 */
-	public static boolean sendLocalSignal(String diagramId,String command,String message,String arg) {
+	public static boolean sendLocalSignal(ProjectResourceId diagramId,String command,String message,String arg) {
 		return handler.sendLocalSignal(diagramId,command,message,arg);
 	}
 	/**
@@ -508,7 +517,7 @@ public class ApplicationScriptFunctions   {
 	 * @param message command payload
 	 * @return true on success
 	 */
-	public static boolean sendSignal(String diagramId,String blockName,String command,String message) {
+	public static boolean sendSignal(ProjectResourceId diagramId,String blockName,String command,String message) {
 		return handler.sendSignal(diagramId,blockName,command,message);
 	}
 	/**
@@ -522,7 +531,7 @@ public class ApplicationScriptFunctions   {
 	 * @param time the timestamp associated with the signal
 	 * @return true on success
 	 */
-	public static boolean sendTimestampedSignal(String diagramId,String command,String message,String arg,long time) {
+	public static boolean sendTimestampedSignal(ProjectResourceId diagramId,String command,String message,String arg,long time) {
 		return handler.sendTimestampedSignal(diagramId,command,message,arg,time);
 	}
 	/**
@@ -542,7 +551,7 @@ public class ApplicationScriptFunctions   {
 	 * @param bname block name
 	 * @param value the new state of the block. The value will be coerced into a truth-value in the gateway 
 	 */
-	public static void setBlockState(String diagramId,String bname,String value ) {
+	public static void setBlockState(ProjectResourceId diagramId,String bname,String value ) {
 		handler.setBlockState(diagramId, bname, value);
 	}
 	/** Change the binding on a block property in such a way that the block and UI
@@ -553,7 +562,7 @@ public class ApplicationScriptFunctions   {
 	 * @param pname the changed property
 	 * @param value the new binding of the property. The value must be a legal tag path 
 	 */
-	public static void setBlockPropertyBinding(String diagramId,String blockId,String pname,String value ) {
+	public static void setBlockPropertyBinding(ProjectResourceId diagramId,String blockId,String pname,String value ) {
 		handler.setBlockPropertyBinding(diagramId, blockId, pname, value);
 	}
 	
@@ -565,7 +574,7 @@ public class ApplicationScriptFunctions   {
 	 * @param pname the changed property
 	 * @param value the new value of the property. The value will be coerced into the correct data type in the gateway 
 	 */
-	public static void setBlockPropertyValue(String diagramId,String bname,String pname,String value ) {
+	public static void setBlockPropertyValue(ProjectResourceId diagramId,String bname,String pname,String value ) {
 		handler.setBlockPropertyValue(diagramId, bname, pname, value);
 	}
 	/**
@@ -573,7 +582,7 @@ public class ApplicationScriptFunctions   {
 	 * @param diagramId diagram's unique Id as a String
 	 * @param state the new state
 	 */
-	public static void setDiagramState(String diagramId, String state)  {
+	public static void setDiagramState(ProjectResourceId diagramId, String state)  {
 		handler.setDiagramState(diagramId,state);
 	}
 	/**
@@ -607,7 +616,7 @@ public class ApplicationScriptFunctions   {
 	/**
 	 * Define a watermark for a diagram. 
 	 */
-	public static void setWatermark(String diagramId,String text) {
+	public static void setWatermark(ProjectResourceId diagramId,String text) {
 		handler.setWatermark(diagramId,text);
 	}
 	/**

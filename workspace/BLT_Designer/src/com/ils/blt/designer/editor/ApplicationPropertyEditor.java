@@ -12,16 +12,16 @@ import javax.swing.JPanel;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.serializable.SerializableApplication;
+import com.ils.blt.designer.ResourceUpdateManager;
 import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.SortedListModel;
 import com.ils.common.log.ILSLogger;
 import com.ils.common.log.LogMaker;
-import com.inductiveautomation.ignition.client.gateway_interface.GatewayException;
-import com.inductiveautomation.ignition.common.project.Project;
+import com.inductiveautomation.ignition.common.execution.ExecutionManager;
+import com.inductiveautomation.ignition.common.execution.impl.BasicExecutionEngine;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
-import com.inductiveautomation.ignition.designer.IgnitionDesigner;
-import com.inductiveautomation.ignition.designer.gateway.DTGatewayInterface;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 /**
  * Display a dialog to configure an Application node
@@ -48,6 +48,8 @@ public class ApplicationPropertyEditor extends AbstractPropertyEditor {
 	private final ApplicationHomePane homePanel;
 	private final ILSLogger log;
 	private final SortedListModel<String> outputKeys;
+	private final ApplicationRequestHandler requestHandler;
+	private final ExecutionManager executionEngine;
 
 	public ApplicationPropertyEditor(DesignerContext ctx, SerializableApplication app, ProjectResource res) {
 		super(res);
@@ -55,9 +57,11 @@ public class ApplicationPropertyEditor extends AbstractPropertyEditor {
 		this.context = ctx;
 		this.application = app;
 		this.model = application.getAuxiliaryData();
+		this.executionEngine = new BasicExecutionEngine(1,CLSS);
 		this.homePanel = new ApplicationHomePane(this);
 		this.outputKeys = new SortedListModel<>();
 		buildOutputListModel();
+		this.requestHandler = new ApplicationRequestHandler();
 		initialize();
 	}
 	
@@ -116,29 +120,14 @@ public class ApplicationPropertyEditor extends AbstractPropertyEditor {
 	public void saveResource() {
 		application.setAuxiliaryData(model);
 		ObjectMapper mapper = new ObjectMapper();
-		Project proj = context.getProject();
-		try{		
-			if( context.requestLock(resource.getResourceId()) ) {
-				synchronized(this) {
-					byte[] bytes = mapper.writeValueAsBytes(application);
-					//log.tracef("%s.run JSON = %s",CLSS,new String(bytes));
-					resource.setData(bytes);
-					context.updateResource(resource);
-					context.updateLock(resource.getResourceId());
-					context.releaseLock(resource.getResourceId());
-				}
-			}
-			else {
-				log.warnf("%s.saveResource: Failed to obtain lock on resource save (%s)",CLSS,resource.getName());
-			}
-			// Update the project
-			DTGatewayInterface.getInstance().saveProject(IgnitionDesigner.getFrame(), proj, false, "Committing ...");  // Don't publish				
-		}
-		catch(GatewayException ge) {
-			log.warnf("%s.run: Exception saving project %d (%s)",CLSS,proj.getName(),ge.getMessage());
+		try {
+			byte[] bytes = mapper.writeValueAsBytes(application);
+			executionEngine.executeOnce(new ResourceUpdateManager(resource,bytes));
 		}
 		catch(JsonProcessingException jpe) {
-			log.warnf("%s.saveResource: Exception serializing application, resource %d (%s)",CLSS,resource.getResourceId(),jpe.getMessage());
+			log.warnf("%s.saveResource: JSON exception deserializing %s:%s (%s)",CLSS,resource.getResourceId().getProjectName(),
+				resource.getResourceId().getResourcePath().getPath().toString());
 		}
+		
 	}
 }

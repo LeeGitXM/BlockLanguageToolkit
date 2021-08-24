@@ -34,6 +34,7 @@ import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.log.ILSLogger;
 import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 
 import net.miginfocom.swing.MigLayout;
 
@@ -225,7 +226,7 @@ public class ApplicationHomePane extends JPanel implements  NotificationChangeLi
 	@Override
 	public void bindingChange(String pname,String binding) {}
 	@Override
-	public void diagramStateChange(long resId, String state) {}
+	public void diagramStateChange(String path, String state) {}
 	@Override
 	public void nameChange(String name) {}
 	@Override

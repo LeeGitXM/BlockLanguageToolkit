@@ -48,7 +48,7 @@ public class DiagramSearchCursor extends SearchObjectCursor {
 		if( index==0 ) {
 			diagram = deserializeResource(resource);
 			ApplicationRequestHandler appRequestHandler = new ApplicationRequestHandler();
-			familyName = appRequestHandler.getFamilyName(diagram.getId().toString());
+			familyName = appRequestHandler.getFamilyName(diagram.getResourceId());
 		}
 		
 		if( index==0 && searchDiagrams ) {

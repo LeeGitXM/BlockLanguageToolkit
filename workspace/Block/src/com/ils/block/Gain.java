@@ -30,7 +30,7 @@ public class Gain extends AbstractProcessBlock implements ProcessBlock {
 	private static final String TAG = "Gain";
 	public static final String BLOCK_PROPERTY_GAIN = "Gain";
 	private double gain = 1.0;
-	private QualifiedValue lastInput = new BasicQualifiedValue(new Double(Double.NaN));
+	private QualifiedValue lastInput = new BasicQualifiedValue(Double.NaN);
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -69,7 +69,7 @@ public class Gain extends AbstractProcessBlock implements ProcessBlock {
 			}
 			else {
 				if( qv!=null ) {
-					lastInput = new BasicQualifiedValue(new Double(Double.NaN),qv.getQuality(),qv.getTimestamp());
+					lastInput = new BasicQualifiedValue(Double.NaN,qv.getQuality(),qv.getTimestamp());
 					evaluate();
 				}
 			}	
@@ -85,10 +85,10 @@ public class Gain extends AbstractProcessBlock implements ProcessBlock {
 			try {
 				double dbl = fcns.coerceToDouble(lastInput.getValue().toString());
 				if( !Double.isNaN(dbl))  {
-					lastValue = new BasicQualifiedValue(new Double(dbl*gain),lastInput.getQuality(),lastInput.getTimestamp());
+					lastValue = new BasicQualifiedValue(dbl*gain,lastInput.getQuality(),lastInput.getTimestamp());
 				}
 				else {
-					lastValue = new BasicQualifiedValue(new Double(Double.NaN),lastInput.getQuality(),lastInput.getTimestamp());
+					lastValue = new BasicQualifiedValue(Double.NaN,lastInput.getQuality(),lastInput.getTimestamp());
 				}
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 				controller.acceptCompletionNotification(nvn);
@@ -134,7 +134,7 @@ public class Gain extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	private void initialize() {
 		setName("Gain");
-		BlockProperty constant = new BlockProperty(BLOCK_PROPERTY_GAIN,new Double(gain),PropertyType.DOUBLE,true);
+		BlockProperty constant = new BlockProperty(BLOCK_PROPERTY_GAIN,gain,PropertyType.DOUBLE,true);
 		setProperty(BLOCK_PROPERTY_GAIN, constant);
 		
 		// Define a single input

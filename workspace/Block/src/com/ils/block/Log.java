@@ -89,21 +89,21 @@ public class Log extends AbstractProcessBlock implements ProcessBlock {
 					double valu = dbl.doubleValue();
 					if( valu>0.0) {
 						valu = log10.value(valu);
-						lastValue = new BasicQualifiedValue(new Double(valu),qv.getQuality(),qv.getTimestamp());
+						lastValue = new BasicQualifiedValue(valu,qv.getQuality(),qv.getTimestamp());
 						statusText = "";
 					}
 					else {
 						statusText = "Value is less than or equal to zero";
-						lastValue = new BasicQualifiedValue(new Double(Double.POSITIVE_INFINITY),new BasicQuality("<= zero",Quality.Level.Bad),qv.getTimestamp());
+						lastValue = new BasicQualifiedValue(Double.POSITIVE_INFINITY,new BasicQuality("<= zero",Quality.Level.Bad),qv.getTimestamp());
 					}
 				}
 				catch(NumberFormatException nfe) {
 					log.warnf("%s.acceptValue: Unable to convert incoming value to a double (%s)",TAG,nfe.getLocalizedMessage());
-					lastValue = new BasicQualifiedValue(new Double(Double.NaN),new BasicQuality(nfe.getLocalizedMessage(),Quality.Level.Bad),qv.getTimestamp());
+					lastValue = new BasicQualifiedValue(Double.NaN,new BasicQuality(nfe.getLocalizedMessage(),Quality.Level.Bad),qv.getTimestamp());
 				}
 			}
 			else {
-				lastValue = new BasicQualifiedValue(new Double(Double.NaN),new BasicQuality("null value",Quality.Level.Bad),qv.getTimestamp());
+				lastValue = new BasicQualifiedValue(Double.NaN,new BasicQuality("null value",Quality.Level.Bad),qv.getTimestamp());
 			}
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 			controller.acceptCompletionNotification(nvn);

@@ -618,7 +618,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 
 	// =================================== NotificationChangeListener =====================
 	@Override
-	public void diagramStateChange(ProjectResourceId resourceId, String s) {	
+	public void diagramStateChange(String path, String s) {	
 	}
 
 	@Override

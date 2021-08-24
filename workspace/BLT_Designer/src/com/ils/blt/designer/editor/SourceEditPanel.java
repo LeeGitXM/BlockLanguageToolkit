@@ -71,8 +71,8 @@ public class SourceEditPanel extends BasicEditPanel {
 					ProcessBlockView block = editor.getBlock();
 					BlockProperty tagProperty = block.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
 					SerializableResourceDescriptor diag = handler.getDiagramForBlock(sinkDescriptor.getIdString());
-					Object val = handler.getPropertyValue(diag.getId(), sinkDescriptor.getIdString(), BlockConstants.BLOCK_PROPERTY_TAG_PATH);
-					Object binding = handler.getPropertyBinding(diag.getId(), sinkDescriptor.getIdString(), BlockConstants.BLOCK_PROPERTY_TAG_PATH);
+					Object val = handler.getPropertyValue(diag.getResourceId(), sinkDescriptor.getIdString(), BlockConstants.BLOCK_PROPERTY_TAG_PATH);
+					Object binding = handler.getPropertyBinding(diag.getResourceId(), sinkDescriptor.getIdString(), BlockConstants.BLOCK_PROPERTY_TAG_PATH);
 					tagProperty.setValue(val);
 					tagProperty.setBinding(binding.toString());
 					block.setName(sinkDescriptor.getName());

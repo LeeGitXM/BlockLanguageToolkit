@@ -37,6 +37,7 @@ public interface ToolkitRequestHandler  {
 	 * Remove all current diagrams from the controller.
 	 */
 	public void clearController();
+	public void clearWatermark(ProjectResourceId projId);
 	/**
 	 * Create a resource descriptor from its string components
 	 * @param project name
@@ -93,14 +94,14 @@ public interface ToolkitRequestHandler  {
 	 * @param blockName name of the block within the diagram
 	 * @return the id of the specified block.
 	 */
-	public String getBlockId(String diagramId, String blockName) ;
+	public String getBlockId(ProjectResourceId diagramId, String blockName) ;
 	
 	/**
 	 * @param diagramId string representation of the diagram's unique id
 	 * @param blockName name of the block within the diagram
 	 * @return the current state of the specified block.
 	 */
-	public String getBlockState(String diagramId, String blockName) ;
+	public String getBlockState(ProjectResourceId diagramId, String blockName) ;
 
 	/**
 	 * Determine whether or not the engine is running.
@@ -158,7 +159,7 @@ public interface ToolkitRequestHandler  {
 	 * @param blockId identifier of the block within the diagram, a String
 	 * @return internal details of a block for debugging purposes.
 	 */
-	public SerializableBlockStateDescriptor getInternalState(String diagramId,String blockId) ;
+	public SerializableBlockStateDescriptor getInternalState(ProjectResourceId diagramId,String blockId) ;
 	/**
 	 * Find the name of the isolation datasource from the internal SQLite database. 
 	 * @return isolation database name
@@ -201,7 +202,7 @@ public interface ToolkitRequestHandler  {
 	 * @param uuid the uniqueId (string) of any node in the nav tree.
 	 * @return tag provider name
 	 */
-	public String getProviderForUUID(ProjectResourceId uuid);
+	public String getProviderForId(ProjectResourceId uuid);
 	/**
 	 * @param diagramId string representation of the diagram's unique id
 	 * @param blockName name of the block within the diagram
@@ -324,7 +325,7 @@ public interface ToolkitRequestHandler  {
 	 * @return a list of block descriptors for blocks owned by a specified diagram that
 	 *         are of a specified class.
 	 */
-	public List<SerializableBlockStateDescriptor> listDiagramBlocksOfClass(String diagramId,String className);
+	public List<SerializableBlockStateDescriptor> listDiagramBlocksOfClass(ProjectResourceId diagramId,String className);
 	
 	/**
 	 * Query the gateway for list of diagrams belonging to a project. 
@@ -367,6 +368,14 @@ public interface ToolkitRequestHandler  {
 	 *         the project name.
 	 */
 	public String pathForBlock(ProjectResourceId diagramId,String blockName);
+	/**
+	 * Post a (simulated) block result on its output.
+	 * @param diagramId the parent diagram
+	 * @param blockId the block
+	 * @param port anchor for the incoming connection
+	 * @param value new value
+	 */
+	public void postResult(ProjectResourceId diagramId,String blockId,String port,String value);
 	/** 
 	 * @param nodeId UUID as a String of a node in the navigation tree
 	 * @return a slash-separated path to the specified node. The path 
@@ -520,7 +529,12 @@ public interface ToolkitRequestHandler  {
 	 * @param value the new value of the property.
 	 */
 	public void setToolkitProperty(String propertyName,String value) ;
-
+	/**
+	 * Define a watermark for a diagram. This is shown only in the designer. 
+	 * @param diagramId identifier of diagram to get the watermark
+	 * @param text to be displayed
+	 */
+	public void setWatermark(ProjectResourceId diagramId,String text);
 	/**
 	 * Start the block execution engine in the gateway.
 	 */

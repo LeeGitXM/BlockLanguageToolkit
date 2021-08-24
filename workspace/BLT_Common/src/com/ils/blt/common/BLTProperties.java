@@ -92,8 +92,6 @@ public interface BLTProperties   {
 	public static final String PALETTE_NAME_DISPLAYED    = "nameDisplayed";
 	public static final String PALETTE_NAME_OFFSET_X     = "nameOffsetX";
 	public static final String PALETTE_NAME_OFFSET_Y     = "nameOffsetY";
-//	public static final String PALETTE_RECEIVE_ENABLED   = "receiveEnabled";
-//	public static final String PALETTE_TRANSMIT_ENABLED   = "transmitEnabled";
 	public static final String PALETTE_TOOLTIP     = "tooltip";
 	public static final String PALETTE_TAB_NAME    = "tabName";
 	public static final String PALETTE_VIEW_BACKGROUND = "viewBackgroundColor";   // RGB as an int

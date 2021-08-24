@@ -66,7 +66,7 @@ public class BlockNameSearchObject implements SearchObject {
 	@Override
 	public void locate() {
 		NavTreeLocator locator = new NavTreeLocator(context);
-		locator.locate(diagram.getId());
+		locator.locate(diagram.getResourceId());
 		DiagramWorkspace workspace = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getWorkspace();
 
 	    BlockDesignableContainer container = workspace.getSelectedContainer();

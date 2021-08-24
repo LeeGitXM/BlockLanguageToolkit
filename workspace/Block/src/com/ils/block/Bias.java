@@ -83,7 +83,7 @@ public class Bias extends AbstractProcessBlock implements ProcessBlock {
 					if( vcn.getConnection().getDownstreamPortName().equalsIgnoreCase(BlockConstants.IN_PORT_NAME)) {
 						double value = dbl.doubleValue();
 						value = value+bias;
-						lastValue = new BasicQualifiedValue(new Double(value),qv.getQuality(),qv.getTimestamp());
+						lastValue = new BasicQualifiedValue(value,qv.getQuality(),qv.getTimestamp());
 						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 						controller.acceptCompletionNotification(nvn);
 					}
@@ -97,7 +97,7 @@ public class Bias extends AbstractProcessBlock implements ProcessBlock {
 			}
 			else {
 				if( qv!=null) {
-					lastValue = new BasicQualifiedValue(new Double(Double.NaN),qv.getQuality(),qv.getTimestamp());
+					lastValue = new BasicQualifiedValue(Double.NaN,qv.getQuality(),qv.getTimestamp());
 					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 					controller.acceptCompletionNotification(nvn);
 				}	
@@ -120,7 +120,7 @@ public class Bias extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	private void initialize() {
 		setName("Bias");
-		BlockProperty constant = new BlockProperty(BLOCK_PROPERTY_BIAS,new Double(bias),PropertyType.DOUBLE,true);
+		BlockProperty constant = new BlockProperty(BLOCK_PROPERTY_BIAS,bias,PropertyType.DOUBLE,true);
 		setProperty(BLOCK_PROPERTY_BIAS, constant);
 		
 		// Define a single input

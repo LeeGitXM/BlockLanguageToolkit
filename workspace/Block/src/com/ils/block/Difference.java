@@ -140,10 +140,10 @@ public class Difference extends AbstractProcessBlock implements ProcessBlock {
 		if( !isLocked() ) {
 			lastValue = null;
 			if( a==null ) {
-				lastValue = new TestAwareQualifiedValue(timer,new Double(Double.NaN),QualityCode.Bad);
+				lastValue = new TestAwareQualifiedValue(timer,Double.NaN,QualityCode.Bad);
 			}
 			else if( b==null ) {
-				lastValue = new TestAwareQualifiedValue(timer,new Double(Double.NaN),QualityCode.Bad);
+				lastValue = new TestAwareQualifiedValue(timer,Double.NaN,QualityCode.Bad);
 			}
 			else if( !a.getQuality().isGood()) {
 				lastValue = new TestAwareQualifiedValue(timer,Double.NaN,a.getQuality());

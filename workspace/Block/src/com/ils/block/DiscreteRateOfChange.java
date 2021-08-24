@@ -79,7 +79,7 @@ public class DiscreteRateOfChange extends AbstractProcessBlock implements Proces
 		super.reset();
 		if( clearOnReset ) {
 			queue.clear();
-			valueProperty.setValue(new Double(Double.NaN));
+			valueProperty.setValue(Double.NaN);
 		}
 	}
 	
@@ -91,13 +91,13 @@ public class DiscreteRateOfChange extends AbstractProcessBlock implements Proces
 		
 		BlockProperty clearProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET,Boolean.TRUE,PropertyType.BOOLEAN,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET, clearProperty);
-		BlockProperty poProperty = new BlockProperty(BLOCK_PROPERTY_POLYNOMIAL_ORDER,new Integer(polynomialOrder),PropertyType.INTEGER,true);
+		BlockProperty poProperty = new BlockProperty(BLOCK_PROPERTY_POLYNOMIAL_ORDER,polynomialOrder,PropertyType.INTEGER,true);
 		setProperty(BLOCK_PROPERTY_POLYNOMIAL_ORDER, poProperty);
-		BlockProperty sampleSizeProperty = new BlockProperty(BLOCK_PROPERTY_NUMBER_OF_POINTS,new Integer(sampleSize),PropertyType.INTEGER,true);
+		BlockProperty sampleSizeProperty = new BlockProperty(BLOCK_PROPERTY_NUMBER_OF_POINTS,sampleSize,PropertyType.INTEGER,true);
 		setProperty(BLOCK_PROPERTY_NUMBER_OF_POINTS, sampleSizeProperty);
-		BlockProperty sfProperty = new BlockProperty(BLOCK_PROPERTY_SCALE_FACTOR,new Double(scaleFactor),PropertyType.DOUBLE,true);
+		BlockProperty sfProperty = new BlockProperty(BLOCK_PROPERTY_SCALE_FACTOR,scaleFactor,PropertyType.DOUBLE,true);
 		setProperty(BLOCK_PROPERTY_SCALE_FACTOR, sfProperty);
-		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,new Double(Double.NaN),PropertyType.DOUBLE,false);
+		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,Double.NaN,PropertyType.DOUBLE,false);
 		valueProperty.setBindingType(BindingType.ENGINE);
 		setProperty(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
 		
@@ -144,7 +144,7 @@ public class DiscreteRateOfChange extends AbstractProcessBlock implements Proces
 				}
 			}
 			else {
-				lastValue = new BasicQualifiedValue(new Double(Double.NaN),qv.getQuality(),qv.getTimestamp());
+				lastValue = new BasicQualifiedValue(Double.NaN,qv.getQuality(),qv.getTimestamp());
 				// Post bad value on output, clear queue
 				if( !isLocked() ) {
 					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);

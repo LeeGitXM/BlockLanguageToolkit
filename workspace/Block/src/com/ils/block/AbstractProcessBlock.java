@@ -1061,7 +1061,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	// ===================================== Notification Change Listener =======================================
 	// The only method implemented is value change. This is interpreted to be a change to aux data
 	@Override
-	public void diagramStateChange(ProjectResourceId resId, String s) {}
+	public void diagramStateChange(String path, String s) {}
 	@Override
 	public void bindingChange(String pname,String bindTo) {}
 	@Override

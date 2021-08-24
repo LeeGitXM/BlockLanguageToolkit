@@ -72,14 +72,16 @@ public class BLTSearchProvider implements SearchProvider {
 		if( selectedCategories.contains("Diagram") || selectedCategories.contains("Block") ) {
 			resources = context.getProject().getResourcesOfType(BLTProperties.DIAGRAM_RESOURCE_TYPE);
 			for(ProjectResource res:resources) {
-				log.infof("%s.retrieveSearchableObjects resId = %d",CLSS,res.getResourceId());
+				log.infof("%s.retrieveSearchableObjects diagrams = %s:%s",CLSS,res.getResourceId().getProjectName(),
+						res.getResourceId().getResourcePath().getPath().toString());
 				agg.add(new DiagramSearchCursor(context,res,searchKey));
 			}
 		}
 		if( selectedCategories.contains("Application") ) {
 			resources = context.getProject().getResourcesOfType(BLTProperties.APPLICATION_RESOURCE_TYPE);
 			for(ProjectResource res:resources) {
-				log.infof("%s.retrieveSearchableObjects resId = %d",CLSS,res.getResourceId());
+				log.infof("%s.retrieveSearchableObjects applications = %s:%s",CLSS,res.getResourceId().getProjectName(),
+						res.getResourceId().getResourcePath().getPath().toString());
 				agg.add(new ApplicationSearchCursor(context,res));
 			}
 		}
@@ -87,7 +89,8 @@ public class BLTSearchProvider implements SearchProvider {
 		if( selectedCategories.contains("Family") ) {
 			resources = context.getProject().getResourcesOfType(BLTProperties.FAMILY_RESOURCE_TYPE);
 			for(ProjectResource res:resources) {
-				log.infof("%s.retrieveSearchableObjects resId = %d",CLSS,res.getResourceId());
+				log.infof("%s.retrieveSearchableObjects families = %s:%s",CLSS,res.getResourceId().getProjectName(),
+						res.getResourceId().getResourcePath().getPath().toString());
 				agg.add(new FamilySearchCursor(context,res));
 			}
 		}

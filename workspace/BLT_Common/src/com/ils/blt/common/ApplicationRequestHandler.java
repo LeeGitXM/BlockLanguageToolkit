@@ -25,6 +25,7 @@ import com.ils.common.log.LogMaker;
 import com.ils.common.persistence.ToolkitProperties;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
+import com.inductiveautomation.ignition.common.project.resource.ResourceType;
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 
 
@@ -71,7 +72,8 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * Clear any watermark on a diagram.
 	 * @param diagramId unique identifier of he diagram as a string 
 	 */
-	public void clearWatermark(String diagramId) {
+	@Override
+	public void clearWatermark(ProjectResourceId diagramId) {
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 									BLTProperties.MODULE_ID, "clearWatermark",diagramId);
@@ -80,6 +82,17 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 			log.infof("%s.clearWatermark: GatewayException (%s)",CLSS,ge.getMessage());
 		}
 	}
+	/**
+	 * Create a ProjectResourceId object from String components. This is designed for Python
+	 * scripts to easily generate resourceId inputs to the various methods.
+	 */
+	@Override
+	public ProjectResourceId createResourceId(String projectName, String path, String type) {
+		ResourceType rtype = new ResourceType(BLTProperties.MODULE_ID,type);
+		ProjectResourceId resourceId = new ProjectResourceId(projectName,rtype,path);
+		return resourceId;
+	}
+	@Override
 	public void createTag(DataType type,String path) {
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
@@ -93,6 +106,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * Delete a SQLTag given its path. The path must contain the
 	 * provider name in brackets.
 	 */
+	@Override
 	public void deleteTag(String path) {
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
@@ -223,7 +237,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * @return the current state of the specified block.
 	 */
 	@Override
-	public String getBlockState(String diagramId, String blockName) {
+	public String getBlockState(ProjectResourceId diagramId, String blockName) {
 		String state = "UNKNOWN";
 		try {
 			state = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(

@@ -7,6 +7,8 @@ package com.ils.blt.designer.editor;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -22,16 +24,22 @@ import com.ils.blt.common.notification.NotificationChangeListener;
 import com.ils.blt.common.notification.NotificationKey;
 import com.ils.blt.common.serializable.SerializableFamily;
 import com.ils.blt.designer.NotificationHandler;
+import com.ils.blt.designer.ResourceUpdateManager;
 import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.log.ILSLogger;
 import com.ils.common.log.LogMaker;
-import com.inductiveautomation.ignition.client.gateway_interface.GatewayException;
+import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
+import com.inductiveautomation.ignition.client.gateway_interface.GatewayInterface;
+import com.inductiveautomation.ignition.common.execution.ExecutionManager;
+import com.inductiveautomation.ignition.common.execution.impl.BasicExecutionEngine;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
+import com.inductiveautomation.ignition.common.project.ChangeOperation;
 import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
-import com.inductiveautomation.ignition.designer.IgnitionDesigner;
-import com.inductiveautomation.ignition.designer.gateway.DTGatewayInterface;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceBuilder;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
+import com.inductiveautomation.ignition.designer.project.ResourceNotFoundException;
 
 import net.miginfocom.swing.MigLayout;
 
@@ -58,6 +66,7 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor implements Noti
 	private JTextField nameField;
 	private JTextField priorityField;
 	JTextField uuidField;
+	private final ExecutionManager executionEngine;
 	
 	public FamilyPropertyEditor(DesignerContext ctx,SerializableFamily fam,ProjectResource res) {
 		super(res);
@@ -65,6 +74,7 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor implements Noti
 		this.family = fam;
 		this.model = family.getAuxiliaryData();
 		this.key = NotificationKey.keyForAuxData(family.getId().toString());
+		this.executionEngine = new BasicExecutionEngine(1,CLSS);
 		this.requestHandler = new ApplicationRequestHandler();
 		this.log = LogMaker.getLogger(this);
 		this.database = requestHandler.getProductionDatabase();
@@ -148,43 +158,27 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor implements Noti
 		model.getProperties().put("Priority", priorityField.getText());
 		log.infof("%s.save():  state = %s",CLSS,family.getState().name());
 		saveResource();
-		requestHandler.writeAuxData(context.getProject().getId(),getResource().getResourceId(),family.getId().toString(),model,provider, database);
 	}
 	
 	@Override
 	public void saveResource() {
+		family.setAuxiliaryData(model);
 		ObjectMapper mapper = new ObjectMapper();
-		Project proj = context.getProject();
-		try{	
-			if( context.requestLock(resource.getResourceId()) ) {
-				synchronized(this) {
-					byte[] bytes = mapper.writeValueAsBytes(family);
-					//log.tracef("%s.run JSON = %s",CLSS,new String(bytes));
-					resource.setData(bytes);
-					context.updateResource(resource);
-					context.updateLock(resource.getResourceId());
-					context.releaseLock(resource.getResourceId());
-				}
-			}
-			else {
-				log.warnf("%s.saveResource: Failed to obtain lock on resource save (%s)",CLSS,resource.getName());
-			}
-			// Update the project
-			DTGatewayInterface.getInstance().saveProjectAs(IgnitionDesigner.getFrame(), proj, false, "Committing ...");  // Don't publish	
-		}
-		catch(GatewayException ge) {
-			log.warnf("%s.run: Exception saving project %d (%s)",CLSS,proj.getName(),ge.getMessage());
+		try {
+			byte[] bytes = mapper.writeValueAsBytes(family);
+			executionEngine.executeOnce(new ResourceUpdateManager(resource,bytes));
 		}
 		catch(JsonProcessingException jpe) {
-			log.warnf("%s.saveResource: Exception serializing application, resource %d (%s)",CLSS,resource.getResourceId(),jpe.getMessage());
+			log.warnf("%s.saveResource: JSON exception deserializing %s:%s (%s)",CLSS,resource.getResourceId().getProjectName(),
+				resource.getResourceId().getResourcePath().getPath().toString());
 		}
-	}	
+	}
 
 	// ======================================= Notification Change Listener ===================================
 	@Override
 	public void bindingChange(String pname,String binding) {}
 	@Override
-	public void diagramStateChange(long resId, String state) {}
+	public void diagramStateChange(String path, String state) {}
 	@Override
 	public void nameChange(String name) {}
 	@Override

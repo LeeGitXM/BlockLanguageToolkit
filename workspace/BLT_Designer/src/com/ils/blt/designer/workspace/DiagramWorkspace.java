@@ -35,7 +35,9 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 import javax.swing.AbstractAction;
 import javax.swing.Icon;
@@ -78,6 +80,7 @@ import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.designer.BLTDesignerHook;
+import com.ils.blt.designer.DiagramUpdateManager;
 import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.ResourceUpdateManager;
 import com.ils.blt.designer.config.AttributeDisplaySelector;
@@ -96,14 +99,21 @@ import com.inductiveautomation.ignition.client.util.LocalObjectTransferable;
 import com.inductiveautomation.ignition.client.util.action.BaseAction;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
 import com.inductiveautomation.ignition.common.BundleUtil;
+import com.inductiveautomation.ignition.common.browsing.BrowseFilter;
+import com.inductiveautomation.ignition.common.browsing.Results;
 import com.inductiveautomation.ignition.common.config.ObservablePropertySet;
+import com.inductiveautomation.ignition.common.config.PropertyValue;
 import com.inductiveautomation.ignition.common.execution.ExecutionManager;
 import com.inductiveautomation.ignition.common.execution.impl.BasicExecutionEngine;
 import com.inductiveautomation.ignition.common.model.ApplicationScope;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
+import com.inductiveautomation.ignition.common.project.resource.ResourcePath;
 import com.inductiveautomation.ignition.common.sqltags.model.Tag;
 import com.inductiveautomation.ignition.common.sqltags.model.TagProp;
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
+import com.inductiveautomation.ignition.common.tags.browsing.NodeDescription;
+import com.inductiveautomation.ignition.common.tags.config.TagConfigurationModel;
 import com.inductiveautomation.ignition.common.tags.model.TagPath;
 import com.inductiveautomation.ignition.common.xmlserialization.SerializationException;
 import com.inductiveautomation.ignition.designer.UndoManager;
@@ -306,7 +316,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 					log.infof("%s.getSelectionPopupMenu: SINK",CLSS);
 					JMenu linkSinkMenu = new JMenu(BundleUtil.get().getString(PREFIX+".FollowConnection.Name"));
 					linkSinkMenu.setToolTipText(BundleUtil.get().getString(PREFIX+".FollowConnection.Desc"));
-					String diagramId = getActiveDiagram().getId().toString();
+					ProjectResourceId diagramId = getActiveDiagram().getResourceId();
 					List<SerializableBlockStateDescriptor> descriptors = handler.listSourcesForSink(diagramId, pbv.getId().toString());
 					for(SerializableBlockStateDescriptor desc:descriptors) {
 						SerializableResourceDescriptor rd = handler.getDiagramForBlock(desc.getIdString());
@@ -321,7 +331,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 					JMenu linkSourceMenu = new JMenu(BundleUtil.get().getString(PREFIX+".FollowConnection.Name"));
 					linkSourceMenu.setToolTipText(BundleUtil.get().getString(PREFIX+".FollowConnection.Desc"));
 					
-					String diagramId = getActiveDiagram().getId().toString();
+					ProjectResourceId diagramId = getActiveDiagram().getResourceId();
 					List<SerializableBlockStateDescriptor> descriptors = handler.listSinksForSource(diagramId, pbv.getId().toString());
 					for(SerializableBlockStateDescriptor desc:descriptors) {
 						SerializableResourceDescriptor rd = handler.getDiagramForBlock(desc.getIdString());
@@ -352,7 +362,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				}
 				// Display an explanation if the block is currently TRUE or FALSE
 				
-				String currentState = handler.getBlockState(getActiveDiagram().getId().toString(),pbv.getName());
+				String currentState = handler.getBlockState(getActiveDiagram().getResourceId(),pbv.getName());
 				if( currentState!=null && (currentState.equalsIgnoreCase("true")|| currentState.equalsIgnoreCase("false"))) {
 					ExplanationAction act = new ExplanationAction(getActiveDiagram(),pbv);
 					menu.add(act);
@@ -794,7 +804,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 							block.addAnchor(signal);
 							
 							// Define a property that holds the size of the activity buffer. This applies to all blocks.
-							BlockProperty bufferSize = new BlockProperty(BlockConstants.BLOCK_PROPERTY_ACTIVITY_BUFFER_SIZE,new Integer(10),PropertyType.INTEGER,true);
+							BlockProperty bufferSize = new BlockProperty(BlockConstants.BLOCK_PROPERTY_ACTIVITY_BUFFER_SIZE,10,PropertyType.INTEGER,true);
 							block.setProperty(bufferSize);
 							
 							DesignPanel panel = getSelectedDesignPanel();
@@ -807,17 +817,30 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 							if( isInBounds(dropPoint,bdc) ) {
 								block.setLocation(dropPoint);
 								this.getActiveDiagram().addBlock(block);
-								DataType type = null;
 								ClientTagManager tmgr = context.getTagManager();
-								Tag tag = tmgr.getTag(tnode.getTagPath());
-								type = tag.getDataType();
-								Collection<BlockProperty> props = block.getProperties();
-								for (BlockProperty property:props) {
-									if( BlockConstants.BLOCK_PROPERTY_TAG_PATH.equalsIgnoreCase(property.getName())) {
-										property.setBinding(tnode.getTagPath().toStringFull());}
+								BrowseFilter filter = new BrowseFilter();
+								filter.setRecursive(false);
+								CompletableFuture<Results<NodeDescription>> futures = tmgr.browseAsync(tnode.getTagPath(),filter );
+								try {
+									Results<NodeDescription> results = futures.get();
+
+									DataType type = DataType.Boolean;
+									for(NodeDescription nodeDesc:results.getResults()) {
+										type = nodeDesc.getDataType();
+									}
+									
+									Collection<BlockProperty> props = block.getProperties();
+									for (BlockProperty property:props) {
+										if( BlockConstants.BLOCK_PROPERTY_TAG_PATH.equalsIgnoreCase(property.getName())) {
+											property.setBinding(tnode.getTagPath().toStringFull());}
 										block.modifyConnectionForTagChange(property, type);
+									}
+									log.infof("%s.handleDiagramDrop: dropped %s",CLSS,block.getClassName());
 								}
-								log.infof("%s.handleDiagramDrop: dropped %s",CLSS,block.getClassName());
+								catch(Exception ex) {
+									log.infof("%s.handleDiagramDrop: failed to get tag info for %s %s (%s)",CLSS,block.getClassName(),tnode.getTagPath().toStringFull(),
+											ex.getMessage());
+								}
 							}
 							else {
 								log.infof("%s.handleDiagramDrop: drop of %s out-of-bounds",CLSS,block.getClassName());
@@ -857,13 +880,27 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 						TagPath tp = tnode.getTagPath();
 
 						Block targetBlock = ((BlockComponent)droppedOn).getBlock();
-						if(targetBlock instanceof ProcessBlockView) {
+						if(targetBlock instanceof ProcessBlockView)  {
 							ProcessBlockView pblock = (ProcessBlockView)targetBlock;
 							BlockProperty prop = pblock.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
 							if( prop==null) return;  // Unless there's a tag path, do nothing
 							
 							DataType tagType = null;
 							ClientTagManager tmgr = context.getTagManager();
+							List<TagPath> paths = new ArrayList<>();
+							paths.add(tp);
+							CompletableFuture<List<TagConfigurationModel>> futures = tmgr.getTagConfigsAsync(paths, false, true);
+							// There should be only one model as there was only o
+							try {
+								List<TagConfigurationModel> results = futures.get();
+								TagConfigurationModel model = results.get(0);
+								List<PropertyValue>values = model.getValues();
+								
+							}
+							catch(Exception ex) {
+								log.infof("%s.handleDiagramDrop: failed to get tag info for %s %s (%s)",CLSS,block.getClassName(),tnode.getTagPath().toStringFull(),
+										ex.getMessage());
+							}
 							Tag tag = tmgr.getTag(tnode.getTagPath());
 							tagType = tag.getDataType();
 							Integer tagProp = (Integer)tag.getAttribute(TagProp.ExpressionType).getValue();
@@ -1028,7 +1065,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				// Special handling for an encapsulation block - create its sub-workspace
 				if(pbv.isEncapsulation()) {
 					try {
-						final long newId = context.newResourceId();
+						final ProjectResourceId newId = context.newResourceId();
 						SerializableDiagram diagram = new SerializableDiagram();
 						diagram.setName(pbv.getName());
 						diagram.setResourceId(newId);
@@ -1051,7 +1088,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 								BLTProperties.MODULE_ID, BLTProperties.DIAGRAM_RESOURCE_TYPE,
 								pbv.getName(), ApplicationScope.GATEWAY, bytes);
 						resource.setParentUuid(getActiveDiagram().getId());
-						executionEngine.executeOnce(new ResourceUpdateManager(this,resource));					
+						executionEngine.executeOnce(new DiagramUpdateManager(this,resource));					
 					} 
 					catch (Exception err) {
 						ErrorUtil.showError(CLSS+" Exception pasting blocks",err);
@@ -1197,14 +1234,15 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		return view; 
 	}
 	
-	public void open (long resourceId) {
-		if( DEBUG ) log.infof("%s: open - already open (%s)",CLSS,(isOpen(resourceId)?"true":"false"));
-		if(isOpen(resourceId) ) {
-			BlockDesignableContainer tab = (BlockDesignableContainer)findDesignableContainer(resourceId);
+	public void open (ProjectResourceId resourceId) {
+		if( DEBUG ) log.infof("%s: open - already open (%s)",CLSS,(isOpen(resourceId.getResourcePath())?"true":"false"));
+		if(isOpen(resourceId.getResourcePath()) ) {
+			BlockDesignableContainer tab = (BlockDesignableContainer)findDesignableContainer(resourceId.getResourcePath());
 			open(tab);  // Brings tab to front
 		}
 		else {
-			ProjectResource res = context.getProject().getResource(resourceId);	
+			Optional<ProjectResource> option = context.getProject().getResource(resourceId);
+			ProjectResource res = option.get();
 			String json = new String(res.getData());
 			if( DEBUG ) log.infof("%s: open - diagram = %s",CLSS,json);
 			SerializableDiagram sd = null;
@@ -1215,8 +1253,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				sd = mapper.readValue(json,SerializableDiagram.class);
 				// Synchronize names as the resource may have been re-named and/or
 				// state changed since it was serialized
-				sd.setName(res.getName());
-				sd.setState(statusManager.getResourceState(resourceId));
+				sd.setName(res.getResourceName());
+				sd.setState(statusManager.getResourceState(res.getResourceId()));
 				for(SerializableBlock sb:sd.getBlocks()) {
 					if( DEBUG ) log.infof("%s: %s block, name = %s",CLSS,sb.getClassName(),sb.getName());
 				}
@@ -1240,8 +1278,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			//saveOpenDiagram(resourceId);  // Shouldn't have to save a newly opened diagram, unless there is another user
 			// Inform the gateway of the state and let listeners update the UI
 			ApplicationRequestHandler arh = new ApplicationRequestHandler();
-			arh.setDiagramState(diagram.getId().toString(), diagram.getState().name());
-			statusManager.setResourceState(resourceId,diagram.getState(),true);
+			arh.setDiagramState(diagram.getResourceId(), diagram.getState().name());
+			statusManager.setResourceState(diagram.getResourceId(),diagram.getState(),true);
 			diagram.setDirty(false);  // Newly opened from a serialized resource, should be in-sync.
 			// In the probable case that the designer is opened after the diagram has started
 			// running in the gateway, obtain any updates
@@ -1249,16 +1287,16 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			diagram.refresh();
 			
 			
-			BlockDesignableContainer tab = (BlockDesignableContainer)findDesignableContainer(resourceId);
+			BlockDesignableContainer tab = (BlockDesignableContainer)findDesignableContainer(resourceId.getResourcePath());
 			tab.setBackground(diagram.getBackgroundColorForState());
 			
 			SwingUtilities.invokeLater(new WorkspaceRepainter());
 		}
 	}
 	
-	public void close (long resourceId) {
+	public void close (ProjectResourceId resourceId) {
 		log.infof("%s: close resource %d",CLSS,resourceId);
-		super.close(findDesignableContainer(resourceId));
+		super.close(findDesignableContainer(resourceId.getResourcePath()));
 	}
 	
 	// On close we can save the container, no questions asked with a
@@ -1285,7 +1323,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				ObjectMapper mapper = new ObjectMapper();
 				try {
 					byte[] bytes = mapper.writeValueAsBytes(sd);
-					context.updateResource(diagram.getResourceId(), bytes);
+					Optional<ProjectResource> optional = context.getProject().getResource(diagram.getResourceId());
+					executionEngine.executeOnce(new ResourceUpdateManager(optional.get(), bytes));
 					saveDiagramResource(container);
 				}
 				catch(JsonProcessingException jpe) {
@@ -1297,7 +1336,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				diagram.setDirty(false);
 			}
 		}
-		DiagramTreeNode node = (DiagramTreeNode)statusManager.findNode(container.getResourceId());
+		DiagramTreeNode node = (DiagramTreeNode)statusManager.findNode(diagram.getResourceId());
 		if( node!=null ) {
 			node.setIcon(node.getIcon());
 			node.refresh();
@@ -1310,11 +1349,12 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	 * the main menu. If the diagram indicated by the resourceId
 	 * is open, then save it.
 	 */
-	public void saveOpenDiagram(long resourceId) {
+	public void saveOpenDiagram(ProjectResourceId resourceId) {
 		if( DEBUG ) log.infof("%s: saveOpenDiagram()",CLSS);
+		ResourcePath path = resourceId.getResourcePath();
 		for(DesignableContainer dc:openContainers.keySet()) {
 			BlockDesignableContainer bdc = (BlockDesignableContainer)dc;
-			if( bdc.getResourceId()==resourceId ) {
+			if( bdc.getResourcePath().equals(path) ) {
 				saveDiagramResource((BlockDesignableContainer)dc);
 			}
 		}
@@ -1329,8 +1369,10 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		ProcessDiagramView diagram = (ProcessDiagramView)c.getModel();
 		log.infof("%s.saveDiagramResource - %s ...",CLSS,diagram.getDiagramName());
 		diagram.registerChangeListeners();     // The diagram may include new components
-		long resid = diagram.getResourceId();
-		executionEngine.executeOnce(new ResourceUpdateManager(this,context.getProject().getResource(resid)));
+		ResourcePath path = c.getResourcePath();
+		ProjectResourceId id = new ProjectResourceId(context.getProject().getName(),BLTProperties.DIAGRAM_RESOURCE_TYPE,path.getPath().toString());
+		Optional<ProjectResource> optional = context.getProject().getResource(id);
+		executionEngine.executeOnce(new DiagramUpdateManager(this,optional.get()));
 		
 		diagram.setDirty(false);
 		c.setBackground(diagram.getBackgroundColorForState());
@@ -1517,7 +1559,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				if( anchor.getDisplay().equalsIgnoreCase(BlockConstants.RECEIVER_PORT_NAME)) continue;
 				anchors.add(block.convertAnchorToSerializable((ProcessAnchorDescriptor)anchor));
 			}
-			handler.updateBlockAnchors(diagram.getId(),block.getId(),anchors); // update gateway. 
+			handler.updateBlockAnchors(diagram.getResourceId(),block.getId(),anchors); // update gateway. 
 			diagram.updateConnectionTypes(block,connectionType);
 			// Repaint the workspace
 			SwingUtilities.invokeLater(new WorkspaceRepainter());
@@ -1698,7 +1740,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 
 		public void actionPerformed(ActionEvent e) {
 			ProcessDiagramView pdv = getActiveDiagram();
-			handler.propagateBlockState(pdv.getId().toString(),block.getId().toString());
+			handler.propagateBlockState(pdv.getResourceId(),block.getId().toString());
 		}
 	}
 	/**
@@ -1719,7 +1761,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				AnchorPoint ap = cxn.getTerminus();
 				if( ap.getBlock().getId().equals(block.getId())) {
 					Block origin = cxn.getOrigin().getBlock();
-					handler.propagateBlockState(pdv.getId().toString(),origin.getId().toString());
+					handler.propagateBlockState(pdv.getResourceId(),origin.getId().toString());
 				}
 			}
 		}
@@ -1941,7 +1983,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		public void actionPerformed(ActionEvent e) {
 			block.setLocked(true);
 			if( !diagram.isDirty()) {
-				BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(diagram.getResourceId());
+				BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(diagram.getResourceId().getResourcePath());
 				if( tab!=null ) workspace.saveDiagramResource(tab);
 			}
 		}
@@ -1961,7 +2003,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		 */
 		public void actionPerformed(ActionEvent e) {
 			ProcessDiagramView pdv = getActiveDiagram();
-			handler.resetBlock(pdv.getId().toString(),block.getName());
+			handler.resetBlock(pdv.getResourceId(),block.getName());
 		}
 	}
 	/**
@@ -1979,7 +2021,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		public void actionPerformed(ActionEvent e) {
 			log.info("DiagramWorkspace: SAVE BLOCK");
 			ProcessDiagramView pdv = getActiveDiagram();
-			handler.setBlockProperties(pdv.getId(),block.getId(), block.getProperties());
+			handler.setBlockProperties(pdv.getResourceId(),block.getId(), block.getProperties());
 			block.setDirty(false);
 		}
 	}
@@ -2000,7 +2042,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		
 		// List paths to all connected diagrams
 		public void actionPerformed(ActionEvent e) {
-			String path = handler.pathForBlock(diagram.getId(), bname);
+			String path = handler.pathForBlock(diagram.getResourceId(), bname);
 			int pos = path.lastIndexOf(":");    // Strip off block name
 			if( pos>0 ) path = path.substring(0, pos);
 			ProjectBrowserRoot project = context.getProjectBrowserRoot();
@@ -2109,7 +2151,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		public void actionPerformed(ActionEvent e) {
 			block.setSignalAnchorDisplayed(true);
 			if( !diagram.isDirty()) {
-				BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(diagram.getResourceId());
+				BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(diagram.getResourceId().getResourcePath());
 				if( tab!=null ) workspace.saveDiagramResource(tab);
 			}
 			block.fireStateChanged();
@@ -2135,7 +2177,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		public void actionPerformed(ActionEvent e) {
 			block.setLocked(false);
 			if( !diagram.isDirty()) {
-				BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(diagram.getResourceId());
+				BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(diagram.getResourceId().getResourcePath());
 				if( tab!=null ) workspace.saveDiagramResource(tab);
 			}
 		}

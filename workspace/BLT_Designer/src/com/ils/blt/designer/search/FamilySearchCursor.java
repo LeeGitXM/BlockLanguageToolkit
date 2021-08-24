@@ -10,7 +10,7 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
 // The only thing we search for with families is the name.
 // We can get that from the resource directly.
 public class FamilySearchCursor extends SearchObjectCursor {
-	private final String TAG = "FamilySearchCursor";
+	private final String CLSS = "FamilySearchCursor";
 	private final DesignerContext context;
 	private ProjectResource family; 
 	private final ILSLogger log;
@@ -26,12 +26,11 @@ public class FamilySearchCursor extends SearchObjectCursor {
 	@Override
 	public Object next() {
 		Object so = null;   // Search Object
-		// Deserialize here - first time through only - return next block cursor
 		if( index==0 ) {
 			ApplicationRequestHandler appHandler = new ApplicationRequestHandler();
-			String appName = appHandler.getApplicationName(family.getParentUuid().toString());
-			so = new FamilyNameSearchObject(context,appName,family.getName(),family.getParentUuid().toString());
-			log.infof("%s.next %s",TAG,family.getName());
+			String appName = appHandler.getApplicationName(family.getResourceId());
+			so = new FamilyNameSearchObject(context,appName,family.getResourceName(),family.getResourceId());
+			log.infof("%s.next %s",CLSS,family.getResourceName());
 		}
 		index++;
 		return so;

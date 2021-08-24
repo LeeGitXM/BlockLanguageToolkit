@@ -46,7 +46,7 @@ public class BlockExplanationViewer extends JDialog {
 		this.diagram = dia;
 		this.block = view;
 		this.handler = new ApplicationRequestHandler();
-		String bstate = handler.getBlockState(diagram.getId().toString(), view.getName());
+		String bstate = handler.getBlockState(diagram.getResourceId(), view.getName());
 		this.setTitle(String.format(BundleUtil.get().getString(PREFIX+".Explanation.Title",bstate,view.getName())));
 		setAlwaysOnTop(true);
 		setModal(false);
@@ -90,7 +90,7 @@ public class BlockExplanationViewer extends JDialog {
 
 	
 	private void refresh() {
-		explanation = handler.getExplanation(diagram.getId().toString(), block.getId().toString());
+		explanation = handler.getExplanation(diagram.getResourceId(), block.getId().toString());
 		textArea.setText(explanation);
 	}
 	

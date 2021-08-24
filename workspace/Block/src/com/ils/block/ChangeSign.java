@@ -92,7 +92,7 @@ public class ChangeSign extends AbstractProcessBlock implements ProcessBlock {
 				}
 			}
 			else {
-				lastValue = new BasicQualifiedValue(new Double(Double.NaN),new BasicQuality("null value",Quality.Level.Bad),qv.getTimestamp());
+				lastValue = new BasicQualifiedValue(Double.NaN,new BasicQuality("null value",Quality.Level.Bad),qv.getTimestamp());
 			}
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 			controller.acceptCompletionNotification(nvn);

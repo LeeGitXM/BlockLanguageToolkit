@@ -300,7 +300,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 		public void setAlerting(boolean flag) { alerting = flag; }
 		public String getName() { return (node==null?"":node.getName()); }
 		public AbstractResourceNavTreeNode getNode() { return node; }
-		public void setNode(AbstractResourceNavTreeNode antn) { this.node = node; }
+		public void setNode(AbstractResourceNavTreeNode antn) { this.node = antn; }
 		public AbstractNavTreeNode getParent() { return (node==null?null:node.getParent()); } 
 		public DiagramState getState() { return state; }
 		// Note: isDirty refers to the node of interest alone, excluding children
@@ -332,8 +332,8 @@ public class NodeStatusManager implements NotificationChangeListener   {
 
 // ================================ Notification Change Listener =========================================
 @Override
-public void diagramStateChange(ProjectResourceId resId, String state) {
-	StatusEntry se = statusByResourceId.get(resId);
+public void diagramStateChange(String path, String state) {
+	StatusEntry se = statusByResourceId.get(path);
 	se.setAlerting(state.equalsIgnoreCase("true"));
 	se.getNode().reload();
 }

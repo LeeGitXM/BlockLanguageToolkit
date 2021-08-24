@@ -3,40 +3,41 @@ package com.ils.blt.designer;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Optional;
 
 import com.ils.blt.common.BLTProperties;
-import com.inductiveautomation.ignition.client.gateway_interface.GatewayException;
-import com.inductiveautomation.ignition.common.project.Project;
+import com.ils.common.log.ILSLogger;
+import com.ils.common.log.LogMaker;
+import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
+import com.inductiveautomation.ignition.client.gateway_interface.GatewayInterface;
+import com.inductiveautomation.ignition.common.project.ChangeOperation;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
-import com.inductiveautomation.ignition.common.util.LogUtil;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
-import com.inductiveautomation.ignition.designer.IgnitionDesigner;
-import com.inductiveautomation.ignition.designer.gateway.DTGatewayInterface;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceNavTreeNode;
+import com.inductiveautomation.ignition.designer.project.ResourceNotFoundException;
 
 
 /**
- * Update the single project resource belonging to the specified node.
- * 
- *
+ * Delete the project resources and NavTreeNodes at or below the specified nodes.
+ * We do not support undo() as the InductiveAutomation project system already supports 
+ * versioning of the projects.
  */
-public class ResourceDeleteManager {
-	private static final String TAG = "ResourceDeleteManager";
-	private static final LoggerEx log = LogUtil.getLogger(ResourceDeleteManager.class.getPackage().getName());
+public class ResourceDeleteManager implements Runnable {
+	private static final String CLSS = "ResourceDeleteManager";
+	private final ILSLogger log;
 	private static DesignerContext context = null;
 	private static NodeStatusManager statusManager = null;
-	private final AbstractResourceNavTreeNode root;
+	private final AbstractResourceNavTreeNode root;   // The highest node of the tree to delete.
 	private final List<ProjectResource> resources;
-	private final long rootId;
-	
+	private final ThreadCounter counter = ThreadCounter.getInstance();
+
 	public ResourceDeleteManager(AbstractResourceNavTreeNode treeNode) {
+		this.log = LogMaker.getLogger(this);
 		this.root = treeNode;
-		if( root.getProjectResource()==null) rootId = BLTProperties.ROOT_RESOURCE_ID;
-		else rootId = root.getProjectResource().getResourceId();
 		this.resources = new ArrayList<>();
+		this.counter.incrementCount();
 	}
-	
+
 	/**
 	 * Call this method from the hook as soon as the context is established.
 	 * @param ctx designer context
@@ -45,121 +46,55 @@ public class ResourceDeleteManager {
 		context = ctx;
 		statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
 	}
-	
-	
-	public void deleteInProject() {
-		// Delete the current node and all its children. 
-		Project diff = context.getProject().getEmptyCopy();   //   Called upon save after delete
-		for( ProjectResource pr:resources) {
-			if( pr.getResourceId()==BLTProperties.ROOT_RESOURCE_ID) continue; 
-			log.tracef("%s.deleteInProject: Adding %d to delete list",TAG,pr.getResourceId());
-			diff.deleteResource(pr.getResourceId(), true);
-			statusManager.deleteResource(pr.getResourceId());  // Prepares the node for deletion
-		}
 
-		if( !diff.getDeletedResources().isEmpty() ) {
-			// Update the project with these nodes (informs the gateway also)
-			try {
-				DTGatewayInterface.getInstance().saveProjectAs(IgnitionDesigner.getFrame(), diff, false, "Committing ...");  // Do not publish
-			}
-			catch(GatewayException ge) {
-				log.warnf("%s.deleteInProject: Exception deleting project resources under %d (%s)",TAG,rootId,ge.getMessage());
-			}
-			
-			// Mark these as "clean" in the current project so that we don't save again.
-			Project project = context.getProject();
-			project.applyDiff(diff,false);      // Apply diff, not dirty
-		}
-		else {
-			log.errorf("%s.deleteInProject: Resource %d not deleted",TAG,rootId);
-		}
-		
-	}
 	public void acquireResourcesToDelete() {
 		resources.clear();    // Get up-to-date list each time we run.
-		accumulateDescendantResources(root,resources);
+		accumulateChildResources(root);
 	}
-	
-	// We have grave difficulty here with the locking. Nodes that are newly created appear to be 
-	// initially locked by some entity, not us. For now we give up an simply ignore the locks.
-	public boolean deleteResources() {
-		// First get all the locks
-		boolean success = true;    // ereiam jh  Called upon save after delete
-	
-//		for(ProjectResource pr:resources) {
-//			rid = pr.getResourceId();
-//			try {
-//				if( !context.requestLockQuietly(rid) ) {
-//					success = false;
-//					break;
-//				}
-//			}
-//			catch(IllegalArgumentException iae) {
-//				logger.errorf("%s.DeleteNodeAction: Exception attempting lock for resource %d (%s)",TAG,rid,iae.getMessage());
-//				break;      // Probably hit the resource where we couldn't get the lock
-//			}
-//		}
-		if( success ) {
-			for(ProjectResource pr:resources) {
-				long rid = pr.getResourceId();
-				context.deleteResource(rid);
-				log.infof("%s.DeleteNodeAction: deleted resource %d",TAG,rid);
+
+	/**
+	 * Now that the individual project resources have been acquired. create a change operation for each one then apply.
+	 * As we do this, inform the status manager.
+	 * 
+	 */
+	public void run() {
+		GatewayInterface gw = GatewayConnectionManager.getInstance().getGatewayInterface();
+		for( ProjectResource res: resources) {
+			try {
+				ChangeOperation.DeleteResourceOperation co = ChangeOperation.DeleteResourceOperation.newDeleteOp(res.getResourceSignature());
+				List<ChangeOperation> ops = new ArrayList<>();
+				ops.add(co);
+				gw.pushProject(ops);
+			}
+			catch(ResourceNotFoundException rnf) {
+				log.warnf("%s.run: Project resource not found %s:%s (%s)",CLSS,res.getResourceId().getProjectName(),
+						res.getResourceId().getResourcePath().getPath().toString(),rnf.getMessage());
+			}
+			catch(Exception ex) {
+				log.warnf("%s.run: Exception creating resource %s:%s (%s)",CLSS,res.getResourceId().getProjectName(),
+						res.getResourceId().getResourcePath().getPath().toString(),ex.getMessage());
 			}
 		}
-//		else {
-//			logger.errorf("%s.DeleteNodeAction: Failed to obtain lock for resource %d",TAG,rid);
-//		}
-//		// Release the locks no matter what
-//		for(ProjectResource pr:resources) {
-//			rid = pr.getResourceId();
-//			try {
-//				context.updateLock(rid);
-//				context.releaseLock(rid);
-//			}
-//			catch(RuntimeException ignore) {
-//				break;      // Probably hit the resource where we couldn't get the lock
-//			}
-//		}
-		return success;
+		this.counter.decrementCount();
 	}
 
-	public boolean undo() {
-		// First get all the locks
-		boolean success = true;
-//		for(ProjectResource pr:resources) {
-//			long rid = pr.getResourceId();
-//			if( !context.requestLock(rid) ) {
-//				success = false;
-//				break;
-//			}
-//		}
-		if( success ) {
-			for(ProjectResource pr:resources) {
-				context.updateResource(pr);	
-			}
-		}
 
-//		// Release the locks no matter what
-//		for(ProjectResource pr:resources) {
-//			long rid = pr.getResourceId();
-//			context.releaseLock(rid);
-//		}
-		return success;
-	}
 
-	
 	// Recursively descend the node tree, gathering up descendants.
 	// While we're at it, prepare the nodes for deletion.
-	private void accumulateDescendantResources(AbstractResourceNavTreeNode node,List<ProjectResource> rlist) {
-		if( node.getProjectResource()!=null ) {  // ereiam jh  Called upon save after delete.  Should this be pushing aux data down if necessary?
-			rlist.add(node.getProjectResource());
+	private void accumulateChildResources(AbstractResourceNavTreeNode node) {
+		if( node.getProjectResource()!=null ) { 
+			Optional<ProjectResource> option = node.getProjectResource();
+			if( option.isPresent()) {
+				resources.add(option.get());
+			}
 		}
 
 		@SuppressWarnings("rawtypes")
 		Enumeration walker = node.children();   // Note: actually instantiates the nav tree node
 		while(walker.hasMoreElements()) {
 			Object child = walker.nextElement();
-			accumulateDescendantResources((AbstractResourceNavTreeNode)child,rlist);
+			accumulateChildResources((AbstractResourceNavTreeNode)child);
 		}
 	}
 }

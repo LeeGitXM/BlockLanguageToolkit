@@ -71,7 +71,7 @@ public class PropertyValueSearchObject implements SearchObject {
 	@Override
 	public void locate() {
 		NavTreeLocator locator = new NavTreeLocator(context);
-		locator.locate(diagram.getId());
+		locator.locate(diagram.getResourceId());
 		
 	}
 

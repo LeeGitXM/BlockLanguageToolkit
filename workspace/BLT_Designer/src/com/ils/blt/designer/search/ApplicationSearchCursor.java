@@ -11,7 +11,7 @@ import com.inductiveautomation.ignition.designer.navtree.model.AbstractNavTreeNo
 import com.inductiveautomation.ignition.designer.navtree.model.ProjectBrowserRoot;
 
 public class ApplicationSearchCursor extends SearchObjectCursor {
-	private final String TAG = "DiagramSearchCursor";
+	private final String CLSS = "DiagramSearchCursor";
 	private final DesignerContext context;
 	private ProjectResource application; 
 	private final ILSLogger log;
@@ -29,7 +29,7 @@ public class ApplicationSearchCursor extends SearchObjectCursor {
 		if( index==0 ) {
 			String rootName = getRootName();
 			so = new ApplicationNameSearchObject(context,rootName,application.getResourceName());
-			log.infof("%s.next %s",TAG,application.getResourceName());
+			log.infof("%s.next %s",CLSS,application.getResourceName());
 		}
 		index++;
 		return so;

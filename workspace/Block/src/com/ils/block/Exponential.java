@@ -88,7 +88,7 @@ public class Exponential extends AbstractProcessBlock implements ProcessBlock {
 					if( vcn.getConnection().getDownstreamPortName().equalsIgnoreCase(BlockConstants.IN_PORT_NAME)) {
 						value = dbl.doubleValue();
 						value = exp.value(value);
-						lastValue = new BasicQualifiedValue(new Double(value),qv.getQuality(),qv.getTimestamp());
+						lastValue = new BasicQualifiedValue(value,qv.getQuality(),qv.getTimestamp());
 						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 						controller.acceptCompletionNotification(nvn);
 						notifyOfStatus(lastValue);
@@ -103,7 +103,7 @@ public class Exponential extends AbstractProcessBlock implements ProcessBlock {
 			}
 			else {
 				if( qv!=null ) {
-					lastValue = new BasicQualifiedValue(new Double(Double.NaN),qv.getQuality(),qv.getTimestamp());
+					lastValue = new BasicQualifiedValue(Double.NaN,qv.getQuality(),qv.getTimestamp());
 					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 					controller.acceptCompletionNotification(nvn);
 					notifyOfStatus(lastValue);
