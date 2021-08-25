@@ -123,7 +123,7 @@ public class LowLimitSampleCount extends AbstractProcessBlock implements Process
 			else {
 				// Post bad value on output, clear queue
 				if( !isLocked() ) {
-					lastValue = new BasicQualifiedValue(new Double(Double.NaN),observation.getQuality(),observation.getTimestamp());
+					lastValue = new BasicQualifiedValue(Double.NaN,observation.getQuality(),observation.getTimestamp());
 					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 					controller.acceptCompletionNotification(nvn);
 					notifyOfStatus(lastValue);

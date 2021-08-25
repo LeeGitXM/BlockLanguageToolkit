@@ -58,7 +58,7 @@ class TagSelectorPane extends JPanel {
 		tagTree = new JTree();
 		tagTree.setOpaque(true);
 		tagTree.setCellRenderer(tagRenderer);
-		tagTree.setModel(context.getTagBrowser().
+		tagTree.setModel(context.getTagBrowser());
 		tagTreeSelectionModel = tagTree.getSelectionModel();
 		tagTreeSelectionModel.setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 		tagTree.setBackground(getBackground());

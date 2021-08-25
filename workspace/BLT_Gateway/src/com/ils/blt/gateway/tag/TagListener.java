@@ -334,7 +334,7 @@ public class TagListener implements TagChangeListener   {
 	@Override
 	public synchronized void tagChanged(TagChangeEvent event) {
 		TagPath tp = event.getTagPath();
-		QualifiedValue value = tagReader.readTag(tagPath);
+		QualifiedValue value = event.getValue();
 		if( value!=null && value.getValue()!=null && tp!=null ) {
 			try {
 				if( DEBUG ) log.infof("%s.tagChanged: %s received %s (%s at %s)",CLSS,tp.toStringFull(),

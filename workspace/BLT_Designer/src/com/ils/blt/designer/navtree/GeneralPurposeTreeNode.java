@@ -343,7 +343,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		String oldName = getResourceId().getResourcePath().getName();
 		try {
 			logger.infof("%s.onEdit: alterName from %s to %s",CLSS,oldName,newTextValue);
-			context.structuredRename(resourceId, newTextValue);
+			alterName(newTextValue);
 			executionEngine.executeOnce(new DiagramUpdateManager(workspace,getProjectResource()));
 		}
 		catch (IllegalArgumentException ex) {
@@ -357,7 +357,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		//UndoManager.getInstance().setSelectedContext(GeneralPurposeTreeNode.class);
 		Optional<ProjectResource> resource = context.getProject().getResource(resourceId);
 		if( resource==null) return;
-		if(resource.getResourceType().equalsIgnoreCase(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
+		if(resource.getResourceId().getResourceType().equalsIgnoreCase(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
 			SerializableApplication sap = recursivelyDeserializeApplication(this);
 			logger.infof("%s.onSelected: selected application %s (%d)",CLSS,sap.getName(),resourceId);
 			ApplicationPropertyEditor appEditor = new ApplicationPropertyEditor(context,sap,resource);
@@ -2125,7 +2125,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	@SuppressWarnings("unchecked")
 	public void scanForNameConflicts(AbstractResourceNavTreeNode node, StringBuffer buf) {
 		// Check if subject node is an Application. If so, scan its tree for duplicate names of FinalDiagnoses
-		if (node.getProjectResource() != null && node.getProjectResource().getResourceType().equals(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
+		if (node.getProjectResource() != null && node.getResourceId().getResourceType().equals(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
 			StringBuffer msg = ((GeneralPurposeTreeNode)node).scanApplicationForDuplicateDiagnosisNames(node);
 			if( msg.length()>1 ) {
 				buf.append(node.getName());
@@ -2220,7 +2220,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	}
 
 	@Override
-	public void projectUpdated(Project diff) {
+	public void projectUpdated() {
 		logger.infof("%s.projectUpdated ...",CLSS);
 		super.projectUpdated(diff);
 	}

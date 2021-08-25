@@ -181,7 +181,7 @@ public class AttributeDisplaySelector extends JDialog implements TableModelListe
 		// First add "name". It is always present as a member of the block, not property
 		ProcessBlockView display = findDisplay(diagram,block,"Name");
 		Object[] row = new Object[2];
-		row[0] = new Boolean(display!=null);
+		row[0] = (display!=null);
 		row[1] = "Name";
 		dataModel.addRow(row);
 
@@ -189,7 +189,7 @@ public class AttributeDisplaySelector extends JDialog implements TableModelListe
 		for (BlockProperty prop : block.getProperties()) {
 			display = findDisplay(diagram,block,prop.getName());
 			row = new Object[2];
-			row[0] = new Boolean(display!=null);
+			row[0] = (display!=null);
 			row[1] = prop.getName();
 			dataModel.addRow(row);
 		}

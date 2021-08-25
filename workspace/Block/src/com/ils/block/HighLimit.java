@@ -262,7 +262,7 @@ public class HighLimit extends AbstractProcessBlock implements ProcessBlock {
 				if(val>max ) {
 					max = val;
 					if( val>limit ) {
-						result = new BasicQualifiedValue(new Double(limit));
+						result = new BasicQualifiedValue(limit);
 					}
 					else {
 						result = qv;
