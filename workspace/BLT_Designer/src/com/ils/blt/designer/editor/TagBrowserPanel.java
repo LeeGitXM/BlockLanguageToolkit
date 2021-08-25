@@ -47,7 +47,7 @@ public class TagBrowserPanel extends BasicEditPanel {
 		tagTree = new JTree();
 		tagTree.setOpaque(true);
 		tagTree.setCellRenderer(cellRenderer);
-		tagTree.setModel(context.getTagBrowser().getSqlTagTreeModel());
+		tagTree.setModel(context.getTagBrowser().getTagTreeModel());
 		tagTreeSelectionModel = tagTree.getSelectionModel();
 		tagTreeSelectionModel.setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 		tagTree.setBackground(getBackground());

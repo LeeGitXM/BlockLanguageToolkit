@@ -158,7 +158,7 @@ public class LowLimitTimeWindow extends AbstractProcessBlock implements ProcessB
 
 		// Evaluate the buffer and report
 		// Add the currentValue to the queue
-		Double val = new Double(currentValue);
+		Double val = currentValue;
 		buffer.add(val);
 		int maxPoints = (int)((timeWindow+0.99*scanInterval)/scanInterval);
 		while(buffer.size() > maxPoints ) {

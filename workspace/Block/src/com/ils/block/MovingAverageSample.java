@@ -77,7 +77,7 @@ public class MovingAverageSample extends AbstractProcessBlock implements Process
 		setProperty(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET, clearProperty);
 		BlockProperty sizeProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SAMPLE_SIZE,new Integer(sampleSize),PropertyType.INTEGER,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_SAMPLE_SIZE, sizeProperty);
-		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,new Double(Double.NaN),PropertyType.DOUBLE,false);
+		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,Double.NaN,PropertyType.DOUBLE,false);
 		valueProperty.setBindingType(BindingType.ENGINE);
 		setProperty(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
 		

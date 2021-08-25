@@ -376,9 +376,9 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 
 	// Note: dirtiness for deletes is taken care of in the delete action
 	@Override
-	public void projectResourceModified(ProjectResource res, ProjectChangeListener.ResourceModification changeType) {
+	public void projectResourceModified(ProjectResource res, ProjectListener.ResourceModification changeType) {
 		// Take care of any special status before invoking the super-class method.
-		if( ProjectChangeListener.ResourceModification.Updated.equals(changeType) &&
+		if( ProjectListener.ResourceModification.Updated.equals(changeType) &&
 			res.getResourceId()==this.getResourceId() ) {
 			logger.infof("%s.projectResourceModified: %s(%s))",CLSS, getName(),res.getResourceType());
 		}

@@ -76,15 +76,15 @@ public class LowLimitSampleCount extends AbstractProcessBlock implements Process
 	private void initialize() {	
 		setName("LowValueSample");
 		
-		BlockProperty bp = new BlockProperty(BlockConstants.BLOCK_PROPERTY_LIMIT,new Double(limit),PropertyType.DOUBLE,true);
+		BlockProperty bp = new BlockProperty(BlockConstants.BLOCK_PROPERTY_LIMIT,limit,PropertyType.DOUBLE,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_LIMIT, bp);
-		BlockProperty fillProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_FILL_REQUIRED,new Boolean(fillRequired),PropertyType.BOOLEAN,true);
+		BlockProperty fillProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_FILL_REQUIRED,fillRequired,PropertyType.BOOLEAN,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_FILL_REQUIRED, fillProperty);
-		BlockProperty sizeProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SAMPLE_SIZE,new Integer(sampleSize),PropertyType.INTEGER,true);
+		BlockProperty sizeProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SAMPLE_SIZE,sampleSize,PropertyType.INTEGER,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_SAMPLE_SIZE, sizeProperty);
-		BlockProperty triggerProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TRIGGER_COUNT,new Integer(triggerCount),PropertyType.INTEGER,true);
+		BlockProperty triggerProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TRIGGER_COUNT,triggerCount,PropertyType.INTEGER,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_TRIGGER_COUNT, triggerProperty);
-		BlockProperty deadbandProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_DEADBAND,new Double(deadband),PropertyType.DOUBLE,true);
+		BlockProperty deadbandProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_DEADBAND,deadband,PropertyType.DOUBLE,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_DEADBAND, deadbandProperty);
 		BlockProperty hProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_HYSTERESIS,hysteresis,PropertyType.HYSTERESIS,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_HYSTERESIS, hProperty);

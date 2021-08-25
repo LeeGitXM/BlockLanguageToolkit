@@ -82,11 +82,11 @@ public class LowValuePattern extends AbstractProcessBlock implements ProcessBloc
 
 		BlockProperty clearProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET,Boolean.TRUE,PropertyType.BOOLEAN,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET, clearProperty);
-		BlockProperty sampleSizeProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SAMPLE_SIZE,new Integer(sampleSize),PropertyType.INTEGER,true);
+		BlockProperty sampleSizeProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SAMPLE_SIZE,sampleSize,PropertyType.INTEGER,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_SAMPLE_SIZE, sampleSizeProperty);
-		BlockProperty thresholdProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_THRESHOLD,new Double(threshold),PropertyType.DOUBLE,true);
+		BlockProperty thresholdProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_THRESHOLD,threshold,PropertyType.DOUBLE,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_THRESHOLD, thresholdProperty);
-		BlockProperty tcProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TRIGGER_COUNT,new Integer(triggerCount),PropertyType.INTEGER,true);
+		BlockProperty tcProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TRIGGER_COUNT,triggerCount,PropertyType.INTEGER,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_TRIGGER_COUNT, tcProperty);
 
 		
@@ -125,7 +125,7 @@ public class LowValuePattern extends AbstractProcessBlock implements ProcessBloc
 			else {
 				// Post bad value on output, clear queue
 				if( !isLocked() ) {
-					lastValue = new BasicQualifiedValue(new Double(Double.NaN),qv.getQuality(),qv.getTimestamp());
+					lastValue = new BasicQualifiedValue(Double.NaN,qv.getQuality(),qv.getTimestamp());
 					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 					controller.acceptCompletionNotification(nvn);
 					notifyOfStatus(lastValue);

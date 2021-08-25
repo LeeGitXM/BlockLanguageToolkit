@@ -9,8 +9,11 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 import javax.swing.JButton;
@@ -46,11 +49,14 @@ import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.ils.common.log.ILSLogger;
 import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.client.tags.model.ClientTagManager;
+import com.inductiveautomation.ignition.common.config.PropertySet;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.sqltags.model.Tag;
 import com.inductiveautomation.ignition.common.sqltags.model.TagProp;
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 import com.inductiveautomation.ignition.common.sqltags.model.types.ExpressionType;
+import com.inductiveautomation.ignition.common.tags.config.TagConfigurationModel;
+import com.inductiveautomation.ignition.common.tags.config.properties.WellKnownTagProps;
 import com.inductiveautomation.ignition.common.tags.model.TagPath;
 import com.inductiveautomation.ignition.common.tags.model.event.TagChangeEvent;
 import com.inductiveautomation.ignition.common.tags.model.event.TagChangeListener;
@@ -239,9 +245,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 		 ClientTagManager tmgr = context.getTagManager();
 		try {
 			TagPath tp = TagPathParser.parse(path);
-			Tag tag = tmgr.getTag(tp);
-			type = tag.getDataType();
-			tmgr.subscribe(tp, this);
+			tmgr.subscribeAsync(tp, this);
 		}
 		catch(IOException ioe) {
 			log.errorf("%s.subscribeToTagPath tag path parse error for %s (%s)",CLSS,path,ioe.getMessage());
@@ -257,7 +261,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 		ClientTagManager tmgr = context.getTagManager();
 		try {
 			TagPath tp = TagPathParser.parse(path);
-			tmgr.unsubscribe(tp, this);
+			tmgr.unsubscribeAsync(tp, this);
 		}
 		catch(IOException ioe) {
 			log.errorf("%s.unsubscribeToTagPath tag path parse error for %s (%s)",CLSS,path,ioe.getMessage());
@@ -289,17 +293,30 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 			String msg = null;
 			String tagPath = fncs.coerceToString(property.getBinding());
 			// we should only do  this check if it affects the connection type
-			Tag tag = null;
-			Integer tagProp = null;
+			Integer tagProp = 0;
 			if( BlockConstants.BLOCK_PROPERTY_TAG_PATH.equalsIgnoreCase(property.getName())) {
 				ProcessDiagramView dview = workspace.getActiveDiagram();
 				ClientTagManager tmgr = context.getTagManager();
 				DataType typ = null;
 				try {
 					TagPath tp = TagPathParser.parse(tagPath);
-					tag = tmgr.getTag(tp);
-					tagProp = (Integer)tag.getAttribute(TagProp.ExpressionType).getValue();
-					typ = tag.getDataType();
+					DataType tagType = DataType.Boolean;
+					Integer exprType = 0;
+					List<TagPath> paths = new ArrayList<>();
+					paths.add(tp);
+					CompletableFuture<List<TagConfigurationModel>> futures = tmgr.getTagConfigsAsync(paths, false, true);
+					// There should be only one model as there was only o
+					try {
+						List<TagConfigurationModel> results = futures.get();
+						TagConfigurationModel model = results.get(0);
+						PropertySet config = model.getTagProperties();
+						typ = (DataType)config.getOrDefault(WellKnownTagProps.DataType);
+						tagProp = (Integer) config.get(TagProp.ExpressionType);
+					}
+					catch(Exception ex) {
+						log.infof("%s.handleDiagramDrop: failed to get tag info for %s (%s)",CLSS,tp.toStringFull(),
+								ex.getMessage());
+					}
 				} 
 				catch (IOException e) {
 					// TODO Auto-generated catch block
@@ -768,30 +785,26 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 	@Override
 	public void watermarkChange(String mark) {}
 	// =========================================== Tag Change Listener ===================================
-	// Set this to null as we're interested in all tag properties
-	@Override
-	public TagProp getTagProperty() {
-		return null;
-	}
+
 	// The display contains tag value, quality and timestamp
 	@Override
 	public void tagChanged(TagChangeEvent event) {
-		final Tag tag = event.getTag();
-		if( tag!=null && tag.getValue()!=null ) {
-			log.infof("%s.tagChanged: - %s new value from %s (%s)",CLSS,property.getName(),tag.getName(),tag.getValue().toString());
+		final TagPath path = event.getTagPath();
+		if( path!=null && event.getValue()!=null ) {
+			log.infof("%s.tagChanged: - %s new value from %s (%s)",CLSS,property.getName(),path,event.getValue().toString());
 			SwingUtilities.invokeLater( new Runnable() {
 				public void run() {
 					String text = String.format("%s  %s  %s", 
-							(tag.getValue().getValue()==null?"null":tag.getValue().getValue().toString()),
-							(tag.getValue().getQuality() ==null?"null":tag.getValue().getQuality().toString()),
-							                   dateFormatter.format(tag.getValue().getTimestamp()));
+							(event.getValue().getValue()==null?"null":event.getValue().getValue().toString()),
+							(event.getValue().getQuality() ==null?"null":event.getValue().getQuality().toString()),
+							                   dateFormatter.format(event.getValue().getTimestamp()));
 					valueDisplayField.setText(text);
 				}
 			});
 		}
 		else {
 			// Tag or path is null
-			log.warnf("%s.tagChanged: Unknown tag (%s)",CLSS,(tag==null?"null":tag.getName()));
+			log.warnf("%s.tagChanged: Unknown tag (%s)",CLSS,(path==null?"null":path));
 		}
 	}
 }
