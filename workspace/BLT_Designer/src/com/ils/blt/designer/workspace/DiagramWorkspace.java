@@ -95,25 +95,24 @@ import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.client.designable.DesignableContainer;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.client.tags.model.ClientTagManager;
+import com.inductiveautomation.ignition.client.tags.tree.node.BrowseTreeNode;
 import com.inductiveautomation.ignition.client.util.LocalObjectTransferable;
 import com.inductiveautomation.ignition.client.util.action.BaseAction;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
 import com.inductiveautomation.ignition.common.BundleUtil;
-import com.inductiveautomation.ignition.common.browsing.BrowseFilter;
-import com.inductiveautomation.ignition.common.browsing.Results;
 import com.inductiveautomation.ignition.common.config.ObservablePropertySet;
-import com.inductiveautomation.ignition.common.config.PropertyValue;
+import com.inductiveautomation.ignition.common.config.PropertySet;
 import com.inductiveautomation.ignition.common.execution.ExecutionManager;
 import com.inductiveautomation.ignition.common.execution.impl.BasicExecutionEngine;
-import com.inductiveautomation.ignition.common.model.ApplicationScope;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceBuilder;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 import com.inductiveautomation.ignition.common.project.resource.ResourcePath;
-import com.inductiveautomation.ignition.common.sqltags.model.Tag;
 import com.inductiveautomation.ignition.common.sqltags.model.TagProp;
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
-import com.inductiveautomation.ignition.common.tags.browsing.NodeDescription;
 import com.inductiveautomation.ignition.common.tags.config.TagConfigurationModel;
+import com.inductiveautomation.ignition.common.tags.config.properties.WellKnownTagProps;
+import com.inductiveautomation.ignition.common.tags.config.types.TagObjectType;
 import com.inductiveautomation.ignition.common.tags.model.TagPath;
 import com.inductiveautomation.ignition.common.xmlserialization.SerializationException;
 import com.inductiveautomation.ignition.designer.UndoManager;
@@ -709,7 +708,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		if (event.isDataFlavorSupported(flava)) {
 			try {
 				Object node = event.getTransferable().getTransferData(flava);
-				if (node instanceof ArrayList && ((ArrayList) node).size() == 1) {
+				if (node instanceof ArrayList && ((List) node).size() == 1) {
 					ArrayList<?> tagNodeArr = (ArrayList<?>)node;
 					// NOTE: This will fail (properly) if tag type is a dataset
 					if (tagNodeArr.get(0) instanceof TagTreeNode) {  // That's the thing we want!
@@ -817,30 +816,30 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 							if( isInBounds(dropPoint,bdc) ) {
 								block.setLocation(dropPoint);
 								this.getActiveDiagram().addBlock(block);
+								DataType type = DataType.Boolean;
+								List<TagPath> paths = new ArrayList<>();
+								paths.add(tnode.getTagPath());
 								ClientTagManager tmgr = context.getTagManager();
-								BrowseFilter filter = new BrowseFilter();
-								filter.setRecursive(false);
-								CompletableFuture<Results<NodeDescription>> futures = tmgr.browseAsync(tnode.getTagPath(),filter );
+								CompletableFuture<List<TagConfigurationModel>> futures = tmgr.getTagConfigsAsync(paths,false,true);
 								try {
-									Results<NodeDescription> results = futures.get();
-
-									DataType type = DataType.Boolean;
-									for(NodeDescription nodeDesc:results.getResults()) {
-										type = nodeDesc.getDataType();
-									}
-									
-									Collection<BlockProperty> props = block.getProperties();
-									for (BlockProperty property:props) {
-										if( BlockConstants.BLOCK_PROPERTY_TAG_PATH.equalsIgnoreCase(property.getName())) {
-											property.setBinding(tnode.getTagPath().toStringFull());}
-										block.modifyConnectionForTagChange(property, type);
-									}
-									log.infof("%s.handleDiagramDrop: dropped %s",CLSS,block.getClassName());
+									TagConfigurationModel model = futures.get().get(0);
+									PropertySet config = model.getTagProperties();
+									type = (DataType)config.getOrDefault(WellKnownTagProps.DataType);
 								}
 								catch(Exception ex) {
 									log.infof("%s.handleDiagramDrop: failed to get tag info for %s %s (%s)",CLSS,block.getClassName(),tnode.getTagPath().toStringFull(),
 											ex.getMessage());
 								}
+
+
+								Collection<BlockProperty> props = block.getProperties();
+								for (BlockProperty property:props) {
+									if( BlockConstants.BLOCK_PROPERTY_TAG_PATH.equalsIgnoreCase(property.getName())) {
+										property.setBinding(tnode.getTagPath().toStringFull());}
+									block.modifyConnectionForTagChange(property, type);
+								}
+								log.infof("%s.handleDiagramDrop: dropped %s",CLSS,block.getClassName());
+
 							}
 							else {
 								log.infof("%s.handleDiagramDrop: drop of %s out-of-bounds",CLSS,block.getClassName());
@@ -885,7 +884,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 							BlockProperty prop = pblock.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
 							if( prop==null) return;  // Unless there's a tag path, do nothing
 							
-							DataType tagType = null;
+							DataType tagType = DataType.Boolean;
+							Integer exprType = 0;
 							ClientTagManager tmgr = context.getTagManager();
 							List<TagPath> paths = new ArrayList<>();
 							paths.add(tp);
@@ -894,17 +894,15 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 							try {
 								List<TagConfigurationModel> results = futures.get();
 								TagConfigurationModel model = results.get(0);
-								List<PropertyValue>values = model.getValues();
-								
+								PropertySet config = model.getTagProperties();
+								tagType = (DataType)config.getOrDefault(WellKnownTagProps.DataType);
+								exprType = (Integer) config.get(TagProp.ExpressionType);
 							}
 							catch(Exception ex) {
-								log.infof("%s.handleDiagramDrop: failed to get tag info for %s %s (%s)",CLSS,block.getClassName(),tnode.getTagPath().toStringFull(),
+								log.infof("%s.handleDiagramDrop: failed to get tag info for %s (%s)",CLSS,tnode.getTagPath().toStringFull(),
 										ex.getMessage());
 							}
-							Tag tag = tmgr.getTag(tnode.getTagPath());
-							tagType = tag.getDataType();
-							Integer tagProp = (Integer)tag.getAttribute(TagProp.ExpressionType).getValue();
-							String connectionMessage = diagram.isValidBindingChange(pblock, prop, tp.toStringFull(), tagType,tagProp);
+							String connectionMessage = diagram.isValidBindingChange(pblock, prop, tp.toStringFull(), tagType,exprType);
 							
 							if( connectionMessage==null ) {
 								prop.setBinding(tnode.getTagPath().toStringFull());
@@ -977,8 +975,9 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	
 	private String nameFromTagTree(TagTreeNode tnode) {
 		String name = tnode.getName();
-		while(tnode.inUDTInstance()) {
-			TagPathTreeNode tptn = tnode.getParent();
+		 
+		while(! tnode.getTagType().equals(TagObjectType.AtomicTag)) {
+			BrowseTreeNode tptn = tnode.getParent();
 			if( tptn instanceof TagTreeNode) {
 				tnode = (TagTreeNode)tptn;
 				name = tnode.getName();
@@ -1065,7 +1064,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				// Special handling for an encapsulation block - create its sub-workspace
 				if(pbv.isEncapsulation()) {
 					try {
-						final ProjectResourceId newId = context.newResourceId();
+						ProjectResourceId diaId = theDiagram.getResourceId();
+						final ProjectResourceId newId = handler.createResourceId(diaId.getProjectName(), diaId.getResourcePath().getPath().toString(), diaId.getResourceType().toString());
 						SerializableDiagram diagram = new SerializableDiagram();
 						diagram.setName(pbv.getName());
 						diagram.setResourceId(newId);
@@ -1084,11 +1084,12 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 						byte[] bytes = json.getBytes();
 						if( DEBUG ) log.infof("%s: DiagramAction. create new %s resource %d (%d bytes)",CLSS,BLTProperties.DIAGRAM_RESOURCE_TYPE,
 								newId,bytes.length);
-						ProjectResource resource = new ProjectResource(newId,
-								BLTProperties.MODULE_ID, BLTProperties.DIAGRAM_RESOURCE_TYPE,
-								pbv.getName(), ApplicationScope.GATEWAY, bytes);
-						resource.setParentUuid(getActiveDiagram().getId());
-						executionEngine.executeOnce(new DiagramUpdateManager(this,resource));					
+						ProjectResourceBuilder builder = ProjectResource.newBuilder();
+						builder.putData(bytes);
+						builder.setProjectName(diaId.getProjectName());
+						builder.setResourceId(diaId);
+						builder.setResourcePath(diaId.getResourcePath());
+						executionEngine.executeOnce(new DiagramUpdateManager(this,builder.build()));					
 					} 
 					catch (Exception err) {
 						ErrorUtil.showError(CLSS+" Exception pasting blocks",err);
