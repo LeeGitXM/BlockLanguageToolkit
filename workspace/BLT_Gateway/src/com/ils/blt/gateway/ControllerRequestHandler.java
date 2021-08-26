@@ -207,16 +207,8 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		tagHandler.deleteTag(provider,path);
 	}
 	@Override
-	public boolean diagramExists(String uuidString) {
-		UUID diagramUUID = null;
-		try {
-			diagramUUID = UUID.fromString(uuidString);
-		}
-		catch(IllegalArgumentException iae) {
-			log.warnf("%s.diagramExists: Diagram UUID string is illegal (%s), creating new",CLSS,uuidString);
-			diagramUUID = UUID.nameUUIDFromBytes(uuidString.getBytes());
-		}
-		ProcessDiagram diagram = controller.getDiagram(diagramUUID);
+	public boolean diagramExists(ProjectResourceId diagramId) {
+		ProcessDiagram diagram = controller.getDiagram(diagramId);
 		return diagram!=null;
 	}
 
@@ -227,12 +219,10 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		return (app==null?"UNDEFINED":app.getName());
 	}
 	@Override
-	public String getBlockId(String diagramId, String blockName) {
+	public String getBlockId(ProjectResourceId diagramId, String blockName) {
 		String id = "UNKNOWN";
-		UUID diagramUUID = null;
 		try {
-			diagramUUID = UUID.fromString(diagramId);
-			ProcessDiagram diagram = controller.getDiagram(diagramUUID);
+			ProcessDiagram diagram = controller.getDiagram(diagramId);
 			for(ProcessBlock block:diagram.getProcessBlocks()) {
 				if( block.getName().equalsIgnoreCase(blockName)) {
 					id = block.getBlockId().toString();
