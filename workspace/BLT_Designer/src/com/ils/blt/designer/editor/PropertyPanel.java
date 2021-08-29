@@ -663,14 +663,14 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 			if( force || !fieldValue.equals(prop.getValue().toString())) {
 				try {
 					// Coerce to the correct data type
-					if( prop.getType().equals(PropertyType.BOOLEAN ))     fieldValue = new Boolean(fncs.coerceToBoolean(fieldValue));
-					else if( prop.getType().equals(PropertyType.DOUBLE )) fieldValue = new Double(fncs.coerceToDouble(fieldValue));
-					else if( prop.getType().equals(PropertyType.INTEGER ))fieldValue = new Integer(fncs.coerceToInteger(fieldValue));
+					if( prop.getType().equals(PropertyType.BOOLEAN ))     fieldValue = fncs.coerceToBoolean(fieldValue);
+					else if( prop.getType().equals(PropertyType.DOUBLE )) fieldValue = fncs.coerceToDouble(fieldValue);
+					else if( prop.getType().equals(PropertyType.INTEGER ))fieldValue = fncs.coerceToInteger(fieldValue);
 					else if( prop.getType().equals(PropertyType.DATE ))   fieldValue = dateFormatter.format(new Date(fncs.coerceToLong(fieldValue)));
 					else if( prop.getType().equals(PropertyType.TIME) || prop.getType().equals(PropertyType.TIME_SECONDS) || prop.getType().equals(PropertyType.TIME_MINUTES) ) {
 						// Scale field value for time unit. Get back to seconds.
 						double interval = fncs.coerceToDouble(fieldValue);
-						fieldValue = new Double(TimeUtility.canonicalValueForValue(interval,currentTimeUnit));
+						fieldValue = TimeUtility.canonicalValueForValue(interval,currentTimeUnit);
 						if(DEBUG) log.infof("%s.updatePropertyForField: property %s,old= %s, new= %s, displayed= %s (%s)",CLSS,prop.getName(),prop.getValue().toString(),
 								fieldValue.toString(),field.getText(),currentTimeUnit.name());
 					}

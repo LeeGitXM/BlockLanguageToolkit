@@ -214,8 +214,8 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 
 	
 	@Override
-	public String getApplicationName(String uuid) {
-		ProcessApplication app = pyHandler.getApplication(uuid);
+	public String getApplicationName(ProjectResourceId id) {
+		ProcessApplication app = pyHandler.getApplication(id);
 		return (app==null?"UNDEFINED":app.getName());
 	}
 	@Override
@@ -338,12 +338,10 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	}
 	
 	@Override
-	public synchronized String getBlockState(String diagramId, String blockName) {
+	public synchronized String getBlockState(ProjectResourceId diagramId, String blockName) {
 		String state = "UNKNOWN";
-		UUID diagramUUID = null;
 		try {
-			diagramUUID = UUID.fromString(diagramId);
-			ProcessDiagram diagram = controller.getDiagram(diagramUUID);
+			ProcessDiagram diagram = controller.getDiagram(diagramId);
 			for(ProcessBlock block:diagram.getProcessBlocks()) {
 				if( block.getName().equalsIgnoreCase(blockName)) {
 					state = block.getState().name();
@@ -367,7 +365,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * @param attributes the table to fill and return
 	 * @return a table of attributes for the connection
 	 */
-	public Hashtable<String,Hashtable<String,String>> getConnectionAttributes(long projectId,long resourceId,String connectionId,Hashtable<String,Hashtable<String,String>> attributes) {
+	public Hashtable<String,Hashtable<String,String>> getConnectionAttributes(ProjectResourceId projectId,long resourceId,String connectionId,Hashtable<String,Hashtable<String,String>> attributes) {
 		// Find the connection object
 		Connection cxn  = controller.getConnection(projectId, resourceId, connectionId);
 		return attributes;
@@ -436,10 +434,9 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * @return a descriptor for the diagram that corresponds to that Id.
 	 */
 	@Override
-	public SerializableResourceDescriptor getDiagram(String diagramId) {
+	public SerializableResourceDescriptor getDiagram(ProjectResourceId diagramId) {
 		SerializableResourceDescriptor descriptor = null;
-		UUID uuid = makeUUID(diagramId);
-		ProcessDiagram diagram = controller.getDiagram(uuid);
+		ProcessDiagram diagram = controller.getDiagram(diagramId);
 		if( diagram!=null ) {
 			descriptor = diagram.toResourceDescriptor();
 		}
@@ -482,10 +479,9 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * @return the current state of the specified diagram as a DiagramState.
 	 */
 	@Override
-	public synchronized DiagramState getDiagramState(String diagramId) {
+	public synchronized DiagramState getDiagramState(ProjectResourceId diagramId) {
 		DiagramState state = DiagramState.ACTIVE;
-		UUID diagramuuid=makeUUID(diagramId);
-		ProcessDiagram diagram = controller.getDiagram(diagramuuid);
+		ProcessDiagram diagram = controller.getDiagram(diagramId);
 		if( diagram!=null ) {
 			state = diagram.getState();
 		}
@@ -496,9 +492,9 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		return BlockExecutionController.getExecutionState();
 	}
 	@Override
-	public String getFamilyName(String uuid) {
+	public String getFamilyName(ProjectResourceId id) {
 		String name = "UNDEFINED";
-		ProcessFamily fam = pyHandler.getFamily(uuid);
+		ProcessFamily fam = pyHandler.getFamily(id);
 		if( fam!=null ) name = fam.getName();
 		return name;
 	}
@@ -509,9 +505,9 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * @return an explanation for the block's current state
 	 */
 	@Override
-	public synchronized String getExplanation(String diagramId,String blockId) {
+	public synchronized String getExplanation(ProjectResourceId diagramId,String blockId) {
 		String explanation = "";
-		ProcessDiagram diagram = controller.getDiagram(UUID.fromString(diagramId));
+		ProcessDiagram diagram = controller.getDiagram(diagramId);
 		if(diagram!=null) {
 			UUID uuid = UUID.fromString(blockId);
 			ProcessBlock block = controller.getBlock(diagram,uuid );

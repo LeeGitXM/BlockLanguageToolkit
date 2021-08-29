@@ -21,6 +21,8 @@ import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.Quality;
+import com.inductiveautomation.ignition.common.model.values.QualityCode;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataQuality;
 
 /**
@@ -42,13 +44,11 @@ public class PythonRequestHandler   {
 	 * @param nodeId idenILSLoggertifier for the node, a string version of a UUID
 	 * @return the ancestrial application
 	 */
-	public ProcessApplication getApplication(String nodeId)  {
+	public ProcessApplication getApplication(ProjectResourceId nodeId)  {
 		//log.infof("%s.getApplication, node = %s ",CLSS,nodeId);
 		ProcessApplication app = null;
 		try {
-			UUID uuid = UUID.fromString(nodeId);
-			
-			ProcessNode node = controller.getProcessNode(uuid);
+			ProcessNode node = controller.getProcessNode(nodeId);
 			while( node!=null ) {
 				if( node instanceof ProcessApplication ) {
 					app = (ProcessApplication)node;
@@ -72,12 +72,11 @@ public class PythonRequestHandler   {
 	 * @param blockId identifier for the block, a string version of a UUID
 	 * @return the referenced block
 	 */
-	public ProcessBlock getBlock(String parent,String blockId)  {
+	public ProcessBlock getBlock(ProjectResourceId parent,String blockId)  {
 		log.tracef("%s.getBlock, diagram.block = %s.%s ",CLSS,parent,blockId);
 		ProcessBlock block = null;
 		try {
-			UUID parentuuid = UUID.fromString(parent);
-			ProcessNode node = controller.getProcessNode(parentuuid);
+			ProcessNode node = controller.getProcessNode(parent);
 			if( node instanceof ProcessDiagram ) {
 				UUID uuid = UUID.fromString(blockId);
 				ProcessDiagram diag = (ProcessDiagram)node;
@@ -201,13 +200,11 @@ public class PythonRequestHandler   {
 	 * @param nodeId identifier for the node, a string version of a UUID
 	 * @return the ancestrial family
 	 */
-	public ProcessFamily getFamily(String nodeId)  {
-		log.tracef("%s.getFamily, node = %s ",CLSS,nodeId);
+	public ProcessFamily getFamily(ProjectResourceId nodeId)  {
+		log.tracef("%s.getFamily, node = %s ",CLSS,nodeId.getResourcePath().getPath().toString());
 		ProcessFamily fam = null;
-		try {
-			UUID nodeuuid = UUID.fromString(nodeId);
-			
-			ProcessNode node = controller.getProcessNode(nodeuuid);
+		try {	
+			ProcessNode node = controller.getProcessNode(nodeId);
 			while( node!=null ) {
 				if( node instanceof ProcessFamily ) {
 					fam = (ProcessFamily)node;
@@ -264,8 +261,8 @@ public class PythonRequestHandler   {
 				ControllerRequestHandler.getInstance().postValue(parentuuid,uuid,port,value,quality);
 				controller.sendConnectionNotification(id, port, 
 						new BasicQualifiedValue(value,
-								new BasicQuality(quality,(quality.equalsIgnoreCase("good")?Quality.Level.Good:Quality.Level.Bad)),
-								new Date(time)));
+								(quality.equalsIgnoreCase("good")?QualityCode.Good:QualityCode.Bad)),
+								new Date(time));
 				ProcessBlock block = diagram.getBlock(uuid);
 				postAlertingStatus(block);
 				
@@ -288,8 +285,8 @@ public class PythonRequestHandler   {
 	public void sendConnectionNotification(String id, String port, String value,String quality,long time)  {
 		log.tracef("%s.sendConnectionNotification - %s = %s on %s",CLSS,id,value.toString(),port);
 		controller.sendConnectionNotification(id, port, new BasicQualifiedValue(value,
-				new BasicQuality(quality,(quality.equalsIgnoreCase("good")?Quality.Level.Good:Quality.Level.Bad)),
-				new Date(time)));
+				(quality.equalsIgnoreCase("good")?QualityCode.Good:QualityCode.Bad)),
+				new Date(time));
 	}
 	/**
 	 * Handle a block setting a new property value.

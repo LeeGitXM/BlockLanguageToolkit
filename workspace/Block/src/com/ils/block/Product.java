@@ -148,7 +148,7 @@ public class Product extends AbstractProcessBlock implements ProcessBlock {
 		if( !isLocked() && !valueMap.isEmpty()) {
 			double value = getAggregateResult();
 			log.debugf("%s.evaluate ... value = %3.2f", getName(),value);
-			lastValue = new TestAwareQualifiedValue(timer,new Double(value),getAggregateQuality());
+			lastValue = new TestAwareQualifiedValue(timer,value,getAggregateQuality());
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 			controller.acceptCompletionNotification(nvn);
 			notifyOfStatus(lastValue);

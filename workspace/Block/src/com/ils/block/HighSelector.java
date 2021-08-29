@@ -30,6 +30,8 @@ import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.Quality;
+import com.inductiveautomation.ignition.common.model.values.QualityCode;
+
 
 /**
  * This class identifies the maximum among the current inputs.
@@ -134,7 +136,7 @@ public class HighSelector extends AbstractProcessBlock implements ProcessBlock {
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s.acceptValue: Unable to convert incoming value to a double (%s)",getName(),nfe.getLocalizedMessage());
-				qv = new BasicQualifiedValue(Double.NaN,new BasicQuality(nfe.getLocalizedMessage(),Quality.Level.Bad),qv.getTimestamp());
+				qv = new BasicQualifiedValue(Double.NaN,QualityCode.Bad,qv.getTimestamp());
 			}
 			qualifiedValueMap.put(key, qv);
 		}
