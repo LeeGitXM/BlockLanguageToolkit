@@ -15,6 +15,7 @@ import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.gateway.PythonRequestHandler;
 import com.ils.common.GeneralPurposeDataContainer;
+import com.inductiveautomation.ignition.common.script.ScriptManager;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 
 
@@ -137,11 +138,21 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	 * @param obj the new value.
 	 */
 	@Override
-	public synchronized void setProperty(String name,Object obj) {
+	public synchronized void setProperty(String name, Object obj) {
 		BlockProperty prop = getProperty(name);
+		log.infof("Setting property named: %s", name);
 		if( prop!=null ) {
 			prop.setValue(obj);
-			delegate.setBlockProperty(context.getProjectManager().getProjectScriptManager(getProjectId()),this,prop);
+			ScriptManager mgr = context.getProjectManager().getProjectScriptManager(getProjectId());
+			if (mgr == null){
+				log.infof("********* PEDRO detected a null script manager ***********");
+				log.infof("%s", this.getClassName());
+				log.infof("%d", getProjectId());
+				mgr = context.getScriptManager();
+			}
+			
+			//delegate.setBlockProperty(context.getProjectManager().getProjectScriptManager(getProjectId()),this,prop);
+			delegate.setBlockProperty(mgr, this, prop);
 		}
 	}
 	/**

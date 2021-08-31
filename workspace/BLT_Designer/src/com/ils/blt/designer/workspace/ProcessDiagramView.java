@@ -628,21 +628,25 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	}
 
 	// This is called from the PropertyPanel editor and should be when a tag is dropped on a block
+	// This is also called whenever a block is selected - PAH 8/12/21
 	// Validate business rules
 	public String isValidBindingChange(ProcessBlockView pblock,BlockProperty prop,String tagPath, DataType type,Integer tagProp) {
 		String msg = null;
 
 		// ConType is the type of the proposed new connection.
 		ConnectionType conType = pblock.determineDataTypeFromTagType(type);
+		log.infof("Connection Type: %s", conType.toString());
 
 		Collection<Connection> cxns = getConnections();
 		for (Connection connection:cxns) {
 			BasicAnchorPoint intended = null;
 			if (connection.getOrigin().getBlock() == pblock) {
 				intended = (BasicAnchorPoint)connection.getTerminus();
+				log.infof("Intended Type of Origin: %s", intended.toString());
 			}
 			if (connection.getTerminus().getBlock() == pblock) {
 				intended = (BasicAnchorPoint)connection.getOrigin();
+				log.infof("Intended Type of Terminus: %s", intended.toString());
 			}
 
 			if (intended != null && !intended.allowConnectionType(conType)) {

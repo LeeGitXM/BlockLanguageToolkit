@@ -31,12 +31,14 @@ import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.block.ActiveState;
+import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.notification.NotificationChangeListener;
 import com.ils.blt.common.notification.NotificationKey;
 import com.ils.blt.common.serializable.SerializableApplication;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.NotificationHandler;
+import com.ils.blt.designer.editor.PropertyPanel.EditableField;
 import com.ils.blt.designer.navtree.DiagramTreeNode;
 import com.ils.blt.designer.navtree.GeneralPurposeTreeNode;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
@@ -64,7 +66,7 @@ import net.miginfocom.swing.MigLayout;
 public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor implements NotificationChangeListener, PropertyChangeListener {
 	private static final long serialVersionUID = 7211480530910862375L;
 	private static final String CLSS = "FinalDiagnosisPanel";
-	private static final boolean DEBUG = false;
+	private static final boolean DEBUG = true;
 	private final NotificationHandler notificationHandler = NotificationHandler.getInstance();
 	private final NodeStatusManager nodeStatusMgr;			// PH 06/30/2021
 	private final DiagramTreeNode diagramTreeNode;		// PH 06/30/2021
@@ -121,7 +123,7 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		this.requestHandler = new ApplicationRequestHandler();
 		this.context = context;
         this.diagram = wrkspc.getActiveDiagram();
-		this.corePanel = new CorePropertyPanel(this,block);
+		this.corePanel = new CorePropertyPanel(this, block);
 		this.log = LogMaker.getLogger(this);
 		this.database = requestHandler.getProductionDatabase();
 		this.provider = requestHandler.getProductionTagProvider();
@@ -157,8 +159,8 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
         initialize();
         setUI();
 		// Register for notifications
-		if (DEBUG) log.infof("%s: adding notification listener %s",CLSS,key);
-		notificationHandler.addNotificationChangeListener(key,CLSS,this);
+		if (DEBUG) log.infof("%s: adding notification listener %s", CLSS, key);
+		notificationHandler.addNotificationChangeListener(key, CLSS, this);
 	}
 
 	/**
@@ -295,7 +297,7 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		 * The list of all available outs comes from the application superior to the final diagnosis.
 		 * The Final Diagnosis has a list of outputs already configured as being used by the Final diagnosis, this list
 		 * is known as q1 and goes into the list on the right.  The list on the left, known as q0, is the list of all
-		 * output sminus the inputs that are already in use.
+		 * outputs minus the inputs that are already in use.
 		 */
 		
 		List<String> q1 = model.getLists().get("OutputsInUse");
@@ -367,8 +369,8 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 	}
 	
 	/**
-	 * These properties are present in every block.
-	 * class, label, state, statusText
+	 * Create a panel for core properties: 
+	 * name, class, UUID
 	 */
 	public class CorePropertyPanel extends BasicEditPanel implements FocusListener {
 		private static final long serialVersionUID = -7849105885687872683L;
@@ -412,9 +414,19 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		// ============================================== Focus listener ==========================================
 		@Override
 		public void focusGained(FocusEvent event) {
+			if (DEBUG) log.infof("%s: focusGained()...",CLSS);
 		}
 		@Override
 		public void focusLost(FocusEvent event) {
+			if (DEBUG) log.infof("%s: focusLost()...",CLSS);
+			if( event.getSource() instanceof EditableField ) {
+				log.infof("%s.focusLost(): %s", CLSS,event.getSource().getClass().getName());
+				EditableField field = (EditableField)event.getSource();
+				BlockProperty prop = field.getProperty();
+				if( DEBUG ) log.infof("%s.focusLost(): %s (%s:%s)", CLSS, prop.getName(), prop.getType().name(), prop.getBindingType().name());
+				// If there is a value change, then update the property (or binding)
+				//updatePropertyForField(field,false);
+			}
 			saveName();
 		}
 	}
@@ -422,12 +434,14 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 
 	// Copy the FinalDiagnosis auxiliary data back into the block's aux data
 	private void save(){
+		if (DEBUG) log.infof("%s:save() copying the AUX data back into the block's aux data...",CLSS);
 		model.getProperties().put("Constant", (constantCheckBox.isSelected()?"1":"0"));
 		model.getProperties().put("ManualMoveAllowed", (manualMoveAllowedCheckBox.isSelected()?"1":"0"));
 		model.getProperties().put("CalculationMethod",calculationMethodField.getText());
 		model.getProperties().put("FinalDiagnosisLabel",finalDiagnosisLabelField.getText());
 		model.getProperties().put("TextRecommendation", textRecommendationArea.getText());
 		model.getProperties().put("Comment", commentArea.getText());
+		if (DEBUG) log.infof("Comment: %s", commentArea.getText());
 		model.getProperties().put("Explanation", explanationArea.getText());
 		model.getProperties().put("PostTextRecommendation", (postTextRecommendationCheckBox.isSelected()?"1":"0"));
 		model.getProperties().put("ShowExplanationWithRecommendation", (showExplanationWithRecommendationCheckBox.isSelected()?"1":"0"));
@@ -450,6 +464,7 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		area.setLineWrap(true);
 		area.setWrapStyleWord(true);
 		area.setToolTipText(rb.getString(bundle));
+		//area.addFocusListener(l);
 		return area;
 	}
 	/**
@@ -523,6 +538,7 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 	// ============================================== PropertyChange listener ==========================================
 	@Override
 	public void propertyChange(PropertyChangeEvent event) {
+		if (DEBUG) log.infof("%s: in propertyChange()",CLSS);
 		if (event.getPropertyName().equalsIgnoreCase(DualListBox.PROPERTY_CHANGE_UPDATE)) {
 			save();
 		}

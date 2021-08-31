@@ -82,6 +82,10 @@ public class ResourceUpdateManager implements Runnable {
 			Project diff = context.getProject().getEmptyCopy();
 			ProcessDiagramView view = null;
 
+			/*
+			 * This first phase iterates over every resource, not just open ones.  If it is a diagram and it is dirty then serialize it.
+			 * If it is a block that has a representation in the database, then save the resource there also.  TODO can I do this??
+			 */
 			if(res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
 				// If the resource is open and it is dirty then we need to save it
 				long resourceId = res.getResourceId();
@@ -96,7 +100,7 @@ public class ResourceUpdateManager implements Runnable {
 
 					if( DEBUG ) log.infof("%s.run(), %s-%s (%s)", CLSS, view.getName(), sd.getName(), (view.isDirty()?"DIRTY":"CLEAN"));
 					
-					if(DEBUG) log.infof("%s.run(): serializing ... %s(%d) %s",CLSS,tab.getName(),resourceId,sd.getState().name());
+					if(DEBUG) log.infof("%s.run(): serializing ... %s(%d) %s", CLSS, tab.getName(), resourceId, sd.getState().name());
 					sd.setName(tab.getName());
 					ObjectMapper mapper = new ObjectMapper();
 					try{
@@ -113,6 +117,10 @@ public class ResourceUpdateManager implements Runnable {
 					//view.registerChangeListeners();
 				}
 			}
+			
+			/*
+			 * I'm not sure what this phase does??? PH 7/22/21
+			 */
 			try {
 				
 				if( context.requestLockQuietly(res.getResourceId()) )
