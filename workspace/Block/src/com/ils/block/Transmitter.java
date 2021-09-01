@@ -21,6 +21,7 @@ import com.ils.blt.common.notification.BroadcastNotification;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.Signal;
 import com.ils.common.watchdog.TestAwareQualifiedValue;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 
 /**
  * A transmitter is a special class that propagates broadcast messages directly
@@ -47,10 +48,10 @@ public class Transmitter extends AbstractProcessBlock implements ProcessBlock {
 	 * Constructor. 
 	 * 
 	 * @param ec execution controller for handling block output
-	 * @param parent universally unique Id identifying the parent of this block
+	 * @param parent resource Id identifying the parent of this block (a diagram)
 	 * @param block universally unique Id for the block
 	 */
-	public Transmitter(ExecutionController ec,UUID parent,UUID block) {
+	public Transmitter(ExecutionController ec,ProjectResourceId parent,UUID block) {
 		super(ec,parent,block);
 		initialize();
 	}

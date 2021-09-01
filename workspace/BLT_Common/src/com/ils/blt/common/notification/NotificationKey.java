@@ -23,7 +23,7 @@ public class NotificationKey
 	/**
 	 * @param blkid string version of the block's UUID
 	 * @return  a push-notification key for aux data. The Id is
-	 *         the block, or node Id.
+	 *         the block, or node resourcePath.
 	 */
 	public static String keyForAuxData(String blkid) {
 		return String.format("X:%s",blkid);

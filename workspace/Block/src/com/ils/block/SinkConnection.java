@@ -16,6 +16,7 @@ import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 
 /**
  * A Sink Connection is a class that propagates values directly
@@ -35,10 +36,10 @@ public class SinkConnection extends Output implements ProcessBlock {
 	 * Constructor. 
 	 * 
 	 * @param ec execution controller for handling block output
-	 * @param parent universally unique Id identifying the parent of this block
+	 * @param parent resource Id identifying the parent of this block (a diagram)
 	 * @param block universally unique Id for the block
 	 */
-	public SinkConnection(ExecutionController ec,UUID parent,UUID block) {
+	public SinkConnection(ExecutionController ec,ProjectResourceId parent,UUID block) {
 		super(ec,parent,block);
 		initialize();
 	}
@@ -95,7 +96,7 @@ public class SinkConnection extends Output implements ProcessBlock {
 		String summary = super.validate();
 		if( summary==null ) {
 			List<SerializableBlockStateDescriptor> links = controller.listSourcesForSink(
-									getParentId().toString(),this.getBlockId().toString());
+									getParentId(),this.getBlockId().toString());
 			if( links.isEmpty() ) {
 				summary = String.format("There are no sources linked to this sink block\t");
 			}

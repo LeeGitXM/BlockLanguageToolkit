@@ -25,6 +25,7 @@ import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 
 /**
  * This class compares input against a target range with deadband. If the value is not with a deadband
@@ -55,10 +56,10 @@ public class OutOfRangeObservation extends AbstractProcessBlock implements Proce
 	 * Constructor. Custom property is "limit".
 	 * 
 	 * @param ec execution controller for handling block output
-	 * @param parent universally unique Id identifying the parent of this block
+	 * @param parent resource Id identifying the parent of this block (a diagram)
 	 * @param block universally unique Id for the block
 	 */
-	public OutOfRangeObservation(ExecutionController ec,UUID parent,UUID block) {
+	public OutOfRangeObservation(ExecutionController ec,ProjectResourceId parent,UUID block) {
 		super(ec,parent,block);
 		initialize();
 	}
@@ -69,13 +70,13 @@ public class OutOfRangeObservation extends AbstractProcessBlock implements Proce
 	 */
 	private void initialize() {
 		setName("OutOfRangeObservation");
-		BlockProperty bp = new BlockProperty(BLOCK_PROPERTY_LOWER_LIMIT,new Double(lowerlimit),PropertyType.DOUBLE,true);
+		BlockProperty bp = new BlockProperty(BLOCK_PROPERTY_LOWER_LIMIT,lowerlimit,PropertyType.DOUBLE,true);
 		setProperty(BLOCK_PROPERTY_LOWER_LIMIT, bp);
-		bp = new BlockProperty(BLOCK_PROPERTY_UPPER_LIMIT,new Double(upperlimit),PropertyType.DOUBLE,true);
+		bp = new BlockProperty(BLOCK_PROPERTY_UPPER_LIMIT,upperlimit,PropertyType.DOUBLE,true);
 		setProperty(BLOCK_PROPERTY_UPPER_LIMIT, bp);
-		bp = new BlockProperty(BLOCK_PROPERTY_LOWER_DEADBAND,new Double(lowerdeadband),PropertyType.DOUBLE,true);
+		bp = new BlockProperty(BLOCK_PROPERTY_LOWER_DEADBAND,lowerdeadband,PropertyType.DOUBLE,true);
 		setProperty(BLOCK_PROPERTY_LOWER_DEADBAND, bp);
-		bp = new BlockProperty(BLOCK_PROPERTY_UPPER_DEADBAND,new Double(upperdeadband),PropertyType.DOUBLE,true);
+		bp = new BlockProperty(BLOCK_PROPERTY_UPPER_DEADBAND,upperdeadband,PropertyType.DOUBLE,true);
 		setProperty(BLOCK_PROPERTY_UPPER_DEADBAND, bp);
 		
 		// Define a single input

@@ -3,9 +3,9 @@ package com.ils.blt.common.serializable;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.ils.blt.common.DiagramState;
+import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.block.AttributeDisplay;
-import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
+import com.inductiveautomation.ignition.common.project.resource.ResourceType;
 
 
 
@@ -16,15 +16,11 @@ import com.inductiveautomation.ignition.common.project.resource.ProjectResourceI
  * This POJO objects should have no behavior.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class SerializableDiagram {
+public class SerializableDiagram extends SerializableNode {
 	private AttributeDisplay[] attributeDisplays;
 	private SerializableBlock[] blocks;
 	private SerializableConnection[] connections;
-	private UUID id = null;
-	private String name = "UNSET";
 	private UUID encapsulationBlockID = null;   // Only for diagrams that are sub-workspaces of an encapsulation
-	private ProjectResourceId resourceId;
-	private DiagramState state = DiagramState.ACTIVE;
 	private String watermark = "";
 	private boolean dirty = false;
 
@@ -32,17 +28,16 @@ public class SerializableDiagram {
 		attributeDisplays = new AttributeDisplay[0];
 		blocks = new SerializableBlock[0];
 		connections= new SerializableConnection[0];
-		name = "UNSET";
-		id = UUID.randomUUID();
 	}
+	
+	public ResourceType getResourceType() {
+		return BLTProperties.DIAGRAM_RESOURCE_TYPE;
+	}
+	
 	public AttributeDisplay[] getAttributeDisplays() { return attributeDisplays; }
 	public SerializableBlock[] getBlocks() { return blocks; }
 	public SerializableConnection[] getConnections() { return connections; }
 	public UUID getEncapsulationBlockId() {return encapsulationBlockID;}
-	public UUID getId() {return id;}
-	public String getName() { return name; }
-	public ProjectResourceId getResourceId() { return this.resourceId; }
-	public DiagramState getState() {return state;}
 	public String getWatermark() {return watermark;}
 	public boolean isDirty() {return dirty;}
 	
@@ -51,10 +46,6 @@ public class SerializableDiagram {
 	public void setConnections(SerializableConnection[] list) { connections=list; }
 	public void setDirty(boolean dirty) {this.dirty = dirty;}
 	public void setEncapsulationBlockId(UUID parentId) {this.encapsulationBlockID = parentId;}
-	public void setId(UUID id) {this.id = id;}
-	public void setName(String nam) { if(nam!=null) name=nam; }
-	public void setResourceId(ProjectResourceId resid) { this.resourceId = resid; }
-	public void setState(DiagramState state) {this.state = state;}
 	public void setWatermark(String mark) { this.watermark = mark; }
 	
 	/**

@@ -24,6 +24,7 @@ import com.ils.blt.common.notification.Signal;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 
 /**
  *  
@@ -50,10 +51,10 @@ public class PropertySetter extends AbstractProcessBlock implements ProcessBlock
 	 * Constructor. 
 	 * 
 	 * @param ec execution controller for handling block output
-	 * @param parent universally unique Id identifying the parent of this block
+	 * @param parent resource Id identifying the parent of this block (a diagram)
 	 * @param block universally unique Id for the block
 	 */
-	public PropertySetter(ExecutionController ec,UUID parent,UUID block) {
+	public PropertySetter(ExecutionController ec,ProjectResourceId parent,UUID block) {
 		super(ec,parent,block);
 		initialize();
 	}

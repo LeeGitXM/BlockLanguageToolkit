@@ -33,6 +33,7 @@ import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 
 /**
  * On receipt of a trigger, this class inhibits further input from propagating.
@@ -64,10 +65,10 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 	 * Constructor. Custom property is "interval".
 	 * 
 	 * @param ec execution controller for handling block output
-	 * @param parent universally unique Id identifying the parent of this block
+	 * @param parent resource Id identifying the parent of this block (a diagram)
 	 * @param block universally unique Id for the block
 	 */
-	public Inhibitor(ExecutionController ec,UUID parent,UUID block) {
+	public Inhibitor(ExecutionController ec,ProjectResourceId parent,UUID block) {
 		super(ec,parent,block);
 		initialize();
 		dog = new Watchdog(getName(),this);
@@ -77,7 +78,7 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void reset() {
 		super.reset();
-		expirationProperty.setValue(new Long(0L));
+		expirationProperty.setValue(0L);
 		inhibiting = controlValue.equals(trigger) && trigger != TruthValue.UNSET;  // don't inhibit if unset
 		setState(initialValue);
 		if(!locked && !inhibiting && !initialValue.equals(TruthValue.UNSET)) {
@@ -186,7 +187,7 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 	public void acceptValue(SignalNotification sn) {
 		Signal signal = sn.getSignal();
 		if( signal.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_INHIBIT)) {
-			expirationProperty.setValue(new Long(sn.getValue().getTimestamp().getTime()+(long)(interval*1000)));
+			expirationProperty.setValue(sn.getValue().getTimestamp().getTime()+(long)(interval*1000));
 			inhibiting = true;
 			controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_EXPIRATION_TIME,
 					new BasicQualifiedValue(expirationProperty.getValue(),sn.getValue().getQuality(),sn.getValue().getTimestamp()));

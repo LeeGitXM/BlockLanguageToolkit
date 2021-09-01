@@ -25,6 +25,7 @@ import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 
 /**
  * This class compares input against a lower limit with deadband. 
@@ -48,10 +49,10 @@ public class LowLimitObservation extends AbstractProcessBlock implements Process
 	 * Constructor. Custom property is "limit".
 	 * 
 	 * @param ec execution controller for handling block output
-	 * @param parent universally unique Id identifying the parent of this block
+	 * @param parent resource Id identifying the parent of this block (a diagram)
 	 * @param block universally unique Id for the block
 	 */
-	public LowLimitObservation(ExecutionController ec,UUID parent,UUID block) {
+	public LowLimitObservation(ExecutionController ec,ProjectResourceId parent,UUID block) {
 		super(ec,parent,block);
 		initialize();
 	}
@@ -68,9 +69,9 @@ public class LowLimitObservation extends AbstractProcessBlock implements Process
 	 */
 	private void initialize() {
 		setName("LowLimitObservation");
-		BlockProperty bp = new BlockProperty(BlockConstants.BLOCK_PROPERTY_LIMIT,new Double(limit),PropertyType.DOUBLE,true);
+		BlockProperty bp = new BlockProperty(BlockConstants.BLOCK_PROPERTY_LIMIT,limit,PropertyType.DOUBLE,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_LIMIT, bp);
-		bp = new BlockProperty(BlockConstants.BLOCK_PROPERTY_DEADBAND,new Double(deadband),PropertyType.DOUBLE,true);
+		bp = new BlockProperty(BlockConstants.BLOCK_PROPERTY_DEADBAND,deadband,PropertyType.DOUBLE,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_DEADBAND, bp);
 		
 		// Define a single input

@@ -31,6 +31,7 @@ import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.Quality;
 import com.inductiveautomation.ignition.common.model.values.QualityCode;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 
 
 /**
@@ -59,10 +60,10 @@ public class HighSelector extends AbstractProcessBlock implements ProcessBlock {
 	 * Constructor. 
 	 * 
 	 * @param ec execution controller for handling block output
-	 * @param parent universally unique Id identifying the parent of this block
+	 * @param parent resource Id identifying the parent of this block (a diagram)
 	 * @param block universally unique Id for the block
 	 */
-	public HighSelector(ExecutionController ec,UUID parent,UUID block) {
+	public HighSelector(ExecutionController ec,ProjectResourceId parent,UUID block) {
 		super(ec,parent,block);
 		qualifiedValueMap = new HashMap<>();
 		initialize();
@@ -261,7 +262,7 @@ public class HighSelector extends AbstractProcessBlock implements ProcessBlock {
 				}
 			}
 			else {
-				return new BasicQualifiedValue(Double.NaN,new BasicQuality("One or more bad inputs",Quality.Level.Bad),qv.getTimestamp());
+				return new BasicQualifiedValue(Double.NaN,QualityCode.Bad,qv.getTimestamp());
 			}
 		}
 		return result;	

@@ -26,6 +26,7 @@ import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 
 /**
  * On receipt of a trigger, this class inhibits further input from propagating.
@@ -53,7 +54,7 @@ public class InferenceInhibitor extends AbstractProcessBlock implements ProcessB
 	 * @param parent universally unique Id identifying the parent of this block
 	 * @param block universally unique Id for the block
 	 */
-	public InferenceInhibitor(ExecutionController ec,UUID parent,UUID block) {
+	public InferenceInhibitor(ExecutionController ec,ProjectResourceId parent,UUID block) {
 		super(ec,parent,block);
 		initialize();
 	}

@@ -36,6 +36,7 @@ import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualityCode;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 
 /**
  * This class applies SQC-like rules to its input with the objective of detecting trends.
@@ -105,10 +106,10 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 	 * Constructor. Custom properties are limit, standardDeviation
 	 * 
 	 * @param ec execution controller for handling block output
-	 * @param parent universally unique Id identifying the parent of this block
+	 * @param parent resource Id identifying the parent of this block (a diagram)
 	 * @param block universally unique Id for the block
 	 */
-	public TrendDetector(ExecutionController ec,UUID parent,UUID block) {
+	public TrendDetector(ExecutionController ec,ProjectResourceId parent,UUID block) {
 		super(ec,parent,block);
 		buffer = new FixedSizeQueue<QualifiedValue>(DEFAULT_BUFFER_SIZE);
 		initialize();
@@ -126,25 +127,25 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 		setProperty(BLOCK_PROPERTY_CALCULATION_OPTION, calculationOptionProperty);
 		BlockProperty labelProperty = new BlockProperty(BLOCK_PROPERTY_TEST_LABEL,"",PropertyType.STRING,true);
 		setProperty(BLOCK_PROPERTY_TEST_LABEL, labelProperty);
-		BlockProperty thresholdProperty = new BlockProperty(BLOCK_PROPERTY_TREND_COUNT_THRESHOLD,new Integer(countThreshold),PropertyType.INTEGER,true);
+		BlockProperty thresholdProperty = new BlockProperty(BLOCK_PROPERTY_TREND_COUNT_THRESHOLD,countThreshold,PropertyType.INTEGER,true);
 		setProperty(BLOCK_PROPERTY_TREND_COUNT_THRESHOLD, thresholdProperty);
-		BlockProperty pointsRequiredProperty = new BlockProperty(BLOCK_PROPERTY_TREND_POINTS_REQUIRED,new Integer(pointsRequired),PropertyType.INTEGER,true);
+		BlockProperty pointsRequiredProperty = new BlockProperty(BLOCK_PROPERTY_TREND_POINTS_REQUIRED,pointsRequired,PropertyType.INTEGER,true);
 		setProperty(BLOCK_PROPERTY_TREND_POINTS_REQUIRED, pointsRequiredProperty);
-		BlockProperty relativeToTargetProperty = new BlockProperty(BLOCK_PROPERTY_RELATIVE_TO_TARGET,new Boolean(relativeToTarget),PropertyType.BOOLEAN,true);
+		BlockProperty relativeToTargetProperty = new BlockProperty(BLOCK_PROPERTY_RELATIVE_TO_TARGET,relativeToTarget,PropertyType.BOOLEAN,true);
 		setProperty(BLOCK_PROPERTY_RELATIVE_TO_TARGET, relativeToTargetProperty);
-		BlockProperty multiplierProperty = new BlockProperty(BLOCK_PROPERTY_STANDARD_DEVIATION_MULTIPLIER,new Double(multiplier),PropertyType.DOUBLE,true);
+		BlockProperty multiplierProperty = new BlockProperty(BLOCK_PROPERTY_STANDARD_DEVIATION_MULTIPLIER,multiplier,PropertyType.DOUBLE,true);
 		setProperty(BLOCK_PROPERTY_STANDARD_DEVIATION_MULTIPLIER, multiplierProperty);
 		BlockProperty directionProperty = new BlockProperty(BLOCK_PROPERTY_TREND_DIRECTION,trendDirection,PropertyType.TRENDDIRECTION,true);
 		setProperty(BLOCK_PROPERTY_TREND_DIRECTION, directionProperty);
 		
 		// Define ancillary properties that are "bound to the engine"
-		BlockProperty slopeProperty = new BlockProperty(BLOCK_PROPERTY_SLOPE,new Double(0.0),PropertyType.DOUBLE,false);
+		BlockProperty slopeProperty = new BlockProperty(BLOCK_PROPERTY_SLOPE,0.0,PropertyType.DOUBLE,false);
 		slopeProperty.setBindingType(BindingType.ENGINE);
 		setProperty(BLOCK_PROPERTY_SLOPE, slopeProperty);
-		BlockProperty stddevProperty = new BlockProperty(BLOCK_PROPERTY_STDDEV,new Double(0.0),PropertyType.DOUBLE,false);
+		BlockProperty stddevProperty = new BlockProperty(BLOCK_PROPERTY_STDDEV,0.0,PropertyType.DOUBLE,false);
 		slopeProperty.setBindingType(BindingType.ENGINE);
 		setProperty(BLOCK_PROPERTY_STDDEV, stddevProperty);
-		BlockProperty projectionProperty = new BlockProperty(BLOCK_PROPERTY_PROJECTION,new Double(0.0),PropertyType.DOUBLE,false);
+		BlockProperty projectionProperty = new BlockProperty(BLOCK_PROPERTY_PROJECTION,0.0,PropertyType.DOUBLE,false);
 		projectionProperty.setBindingType(BindingType.ENGINE);
 		setProperty(BLOCK_PROPERTY_PROJECTION, projectionProperty);
 		
@@ -227,7 +228,7 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 							}
 							evaluate();
 						}
-						buffer.add(new TestAwareQualifiedValue(timer,new Double(current)));
+						buffer.add(new TestAwareQualifiedValue(timer,current));
 					}
 					catch(NumberFormatException nfe) {
 						log.warnf("%s.acceptValue Unable to convert input value to an double (%s)",getName(),nfe.getLocalizedMessage());
@@ -309,11 +310,11 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 					controller.acceptCompletionNotification(notification);
 					// Write the auxiliary values to block parameters
 					controller.sendPropertyNotification(getBlockId().toString(),BLOCK_PROPERTY_SLOPE,
-							new TestAwareQualifiedValue(timer,new Double(slope)));
+							new TestAwareQualifiedValue(timer,slope));
 					controller.sendPropertyNotification(getBlockId().toString(),BLOCK_PROPERTY_STDDEV,
-							new TestAwareQualifiedValue(timer,new Double(stddev)));
+							new TestAwareQualifiedValue(timer,stddev));
 					controller.sendPropertyNotification(getBlockId().toString(),BLOCK_PROPERTY_PROJECTION,
-							new TestAwareQualifiedValue(timer,new Double(projection)));
+							new TestAwareQualifiedValue(timer,projection));
 				}	
 				
 			}

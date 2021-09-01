@@ -17,9 +17,10 @@ import com.ils.blt.common.notification.BroadcastNotification;
 import com.ils.blt.common.notification.ConnectionPostNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
+import com.ils.common.log.ILSLogger;
+import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
-import com.inductiveautomation.ignition.common.util.LogUtil;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 
 /**
  *  This is a rudimentary implementation of the Execution Controller interface. 
@@ -29,7 +30,7 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
 public class BasicExecutionController implements ExecutionController  {
 	protected static final String CLSS = "BasicExecutionController";
 
-	protected static final LoggerEx log = LogUtil.getLogger(BasicExecutionController.class.getPackage().getName());
+	protected static final ILSLogger log = LogMaker.getLogger(BasicExecutionController.class.getPackage().getName());
 
 	public void acceptBroadcastNotification(BroadcastNotification note){
 		log.warnf("%s.acceptBroadcastNotification: WARNING: Executed from stub class",CLSS);
@@ -44,7 +45,7 @@ public class BasicExecutionController implements ExecutionController  {
 	public void clearCache() {
 		log.warnf("%s.clearCache: WARNING: Executed from stub class",CLSS);
 	}
-	public DiagnosticDiagram getDiagram(String diagramId) {
+	public DiagnosticDiagram getDiagram(ProjectResourceId diagramId) {
 		log.warnf("%s.getDiagram: WARNING: Executed from stub class",CLSS);
 		return null;
 	}
@@ -71,7 +72,8 @@ public class BasicExecutionController implements ExecutionController  {
 		log.warnf("%s.getIsolationTimeFactor: WARNING: Executed from stub class",CLSS);
 		return 0;
 	}
-	public ProcessBlock getProcessBlock(String diagramId,String blockId) {
+	@Override
+	public ProcessBlock getProcessBlock(ProjectResourceId diagramId,String blockId) {
 		log.warnf("%s.getProcessBlock: WARNING: Executed from stub class",CLSS);
 		return null;
 	}
@@ -79,7 +81,7 @@ public class BasicExecutionController implements ExecutionController  {
 		log.warnf("%s.getSubscribedPath: WARNING: Executed from stub class",CLSS);
 		return null;
 	}
-	public QualifiedValue getTagValue(UUID diagramId,String path) {
+	public QualifiedValue getTagValue(ProjectResourceId diagramId,String path) {
 		log.warnf("%s.getTagValue: WARNING: Executed from stub class",CLSS);
 		return null;
 	}
@@ -87,27 +89,27 @@ public class BasicExecutionController implements ExecutionController  {
 		log.warnf("%s.hasActiveSubscription: WARNING: Executed from stub class",CLSS);
 		return false;
 	}
-	public List<SerializableBlockStateDescriptor> listBlocksConnectedAtPort(String diagramId,String blockId,String portName) {
+	public List<SerializableBlockStateDescriptor> listBlocksConnectedAtPort(ProjectResourceId diagramId,String blockId,String portName) {
 		log.warnf("%s.listBlocksConnectedAtPort: WARNING: Executed from stub class",CLSS);
 		return new ArrayList<>();
 	}
-	public List<SerializableBlockStateDescriptor> listBlocksDownstreamOf(UUID diagramId,UUID blockId,boolean spanDiagrams) {
+	public List<SerializableBlockStateDescriptor> listBlocksDownstreamOf(ProjectResourceId diagramId,UUID blockId,boolean spanDiagrams) {
 		log.warnf("%s.listBlocksDownstreamOf: WARNING: Executed from stub class",CLSS);
 		return new ArrayList<>();
 	}
-	public List<SerializableBlockStateDescriptor> listBlocksUpstreamOf(UUID diagramId,UUID blockId,boolean spanDiagrams) {
+	public List<SerializableBlockStateDescriptor> listBlocksUpstreamOf(ProjectResourceId diagramId,UUID blockId,boolean spanDiagrams) {
 		log.warnf("%s.listBlocksUpstreamOf: WARNING: Executed from stub class",CLSS);
 		return new ArrayList<>();
 	}
-	public List<SerializableBlockStateDescriptor> listSinksForSource(String diagramId,String blockName) {
+	public List<SerializableBlockStateDescriptor> listSinksForSource(ProjectResourceId diagramId,String blockName) {
 		log.warnf("%s.listSinksForSource: WARNING: Executed from stub class",CLSS);
 		return new ArrayList<>();
 	}
-	public List<SerializableBlockStateDescriptor> listSourcesForSink(String diagramId,String blockName) {
+	public List<SerializableBlockStateDescriptor> listSourcesForSink(ProjectResourceId diagramId,String blockName) {
 		log.warnf("%s.listSourcesForSink: WARNING: Executed from stub class",CLSS);
 		return new ArrayList<>();
 	}
-	public void sendAlertNotification(long resid, String val) {
+	public void sendAlertNotification(ProjectResourceId resid, String val) {
 		log.warnf("%s.sendAlertNotification: WARNING: Executed from stub class",CLSS);
 	}
 	public void sendAuxDataNotification(String id,QualifiedValue val) {
@@ -125,16 +127,16 @@ public class BasicExecutionController implements ExecutionController  {
 	public void sendPropertyNotification(String id, String propertyName, QualifiedValue val){
 		log.warnf("%s.sendPropertyNotification: WARNING: Executed from stub class",CLSS);
 	}
-	public void sendStateNotification(long resourceid, String val){
+	public void sendStateNotification(ProjectResourceId resourceid, String val){
 		log.warnf("%s.sendStateNotification: WARNING: Executed from stub class",CLSS);
 	}
-	public void sendWatermarkNotification(String diagramid, String val) {
+	public void sendWatermarkNotification(ProjectResourceId diagramid, String val) {
 		log.warnf("%s.sendWatermarkNotification: WARNING: Executed from stub class",CLSS);
 	}
-	public void updateTag(UUID diagramId,String path,QualifiedValue val) {
+	public void updateTag(ProjectResourceId diagramId,String path,QualifiedValue val) {
 		log.warnf("%s.updateTag: WARNING: Executed from stub class",CLSS);
 	}
-	public String validateTag(UUID diagramId,String tagPath) {
+	public String validateTag(ProjectResourceId diagramId,String tagPath) {
 		log.warnf("%s.validateTag: WARNING: Executed from stub class",CLSS);
 		return null;
 	}

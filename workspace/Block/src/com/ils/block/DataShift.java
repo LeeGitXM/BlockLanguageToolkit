@@ -24,6 +24,7 @@ import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 
 /**
  * Delay before passing the input onto the output.
@@ -46,10 +47,10 @@ public class DataShift extends AbstractProcessBlock implements ProcessBlock {
 	 * Constructor. Custom property is "SampleSize".
 	 * 
 	 * @param ec execution controller for handling block output
-	 * @param parent universally unique Id identifying the parent of this block
+	 * @param parent resource Id identifying the parent of this block (a diagram)
 	 * @param block universally unique Id for the block
 	 */
-	public DataShift(ExecutionController ec,UUID parent,UUID block) {
+	public DataShift(ExecutionController ec,ProjectResourceId parent,UUID block) {
 		super(ec,parent,block);
 		buffer = new ConcurrentLinkedQueue<QualifiedValue>();
 		initialize();
@@ -145,7 +146,7 @@ public class DataShift extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	private void initialize() {
 		setName("DataShift");
-		BlockProperty samples = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SAMPLE_SIZE,new Long(sampleSize),PropertyType.INTEGER,true);
+		BlockProperty samples = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SAMPLE_SIZE,sampleSize,PropertyType.INTEGER,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_SAMPLE_SIZE, samples);
 		
 		// Define a single input

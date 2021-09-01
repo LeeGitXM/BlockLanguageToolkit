@@ -61,8 +61,8 @@ public class NoteUIView extends AbstractBlockUIView implements BlockViewUI, Chan
 			else if(property.getName().equals(BlockConstants.BLOCK_PROPERTY_BACKGROUND_COLOR))  hasBackgroundColor= true;
 		}
 		if(!hasText) properties.add(new BlockProperty(BlockConstants.BLOCK_PROPERTY_TEXT,"",PropertyType.STRING,true));
-		if(!hasWidth) properties.add(new BlockProperty(BlockConstants.BLOCK_PROPERTY_WIDTH,new Integer(block.getPreferredWidth()),PropertyType.INTEGER,true));
-		if(!hasHeight) properties.add(new BlockProperty(BlockConstants.BLOCK_PROPERTY_HEIGHT,new Integer(block.getPreferredHeight()),PropertyType.INTEGER,true));
+		if(!hasWidth) properties.add(new BlockProperty(BlockConstants.BLOCK_PROPERTY_WIDTH,block.getPreferredWidth(),PropertyType.INTEGER,true));
+		if(!hasHeight) properties.add(new BlockProperty(BlockConstants.BLOCK_PROPERTY_HEIGHT,block.getPreferredHeight(),PropertyType.INTEGER,true));
 		if(!hasBackgroundColor) properties.add(new BlockProperty(BlockConstants.BLOCK_PROPERTY_BACKGROUND_COLOR,block.getBackgroundColor(),PropertyType.COLOR,true));
 	
 		// To save repeatedly picking through the property list (we already did it once), pull out

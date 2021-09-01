@@ -29,6 +29,7 @@ import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.common.FixedSizeQueue;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 
 /**
  * Detect if the last m of n samples are below a specified threshold value..
@@ -56,10 +57,10 @@ public class LowValuePattern extends AbstractProcessBlock implements ProcessBloc
 	 * Constructor. 
 	 * 
 	 * @param ec execution controller for handling block output
-	 * @param parent universally unique Id identifying the parent of this block
+	 * @param parent resource Id identifying the parent of this block (a diagram)
 	 * @param block universally unique Id for the block
 	 */
-	public LowValuePattern(ExecutionController ec,UUID parent,UUID block) {
+	public LowValuePattern(ExecutionController ec,ProjectResourceId parent,UUID block) {
 		super(ec,parent,block);
 		queue = new FixedSizeQueue<QualifiedValue>(sampleSize);
 		initialize();

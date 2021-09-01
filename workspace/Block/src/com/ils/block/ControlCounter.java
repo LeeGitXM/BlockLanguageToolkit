@@ -22,6 +22,7 @@ import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 
 /**
  * This class is a no-op. It simply passes its input onto the output.
@@ -45,10 +46,10 @@ public class ControlCounter extends AbstractProcessBlock implements ProcessBlock
 	 * Constructor. 
 	 * 
 	 * @param ec execution controller for handling block output
-	 * @param parent universally unique Id identifying the parent of this block
+	 * @param parent resource Id identifying the parent of this block (a diagram)
 	 * @param block universally unique Id for the block
 	 */
-	public ControlCounter(ExecutionController ec,UUID parent,UUID block) {
+	public ControlCounter(ExecutionController ec,ProjectResourceId parent,UUID block) {
 		super(ec,parent,block);
 		counter = 0;
 		initialize();

@@ -116,8 +116,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	}
 	@Override
 	public synchronized List<SerializableResourceDescriptor> childNodes(String nodeId) {
-		UUID uuid = makeUUID(nodeId);
-		ProcessNode node = controller.getProcessNode(uuid);
+		ProcessNode node = controller.getProcessNode(node.getResourceId());
 		List<SerializableResourceDescriptor> result = new ArrayList<>();
 		if( node!=null ) {
 			Collection<ProcessNode> children =  node.getChildren();
@@ -141,7 +140,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * Clear any watermark on a diagram. 
 	 * @param diagramId UUID of the diagram as a string
 	 */
-	public void clearWatermark(String diagramId) {
+	public void clearWatermark(ProjectResourceId diagramId) {
 		controller.sendWatermarkNotification(diagramId,"");
 	}
 	
@@ -192,9 +191,9 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	@Override
 	public void createTag(DataType type,String path) {
 		String provider = getProductionTagProvider();
-		tagHandler.createTag(provider,path,type);
+		tagHandler.createTag(provider,path,type.name());
 		provider = getIsolationTagProvider();
-		tagHandler.createTag(provider,path,type);
+		tagHandler.createTag(provider,path,type.name());
 	}
 	/**
 	 * Delete the tag for both production and isolation
@@ -279,8 +278,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * @param propertyName name of the property
 	 * @return the properties of an existing or new block.
 	 */
-	public synchronized BlockProperty getBlockProperty(UUID parentId,UUID blockId,String propertyName) {
-		ProcessDiagram diagram = controller.getDiagram(parentId);
+	public synchronized BlockProperty getBlockProperty(ProcessDiagram diagram,String propertyName) {
 		ProcessBlock block = null;
 		if( diagram!=null ) block = diagram.getBlock(blockId);
 		BlockProperty property = null;
@@ -365,9 +363,9 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * @param attributes the table to fill and return
 	 * @return a table of attributes for the connection
 	 */
-	public Hashtable<String,Hashtable<String,String>> getConnectionAttributes(ProjectResourceId projectId,long resourceId,String connectionId,Hashtable<String,Hashtable<String,String>> attributes) {
+	public Hashtable<String,Hashtable<String,String>> getConnectionAttributes(ProjectResourceId resourceId,String connectionId,Hashtable<String,Hashtable<String,String>> attributes) {
 		// Find the connection object
-		Connection cxn  = controller.getConnection(projectId, resourceId, connectionId);
+		Connection cxn  = controller.getConnection(resourceId, connectionId);
 		return attributes;
 	}
 	@Override
@@ -460,20 +458,6 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		return null;
 	}
 	
-	/**
-	 * @param projectId parent project for the diagram
-	 * @param resourceId resource Id for the diagram
-	 * @return the current state of the specified diagram as a DiagramState.
-	 */
-	@Override
-	public synchronized DiagramState getDiagramState(ProjectResourceId resourceId) {
-		DiagramState state = DiagramState.ACTIVE;
-		ProcessDiagram diagram = controller.getDiagram(resourceId);
-		if( diagram!=null ) {
-			state = diagram.getState();
-		}
-		return state;
-	}
 	/**
 	 * @param diagramId diagram identifier
 	 * @return the current state of the specified diagram as a DiagramState.
@@ -760,7 +744,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		if( tagpath!=null && !tagpath.isEmpty() ) {
 			List<SerializableResourceDescriptor> descriptors = controller.getDiagramDescriptors();
 			for(SerializableResourceDescriptor descriptor:descriptors) {
-				UUID diagId = makeUUID(descriptor.getId());
+				UUID diagId = makeUUID(descriptor.getResourceId());
 
 				ProcessDiagram diagram = controller.getDiagram(diagId);
 				if( diagram!=null) {
@@ -850,7 +834,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		List<SerializableBlockStateDescriptor> descriptors = new ArrayList<>();
 		List<SerializableResourceDescriptor> diagrams = controller.getDiagramDescriptors();
 		for(SerializableResourceDescriptor diag:diagrams) {
-			List<SerializableBlockStateDescriptor> blocks = listBlocksInDiagram(diag.getId());
+			List<SerializableBlockStateDescriptor> blocks = listBlocksInDiagram(diag.getResourceId());
 			for(SerializableBlockStateDescriptor desc:blocks) {
 				if( desc.getClassName().equals(className)) descriptors.add(desc);
 			}
@@ -881,7 +865,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		List<SerializableResourceDescriptor> descriptors = controller.getDiagramDescriptors();
 		try {
 			for(SerializableResourceDescriptor res:descriptors) {
-				UUID diagramId = makeUUID(res.getId());
+				UUID diagramId = makeUUID(res.getResourceId());
 				ProcessDiagram diagram = controller.getDiagram(diagramId);
 				for( ProcessBlock block:diagram.getProcessBlocks() ) {
 					String problem = block.validate();
@@ -1005,7 +989,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		if( tagPath!=null && tagPath.length()>0 ) {
 			List<SerializableResourceDescriptor> descriptors = controller.getDiagramDescriptors();
 			for(SerializableResourceDescriptor desc:descriptors) {
-				UUID diaguuid = makeUUID(desc.getId());
+				UUID diaguuid = makeUUID(desc.getResourceId());
 				diagram = controller.getDiagram(diaguuid);
 				for(ProcessBlock sink:diagram.getProcessBlocks()) {
 					if( sink.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SINK) ) {
@@ -1048,7 +1032,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		if( tagPath!=null && tagPath.length()>0 ) {
 			List<SerializableResourceDescriptor> descriptors = controller.getDiagramDescriptors();
 			for(SerializableResourceDescriptor descriptor:descriptors) {
-				UUID diaguuid = makeUUID(descriptor.getId());
+				UUID diaguuid = makeUUID(descriptor.getResourceId());
 				diagram = controller.getDiagram(diaguuid);
 				for(ProcessBlock source:diagram.getProcessBlocks()) {
 					if( source.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SOURCE) ) {
@@ -1072,7 +1056,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		List<SerializableResourceDescriptor> descriptors = controller.getDiagramDescriptors();
 		try {
 			for(SerializableResourceDescriptor res:descriptors) {
-				UUID diagramId = makeUUID(res.getId());
+				UUID diagramId = makeUUID(res.getResourceId());
 				ProcessDiagram diagram = controller.getDiagram(diagramId);
 				if( !diagram.getState().equals(DiagramState.DISABLED)) {
 					for( ProcessBlock block:diagram.getProcessBlocks() ) {
@@ -1102,7 +1086,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		long now = System.currentTimeMillis();
 		try {
 			for(SerializableResourceDescriptor res:descriptors) {
-				UUID diagramId = makeUUID(res.getId());
+				UUID diagramId = makeUUID(res.getResourceId());
 				ProcessDiagram diagram = controller.getDiagram(diagramId);
 				if( !diagram.getState().equals(DiagramState.DISABLED)) {
 					for( ProcessBlock block:diagram.getProcessBlocks() ) {
@@ -1147,20 +1131,19 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * Handle the block placing a new value on its output. This minimalist version
 	 * is likely called from an external source through an RPC.
 	 * 
-	 * @param parentId identifier for the parent
+	 * @param diagramId identifier for the parent
 	 * @param blockId identifier for the block
 	 * @param port the output port on which to insert the result
 	 * @param value the result of the block's computation
 	 */
-	public void postValue(String parentId,String blockId,String port,String value)  {
+	public void postValue(ProjectResourceId diagramId,String blockId,String port,String value)  {
 		log.tracef("%s.postValue - %s = %s on %s",CLSS,blockId,value,port);
 		try {
-			UUID diagramuuid = UUID.fromString(parentId);
 			UUID blockuuid   = UUID.fromString(blockId);
-			postValue(diagramuuid,blockuuid,port,value,BLTProperties.QUALITY_GOOD) ;
+			postValue(diagramId,blockuuid,port,value,BLTProperties.QUALITY_GOOD) ;
 		}
 		catch(IllegalArgumentException iae) {
-			log.warnf("%s.postValue: one of %s or %s illegal UUID (%s)",CLSS,parentId,blockId,iae.getMessage());
+			log.warnf("%s.postValue: one of %s or %s illegal UUID (%s)",CLSS,diagramId.getResourcePath().getPath().toString(),blockId,iae.getMessage());
 		}
 	}
 	/**
@@ -1173,14 +1156,14 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * @param value the result of the block's computation
 	 * @param quality of the reported output
 	 */
-	public void postValue(UUID parentuuid,UUID blockId,String port,String value,String quality)  {
+	public void postValue(ProjectResourceId diagramId,UUID blockId,String port,String value,String quality)  {
 		log.tracef("%s.postValue - %s = %s (%s) on %s",CLSS,blockId,value,quality,port);
 		try {
-			ProcessDiagram diagram = controller.getDiagram(parentuuid);
+			ProcessDiagram diagram = controller.getDiagram(diagramId);
 			if( diagram!=null) {
 				ProcessBlock block = diagram.getBlock(blockId);
 				QualifiedValue qv = new BasicQualifiedValue(value,
-						(quality.equalsIgnoreCase(BLTProperties.QUALITY_GOOD)?QualityCode.Good:QualityCod.Bad));
+						(quality.equalsIgnoreCase(BLTProperties.QUALITY_GOOD)?QualityCode.Good:QualityCode.Bad));
 				OutgoingNotification note = new OutgoingNotification(block,port,qv);
 				controller.acceptCompletionNotification(note);
 			}
@@ -1196,19 +1179,16 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * Tell the block to send its current value on the outputs.
 	 */
 	@Override
-	public void propagateBlockState(String diagramId, String blockId) {
-		UUID diagramUUID = null;
+	public void propagateBlockState(ProjectResourceId diagramId, String blockId) {
 		UUID blockUUID = null;
 		try {
-			diagramUUID = UUID.fromString(diagramId);
 			blockUUID = UUID.fromString(blockId);
 		}
 		catch(IllegalArgumentException iae) {
-			log.warnf("%s.propagateBlockState: Diagram or block UUID string is illegal (%s, %s), creating new",CLSS,diagramId,blockId);
-			diagramUUID = UUID.nameUUIDFromBytes(diagramId.getBytes());
-			blockUUID = UUID.nameUUIDFromBytes(blockId.getBytes());
+			log.warnf("%s.propagateBlockState: Diagram or block UUID string is illegal (%s, %s), creating new",CLSS,
+					diagramId.getResourcePath().getPath().toString(),blockId);
 		}
-		controller.propagateBlockState(diagramUUID, blockUUID);
+		controller.propagateBlockState(diagramId, blockUUID);
 	}
 	/**
 	 * Execute the getAux extension function in Gateway scope for the supplied resource.
@@ -1223,7 +1203,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * @return auxiliary data read from the database
 	 */
 	@Override
-	public synchronized GeneralPurposeDataContainer readAuxData(long projectId,long resid,String nodeId,String provider,String db) {
+	public synchronized GeneralPurposeDataContainer readAuxData(ProjectResourceId resid,String nodeId,String provider,String db) {
 		ProjectResource res = context.getProjectManager().getProject(projectId, ApplicationScope.GATEWAY,ProjectVersion.Staging).getResource(resid);
 		GeneralPurposeDataContainer container = new GeneralPurposeDataContainer();
 		if( res!=null && res.getResourceType().equals(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
@@ -1272,9 +1252,8 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * @param name the new name
 	 */
 	@Override
-	public void renameBlock(String diagramId, String blockId, String name) {
-		UUID diagramUUID = makeUUID(diagramId);
-		ProcessDiagram diagram = controller.getDiagram(diagramUUID);
+	public void renameBlock(ProjectResourceId diagramId, String blockId, String name) {
+		ProcessDiagram diagram = controller.getDiagram(diagramId);
 		ProcessBlock block = null;
 		UUID blockUUID = makeUUID(blockId);
 		if( diagram!=null ) block = diagram.getBlock(blockUUID);
@@ -1294,34 +1273,24 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		tagHandler.renameTag(provider,name,path);
 	}
 	@Override
-	public void resetBlock(String diagramId, String blockName) {
-		UUID diagramUUID = makeUUID(diagramId);
-		ProcessDiagram diagram = controller.getDiagram(diagramUUID);
+	public void resetBlock(ProjectResourceId diagramId, String blockName) {
+		ProcessDiagram diagram = controller.getDiagram(diagramId);
 		if( diagram!=null) {
 			ProcessBlock block = diagram.getBlockByName(blockName);
 			if( block!=null ) block.reset();
 			else log.warnf("%s.resetBlock: block %s not found on diagram %s",CLSS,blockName,diagram.getName());
 		}
 		else {
-			log.warnf("%s.resetBlock: no diagram found for %s",CLSS,diagramId);
+			log.warnf("%s.resetBlock: no diagram found for %s",CLSS,diagramId.getResourcePath().getPath().toString());
 		}
 	}
 	@Override
-	public void resetDiagram(String diagramId) {
-		UUID diagramUUID = null;
-		try {
-			diagramUUID = UUID.fromString(diagramId);
-		}
-		catch(IllegalArgumentException iae) {
-			log.warnf("%s.resetDiagram: Diagram UUID string is illegal (%s), creating new",CLSS,diagramId);
-			diagramUUID = UUID.nameUUIDFromBytes(diagramId.getBytes());
-		}
-		BlockExecutionController.getInstance().resetDiagram(diagramUUID);	
+	public void resetDiagram(ProjectResourceId diagramId) {
+		BlockExecutionController.getInstance().resetDiagram(diagramId);	
 	}
 	@Override
-	public void restartBlock(String diagramId, String blockName) {
-		UUID diagramUUID = makeUUID(diagramId);
-		ProcessDiagram diagram = controller.getDiagram(diagramUUID);
+	public void restartBlock(ProjectResourceId diagramId, String blockName) {
+		ProcessDiagram diagram = controller.getDiagram(diagramId);
 		if( diagram!=null) {
 			ProcessBlock block = diagram.getBlockByName(blockName);
 			if( block!=null ) {
@@ -1335,14 +1304,14 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		}
 	}
 	@Override
-	public boolean resourceExists(Long projectId, Long resid) {
-		ProcessDiagram diagram = controller.getDiagram(projectId.longValue(), resid.longValue());
+	public boolean resourceExists(ProjectResourceId resid) {
+		ProcessDiagram diagram = controller.getDiagram(resid);
 		return diagram!=null;
 	}
 
 
 	@Override
-	public boolean sendLocalSignal(String diagramId, String command, String message, String argument) {
+	public boolean sendLocalSignal(ProjectResourceId diagramId, String command, String message, String argument) {
 		return sendTimestampedSignal( diagramId, command, message, argument,new Date().getTime());
 	}
 	
@@ -1355,17 +1324,9 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * @return
 	 */
 	@Override
-	public boolean sendSignal(String diagramId,String blockName,String command,String message) {
+	public boolean sendSignal(ProjectResourceId diagramId,String blockName,String command,String message) {
 		boolean success = Boolean.TRUE;
-		UUID diagramUUID = null;
-		try {
-			diagramUUID = UUID.fromString(diagramId);
-		}
-		catch(IllegalArgumentException iae) {
-			log.warnf("%s.sendSignal: Diagram UUID string is illegal (%s), creating new",CLSS,diagramId);
-			diagramUUID = UUID.nameUUIDFromBytes(diagramId.getBytes());
-		}
-		ProcessDiagram diagram = BlockExecutionController.getInstance().getDiagram(diagramUUID);
+		ProcessDiagram diagram = BlockExecutionController.getInstance().getDiagram(diagramId);
 		if( diagram!=null ) {
 			// Create an output notification
 			Signal sig = new Signal(command,message,"");
@@ -1379,27 +1340,19 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		return success;
 	}
 	@Override
-	public boolean sendTimestampedSignal(String diagramId, String command, String message, String argument,long time) {
+	public boolean sendTimestampedSignal(ProjectResourceId diagramId, String command, String message, String argument,long time) {
 		boolean success = Boolean.TRUE;
-		UUID diagramUUID = null;
-		try {
-			diagramUUID = UUID.fromString(diagramId);
-		}
-		catch(IllegalArgumentException iae) {
-			log.warnf("%s.sendTimestampedSignal: Diagram UUID string is illegal (%s), creating new",CLSS,diagramId);
-			diagramUUID = UUID.nameUUIDFromBytes(diagramId.getBytes());
-		}
-		ProcessDiagram diagram = BlockExecutionController.getInstance().getDiagram(diagramUUID);
+		ProcessDiagram diagram = BlockExecutionController.getInstance().getDiagram(diagramId);
 		if( diagram!=null ) {
 			// Create a broadcast notification
 			log.warnf("%s.sendTimestampedSignal: Sending a signal to diagram %s for %s command",CLSS,diagramId,command);
 			Signal sig = new Signal(command,message,argument);
 			BroadcastNotification broadcast = new BroadcastNotification(diagram.getSelf(),TransmissionScope.LOCAL,
-					                              new BasicQualifiedValue(sig,new BasicQuality(),new Date(time)));
+					                              new BasicQualifiedValue(sig,QualityCode.Good,new Date(time)));
 			BlockExecutionController.getInstance().acceptBroadcastNotification(broadcast);
 		}
 		else {
-			log.warnf("%s.sendTimestampedSignal: Unable to find diagram %s for %s command",CLSS,diagramId,command);
+			log.warnf("%s.sendTimestampedSignal: Unable to find diagcram %s for %s command",CLSS,diagramId,command);
 			success = Boolean.FALSE;
 		}
 		return success;
@@ -1414,10 +1367,10 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		try {
 			DiagramState ds = DiagramState.valueOf(state.toUpperCase());
 			for(SerializableResourceDescriptor srd:getDiagramDescriptors()) {
-				ProcessApplication app = pyHandler.getApplication(srd.getId());
+				ProcessApplication app = pyHandler.getApplication(srd.getResourceId());
 				if( app==null) continue;
 				if( app.getName().equals(appname)) {
-					UUID diagramuuid = UUID.fromString(srd.getId());
+					UUID diagramuuid = UUID.fromString(srd.getResourceId());
 					ProcessDiagram pd = controller.getDiagram(diagramuuid);
 					if( pd!=null) {
 						pd.setState(ds);    // Must notify designer
@@ -1562,35 +1515,14 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		tagHandler = new TagFactory(context);
 	}
 
-
-	/**
-	 * Set the state of the specified diagram. 
-	 * @param projectId project to which this diagram belongs
-	 * @param resourceId resource Id for the diagram
-	 * @param state new state for the diagram
-	 */
-	public void setDiagramState(Long projectId,Long resourceId,String state) {
-		ProcessDiagram diagram = controller.getDiagram(projectId, resourceId);
-		if( diagram!=null && state!=null ) {
-			try {
-				DiagramState ds = DiagramState.valueOf(state.toUpperCase());
-				diagram.setState(ds);
-			}
-			catch( IllegalArgumentException iae) {
-				log.warnf("%s.setDiagramState: Unrecognized state(%s) sent to %s (%s)",CLSS,state,diagram.getName());
-			}
-		}
-	}
-
-
 	/**
 	 * Set the state of the specified diagram. 
 	 * @param diagramId UUID of the diagram
 	 * @param state to which the diagram is to be set
 	 */
-	public void setDiagramState(String diagramId,String state) {
-		UUID diagramUUID = UUID.fromString(diagramId);
-		ProcessDiagram diagram = controller.getDiagram(diagramUUID);
+	@Override
+	public void setDiagramState(ProjectResourceId diagramId,String state) {
+		ProcessDiagram diagram = controller.getDiagram(diagramId);
 		if( diagram!=null && state!=null ) {
 			try {
 				DiagramState ds = DiagramState.valueOf(state.toUpperCase());
@@ -1788,7 +1720,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * @param db datasource
 	 */
 	@Override
-	public synchronized void writeAuxData(long projectId,long resid,String nodeId,GeneralPurposeDataContainer container,String provider,String db) {
+	public synchronized void writeAuxData(ProjectResourceId resid,String nodeId,GeneralPurposeDataContainer container,String provider,String db) {
 		ProjectResource res = context.getProjectManager().getProject(projectId, ApplicationScope.GATEWAY,ProjectVersion.Staging).getResource(resid);
 		if( res!=null && res.getResourceType().equals(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
 			Script script = extensionManager.createExtensionScript(ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.SET_AUX_OPERATION, provider);

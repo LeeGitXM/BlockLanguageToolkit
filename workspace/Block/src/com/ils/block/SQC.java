@@ -37,6 +37,7 @@ import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualityCode;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 
 /**
  * This class applies one of the Westinghouse (Western Electric) SPC rules to its input.
@@ -79,10 +80,10 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 	 * Constructor. Custom properties are limit, standardDeviation
 	 * 
 	 * @param ec execution controller for handling block output
-	 * @param parent universally unique Id identifying the parent of this block
+	 * @param parent resource Id identifying the parent of this block (a diagram)
 	 * @param block universally unique Id for the block
 	 */
-	public SQC(ExecutionController ec,UUID parent,UUID block) {
+	public SQC(ExecutionController ec,ProjectResourceId parent,UUID block) {
 		super(ec,parent,block);
 		queue = new FixedSizeQueue<Double>(DEFAULT_BUFFER_SIZE);
 		initialize();
@@ -278,7 +279,7 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 			controller.acceptCompletionNotification(nvn);
 			notifyOfStatus(lastValue);
 			// Clear any watermark
-			controller.sendWatermarkNotification(getParentId().toString(), "");
+			controller.sendWatermarkNotification(getParentId(), "");
 
 			// Notify other blocks to suppress alternate results.
 			// We only notify blocks in our same group, exclusive of ourself
@@ -532,7 +533,7 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 		String masterInput = getInputForBlock(getParentId(),getBlockId(),PORT_VALUE);
 		if( masterInput!=null) {
 			// Now compare all SQC blocks on the chart.
-			DiagnosticDiagram diagram = controller.getDiagram(getParentId().toString());
+			DiagnosticDiagram diagram = controller.getDiagram(getParentId());
 			Collection<ProcessBlock> blocks = diagram.getProcessBlocks();
 			for( ProcessBlock block:blocks) {
 				if( !block.getClassName().equalsIgnoreCase("com.ils.block.SQC") ) continue;
@@ -549,9 +550,9 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 	
 	// Given a block state descriptor and port, return the id of the input block connected upstream.
 	// The input must be on the same diagram.
-	private String getInputForBlock(UUID diagramId,UUID blockId,String port) {
+	private String getInputForBlock(ProjectResourceId diagramId,UUID blockId,String port) {
 		String inputId = null;
-		List<SerializableBlockStateDescriptor> immediateDescriptors = controller.listBlocksConnectedAtPort(diagramId.toString(), blockId.toString(), port);
+		List<SerializableBlockStateDescriptor> immediateDescriptors = controller.listBlocksConnectedAtPort(diagramId, blockId.toString(), port);
 		for(SerializableBlockStateDescriptor upstream:immediateDescriptors) {
 			if(upstream.getClassName().equalsIgnoreCase("com.ils.block.Input") ||
 			   upstream.getClassName().equalsIgnoreCase("com.ils.block.LabData") 	) {

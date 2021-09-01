@@ -22,10 +22,9 @@ import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.Quality;
 import com.inductiveautomation.ignition.common.model.values.QualityCode;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 
 /**
  * This class accumulates an average value of all points that have arrived at the block's 
@@ -52,10 +51,10 @@ public class MovingAverage extends AbstractProcessBlock implements ProcessBlock 
 	 * Constructor. Custom properties are limit, standardDeviation
 	 * 
 	 * @param ec execution controller for handling block output
-	 * @param parent universally unique Id identifying the parent of this block
+	 * @param parent resource Id identifying the parent of this block (a diagram)
 	 * @param block universally unique Id for the block
 	 */
-	public MovingAverage(ExecutionController ec,UUID parent,UUID block) {
+	public MovingAverage(ExecutionController ec,ProjectResourceId parent,UUID block) {
 		super(ec,parent,block);
 		initialize();
 	}
@@ -67,7 +66,7 @@ public class MovingAverage extends AbstractProcessBlock implements ProcessBlock 
 	 */
 	private void initialize() {	
 		setName("MovingAverage");
-		BlockProperty resetProperty =  new BlockProperty(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET,new Boolean(clearOnReset),PropertyType.BOOLEAN,true);
+		BlockProperty resetProperty =  new BlockProperty(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET,clearOnReset,PropertyType.BOOLEAN,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET, resetProperty);
 		
 		// Define a single input.
@@ -110,7 +109,7 @@ public class MovingAverage extends AbstractProcessBlock implements ProcessBlock 
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s.acceptValue: Unable to convert incoming value to a double (%s)",TAG,nfe.getLocalizedMessage());
-				lastValue = new BasicQualifiedValue(Double.NaN,new BasicQuality(nfe.getLocalizedMessage(),Quality.Level.Bad),qv.getTimestamp());
+				lastValue = new BasicQualifiedValue(Double.NaN,QualityCode.Bad,qv.getTimestamp());
 			}
 		}
 		else {

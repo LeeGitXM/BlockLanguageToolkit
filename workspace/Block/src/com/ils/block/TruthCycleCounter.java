@@ -25,6 +25,7 @@ import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 
 /**
  * This class is a no-op. It simply passes its input onto the output.
@@ -46,10 +47,10 @@ public class TruthCycleCounter extends AbstractProcessBlock implements ProcessBl
 	 * Constructor. 
 	 * 
 	 * @param ec execution controller for handling block output
-	 * @param parent universally unique Id identifying the parent of this block
+	 * @param parent resource Id identifying the parent of this block (a diagram)
 	 * @param block universally unique Id for the block
 	 */
-	public TruthCycleCounter(ExecutionController ec,UUID parent,UUID block) {
+	public TruthCycleCounter(ExecutionController ec,ProjectResourceId parent,UUID block) {
 		super(ec,parent,block);
 		initialize();
 	}
@@ -63,9 +64,9 @@ public class TruthCycleCounter extends AbstractProcessBlock implements ProcessBl
 	@Override
 	public void reset() {
 		this.state = TruthValue.UNSET;
-		this.lastValue = new TestAwareQualifiedValue(timer,new Integer(initialValue));
+		this.lastValue = new TestAwareQualifiedValue(timer,initialValue);
 		recordActivity(Activity.ACTIVITY_RESET,"propagates initial value");
-		valueProperty.setValue(new Integer(initialValue));
+		valueProperty.setValue(initialValue);
 		OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 		controller.acceptCompletionNotification(nvn);
 		notifyOfStatus();
@@ -78,7 +79,7 @@ public class TruthCycleCounter extends AbstractProcessBlock implements ProcessBl
 	public void start() {
 		super.start();
 		if( valueProperty!=null  ) {
-			lastValue = new TestAwareQualifiedValue(timer,new Integer(initialValue));
+			lastValue = new TestAwareQualifiedValue(timer,initialValue);
 			log.debugf("%s.start: %s (%s)",getName(),lastValue.getValue().toString(),lastValue.getQuality().getName());
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 			controller.acceptCompletionNotification(nvn);
@@ -95,12 +96,12 @@ public class TruthCycleCounter extends AbstractProcessBlock implements ProcessBl
 		state = TruthValue.UNSET;
 		delayStart = true;    // We transmit our initial value
 		
-		BlockProperty initialValueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_INITIAL_VALUE,new Integer(initialValue),PropertyType.INTEGER,true);
+		BlockProperty initialValueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_INITIAL_VALUE,initialValue,PropertyType.INTEGER,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_INITIAL_VALUE, initialValueProperty);
 		BlockProperty triggerProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TRIGGER,trigger,PropertyType.TRUTHVALUE,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_TRIGGER, triggerProperty);
 		// The value is the count-down shown in the UI
-		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,new Integer(initialValue),PropertyType.INTEGER,false);
+		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,initialValue,PropertyType.INTEGER,false);
 		valueProperty.setBindingType(BindingType.ENGINE);
 		setProperty(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
 		
@@ -136,9 +137,9 @@ public class TruthCycleCounter extends AbstractProcessBlock implements ProcessBl
 					this.state = incoming;
 					if( this.state.equals(trigger) ) {
 						int count = ((Integer)(valueProperty.getValue())).intValue();
-						valueProperty.setValue(new Integer(count+1));
+						valueProperty.setValue(count+1);
 						//log.infof("%s.acceptValue: %s", getName(),qv.getValue().toString());
-						lastValue = new TestAwareQualifiedValue(timer,new Integer(count+1));
+						lastValue = new TestAwareQualifiedValue(timer,count+1);
 						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 						controller.acceptCompletionNotification(nvn);
 						notifyOfStatus();

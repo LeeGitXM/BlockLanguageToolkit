@@ -19,6 +19,7 @@ import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.common.log.LogMaker;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 
 /**
  * A Source Connection is a special class that receives values directly
@@ -41,12 +42,13 @@ public class SourceConnection extends Input implements ProcessBlock {
 	 * Constructor. 
 	 * 
 	 * @param ec execution controller for handling block output
-	 * @param parent universally unique Id identifying the parent of this block
+	 * @param parent resource Id identifying the parent of this block (a diagram)
 	 * @param block universally unique Id for the block
 	 */
-	public SourceConnection(ExecutionController ec,UUID parent,UUID block) {
+	public SourceConnection(ExecutionController ec,ProjectResourceId parent,UUID block) {
 		super(ec,parent,block);
 	}
+	
 	@Override
 	public String getClassName() {return BlockConstants.BLOCK_CLASS_SOURCE;}
 	/**
@@ -74,7 +76,7 @@ public class SourceConnection extends Input implements ProcessBlock {
 					explanation = explanation + "-- truncated (circular reasoning)";
 				}
 				else {
-					DiagnosticDiagram connectedDiagram = controller.getDiagram(upstream.getParentId().toString());
+					DiagnosticDiagram connectedDiagram = controller.getDiagram(upstream.getParentId());
 					if(!explanation.isEmpty()) explanation = explanation + ", ";
 					explanation = explanation + upstream.getExplanation(connectedDiagram,members);
 				}
@@ -91,7 +93,7 @@ public class SourceConnection extends Input implements ProcessBlock {
 	private ProcessBlock getMostRecentlyChangedPredecessor(DiagnosticDiagram diagram) {
 		ProcessBlock result = null;
 		Date latestTime = null;
-		List<SerializableBlockStateDescriptor>predecessors = controller.listSinksForSource(diagram.getSelf().toString(), getName());
+		List<SerializableBlockStateDescriptor>predecessors = controller.listSinksForSource(diagram, getName());
 		for( SerializableBlockStateDescriptor predecessor:predecessors ) {
 			String connectedDiagramId = predecessor.getAttributes().get(BLTProperties.BLOCK_ATTRIBUTE_PARENT);
 			String connectedBlockId = predecessor.getIdString();
@@ -143,7 +145,7 @@ public class SourceConnection extends Input implements ProcessBlock {
 	public String validate() {
 		String summary = super.validate();
 		if( summary==null ) {
-			List<SerializableBlockStateDescriptor> links = controller.listSinksForSource(getParentId().toString(),getName());
+			List<SerializableBlockStateDescriptor> links = controller.listSinksForSource(getParentId(),getName());
 			if( links.isEmpty() ) {
 				summary = String.format("There are no sinks linked to this source block\t");
 			}

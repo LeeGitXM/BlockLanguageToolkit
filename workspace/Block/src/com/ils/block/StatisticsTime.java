@@ -47,6 +47,7 @@ import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualityCode;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 
 /**
  * This class computes an average of the input over a time interval.
@@ -92,10 +93,10 @@ public class StatisticsTime extends AbstractProcessBlock implements ProcessBlock
 	 * Constructor. Custom properties are limit, standardDeviation
 	 * 
 	 * @param ec execution controller for handling block output
-	 * @param parent universally unique Id identifying the parent of this block
+	 * @param parent resource Id identifying the parent of this block (a diagram)
 	 * @param block universally unique Id for the block
 	 */
-	public StatisticsTime(ExecutionController ec,UUID parent,UUID block) {
+	public StatisticsTime(ExecutionController ec,ProjectResourceId parent,UUID block) {
 		super(ec,parent,block);
 		initialize();
 		dog = new Watchdog(getName(),this);
@@ -112,13 +113,13 @@ public class StatisticsTime extends AbstractProcessBlock implements ProcessBlock
 		
 		BlockProperty resetProperty =  new BlockProperty(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET,Boolean.FALSE,PropertyType.BOOLEAN,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET, resetProperty);
-		BlockProperty windowProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW,new Double(timeWindow),PropertyType.TIME_MINUTES,true);
+		BlockProperty windowProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW,timeWindow,PropertyType.TIME_MINUTES,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW, windowProperty);
-		BlockProperty intervalProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SCAN_INTERVAL,new Double(scanInterval),PropertyType.TIME_SECONDS,true);
+		BlockProperty intervalProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SCAN_INTERVAL,scanInterval,PropertyType.TIME_SECONDS,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_SCAN_INTERVAL, intervalProperty);
 		BlockProperty statProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_STATISTICS_FUNCTION,function,PropertyType.STATISTICS,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_STATISTICS_FUNCTION, statProperty);
-		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,new Double(Double.NaN),PropertyType.DOUBLE,false);
+		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,Double.NaN,PropertyType.DOUBLE,false);
 		valueProperty.setBindingType(BindingType.ENGINE);
 		setProperty(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
 		
@@ -139,7 +140,7 @@ public class StatisticsTime extends AbstractProcessBlock implements ProcessBlock
 		if( clearOnReset ) {
 			buffer.clear();
 			currentValue = null;
-			valueProperty.setValue(new Double(Double.NaN));
+			valueProperty.setValue(Double.NaN);
 		}
 	}
 

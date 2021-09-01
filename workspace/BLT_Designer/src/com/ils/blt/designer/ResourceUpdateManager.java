@@ -6,13 +6,8 @@ package com.ils.blt.designer;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
-import com.ils.blt.common.serializable.SerializableDiagram;
-import com.ils.blt.designer.workspace.DiagramWorkspace;
-import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.ils.common.log.ILSLogger;
 import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
@@ -20,7 +15,6 @@ import com.inductiveautomation.ignition.client.gateway_interface.GatewayInterfac
 import com.inductiveautomation.ignition.common.project.ChangeOperation;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceBuilder;
-import com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignableContainer;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.project.ResourceNotFoundException;
 

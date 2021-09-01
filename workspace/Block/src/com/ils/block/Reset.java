@@ -25,6 +25,7 @@ import com.ils.blt.common.notification.Signal;
 import com.ils.blt.common.notification.SignalNotification;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 
 /**
  * Emit a "reset" signal when the input matches the trigger value.
@@ -47,10 +48,10 @@ public class Reset extends AbstractProcessBlock implements ProcessBlock {
 	 * Constructor. Custom properties are limit, standardDeviation
 	 * 
 	 * @param ec execution controller for handling block output
-	 * @param parent universally unique Id identifying the parent of this block
+	 * @param parent resource Id identifying the parent of this block (a diagram)
 	 * @param block universally unique Id for the block
 	 */
-	public Reset(ExecutionController ec,UUID parent,UUID block) {
+	public Reset(ExecutionController ec,ProjectResourceId parent,UUID block) {
 		super(ec,parent,block);
 		initialize();
 		command = new Signal(BlockConstants.COMMAND_RESET,"","");

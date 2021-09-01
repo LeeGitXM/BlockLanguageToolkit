@@ -26,10 +26,9 @@ import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.ils.common.watchdog.Watchdog;
-import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.Quality;
 import com.inductiveautomation.ignition.common.model.values.QualityCode;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 
 /**
  * This class emits "true" if the "x" input is greater than or equal to the "y". This block
@@ -62,10 +61,10 @@ public class Compare extends AbstractProcessBlock implements ProcessBlock {
 	 * Constructor. 
 	 * 
 	 * @param ec execution controller for handling block output
-	 * @param parent universally unique Id identifying the parent of this block
+	 * @param parent resource Id identifying the parent of this block (a diagram)
 	 * @param block universally unique Id for the block
 	 */
-	public Compare(ExecutionController ec,UUID parent,UUID block) {
+	public Compare(ExecutionController ec,ProjectResourceId parent,UUID block) {
 		super(ec,parent,block);
 		dog = new Watchdog(TAG,this);
 		initialize();

@@ -28,6 +28,7 @@ import com.ils.common.FixedSizeQueue;
 import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 
 /**
  * This class computes the average of the last "n" readings.
@@ -57,10 +58,10 @@ public class MovingAverageSample extends AbstractProcessBlock implements Process
 	 * Constructor. Custom properties are limit, standardDeviation
 	 * 
 	 * @param ec execution controller for handling block output
-	 * @param parent universally unique Id identifying the parent of this block
+	 * @param parent resource Id identifying the parent of this block (a diagram)
 	 * @param block universally unique Id for the block
 	 */
-	public MovingAverageSample(ExecutionController ec,UUID parent,UUID block) {
+	public MovingAverageSample(ExecutionController ec,ProjectResourceId parent,UUID block) {
 		super(ec,parent,block);
 		queue = new FixedSizeQueue<QualifiedValue>(DEFAULT_BUFFER_SIZE);
 		initialize();
@@ -73,9 +74,9 @@ public class MovingAverageSample extends AbstractProcessBlock implements Process
 	private void initialize() {	
 		setName("MovingAverageSample");
 
-		BlockProperty clearProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET,new Boolean(clearOnReset),PropertyType.BOOLEAN,true);
+		BlockProperty clearProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET,clearOnReset,PropertyType.BOOLEAN,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET, clearProperty);
-		BlockProperty sizeProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SAMPLE_SIZE,new Integer(sampleSize),PropertyType.INTEGER,true);
+		BlockProperty sizeProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SAMPLE_SIZE,sampleSize,PropertyType.INTEGER,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_SAMPLE_SIZE, sizeProperty);
 		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,Double.NaN,PropertyType.DOUBLE,false);
 		valueProperty.setBindingType(BindingType.ENGINE);
@@ -97,7 +98,7 @@ public class MovingAverageSample extends AbstractProcessBlock implements Process
 		super.reset();
 		if( clearOnReset) {
 			queue.clear();
-			valueProperty.setValue(new Double(Double.NaN));
+			valueProperty.setValue(Double.NaN);
 		}
 	}
 	
@@ -133,7 +134,7 @@ public class MovingAverageSample extends AbstractProcessBlock implements Process
 			else {
 				// Post bad value on output, clear queue
 				if( !isLocked() ) {
-					lastValue = new BasicQualifiedValue(new Double(Double.NaN),qv.getQuality(),qv.getTimestamp());
+					lastValue = new BasicQualifiedValue(Double.NaN,qv.getQuality(),qv.getTimestamp());
 					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 					controller.acceptCompletionNotification(nvn);
 					notifyOfStatus(lastValue);

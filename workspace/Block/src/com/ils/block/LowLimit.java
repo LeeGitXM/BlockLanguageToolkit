@@ -26,10 +26,9 @@ import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.Quality;
 import com.inductiveautomation.ignition.common.model.values.QualityCode;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 
 /**
  * This class is a no-op. It simply passes its input onto the output.
@@ -58,10 +57,10 @@ public class LowLimit extends AbstractProcessBlock implements ProcessBlock {
 	 * Constructor. 
 	 * 
 	 * @param ec execution controller for handling block output
-	 * @param parent universally unique Id identifying the parent of this block
+	 * @param parent resource Id identifying the parent of this block (a diagram)
 	 * @param block universally unique Id for the block
 	 */
-	public LowLimit(ExecutionController ec,UUID parent,UUID block) {
+	public LowLimit(ExecutionController ec,ProjectResourceId parent,UUID block) {
 		super(ec,parent,block);
 		qualifiedValueMap = new HashMap<>();
 		initialize();
@@ -138,7 +137,7 @@ public class LowLimit extends AbstractProcessBlock implements ProcessBlock {
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s.acceptValue: Unable to convert incoming value to a double (%s)",getName(),nfe.getLocalizedMessage());
-				qv = new BasicQualifiedValue(Double.NaN,new BasicQuality(nfe.getLocalizedMessage(),Quality.Level.Bad),qv.getTimestamp());
+				qv = new BasicQualifiedValue(Double.NaN,QualityCode.Bad,qv.getTimestamp());
 			}
 			qualifiedValueMap.put(key, qv);
 		}
@@ -253,7 +252,7 @@ public class LowLimit extends AbstractProcessBlock implements ProcessBlock {
 	private QualifiedValue getMinValue() {
 		Collection<QualifiedValue> values = qualifiedValueMap.values();
 		double min = Double.MAX_VALUE;
-		QualifiedValue result = new BasicQualifiedValue(new Double(min));
+		QualifiedValue result = new BasicQualifiedValue(min);
 		
 		for(QualifiedValue qv:values) {
 			if( qv==null ) continue;
@@ -262,7 +261,7 @@ public class LowLimit extends AbstractProcessBlock implements ProcessBlock {
 				if(val<min ) {
 					min = val;
 					if( val<limit ) {
-						result = new BasicQualifiedValue(new Double(limit));
+						result = new BasicQualifiedValue(limit);
 					}
 					else {
 						result = qv;

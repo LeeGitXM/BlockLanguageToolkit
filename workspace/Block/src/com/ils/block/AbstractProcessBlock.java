@@ -69,7 +69,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	protected final FixedSizeQueue<Activity> activities;
 	protected ExecutionController controller = null;
 	private UUID blockId;
-	private UUID parentId;
+	private ProjectResourceId parentId;  // The diagram
 	private String projectName = "global";    // This is the global project
 	private GeneralPurposeDataContainer auxiliaryData = new GeneralPurposeDataContainer();
 	protected QualifiedValue lastValue = null;  // Most recently propagated value.
@@ -114,7 +114,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 * @param parent universally unique Id identifying the parent of this block. The id may be null for blocks that are "unattached"
 	 * @param block universally unique Id for the block
 	 */
-	public AbstractProcessBlock(ExecutionController ec, UUID parent, UUID block) {
+	public AbstractProcessBlock(ExecutionController ec, ProjectResourceId parent, UUID block) {
 		this();
 		this.controller = ec;
 		this.blockId = block;
@@ -135,7 +135,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		anchors.add(sig);
 		
 		// Define a property that holds the size of the activity buffer. This applies to all blocks.
-		BlockProperty bufferSize = new BlockProperty(BlockConstants.BLOCK_PROPERTY_ACTIVITY_BUFFER_SIZE,new Integer(activities.getBufferSize()),PropertyType.INTEGER,true);
+		BlockProperty bufferSize = new BlockProperty(BlockConstants.BLOCK_PROPERTY_ACTIVITY_BUFFER_SIZE,activities.getBufferSize(),PropertyType.INTEGER,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_ACTIVITY_BUFFER_SIZE, bufferSize);
 	}
 	
@@ -291,7 +291,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	}
 	
 	@Override
-	public UUID getParentId() { return parentId; }
+	public ProjectResourceId getParentId() { return parentId; }
 	@Override
 	public UUID getBlockId() { return blockId; }
 	
@@ -665,7 +665,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 								val = dateFormatter.parse(val.toString());
 							}
 							catch(ParseException pe) {
-								val = new Double(fcns.coerceToDouble(val));
+								val = fcns.coerceToDouble(val);
 							}
 						}
 					}
@@ -895,7 +895,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 * @param unset the object to be used for the initial value of a new connection
 	 */
 	protected void reconcileQualifiedValueMap(String port,Map<String,QualifiedValue> qualifiedValueMap,Object unset) {
-		List<SerializableBlockStateDescriptor> descriptors = controller.listBlocksConnectedAtPort(parentId.toString(), 
+		List<SerializableBlockStateDescriptor> descriptors = controller.listBlocksConnectedAtPort(parentId, 
 				blockId.toString(), port);
 		
 		recordActivity(Activity.ACTIVITY_INITIALIZE,"reconcile entry map",String.format("%d inputs", descriptors.size()));

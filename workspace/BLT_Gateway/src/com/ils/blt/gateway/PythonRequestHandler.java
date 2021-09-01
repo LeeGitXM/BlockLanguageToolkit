@@ -1,5 +1,5 @@
 /**
-e *   (c) 2013-2016  ILS Automation. All rights reserved.
+e *   (c) 2013-2021  ILS Automation. All rights reserved.
  *  
  */
 package com.ils.blt.gateway;
@@ -18,12 +18,9 @@ import com.ils.blt.gateway.engine.ProcessNode;
 import com.ils.common.log.ILSLogger;
 import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.Quality;
 import com.inductiveautomation.ignition.common.model.values.QualityCode;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
-import com.inductiveautomation.ignition.common.sqltags.model.types.DataQuality;
 
 /**
  * This class exposes python-callable requests directed at the execution engine. 
@@ -178,20 +175,19 @@ public class PythonRequestHandler   {
 	 * 
 	 * @return the diagram
 	 */
-	public ProcessDiagram getDiagram(String diagramId)  {
+	public ProcessDiagram getDiagram(ProjectResourceId diagramId)  {
 		log.tracef("%s.getDiagram, diagram = %s ",CLSS,diagramId);
-		ProcessDiagram diag = null;
+		ProcessDiagram result = null;
 		try {
-			UUID diagramuuid = UUID.fromString(diagramId);
-			ProcessNode node = controller.getProcessNode(diagramuuid);
+			ProcessNode node = controller.getProcessNode(diagramId);
 			if( node instanceof ProcessDiagram ) {
-				diag = (ProcessDiagram)node;
+				result = (ProcessDiagram)node;
 			}
 		}
 		catch(IllegalArgumentException iae) {
 			log.warnf("%s.getDiagram: %s is an illegal UUID (%s)",CLSS,diagramId,iae.getMessage());
 		}
-		return diag;
+		return result;
 	}
 	/**
 	 * Traverse the parent nodes until we find a Family. If there 
@@ -337,8 +333,8 @@ public class PythonRequestHandler   {
 		log.debugf("%s.updateTag - %s = %s %s %s %d ",CLSS,parent,tagPath,data,quality,time);
 
 		UUID diagId = UUID.fromString(parent);
-		Quality q = DataQuality.GOOD_DATA;
-		if(!quality.equalsIgnoreCase("good")) q = new BasicQuality(quality,Quality.Level.Bad);
+		QualityCode q = QualityCode.Good;
+		if(!quality.equalsIgnoreCase("good")) q = QualityCode.Bad;
 		QualifiedValue qv = new BasicQualifiedValue(data,q,new Date(time));
 		controller.updateTag(diagId, tagPath, qv);
 	}

@@ -1,12 +1,11 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved. 
+ *   (c) 2014-2021  ILS Automation. All rights reserved. 
  */
 package com.ils.blt.common.notification;
 
-import java.util.UUID;
-
 import com.ils.blt.common.block.TransmissionScope;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 /**
  * This class is used to hold a signal to be broadcast to a collection of blocks.
  * The broadcast notification is sent to the execution controller. It figures out
@@ -15,7 +14,7 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
  * This is a property container with no behavior.
  */
 public class BroadcastNotification {
-	private final UUID diagramId;
+	private final ProjectResourceId diagramId;
 	private final String blockName;
 	private final TransmissionScope scope;
 	private final QualifiedValue value;
@@ -27,7 +26,7 @@ public class BroadcastNotification {
 	 * @param tscope transmission scope
 	 * @param qv qualified value containing the signal to be transmitted.
 	 */
-	public BroadcastNotification(UUID diagId,TransmissionScope tscope,QualifiedValue qv)  {
+	public BroadcastNotification(ProjectResourceId diagId,TransmissionScope tscope,QualifiedValue qv)  {
 		this.diagramId = diagId;
 		this.scope = tscope;
 		this.value = qv;
@@ -41,7 +40,7 @@ public class BroadcastNotification {
 	 * @param block name of the target block
 	 * @param qv qualified value containing the signal to be transmitted.
 	 */
-	public BroadcastNotification(UUID diagId,String block,QualifiedValue qv)  {
+	public BroadcastNotification(ProjectResourceId diagId,String block,QualifiedValue qv)  {
 		this.diagramId = diagId;
 		this.scope = TransmissionScope.BLOCK;
 		this.value = qv;
@@ -49,7 +48,7 @@ public class BroadcastNotification {
 	}
 	
 	public String getBlockName() { return this.blockName; }
-	public UUID getDiagramId() {return diagramId;}
+	public ProjectResourceId getDiagramId() {return diagramId;}
 	public Signal getSignal() {return (Signal)value.getValue();}
 	public QualifiedValue getValue() {return value;}
 	public TransmissionScope getScope() {return scope;}

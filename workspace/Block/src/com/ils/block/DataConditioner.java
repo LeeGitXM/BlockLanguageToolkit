@@ -29,6 +29,7 @@ import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 
 /**
  * Use an auxiliary truth-value input to override quality data on the main input.
@@ -59,10 +60,10 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 	 * Constructor. 
 	 * 
 	 * @param ec execution controller for handling block output
-	 * @param parent universally unique Id identifying the parent of this block
+	 * @param parent resource Id identifying the parent of this block (a diagram)
 	 * @param block universally unique Id for the block
 	 */
-	public DataConditioner(ExecutionController ec,UUID parent,UUID block) {
+	public DataConditioner(ExecutionController ec,ProjectResourceId parent,UUID block) {
 		super(ec,parent,block);
 		dog = new Watchdog(TAG,this);
 		initialize();

@@ -220,10 +220,6 @@ public class MainPanel extends BasicEditPanel {
 		@Override
 		public void finalize()  {
 			block.removeChangeListener(this);
-			try {
-				super.finalize();
-			}
-			catch(Throwable t) {}
 		}
 		// --------------------------------- Change Listener ----------------------------
 		// When we get an event, read the name from the block

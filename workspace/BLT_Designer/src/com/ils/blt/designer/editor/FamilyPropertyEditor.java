@@ -73,7 +73,7 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor implements Noti
 		this.context = ctx;
 		this.family = fam;
 		this.model = family.getAuxiliaryData();
-		this.key = NotificationKey.keyForAuxData(family.getId().toString());
+		this.key = NotificationKey.keyForAuxData(family.getResourcePath()getPath().toString());
 		this.executionEngine = new BasicExecutionEngine(1,CLSS);
 		this.requestHandler = new ApplicationRequestHandler();
 		this.log = LogMaker.getLogger(this);
@@ -143,7 +143,7 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor implements Noti
 	// Fill widgets with current values
 	private void setUI() {
 		nameField.setText(family.getName());
-		uuidField.setText(family.getId().toString());
+		uuidField.setText(family.getResourceId().toString());
 		String description = model.getProperties().get("Description");
 		if( description==null) description="";
 		descriptionArea.setText(description);

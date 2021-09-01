@@ -14,6 +14,7 @@ import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.control.ExecutionController;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 
 /**
  * Display a single property of another block.
@@ -41,10 +42,10 @@ public class BlockPropertyDisplay extends AbstractProcessBlock implements Proces
 	 * Constructor. Custom property is "Text".
 	 * 
 	 * @param ec execution controller for handling block output
-	 * @param parent universally unique Id identifying the parent of this block
+	 * @param parent resource Id identifying the parent of this block (a diagram)
 	 * @param block universally unique Id for the block
 	 */
-	public BlockPropertyDisplay(ExecutionController ec,UUID parent,UUID block) {
+	public BlockPropertyDisplay(ExecutionController ec,ProjectResourceId parent,UUID block) {
 		super(ec,parent,block);
 		initialize();
 		

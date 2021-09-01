@@ -1,5 +1,5 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved. 
+ *   (c) 2014-2021  ILS Automation. All rights reserved. 
  */
 package com.ils.blt.common.serializable;
 
@@ -9,8 +9,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.PlacementHint;
 import com.ils.blt.common.connection.ConnectionType;
-import com.inductiveautomation.ignition.common.util.LogUtil;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
+import com.ils.common.log.ILSLogger;
+import com.ils.common.log.LogMaker;
 
 /**
  * Implement a plain-old-java-object representing an anchor point
@@ -19,12 +19,12 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SerializableAnchor {
-	private final static String TAG = "SerializableAnchor";
+	private final static String CLSS = "SerializableAnchor";
 	private AnchorDirection direction;   // 0=>Origin, 1=>Terminus
 	private Object id = null;            // The port name
 	private String display = null;
 	private UUID parentId = null;
-	private LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
+	private ILSLogger log = LogMaker.getLogger(getClass().getPackage().getName());
 	private String annotation = "";
 	private ConnectionType connectionType = ConnectionType.ANY;
 	private PlacementHint hint = PlacementHint.UNSPECIFIED;
@@ -44,7 +44,6 @@ public class SerializableAnchor {
 	public UUID getParentId() { return parentId; }
 	public boolean isHidden() {return hidden;}
 	public boolean isMultiple() {
-//		System.out.println("EREIAM jh - serializable is multiple");
 		return multiple;
 	}
 	public int getSortOrder() { return sortOrder; }
@@ -102,7 +101,7 @@ public class SerializableAnchor {
 	
 	@Override
 	public String toString() {
-		return String.format("%s: %s (%s)",TAG,id.toString(),(direction==AnchorDirection.INCOMING?"Incoming":"Outgoing"));
+		return String.format("%s: %s (%s)",CLSS,id.toString(),(direction==AnchorDirection.INCOMING?"Incoming":"Outgoing"));
 	}
 
 }

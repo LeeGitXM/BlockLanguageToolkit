@@ -1,6 +1,7 @@
 package com.ils.blt.common.serializable;
 
-import java.util.UUID;
+import com.ils.blt.common.BLTProperties;
+import com.inductiveautomation.ignition.common.project.resource.ResourceType;
 
 
 
@@ -9,18 +10,19 @@ import java.util.UUID;
  * Its purpose is to represent a node in the Application
  * hierarchy for export/import purposes.
  */
-public class SerializableFolder {
-	private UUID parentId;
-	private String name;
-	private UUID id;
+public class SerializableFolder extends SerializableNode {
 	private SerializableDiagram[] diagrams;
 	private SerializableFamily[] families;
 	private SerializableFolder[] folders;
 
 
 	public SerializableFolder() {	
-		name="UNSET";
 	}
+	
+	public ResourceType getResourceType() {
+		return BLTProperties.FOLDER_RESOURCE_TYPE;
+	}
+	
 	public void addDiagram(SerializableDiagram sdiag) {
 		SerializableDiagram[] extended = new SerializableDiagram[diagrams.length+1];
 	    extended[diagrams.length] = sdiag;
@@ -43,13 +45,8 @@ public class SerializableFolder {
 	public SerializableDiagram[] getDiagrams() { return diagrams; }
 	public SerializableFamily[] getFamilies() { return families; }
 	public SerializableFolder[] getFolders() {return folders;}
-	public String getName() { return name; }
 	public void setDiagrams(SerializableDiagram[] list) { diagrams=list; }
 	public void setFamilies(SerializableFamily[] list) { families=list; }
 	public void setFolders(SerializableFolder[] folders) {this.folders = folders;}
-	public void setName(String nam) { if(nam!=null) name=nam; }
-	public UUID getId() {return id;}
-	public void setId(UUID id) {this.id = id;}
-	public UUID getParentId() {return parentId;}
-	public void setParentId(UUID id) {this.parentId = id;}
+
 }

@@ -15,8 +15,6 @@ public class SerializableApplicationTree {
 	private SerializableFolder[] folders;
 	private SerializableDiagram[] diagrams;
 	
-
-
 	public SerializableApplicationTree() {	
 		families = new SerializableFamily[0];
 		folders = new SerializableFolder[0];

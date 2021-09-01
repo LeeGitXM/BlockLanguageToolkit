@@ -62,7 +62,6 @@ import com.inductiveautomation.vision.api.designer.palette.Palette;
 import com.inductiveautomation.vision.api.designer.palette.PaletteItemGroup;
 import com.jidesoft.docking.DockingManager;
 
-import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 
 public class BLTDesignerHook extends AbstractDesignerModuleHook  {
@@ -366,7 +365,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	public AbstractResourceNavTreeNode applicationForDiagram(AbstractResourceNavTreeNode app, AbstractResourceNavTreeNode node, ProcessDiagramView diagram) {
 		AbstractResourceNavTreeNode ret = null;
 
-		if (node.getProjectResource() != null && node.getResourceId().getResourceType().getTypeId().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
+		if (node.getProjectResource() != null && node.getResourceId().getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
 			if (diagram.getName().equals(node.getName())) {
 				Optional<ProjectResource> optional = node.getProjectResource();
 				ProjectResource bob = optional.get();
@@ -398,7 +397,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 
 	public String parseChildForDiagnosisName(AbstractResourceNavTreeNode theNode, String name) {
 		String ret = "";
-		if (theNode.getResourceId().getResourceType().getTypeId().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
+		if (theNode.getResourceId().getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
 			Optional<ProjectResource> optional = theNode.getProjectResource();
 			ProjectResource res = optional.get();
 			String json = new String(res.getData());

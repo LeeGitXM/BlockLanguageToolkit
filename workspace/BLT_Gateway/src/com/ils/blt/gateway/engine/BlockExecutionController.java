@@ -318,23 +318,10 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	public ModelManager getDelegate() {
 		return modelManager;
 	}
-	public ProcessDiagram getDiagram(ProjectResourceId resourceId) {
-		return modelManager.getDiagram(resourceId);
-	}
-	@Override
-	public ProcessDiagram getDiagram(String diagramIdString) {
-		ProcessDiagram pd = null;
-		if( diagramIdString!=null ) {
-			UUID uuid = UUID.fromString(diagramIdString);
-			if( uuid!=null ) {
-				pd = getDiagram(uuid);
-			} 
-		}
-		return pd;
-	}
 
 	// Tag change scripts fire before the modules are loaded ...
-	public ProcessDiagram getDiagram(UUID id) {
+	@Override
+	public ProcessDiagram getDiagram(ProjectResourceId id) {
 		if( modelManager==null) {
 			log.infof("%s.getDiagram: ERROR called before controller has been initialized",CLSS);
 			return null;
@@ -343,7 +330,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	}
 
 	@Override
-	public ProcessBlock getProcessBlock(String diagramId, String blockId) {
+	public ProcessBlock getProcessBlock(ProjectResourceId diagramId, String blockId) {
 		ProcessBlock result = null;
 		ProcessDiagram diagram = getDiagram(diagramId);
 		if( diagram!=null ) {
@@ -351,7 +338,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		}
 		return result;
 	}
-	
+	@Override
 	public ProcessNode getProcessNode(ProjectResourceId id) {
 		return modelManager.getProcessNode(id);
 	}
@@ -362,21 +349,21 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		return modelManager.getDiagramDescriptors(projectName);
 	}
 	@Override
-	public List<SerializableBlockStateDescriptor> listBlocksConnectedAtPort(String diagramId,String blockId,String portName) {
+	public List<SerializableBlockStateDescriptor> listBlocksConnectedAtPort(ProjectResourceId diagramId,String blockId,String portName) {
 		ControllerRequestHandler handler = ControllerRequestHandler.getInstance();
 		return handler.listBlocksConnectedAtPort(diagramId, blockId,portName);
 	}
-	public List<SerializableBlockStateDescriptor> listBlocksDownstreamOf(UUID diagramId,UUID blockId,boolean spanDiagrams) {
+	public List<SerializableBlockStateDescriptor> listBlocksDownstreamOf(ProjectResourceId diagramId,UUID blockId,boolean spanDiagrams) {
 		return modelManager.listBlocksDownstreamOf(diagramId, blockId,spanDiagrams);
 	}
-	public List<SerializableBlockStateDescriptor> listBlocksUpstreamOf(UUID diagramId,UUID blockId,boolean spanDiagrams) {
+	public List<SerializableBlockStateDescriptor> listBlocksUpstreamOf(ProjectResourceId diagramId,UUID blockId,boolean spanDiagrams) {
 		return modelManager.listBlocksUpstreamOf(diagramId, blockId,spanDiagrams);
 	}
-	public List<SerializableBlockStateDescriptor> listSinksForSource(String diagramId,String blockName) {
+	public List<SerializableBlockStateDescriptor> listSinksForSource(ProjectResourceId diagramId,String blockName) {
 		ControllerRequestHandler handler = ControllerRequestHandler.getInstance();
 		return handler.listSinksForSource(diagramId, blockName);
 	}
-	public List<SerializableBlockStateDescriptor> listSourcesForSink(String diagramId,String blockName) {
+	public List<SerializableBlockStateDescriptor> listSourcesForSink(ProjectResourceId diagramId,String blockName) {
 		ControllerRequestHandler handler = ControllerRequestHandler.getInstance();
 		return handler.listSourcesForSink(diagramId, blockName);
 	}
@@ -387,7 +374,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	 * @param nodeId
 	 * @return colon-separated path to the indicated node
 	 */
-	public String pathForNode(UUID nodeId) {
+	public String pathForNode(ProjectResourceId nodeId) {
 		return modelManager.pathForNode(nodeId);
 	}
 	/**
@@ -396,7 +383,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	 * @param diagramId the block or diagram identifier.
 	 * @param blockId the block or diagram identifier.
 	 */
-	public void propagateBlockState(UUID diagramId,UUID blockId) {
+	public void propagateBlockState(ProjectResourceId diagramId,UUID blockId) {
 		ProcessDiagram diagram = modelManager.getDiagram(diagramId);
 		if( diagram!=null) {
 			ProcessBlock block = modelManager.getBlock(diagram, blockId);
@@ -408,7 +395,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	 * @param diagramId the block or diagram identifier.
 	 * @param blockId the block or diagram identifier.
 	 */
-	public void resetBlock(UUID diagramId,UUID blockId) {
+	public void resetBlock(ProjectResourceId diagramId,UUID blockId) {
 		ProcessDiagram diagram = modelManager.getDiagram(diagramId);
 		ProcessBlock block = null;
 		if( diagram!=null) {
@@ -427,7 +414,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	 * blocks to evaluate.
 	 * @param diagramId the diagram identifier.
 	 */
-	public void resetDiagram(UUID diagramId) {
+	public void resetDiagram(ProjectResourceId diagramId) {
 		ProcessDiagram diagram = modelManager.getDiagram(diagramId);
 		if( diagram!=null) {
 			for(ProcessBlock block:diagram.getProcessBlocks() ) {
@@ -460,7 +447,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	 * Any subscriptions are de-activated before removal.
 	 * @param Id the UUID of the diagram to be deleted from the engine.
 	 */
-	public void removeTemporaryDiagram(UUID Id) {
+	public void removeTemporaryDiagram(ProjectResourceId Id) {
 		modelManager.removeTemporaryDiagram(Id);
 	}
 	
@@ -478,7 +465,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		return tagListener.getSubscribedPath(block,property);
 	}
 	@Override
-	public QualifiedValue getTagValue(UUID diagramId,String path) {
+	public QualifiedValue getTagValue(ProjectResourceId diagramId,String path) {
 		if( tagReader==null ) {
 			log.warnf("%s.getTagValue: tagReader is null. Received read request for %s before controller was ready. Ignored.",CLSS,(path==null?"NULL":path));
 			return null;
@@ -532,7 +519,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	 * @param tagPath
 	 * @param val
 	 */
-	public void updateTag(UUID diagramId,String tagPath,QualifiedValue val) {
+	public void updateTag(ProjectResourceId diagramId,String tagPath,QualifiedValue val) {
 		ProcessDiagram diagram = modelManager.getDiagram(diagramId);
 		if( diagram!=null && !diagram.getState().equals(DiagramState.DISABLED)) {
 			if(diagram.getState().equals(DiagramState.ACTIVE)) {
@@ -558,7 +545,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	 * @param tagPath
 	 * @return reason else null if the path is valid
 	 */
-	public String validateTag(UUID diagramId,String tagPath) {
+	public String validateTag(ProjectResourceId diagramId,String tagPath) {
 		String result = null;
 		ProcessDiagram diagram = modelManager.getDiagram(diagramId);
 		if( diagram!=null && !diagram.getState().equals(DiagramState.DISABLED) ) {
@@ -678,6 +665,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	/**
 	 * Notify any notification listeners of changes to a block property. This is usually triggered by the 
 	 * block itself. The ultimate receiver is typically a block property in the UI, a ProcessBlockView.
+	 * If the sender is a node, then the node's resource path can be used as the key.
 	 */
 	@Override
 	public void sendAuxDataNotification(String blkid,QualifiedValue val) {
@@ -781,7 +769,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	 * @param val new state
 	 */
 	@Override
-	public void sendWatermarkNotification(String diagramid, String val) {
+	public void sendWatermarkNotification(ProjectResourceId diagramid, String val) {
 		String key = NotificationKey.watermarkKeyForDiagram(diagramid);
 		try {
 			sessionManager.sendNotification(ApplicationScope.DESIGNER, BLTProperties.MODULE_ID, key,val );

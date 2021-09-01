@@ -32,6 +32,7 @@ import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualityCode;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 
 /**
  * Monitor the incoming truth-value for percent-of-time true. The output
@@ -68,10 +69,10 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 	 * Constructor. 
 	 * 
 	 * @param ec execution controller for handling block output
-	 * @param parent universally unique Id identifying the parent of this block
+	 * @param parent resource Id identifying the parent of this block (a diagram)
 	 * @param block universally unique Id for the block
 	 */
-	public LogicFilter(ExecutionController ec,UUID parent,UUID block) {
+	public LogicFilter(ExecutionController ec,ProjectResourceId parent,UUID block) {
 		super(ec,parent,block);
 		initialize();
 		buffer = new ConcurrentLinkedQueue<TruthValue>();
@@ -175,7 +176,7 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 			ratio = computeTrueRatio(bufferSize);
 			// Even if locked, we update the property state
 			controller.sendPropertyNotification(getBlockId().toString(),BLOCK_PROPERTY_RATIO,
-						new TestAwareQualifiedValue(timer,new Double(ratio)));
+						new TestAwareQualifiedValue(timer,ratio));
 			newState = computeState(state,ratio,computeFalseRatio(bufferSize));
 			//log.infof("%s.evaluate ... ratio %f (%s was %s)",getName(),ratio,newState.name(),state.name());
 		}
@@ -324,7 +325,7 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 	}
 	private void notifyOfStatus(QualifiedValue qv) {
 		controller.sendPropertyNotification(getBlockId().toString(), BLOCK_PROPERTY_RATIO,
-				new TestAwareQualifiedValue(timer,new Double(ratio)));
+				new TestAwareQualifiedValue(timer,ratio));
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
 	

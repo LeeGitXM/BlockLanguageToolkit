@@ -24,10 +24,9 @@ import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.Quality;
 import com.inductiveautomation.ignition.common.model.values.QualityCode;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 
 /**
  * This class filters its input with an exponentially weighted 
@@ -57,7 +56,7 @@ public class ExponentialFilter extends AbstractProcessBlock implements ProcessBl
 	 * @param parent universally unique Id identifying the parent of this block
 	 * @param block universally unique Id for the block
 	 */
-	public ExponentialFilter(ExecutionController ec,UUID parent,UUID block) {
+	public ExponentialFilter(ExecutionController ec,ProjectResourceId parent,UUID block) {
 		super(ec,parent,block);
 		initialize();
 	}
@@ -124,11 +123,11 @@ public class ExponentialFilter extends AbstractProcessBlock implements ProcessBl
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s.acceptValue: Unable to convert incoming value to a double (%s)",TAG,nfe.getLocalizedMessage());
-				lastValue = new BasicQualifiedValue(Double.NaN,new BasicQuality(nfe.getLocalizedMessage(),Quality.Level.Bad),qv.getTimestamp());
+				lastValue = new BasicQualifiedValue(Double.NaN,QualityCode.Bad,qv.getTimestamp());
 			}
 		}
 		else if( window<= 0.0 ){
-			lastValue = new BasicQualifiedValue(Double.NaN,new BasicQuality(String.format("Illegal time window %f",window),Quality.Level.Bad),qv.getTimestamp());
+			lastValue = new BasicQualifiedValue(Double.NaN,QualityCode.Bad,qv.getTimestamp());
 		}
 		else {
 			lastValue = new BasicQualifiedValue(Double.NaN,qual,qv.getTimestamp());

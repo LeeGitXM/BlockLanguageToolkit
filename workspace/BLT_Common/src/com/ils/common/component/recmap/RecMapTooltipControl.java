@@ -47,7 +47,7 @@ public class RecMapTooltipControl extends ControlAdapter {
 					log.infof("%s.itemEntered %d = (no name)",CLSS,row);
 				}
 			}
-			TextDelegate delegate = delegates.get(new Integer(kind));
+			TextDelegate delegate = delegates.get(kind);
 			if( delegate!=null) {
 				Display display = (Display)event.getSource();
 				String tooltip = delegate.getTooltipText(item);

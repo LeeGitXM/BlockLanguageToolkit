@@ -5,8 +5,8 @@ import java.awt.Rectangle;
 import java.util.UUID;
 
 import com.ils.blt.common.block.AnchorDirection;
-import com.inductiveautomation.ignition.common.util.LogUtil;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
+import com.ils.common.log.ILSLogger;
+import com.ils.common.log.LogMaker;
 
 
 /**
@@ -20,7 +20,7 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  *          serialized.
  */
 public class SerializableAnchorPoint {
-	private final static String TAG = "SerializableAnchorPoint";
+	private final static String CLSS = "SerializableAnchorPoint";
 	private AnchorDirection direction;   // 0=>Origin, 1=>Terminus
 	private Object id = null;
 	private UUID parentId = null;
@@ -34,7 +34,7 @@ public class SerializableAnchorPoint {
 	private int hotSpotWidth = 0;
 	private Object lastValue = null;
 	private String lastQuality = null;    // Name of the most recent quality value
-	private static LoggerEx log = LogUtil.getLogger(SerializableAnchorPoint.class.getPackage().getName());
+	private static ILSLogger log = LogMaker.getLogger(SerializableAnchorPoint.class.getPackage().getName());
 	
 	public SerializableAnchorPoint() {
 	}
@@ -73,7 +73,7 @@ public class SerializableAnchorPoint {
 
 	@Override
 	public String toString() {
-		return String.format("%s: %s (%s)",TAG,id.toString(),(direction==AnchorDirection.INCOMING?"Incoming":"Outgoing"));
+		return String.format("%s: %s (%s)",CLSS,id.toString(),(direction==AnchorDirection.INCOMING?"Incoming":"Outgoing"));
 	}
 
 }

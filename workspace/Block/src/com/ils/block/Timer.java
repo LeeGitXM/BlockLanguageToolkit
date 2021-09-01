@@ -32,6 +32,7 @@ import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 
 /**
  * The Timer block writes the number of seconds that it has been in a specified state. The
@@ -64,10 +65,10 @@ public class Timer extends AbstractProcessBlock implements ProcessBlock {
 	 * Constructor.
 	 * 
 	 * @param ec execution controller for handling block output
-	 * @param parent universally unique Id identifying the parent of this block
+	 * @param parent resource Id identifying the parent of this block (a diagram)
 	 * @param block universally unique Id for the block
 	 */
-	public Timer(ExecutionController ec,UUID parent,UUID block) {
+	public Timer(ExecutionController ec,ProjectResourceId parent,UUID block) {
 		super(ec,parent,block);
 		dog = new Watchdog(TAG,this);
 		initialize();
@@ -80,9 +81,9 @@ public class Timer extends AbstractProcessBlock implements ProcessBlock {
 	private void initialize() {	
 		setName("Timer");
 //		this.setReceiver(true);
-		BlockProperty accumulateProperty = new BlockProperty(BLOCK_PROPERTY_ACCUMULATE_VALUES,new Boolean(accumulateValues),PropertyType.BOOLEAN,true);
+		BlockProperty accumulateProperty = new BlockProperty(BLOCK_PROPERTY_ACCUMULATE_VALUES,accumulateValues,PropertyType.BOOLEAN,true);
 		setProperty(BLOCK_PROPERTY_ACCUMULATE_VALUES, accumulateProperty);
-		BlockProperty intervalProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_INTERVAL,new Double(interval),PropertyType.TIME_SECONDS,true);
+		BlockProperty intervalProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_INTERVAL,interval,PropertyType.TIME_SECONDS,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_INTERVAL, intervalProperty);
 //		tagProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH,"",PropertyType.STRING,true);
 //		tagProperty.setBinding("");
@@ -119,7 +120,7 @@ public class Timer extends AbstractProcessBlock implements ProcessBlock {
 		recordActivity(Activity.ACTIVITY_RESET,"");
 		if( controller!=null ) {
 			// Send notifications on all outputs to indicate empty connections.
-			lastValue = new TestAwareQualifiedValue(timer,new Integer((int)duration));
+			lastValue = new TestAwareQualifiedValue(timer,(int)duration);
 			triggerReceiptTime = lastValue.getTimestamp();
 			evaluate();
 		}
@@ -151,7 +152,7 @@ public class Timer extends AbstractProcessBlock implements ProcessBlock {
 					// This represents a state change
 					if( trigger.equals(tv)  ) {
 						if( !accumulateValues) duration = 0.0;
-						lastValue = new TestAwareQualifiedValue(timer,new Integer((int)duration));
+						lastValue = new TestAwareQualifiedValue(timer,(int)duration);
 						triggerReceiptTime = lastValue.getTimestamp();
 						evaluate();
 					}
@@ -175,7 +176,7 @@ public class Timer extends AbstractProcessBlock implements ProcessBlock {
 		if( sig.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_RESET) ) {
 			recordActivity(Activity.ACTIVITY_RECEIVE,sig.getCommand());
 			duration = 0.0;
-			lastValue = new TestAwareQualifiedValue(timer,new Integer((int)duration));
+			lastValue = new TestAwareQualifiedValue(timer,(int)duration);
 			triggerReceiptTime = lastValue.getTimestamp();
 			evaluate();
 		}
@@ -197,7 +198,7 @@ public class Timer extends AbstractProcessBlock implements ProcessBlock {
 			long testtime = timer.getTestTime();
 			long qvtime = lastValue.getTimestamp().getTime();
 			duration += ((testtime - qvtime) * timer.getFactor())/1000.;
-			lastValue = new TestAwareQualifiedValue(timer,new Integer((int)duration));
+			lastValue = new TestAwareQualifiedValue(timer,(int)duration);
 			if( !isLocked() ) {	
 				OutgoingNotification sig = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 				controller.acceptCompletionNotification(sig);

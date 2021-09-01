@@ -1,5 +1,5 @@
 /**
- * Copyright 2016. ILS Automation. All rights reserved.
+ * Copyright 2016-2021. ILS Automation. All rights reserved.
  */
 package com.ils.common.component.recmap.delegate;
 
@@ -39,7 +39,7 @@ public class OutputDelegate implements TextDelegate {
     @Override
     public String getBodyText(VisualItem item) {
     	int row = item.getInt(RecMapConstants.ROW);
-		Properties properties = propertyMap.get(new Integer(row));
+		Properties properties = propertyMap.get(row);
 		
         StringBuilder sb = new StringBuilder();
 		String currentSetpoint = "0.0";
@@ -99,7 +99,7 @@ public class OutputDelegate implements TextDelegate {
 	@Override
 	public String getTooltipText(VisualItem item) {
     	int row = item.getInt(RecMapConstants.ROW);
-		Properties properties = propertyMap.get(new Integer(row));
+		Properties properties = propertyMap.get(row);
 		return getHtml(item,properties);
 	}
 	

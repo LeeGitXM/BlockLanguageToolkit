@@ -28,6 +28,7 @@ import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 
 /**
  * Monitor a truth-value. Do not emit it from the output until it has been unchanged for
@@ -57,10 +58,10 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 	 * Constructor. Custom properties are limit, standardDeviation
 	 * 
 	 * @param ec execution controller for handling block output
-	 * @param parent universally unique Id identifying the parent of this block
+	 * @param parent resource Id identifying the parent of this block (a diagram)
 	 * @param block universally unique Id for the block
 	 */
-	public PersistenceGate(ExecutionController ec,UUID parent,UUID block) {
+	public PersistenceGate(ExecutionController ec,ProjectResourceId parent,UUID block) {
 		super(ec,parent,block);
 		initialize();
 		dog = new Watchdog(getName(),this);
@@ -72,9 +73,9 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 	 */
 	private void initialize() {	
 		setName("PersistenceGate");
-		BlockProperty windowProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW,new Double(timeWindow),PropertyType.TIME_MINUTES,true);
+		BlockProperty windowProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW,timeWindow,PropertyType.TIME_MINUTES,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW, windowProperty);
-		BlockProperty scanIntervalProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SCAN_INTERVAL,new Double(scanInterval),PropertyType.TIME_SECONDS,true);
+		BlockProperty scanIntervalProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SCAN_INTERVAL,scanInterval,PropertyType.TIME_SECONDS,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_SCAN_INTERVAL, scanIntervalProperty);
 		BlockProperty triggerProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TRIGGER,trigger,PropertyType.TRUTHVALUE,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_TRIGGER, triggerProperty);

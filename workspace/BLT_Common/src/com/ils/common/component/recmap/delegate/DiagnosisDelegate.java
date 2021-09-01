@@ -34,7 +34,7 @@ public class DiagnosisDelegate implements TextDelegate {
     
     public Image getBadge(VisualItem item) { 
     	int row = item.getInt(RecMapConstants.ROW);
-		Properties properties = propertyMap.get(new Integer(row));
+		Properties properties = propertyMap.get(row);
 		boolean hasSQC = false;
         
 		if( properties!=null && properties.getProperty(RecMapConstants.HAS_SQC)!=null ) {
@@ -55,7 +55,7 @@ public class DiagnosisDelegate implements TextDelegate {
     @Override
     public String getBodyText(VisualItem item) {
     	int row = item.getInt(RecMapConstants.ROW);
-		Properties properties = propertyMap.get(new Integer(row));
+		Properties properties = propertyMap.get(row);
         StringBuilder sb = new StringBuilder();
         String problem = "";
 		if( properties!=null && properties.getProperty(RecMapConstants.PROBLEM)!=null ) {
@@ -91,7 +91,7 @@ public class DiagnosisDelegate implements TextDelegate {
 	@Override
 	public String getTooltipText(VisualItem item) {
 		int row = item.getInt(RecMapConstants.ROW);
-		Properties properties = propertyMap.get(new Integer(row));
+		Properties properties = propertyMap.get(row);
 		return getHtml(item,properties);
 	}
 	
@@ -131,7 +131,7 @@ public class DiagnosisDelegate implements TextDelegate {
 	@Override
 	public void addMenuItems(VisualItem item,JPopupMenu menu) {
 		int row = item.getInt(RecMapConstants.ROW);
-		Properties properties = propertyMap.get(new Integer(row));
+		Properties properties = propertyMap.get(row);
 		
 		// Original dataset row
 		int dsrow = item.getInt(RecMapConstants.DSROW);

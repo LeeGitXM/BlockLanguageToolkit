@@ -63,7 +63,7 @@ public class GatewayRpcDispatcher   {
 	/**
 	 * Clear any watermark on a diagram. 
 	 */
-	public void clearWatermark(String diagramId) {
+	public void clearWatermark(ProjectResourceId diagramId) {
 		requestHandler.clearWatermark(diagramId);
 	}
 	
@@ -80,15 +80,15 @@ public class GatewayRpcDispatcher   {
 	/**
 	 * This should always succeed because we create a block in the gateway whenever we 
 	 * create one from the palette.
-	 * @param uuidString diagram id as a string
+	 * @param id diagram id as a string
 	 * @return True if we've discovered the specified block.
 	 */
-	public Boolean diagramExists(String uuidString) {
-		return requestHandler.diagramExists(uuidString);
+	public Boolean diagramExists(ProjectResourceId id) {
+		return requestHandler.diagramExists(id);
 	}
 
-	public String getApplicationName(String uuid) {
-		return requestHandler.getApplicationName(uuid);
+	public String getApplicationName(ProjectResourceId id) {
+		return requestHandler.getApplicationName(id);
 	}
 	
 	/**
@@ -96,7 +96,7 @@ public class GatewayRpcDispatcher   {
 	 * @param blockName name of the block within the diagram
 	 * @return the id of the specified block.
 	 */
-	public String getBlockId(String diagramId, String blockName) {
+	public String getBlockId(ProjectResourceId diagramId, String blockName) {
 		return requestHandler.getBlockId(diagramId,blockName);
 	}
 	/**
@@ -152,7 +152,7 @@ public class GatewayRpcDispatcher   {
 		return results;
 	}
 	
-	public String getBlockState(String diagramId, String blockName) {
+	public String getBlockState(ProjectResourceId diagramId, String blockName) {
 		return requestHandler.getBlockState(diagramId, blockName);
 	}
 	/**
@@ -163,16 +163,14 @@ public class GatewayRpcDispatcher   {
 	 * @param json connection attributes as JSON
 	 * @return the JSON string
 	 */
-	public String getConnectionAttributes(Long proj, Long res,String connectionId,String json) {
-		long projectId = proj.longValue();
-		long resourceId = res.longValue();
-		log.debugf("%s.getConnectionAttributes: %d:%d:%s =\n%s",CLSS,projectId,resourceId,connectionId,json);
+	public String getConnectionAttributes(ProjectResourceId resourceId,String connectionId,String json) {
+		log.debugf("%s.getConnectionAttributes: %s:%s =\n%s",CLSS,resourceId.getResourcePath().getPath().toString(),connectionId,json);
 		
 		ObjectMapper mapper = new ObjectMapper();
 		Hashtable<String, Hashtable<String, String>> propertiesTable;
 		try {
 			propertiesTable = mapper.readValue(json, new TypeReference<Hashtable<String,Hashtable<String,String>>>(){});
-			Hashtable<String,Hashtable<String,String>> results = requestHandler.getConnectionAttributes(projectId,resourceId,connectionId,propertiesTable);
+			Hashtable<String,Hashtable<String,String>> results = requestHandler.getConnectionAttributes(resourceId,connectionId,propertiesTable);
 			log.debugf("%s: created table = %s",CLSS,results);
 			json =  mapper.writeValueAsString(results);
 			log.debugf("%s: JSON=%s",CLSS,json);
@@ -214,7 +212,7 @@ public class GatewayRpcDispatcher   {
 	 * @param diagramId String representation of the diagram's internal Id.
 	 * @return a descriptor for the diagram that corresponds to that Id.
 	 */
-	public SerializableResourceDescriptor getDiagram(String diagramId) {
+	public SerializableResourceDescriptor getDiagram(ProjectResourceId diagramId) {
 		return requestHandler.getDiagram(diagramId);
 	}
 	/**
@@ -251,17 +249,15 @@ public class GatewayRpcDispatcher   {
 		return requestHandler.getDiagramState(resourceId).name();
 	}
 
-	public String getDiagramState(String diagramId) {
-		return requestHandler.getDiagramState(diagramId).name();
-	}
+
 	/**
 	 * @return an explanation for the state of a block.
 	 */
-	public String getExplanation(String diagramId,String blockId) {
+	public String getExplanation(ProjectResourceId diagramId,String blockId) {
 		return requestHandler.getExplanation(diagramId,blockId);
 	}
-	public String getFamilyName(String uuid) {
-		return requestHandler.getFamilyName(uuid);
+	public String getFamilyName(ProjectResourceId id) {
+		return requestHandler.getFamilyName(id);
 	}
 	/**
 	 * @return the hostname for the gateway
@@ -285,7 +281,7 @@ public class GatewayRpcDispatcher   {
 	 * @param blockId
 	 * @return a JSON-serialized SerializableBlockStateDescriptor
 	 */
-	public String getInternalState(String diagramId,String blockId) {
+	public String getInternalState(ProjectResourceId diagramId,String blockId) {
 		SerializableBlockStateDescriptor desc = requestHandler.getInternalState(diagramId,blockId);
 		ObjectMapper mapper = new ObjectMapper();
 		String json = "";
@@ -297,7 +293,7 @@ public class GatewayRpcDispatcher   {
 		}
 		return json;
 	}
-	public Object getPropertyBinding(String diagramId,String blockId,String propertyName) {
+	public Object getPropertyBinding(ProjectResourceId diagramId,String blockId,String propertyName) {
 		return requestHandler.getPropertyBinding(diagramId, blockId, propertyName);
 	}
 	
@@ -314,7 +310,7 @@ public class GatewayRpcDispatcher   {
 	public String getProviderForUUID(String uuid) {
 		return requestHandler.getProviderForUUID(uuid);
 	}
-	public Date getTimeOfLastBlockStateChange(String diagramId, String blockName) {
+	public Date getTimeOfLastBlockStateChange(ProjectResourceId diagramId, String blockName) {
 		return requestHandler.getTimeOfLastBlockStateChange(diagramId,blockName);
 	}
 	public String getToolkitProperty(String propertyName) {
@@ -332,29 +328,29 @@ public class GatewayRpcDispatcher   {
     	return result;
     }
 
-	public List<SerializableBlockStateDescriptor> listBlocksConnectedAtPort(String diagramId,String blockId,String portName) {
+	public List<SerializableBlockStateDescriptor> listBlocksConnectedAtPort(ProjectResourceId diagramId,String blockId,String portName) {
 		return requestHandler.listBlocksConnectedAtPort(diagramId,blockId,portName);
 	}
-	public List<SerializableBlockStateDescriptor> listBlocksDownstreamOf(String diagramId, String blockName) {
+	public List<SerializableBlockStateDescriptor> listBlocksDownstreamOf(ProjectResourceId diagramId, String blockName) {
 		return requestHandler.listBlocksDownstreamOf(diagramId, blockName);
 	}
 	
 	public List<SerializableBlockStateDescriptor> listBlocksForTag(String tagpath) {
 		return requestHandler.listBlocksForTag(tagpath);
 	}
-	public List<SerializableBlockStateDescriptor> listBlocksGloballyDownstreamOf(String diagramId, String blockName) {
+	public List<SerializableBlockStateDescriptor> listBlocksGloballyDownstreamOf(ProjectResourceId diagramId, String blockName) {
 		return requestHandler.listBlocksGloballyDownstreamOf(diagramId, blockName);
 	}
-	public List<SerializableBlockStateDescriptor> listBlocksGloballyUpstreamOf(String diagramId, String blockName) {
+	public List<SerializableBlockStateDescriptor> listBlocksGloballyUpstreamOf(ProjectResourceId diagramId, String blockName) {
 		return requestHandler.listBlocksGloballyUpstreamOf(diagramId, blockName);
 	}
-	public List<SerializableBlockStateDescriptor> listBlocksInDiagram(String diagramId) {
+	public List<SerializableBlockStateDescriptor> listBlocksInDiagram(ProjectResourceId diagramId) {
 		return requestHandler.listBlocksInDiagram(diagramId);
 	}
 	public List<SerializableBlockStateDescriptor> listBlocksOfClass(String className) {
 		return requestHandler.listBlocksOfClass(className);
 	}
-	public List<SerializableBlockStateDescriptor> listBlocksUpstreamOf(String diagramId, String blockName) {
+	public List<SerializableBlockStateDescriptor> listBlocksUpstreamOf(ProjectResourceId diagramId, String blockName) {
 		return requestHandler.listBlocksUpstreamOf(diagramId, blockName);
 	}
 	
@@ -367,7 +363,7 @@ public class GatewayRpcDispatcher   {
 	public List<SerializableBlockStateDescriptor> listUnresponsiveBlocks(Double hours, String clss) {
 		return requestHandler.listUnresponsiveBlocks(hours.doubleValue(),clss);
 	}
-	public List<SerializableBlockStateDescriptor> listDiagramBlocksOfClass(String diagramId, String className) {
+	public List<SerializableBlockStateDescriptor> listDiagramBlocksOfClass(ProjectResourceId diagramId, String className) {
 		return requestHandler.listDiagramBlocksOfClass(diagramId, className);
 	}
 	public List<SerializableResourceDescriptor> listDiagramDescriptors(String projectName) {
@@ -378,11 +374,11 @@ public class GatewayRpcDispatcher   {
 		return requestHandler.listResourceNodes();
 	}
 
-	public List<SerializableBlockStateDescriptor> listSinksForSource(String diagramId,String blockId) {
+	public List<SerializableBlockStateDescriptor> listSinksForSource(ProjectResourceId diagramId,String blockId) {
 		return requestHandler.listSinksForSource(diagramId,blockId);
 	}
 
-	public List<SerializableBlockStateDescriptor> listSourcesForSink(String diagramId,String blockId) {
+	public List<SerializableBlockStateDescriptor> listSourcesForSink(ProjectResourceId diagramId,String blockId) {
 		return requestHandler.listSourcesForSink(diagramId,blockId);
 	}
 	
@@ -394,7 +390,7 @@ public class GatewayRpcDispatcher   {
 	 * @return a slash-separated path to the specified node. The path 
 	 *         root is a slash representing the top node of the navigation tree.
 	 */
-	public String pathForNode(String nodeId) {
+	public String pathForNode(ProjectResourceId nodeId) {
 		return requestHandler.pathForNode(nodeId);
 	}
 	/**
@@ -411,7 +407,7 @@ public class GatewayRpcDispatcher   {
 	 * @param diagramIdString
 	 * @param blockIdString
 	 */
-	public void propagateBlockState(String diagramIdString,String blockIdString) {
+	public void propagateBlockState(ProjectResourceId diagramIdString,String blockIdString) {
 		requestHandler.propagateBlockState(diagramIdString,blockIdString);
 	}
 	/** 
@@ -437,11 +433,11 @@ public class GatewayRpcDispatcher   {
 	public GeneralPurposeDataContainer readAuxData(ProjectResourceId resid,String nodeId,String provider,String db) {
 		return requestHandler.readAuxData(resid, nodeId,provider, db);
 	}
-	/** Change the name of a block
-	 * 
+	/** 
+	 * Change the name of a block
 	 */
-	public void renameBlock(String diagramIdString,String blockIdString,String name) {
-		requestHandler.renameBlock(diagramIdString, blockIdString, name);
+	public void renameBlock(ProjectResourceId diagramId,String blockIdString,String name) {
+		requestHandler.renameBlock(diagramId, blockIdString, name);
 	}
 	/**
 	 * Rename a SQLTag given its path and new name. The path must contain the
@@ -452,23 +448,23 @@ public class GatewayRpcDispatcher   {
 	}
 	/**
 	 * Reset a block in a diagram given string forms of their UUID
-	 * @param diagramIdString id of the block's parent diagram
+	 * @param diagramId id of the block's parent diagram
 	 * @param blockName name of the block
 	 */
-	public void resetBlock(String diagramIdString,String blockName) {
-		requestHandler.resetBlock(diagramIdString,blockName);
+	public void resetBlock(ProjectResourceId diagramId,String blockName) {
+		requestHandler.resetBlock(diagramId,blockName);
 	}
 	/** 
 	 *  Reset every block in a diagram specified by id.
-	 * @param uuidString id of the diagram as a string
+	 * @param diagramId id of the diagram
 	 */
-	public void resetDiagram(String uuidString) {
-		requestHandler.resetDiagram(uuidString);
+	public void resetDiagram(ProjectResourceId diagramId) {
+		requestHandler.resetDiagram(diagramId);
 	}
 	/**
 	 * Execute stop() then start() on the specified block
 	 */
-	public void restartBlock(String diagramId,String blockId) {
+	public void restartBlock(ProjectResourceId diagramId,String blockId) {
 		requestHandler.restartBlock(diagramId,blockId);
 	}
 	public Boolean resourceExists(ProjectResourceId resourceId) {
@@ -476,30 +472,30 @@ public class GatewayRpcDispatcher   {
 	}
 	/**
 	 * 
-	 * @param uuidString identifier of the diagram for which the signal is local
+	 * @param id identifier of the diagram for which the signal is local
 	 * @param command
 	 * @param message
 	 * @param arg
 	 * @return true if the signal was sent successfully
 	 */
-	public Boolean sendLocalSignal(String uuidString, String command,String message,String arg) {
-		log.tracef("%s.sendLocalSignal: %s %s %s %s",CLSS,uuidString,command,message,arg);
-		return requestHandler.sendLocalSignal(uuidString,command,message,arg);
+	public Boolean sendLocalSignal(ProjectResourceId id, String command,String message,String arg) {
+		log.tracef("%s.sendLocalSignal: %s %s %s %s",CLSS,id,command,message,arg);
+		return requestHandler.sendLocalSignal(id,command,message,arg);
 	}
-	public boolean sendSignal(String diagramId,String blockName,String command,String message) {
+	public boolean sendSignal(ProjectResourceId diagramId,String blockName,String command,String message) {
 		return requestHandler.sendSignal(diagramId,blockName,command,message);
 	}
 	/**
 	 * 
-	 * @param uuidString identifier of the diagram for which the signal is local
+	 * @param id identifier of the diagram for which the signal is local
 	 * @param command
 	 * @param message
 	 * @param arg
 	 * @param time the time to be assigned to the signal
 	 * @return true if the signal was sent successfully
 	 */
-	public Boolean sendTimestampedSignal(String uuidString, String command,String message,String arg,Long time) {
-		return requestHandler.sendTimestampedSignal(uuidString,command,message,arg,time.longValue());
+	public Boolean sendTimestampedSignal(ProjectResourceId id, String command,String message,String arg,Long time) {
+		return requestHandler.sendTimestampedSignal(id,command,message,arg,time.longValue());
 	}
 
 
@@ -517,7 +513,7 @@ public class GatewayRpcDispatcher   {
 	 * @param blockId the uniqueId of the block
 	 * @param json JSON representation of the complete property list for the block.
 	 */
-	public void setBlockProperties(String diagramId,String blockId, String json) {
+	public void setBlockProperties(ProjectResourceId diagramId,String blockId, String json) {
 		log.debugf("%s.setBlockProperties: %s %s: %s", CLSS, diagramId, blockId, json);
 		// Deserialize the JSON
 		ObjectMapper mapper = new ObjectMapper();
@@ -548,7 +544,7 @@ public class GatewayRpcDispatcher   {
 	 * @param blockId the uniqueId of the block
 	 * @param json JSON representation of the property
 	 */
-	public void setBlockProperty(String diagramId,String blockId, String json) {
+	public void setBlockProperty(ProjectResourceId diagramId,String blockId, String json) {
 		log.debugf("%s.setBlockProperty: %s %s: %s", CLSS, diagramId, blockId, json);
 		// Deserialize the JSON
 		ObjectMapper mapper = new ObjectMapper();
@@ -595,13 +591,10 @@ public class GatewayRpcDispatcher   {
 		requestHandler.setBlockState(diagramId,bname,state);
 	}
 	
-	public void setDiagramState(Long projectId,Long resourceId,String state) {
-		requestHandler.setDiagramState(projectId,resourceId,state);
+	public void setDiagramState(ProjectResourceId resourceId,String state) {
+		requestHandler.setDiagramState(resourceId,state);
 	}
 
-	public void setDiagramState(String diagramId,String state) {
-		requestHandler.setDiagramState(diagramId,state);
-	}
 	/**
 	 * Tell the testing timer about the difference between test time
 	 * and current time.

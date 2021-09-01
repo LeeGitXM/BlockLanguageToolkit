@@ -17,6 +17,7 @@ import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.ConnectionPostNotification;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 
 /**
  * An Entry Connection is for use only on an EncapsulatedDiagram. Its function is to be
@@ -37,10 +38,10 @@ public class EntryConnection extends AbstractProcessBlock implements ProcessBloc
 	 * Constructor. 
 	 * 
 	 * @param ec execution controller for handling block output
-	 * @param parent universally unique Id identifying the parent of this block
+	 * @param parent resource Id identifying the parent of this block (a diagram)
 	 * @param block universally unique Id for the block
 	 */
-	public EntryConnection(ExecutionController ec,UUID parent,UUID block) {
+	public EntryConnection(ExecutionController ec,ProjectResourceId parent,UUID block) {
 		super(ec,parent,block);
 		initialize();
 	}

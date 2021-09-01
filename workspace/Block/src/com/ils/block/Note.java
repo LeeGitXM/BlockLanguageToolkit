@@ -14,6 +14,7 @@ import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 
 /**
  * Holds any free-form text notes the user wants to enter. Can be html, since
@@ -38,10 +39,10 @@ public class Note extends AbstractProcessBlock implements ProcessBlock {
 	 * Constructor. Custom property is "Text".
 	 * 
 	 * @param ec execution controller for handling block output
-	 * @param parent universally unique Id identifying the parent of this block
+	 * @param parent resource Id identifying the parent of this block (a diagram)
 	 * @param block universally unique Id for the block
 	 */
-	public Note(ExecutionController ec,UUID parent,UUID block) {
+	public Note(ExecutionController ec,ProjectResourceId parent,UUID block) {
 		super(ec,parent,block);
 		initialize();
 		

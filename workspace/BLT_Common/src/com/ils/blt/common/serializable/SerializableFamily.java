@@ -1,10 +1,9 @@
 package com.ils.blt.common.serializable;
 
-import java.util.UUID;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.ils.blt.common.block.ActiveState;
+import com.ils.blt.common.BLTProperties;
 import com.ils.common.GeneralPurposeDataContainer;
+import com.inductiveautomation.ignition.common.project.resource.ResourceType;
 
 /**
  * Implement a plain-old-java-object representing a model diagram
@@ -13,22 +12,20 @@ import com.ils.common.GeneralPurposeDataContainer;
  * This POJO object should have no behavior.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class SerializableFamily {
+public class SerializableFamily extends SerializableNode {
 	private SerializableDiagram[] diagrams;
 	private SerializableFolder[] folders;
-	private UUID id;
 	private GeneralPurposeDataContainer auxiliaryData;
-	private String name;
-	private ActiveState state = ActiveState.ACTIVE;
 	
 	public SerializableFamily() {	
 		diagrams = new SerializableDiagram[0];
 		folders = new SerializableFolder[0];
-		name="UNSET";
-		id = UUID.randomUUID();
 		auxiliaryData = new GeneralPurposeDataContainer();
 	}
-
+	public ResourceType getResourceType() {
+		return BLTProperties.FAMILY_RESOURCE_TYPE;
+	}
+	
 	public void addDiagram(SerializableDiagram sdiag) {
 		SerializableDiagram[] extended = new SerializableDiagram[diagrams.length+1];
 	    extended[diagrams.length] = sdiag;
@@ -45,14 +42,8 @@ public class SerializableFamily {
 	public GeneralPurposeDataContainer getAuxiliaryData() {return auxiliaryData;}
 	public SerializableDiagram[] getDiagrams() { return diagrams; }
 	public SerializableFolder[] getFolders() {return folders;}
-	public UUID getId() {return id;}
-	public String getName() { return name; }
-	public ActiveState getState() {return state;}
 	
 	public void setAuxiliaryData(GeneralPurposeDataContainer data) {if(data!=null) this.auxiliaryData = data;}
 	public void setDiagrams(SerializableDiagram[] list) { diagrams=list; }
-	public void setFolders(SerializableFolder[] folders) {this.folders = folders;}
-	public void setId(UUID id) {this.id = id;}
-	public void setName(String nam) { if(nam!=null) name=nam; }
-	public void setState(ActiveState state) {this.state = state;}	
+	public void setFolders(SerializableFolder[] folders) {this.folders = folders;}	
 }

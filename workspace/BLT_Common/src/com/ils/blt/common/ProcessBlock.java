@@ -19,6 +19,7 @@ import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.watchdog.WatchdogTimer;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 
 
 /**
@@ -130,7 +131,7 @@ public interface ProcessBlock extends BlockPropertyChangeListener {
 	/**
 	 * @return the Id of the block's diagram (parent).
 	 */
-	public UUID getParentId();
+	public ProjectResourceId getParentId();
 	/**
 	 * @return the id of the project under which this block was created.
 	 */

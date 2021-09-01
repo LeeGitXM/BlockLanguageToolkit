@@ -14,6 +14,7 @@ import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 
 /**
  * This is a pseudo-block that displays the current value of another, associated
@@ -43,10 +44,10 @@ public class AttributeDisplay extends AbstractProcessBlock implements ProcessBlo
 	 * Constructor. Custom property is "Text".
 	 * 
 	 * @param ec execution controller for handling block output
-	 * @param parent universally unique Id identifying the parent of this block
+	 * @param parent resource Id identifying the parent of this block (a diagram)
 	 * @param block universally unique Id for the block
 	 */
-	public AttributeDisplay(ExecutionController ec,UUID parent,UUID block) {
+	public AttributeDisplay(ExecutionController ec,ProjectResourceId parent,UUID block) {
 		super(ec,parent,block);
 		initialize();
 	}

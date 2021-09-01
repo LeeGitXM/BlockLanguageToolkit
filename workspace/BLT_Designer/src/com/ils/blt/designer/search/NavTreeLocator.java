@@ -5,7 +5,6 @@
 package com.ils.blt.designer.search;
 
 import java.util.Enumeration;
-import java.util.UUID;
 
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;

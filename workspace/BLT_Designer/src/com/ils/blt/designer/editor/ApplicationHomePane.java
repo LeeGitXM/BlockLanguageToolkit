@@ -76,7 +76,7 @@ public class ApplicationHomePane extends JPanel implements  NotificationChangeLi
 		this.log = LogMaker.getLogger(this);
 		this.database = requestHandler.getProductionDatabase();
 		this.provider = requestHandler.getProductionTagProvider();
-		this.key = NotificationKey.keyForAuxData(editor.getApplication().getId().toString());
+		this.key = NotificationKey.keyForAuxData(editor.getApplication().getResourcePath().getPath().toString());
 		this.setPreferredSize(editor.PANEL_SIZE);
 		
 		mainPanel = new JPanel(new MigLayout("fillx", "[right]rel[grow, fill]"));

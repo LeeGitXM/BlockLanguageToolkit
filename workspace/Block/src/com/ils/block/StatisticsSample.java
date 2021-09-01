@@ -44,6 +44,7 @@ import com.ils.common.FixedSizeQueue;
 import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualityCode;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 
 /**
  * This class computes a specified statistic on the last "n" readings.
@@ -87,10 +88,10 @@ public class StatisticsSample extends AbstractProcessBlock implements ProcessBlo
 	 * Constructor. Custom properties are limit, standardDeviation
 	 * 
 	 * @param ec execution controller for handling block output
-	 * @param parent universally unique Id identifying the parent of this block
+	 * @param parent resource Id identifying the parent of this block (a diagram)
 	 * @param block universally unique Id for the block
 	 */
-	public StatisticsSample(ExecutionController ec,UUID parent,UUID block) {
+	public StatisticsSample(ExecutionController ec,ProjectResourceId parent,UUID block) {
 		super(ec,parent,block);
 		queue = new FixedSizeQueue<QualifiedValue>(DEFAULT_BUFFER_SIZE);
 		initialize();
@@ -103,13 +104,13 @@ public class StatisticsSample extends AbstractProcessBlock implements ProcessBlo
 	private void initialize() {	
 		setName("StatisticalSample");
 
-		BlockProperty clearProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET,new Boolean(clearOnReset),PropertyType.BOOLEAN,true);
+		BlockProperty clearProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET,clearOnReset,PropertyType.BOOLEAN,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET, clearProperty);
-		BlockProperty sizeProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SAMPLE_SIZE,new Integer(sampleSize),PropertyType.INTEGER,true);
+		BlockProperty sizeProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SAMPLE_SIZE,sampleSize,PropertyType.INTEGER,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_SAMPLE_SIZE, sizeProperty);
 		BlockProperty statProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_STATISTICS_FUNCTION,function,PropertyType.STATISTICS,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_STATISTICS_FUNCTION, statProperty);
-		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,new Double(Double.NaN),PropertyType.DOUBLE,false);
+		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,Double.NaN,PropertyType.DOUBLE,false);
 		valueProperty.setBindingType(BindingType.ENGINE);
 		setProperty(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
 		
@@ -129,7 +130,7 @@ public class StatisticsSample extends AbstractProcessBlock implements ProcessBlo
 		super.reset();
 		if( clearOnReset) {
 			queue.clear();
-			valueProperty.setValue(new Double(Double.NaN));
+			valueProperty.setValue(Double.NaN);
 		}
 	}
 	

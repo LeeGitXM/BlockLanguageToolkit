@@ -19,9 +19,9 @@ import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.Quality;
+import com.inductiveautomation.ignition.common.model.values.QualityCode;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 
 /**
  * This class emits the natural logrithm of its input. There is no synchronization required.
@@ -44,10 +44,10 @@ public class NaturalLog extends AbstractProcessBlock implements ProcessBlock {
 	 * Constructor. 
 	 * 
 	 * @param ec execution controller for handling block output
-	 * @param parent universally unique Id identifying the parent of this block
+	 * @param parent resource Id identifying the parent of this block (a diagram)
 	 * @param block universally unique Id for the block
 	 */
-	public NaturalLog(ExecutionController ec,UUID parent,UUID block) {
+	public NaturalLog(ExecutionController ec,ProjectResourceId parent,UUID block) {
 		super(ec,parent,block);
 		initialize();
 		ln = new Log();
@@ -88,21 +88,21 @@ public class NaturalLog extends AbstractProcessBlock implements ProcessBlock {
 					double valu = dbl.doubleValue();
 					if( valu>0.0) {
 						valu = ln.value(valu);
-						qv = new BasicQualifiedValue(new Double(valu),qv.getQuality(),qv.getTimestamp());
+						qv = new BasicQualifiedValue(valu,qv.getQuality(),qv.getTimestamp());
 						statusText = "";
 					}
 					else {
 						statusText = "Value is less than or equal to zero";
-						lastValue = new BasicQualifiedValue(new Double(Double.POSITIVE_INFINITY),new BasicQuality("<= zero",Quality.Level.Bad),qv.getTimestamp());
+						lastValue = new BasicQualifiedValue(Double.POSITIVE_INFINITY,QualityCode.Bad,qv.getTimestamp());
 					}
 				}
 				catch(NumberFormatException nfe) {
 					log.warnf("%s.acceptValue: Unable to convert incoming value to a double (%s)",TAG,nfe.getLocalizedMessage());
-					lastValue = new BasicQualifiedValue(new Double(Double.NaN),new BasicQuality(nfe.getLocalizedMessage(),Quality.Level.Bad),qv.getTimestamp());
+					lastValue = new BasicQualifiedValue(Double.NaN,QualityCode.Bad,qv.getTimestamp());
 				}
 			}
 			else {
-				lastValue = new BasicQualifiedValue(new Double(Double.NaN),new BasicQuality("null value",Quality.Level.Bad),qv.getTimestamp());
+				lastValue = new BasicQualifiedValue(Double.NaN,QualityCode.Bad,qv.getTimestamp());
 			}
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 			controller.acceptCompletionNotification(nvn);

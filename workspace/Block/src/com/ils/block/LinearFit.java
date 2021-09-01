@@ -34,6 +34,7 @@ import com.ils.common.FixedSizeQueue;
 import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 
 /**
  * Compute the best fit line over a recent history of data points. The x-axis
@@ -71,10 +72,10 @@ public class LinearFit extends AbstractProcessBlock implements ProcessBlock {
 	 * Constructor. 
 	 * 
 	 * @param ec execution controller for handling block output
-	 * @param parent universally unique Id identifying the parent of this block
+	 * @param parent resource Id identifying the parent of this block (a diagram)
 	 * @param block universally unique Id for the block
 	 */
-	public LinearFit(ExecutionController ec,UUID parent,UUID block) {
+	public LinearFit(ExecutionController ec,ProjectResourceId parent,UUID block) {
 		super(ec,parent,block);
 		queue = new FixedSizeQueue<QualifiedValue>(sampleSize);
 		initialize();
@@ -200,7 +201,7 @@ public class LinearFit extends AbstractProcessBlock implements ProcessBlock {
 		super.propagate();
 		if( coefficients!=null && lastValue!=null ) {
 			// Propagate the slope scaled
-			QualifiedValue qv = new BasicQualifiedValue(new Double(coefficients[1]*scaleFactor),lastValue.getQuality(),lastValue.getTimestamp());
+			QualifiedValue qv = new BasicQualifiedValue(coefficients[1]*scaleFactor,lastValue.getQuality(),lastValue.getTimestamp());
 			OutgoingNotification nvn = new OutgoingNotification(this,SLOPE_PORT_NAME,qv);
 			controller.acceptCompletionNotification(nvn);
 		}
@@ -338,12 +339,12 @@ public class LinearFit extends AbstractProcessBlock implements ProcessBlock {
 		notifyOfStatus(lastValue);
 		
 		// Propagate the slope scaled
-		qvNew = new BasicQualifiedValue(new Double(coefficients[1]*scaleFactor), qv.getQuality(), qv.getTimestamp());
+		qvNew = new BasicQualifiedValue(coefficients[1]*scaleFactor, qv.getQuality(), qv.getTimestamp());
 		nvn = new OutgoingNotification(this, SLOPE_PORT_NAME, qvNew);
 		controller.acceptCompletionNotification(nvn);
 		
 		// Propagate the y-intercept
-		qvNew = new BasicQualifiedValue(new Double(coefficients[0]), qv.getQuality(), qv.getTimestamp());
+		qvNew = new BasicQualifiedValue(coefficients[0], qv.getQuality(), qv.getTimestamp());
 		nvn = new OutgoingNotification(this, Y_INTERCEPT_PORT_NAME, qvNew);
 		controller.acceptCompletionNotification(nvn);
 	}

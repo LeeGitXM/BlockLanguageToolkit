@@ -13,7 +13,6 @@ import java.awt.geom.Rectangle2D;
 import java.awt.geom.RectangularShape;
 import java.awt.geom.RoundRectangle2D;
 import java.util.Map;
-import java.util.Properties;
 
 import prefuse.render.LabelRenderer;
 import prefuse.util.ColorLib;
@@ -226,7 +225,7 @@ public class TableLabelRenderer extends LabelRenderer {
     	TextDelegate delegate = null;
     	if( item instanceof TableNodeItem ) {
     		int kind = item.getInt(RecMapConstants.KIND);
-    		delegate = delegates.get(new Integer(kind));
+    		delegate = delegates.get(kind);
     	}
     	return delegate;
     }
@@ -241,14 +240,6 @@ public class TableLabelRenderer extends LabelRenderer {
         } else {
             g.drawString(text, (float)x, (float)y);
         }
-    }
-    private Properties propertiesFromItem(VisualItem item) {
-    	Properties properties = null;
-    	if( item instanceof TableNodeItem ) {
-    		int row = item.getInt(RecMapConstants.ROW);
-    		properties = model.getAttributes(row);
-    	}
-    	return properties;
     }
     			
 } 

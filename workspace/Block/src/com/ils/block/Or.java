@@ -32,7 +32,7 @@ import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualityCode;
-import com.inductiveautomation.ignition.common.sqltags.model.types.DataQuality;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 
 /**
  * This class emits the "or" of its inputs. Synchronizing
@@ -61,10 +61,10 @@ public class Or extends AbstractProcessBlock implements ProcessBlock {
 	 * Constructor.
 	 * 
 	 * @param ec execution controller for handling block output
-	 * @param parent universally unique Id identifying the parent of this block
+	 * @param parent resource Id identifying the parent of this block (a diagram)
 	 * @param block universally unique Id for the block
 	 */
-	public Or(ExecutionController ec,UUID parent,UUID block) {
+	public Or(ExecutionController ec,ProjectResourceId parent,UUID block) {
 		super(ec,parent,block);
 		dog = new Watchdog(TAG,this);
 		initialize();
@@ -75,7 +75,7 @@ public class Or extends AbstractProcessBlock implements ProcessBlock {
 		setName("Or");	
 		state = TruthValue.UNSET;
 		// Define the time for "coalescing" inputs ~ msec
-		BlockProperty synch = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL,new Double(synchInterval),PropertyType.TIME_SECONDS,true);
+		BlockProperty synch = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL,synchInterval,PropertyType.TIME_SECONDS,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL, synch);
 		
 		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,TruthValue.UNSET,PropertyType.TRUTHVALUE,false);

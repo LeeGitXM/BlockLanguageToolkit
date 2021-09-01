@@ -5,7 +5,6 @@ package com.ils.blt.gateway.engine;
 
 import java.util.Collection;
 import java.util.Map;
-import java.util.UUID;
 
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 import com.inductiveautomation.ignition.common.project.resource.ResourcePath;

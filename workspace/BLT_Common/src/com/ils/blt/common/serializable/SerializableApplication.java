@@ -1,34 +1,31 @@
 package com.ils.blt.common.serializable;
 
-import java.util.UUID;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.ils.blt.common.DiagramState;
+import com.ils.blt.common.BLTProperties;
 import com.ils.common.GeneralPurposeDataContainer;
-
-
+import com.inductiveautomation.ignition.common.project.resource.ResourceType;
 
 /**
- * Implement a plain-old-java-object representing a model diagram
+ * Implement a plain-old-java-object representing a model application
  * that is serializable via a JSON serializer.
  * 
  * This POJO objects should have no behavior. The annotation is
  * to make this backward-compatible to before callbacks were introduced.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class SerializableApplication {
+public class SerializableApplication extends SerializableNode {
 	private SerializableFamily[] families;
 	private SerializableFolder[] folders;
 	private GeneralPurposeDataContainer auxiliaryData;
 
-	private UUID id;
-	private String name;
-	private DiagramState state = DiagramState.ACTIVE;
 	public SerializableApplication() {	
 		families = new SerializableFamily[0];
 		name="UNSET";
-		id = UUID.randomUUID();
+		path = null;
 		auxiliaryData = new GeneralPurposeDataContainer();
+	}
+	public ResourceType getResourceType() {
+		return BLTProperties.APPLICATION_RESOURCE_TYPE;
 	}
 	
 	public void addFamily(SerializableFamily sfam) {
@@ -47,14 +44,8 @@ public class SerializableApplication {
 	public GeneralPurposeDataContainer getAuxiliaryData() {return auxiliaryData;}
 	public SerializableFamily[] getFamilies() { return families; }
 	public SerializableFolder[] getFolders() {return folders;}
-	public UUID getId() {return id;}
-	public String getName() { return name; }
-	public DiagramState getState() {return state;}
 	
 	public void setAuxiliaryData(GeneralPurposeDataContainer data) {if(data!=null) this.auxiliaryData = data;}
 	public void setFamilies(SerializableFamily[] list) { families=list; }
 	public void setFolders(SerializableFolder[] folders) {this.folders = folders;}
-	public void setId(UUID id) {this.id = id;}
-	public void setName(String nam) { if(nam!=null) name=nam; }
-	public void setState(DiagramState state) {this.state = state;}
 }

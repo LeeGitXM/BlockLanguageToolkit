@@ -19,9 +19,9 @@ import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.Quality;
+import com.inductiveautomation.ignition.common.model.values.QualityCode;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 
 /**
  * This class emits the log base 10 of its input. There is no synchronization required.
@@ -45,10 +45,10 @@ public class Log extends AbstractProcessBlock implements ProcessBlock {
 	 * Constructor. 
 	 * 
 	 * @param ec execution controller for handling block output
-	 * @param parent universally unique Id identifying the parent of this block
+	 * @param parent resource Id identifying the parent of this block (a diagram)
 	 * @param block universally unique Id for the block
 	 */
-	public Log(ExecutionController ec,UUID parent,UUID block) {
+	public Log(ExecutionController ec,ProjectResourceId parent,UUID block) {
 		super(ec,parent,block);
 		initialize();
 		log10 = new Log10();
@@ -94,16 +94,16 @@ public class Log extends AbstractProcessBlock implements ProcessBlock {
 					}
 					else {
 						statusText = "Value is less than or equal to zero";
-						lastValue = new BasicQualifiedValue(Double.POSITIVE_INFINITY,new BasicQuality("<= zero",Quality.Level.Bad),qv.getTimestamp());
+						lastValue = new BasicQualifiedValue(Double.POSITIVE_INFINITY,QualityCode.Bad,qv.getTimestamp());
 					}
 				}
 				catch(NumberFormatException nfe) {
 					log.warnf("%s.acceptValue: Unable to convert incoming value to a double (%s)",TAG,nfe.getLocalizedMessage());
-					lastValue = new BasicQualifiedValue(Double.NaN,new BasicQuality(nfe.getLocalizedMessage(),Quality.Level.Bad),qv.getTimestamp());
+					lastValue = new BasicQualifiedValue(Double.NaN,QualityCode.Bad,qv.getTimestamp());
 				}
 			}
 			else {
-				lastValue = new BasicQualifiedValue(Double.NaN,new BasicQuality("null value",Quality.Level.Bad),qv.getTimestamp());
+				lastValue = new BasicQualifiedValue(Double.NaN,QualityCode.Bad,qv.getTimestamp());
 			}
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 			controller.acceptCompletionNotification(nvn);

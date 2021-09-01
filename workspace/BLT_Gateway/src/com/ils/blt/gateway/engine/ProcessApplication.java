@@ -9,6 +9,8 @@ import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.serializable.SerializableApplication;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
+import com.inductiveautomation.ignition.common.project.resource.ResourcePath;
 
 /**
  * An application is a specialized process node.
@@ -24,7 +26,7 @@ public class ProcessApplication extends ProcessNode {
 	 * @param parent UUID of the parent of this node.
 	 * @param self UUID of this node 
 	 */
-	public ProcessApplication(String name,ProjectPath parent,ProjectResourceId self) { 
+	public ProcessApplication(String name,ResourcePath parent,ProjectResourceId self) { 
 		super(name,parent,self);
 	}
 	
@@ -34,7 +36,7 @@ public class ProcessApplication extends ProcessNode {
 	 * @param parent 
 	 */
 	public ProcessApplication(SerializableApplication app,UUID parent) { 
-		super(app.getName(),parent,app.getId());
+		super(app.getName(),parent,app.getResourceId());
 		setState(app.getState());
 	}
 	
@@ -43,7 +45,7 @@ public class ProcessApplication extends ProcessNode {
 	@Override
 	public SerializableResourceDescriptor toResourceDescriptor() {
 		SerializableResourceDescriptor descriptor = super.toResourceDescriptor();
-		descriptor.setType(BLTProperties.APPLICATION_RESOURCE_TYPE);
+		descriptor.setType(BLTProperties.APPLICATION_RESOURCE_TYPE.getTypeId());
 		return descriptor;
 	}
 

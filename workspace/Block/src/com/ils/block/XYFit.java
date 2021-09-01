@@ -35,6 +35,7 @@ import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualityCode;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 
 /**
  * Compute the best fit line over a recent history of data points. The incoming
@@ -80,10 +81,10 @@ public class XYFit extends AbstractProcessBlock implements ProcessBlock {
 	 * Constructor. 
 	 * 
 	 * @param ec execution controller for handling block output
-	 * @param parent universally unique Id identifying the parent of this block
+	 * @param parent resource Id identifying the parent of this block (a diagram)
 	 * @param block universally unique Id for the block
 	 */
-	public XYFit(ExecutionController ec,UUID parent,UUID block) {
+	public XYFit(ExecutionController ec,ProjectResourceId parent,UUID block) {
 		super(ec,parent,block);
 		dog = new Watchdog(TAG,this);
 		log.infof("Creating (2) a value queue with %d elements", sampleSize);
@@ -98,7 +99,7 @@ public class XYFit extends AbstractProcessBlock implements ProcessBlock {
 		if( clearOnReset ) {
 			xQueue.clear();
 			yQueue.clear();
-			valueProperty.setValue(new Double(Double.NaN));
+			valueProperty.setValue(Double.NaN);
 		}
 	}
 	
@@ -114,16 +115,16 @@ public class XYFit extends AbstractProcessBlock implements ProcessBlock {
 		BlockProperty fillProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_FILL_REQUIRED,Boolean.TRUE,PropertyType.BOOLEAN,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_FILL_REQUIRED, fillProperty);
 		
-		BlockProperty synch = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL,new Double(synchInterval),PropertyType.TIME_SECONDS,true);
+		BlockProperty synch = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL,synchInterval,PropertyType.TIME_SECONDS,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL, synch);
 		
-		BlockProperty sampleSizeProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SAMPLE_SIZE,new Integer(sampleSize),PropertyType.INTEGER,true);
+		BlockProperty sampleSizeProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SAMPLE_SIZE,sampleSize,PropertyType.INTEGER,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_SAMPLE_SIZE, sampleSizeProperty);
 		
-		BlockProperty sfProperty = new BlockProperty(BLOCK_PROPERTY_SCALE_FACTOR,new Double(scaleFactor),PropertyType.DOUBLE,true);
+		BlockProperty sfProperty = new BlockProperty(BLOCK_PROPERTY_SCALE_FACTOR,scaleFactor,PropertyType.DOUBLE,true);
 		setProperty(BLOCK_PROPERTY_SCALE_FACTOR, sfProperty);
 		
-		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,new Double(Double.NaN),PropertyType.DOUBLE,false);
+		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,Double.NaN,PropertyType.DOUBLE,false);
 		valueProperty.setBindingType(BindingType.ENGINE);
 		setProperty(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
 
@@ -297,7 +298,7 @@ public class XYFit extends AbstractProcessBlock implements ProcessBlock {
 		super.propagate();
 		if( coefficients!=null && lastValue!=null ) {
 			// Propagate the slope scaled
-			QualifiedValue qv = new BasicQualifiedValue(new Double(coefficients[1]*scaleFactor),lastValue.getQuality(),lastValue.getTimestamp());
+			QualifiedValue qv = new BasicQualifiedValue(coefficients[1]*scaleFactor,lastValue.getQuality(),lastValue.getTimestamp());
 			OutgoingNotification nvn = new OutgoingNotification(this,SLOPE_PORT_NAME,qv);
 			controller.acceptCompletionNotification(nvn);
 		}
@@ -451,12 +452,12 @@ public class XYFit extends AbstractProcessBlock implements ProcessBlock {
 		notifyOfStatus(lastValue);
 		
 		// Propagate the slope scaled
-		qv = new BasicQualifiedValue(new Double(coefficients[1]*scaleFactor), x_qv.getQuality(), x_qv.getTimestamp());
+		qv = new BasicQualifiedValue(coefficients[1]*scaleFactor, x_qv.getQuality(), x_qv.getTimestamp());
 		nvn = new OutgoingNotification(this, SLOPE_PORT_NAME, qv);
 		controller.acceptCompletionNotification(nvn);
 		
 		// Propagate the y-intercept
-		qv = new BasicQualifiedValue(new Double(coefficients[0]), x_qv.getQuality(), x_qv.getTimestamp());
+		qv = new BasicQualifiedValue(coefficients[0], x_qv.getQuality(), x_qv.getTimestamp());
 		nvn = new OutgoingNotification(this, Y_INTERCEPT_PORT_NAME, qv);
 		controller.acceptCompletionNotification(nvn);
 	}

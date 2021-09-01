@@ -22,10 +22,9 @@ import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.ils.common.watchdog.Watchdog;
-import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.Quality;
 import com.inductiveautomation.ignition.common.model.values.QualityCode;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 
 /**
  * This class emits the "product" of its inputs. Synchronizing
@@ -54,10 +53,10 @@ public class Quotient extends AbstractProcessBlock implements ProcessBlock {
 	 * Constructor. 
 	 * 
 	 * @param ec execution controller for handling block output
-	 * @param parent universally unique Id identifying the parent of this block
+	 * @param parent resource Id identifying the parent of this block (a diagram)
 	 * @param block universally unique Id for the block
 	 */
-	public Quotient(ExecutionController ec,UUID parent,UUID block) {
+	public Quotient(ExecutionController ec,ProjectResourceId parent,UUID block) {
 		super(ec,parent,block);
 		dog = new Watchdog(TAG,this);
 		initialize();
@@ -69,7 +68,7 @@ public class Quotient extends AbstractProcessBlock implements ProcessBlock {
 	private void initialize() {	
 		setName("Quotient");
 		// Define the time for "coalescing" inputs ~ msec
-		BlockProperty synch = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL,new Double(synchInterval),PropertyType.TIME_SECONDS,true);
+		BlockProperty synch = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL,synchInterval,PropertyType.TIME_SECONDS,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL, synch);
 		
 		// Define a two inputs -- one for the divisor, one for the dividend
@@ -188,7 +187,7 @@ public class Quotient extends AbstractProcessBlock implements ProcessBlock {
 			
 			if( lastValue==null  || lastValue.getQuality().isGood()) {     // Success!
 				
-				lastValue = new TestAwareQualifiedValue(timer,new Double(aa/bb));
+				lastValue = new TestAwareQualifiedValue(timer,aa/bb);
 			}
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 			controller.acceptCompletionNotification(nvn);

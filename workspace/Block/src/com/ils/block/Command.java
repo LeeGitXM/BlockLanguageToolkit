@@ -19,6 +19,7 @@ import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.Signal;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 
 /**
  * This class emits a specified signal. It is a generalization of the Reset
@@ -43,10 +44,10 @@ public class Command extends Reset implements ProcessBlock {
 	 * Constructor. 
 	 * 
 	 * @param ec execution controller for handling block output
-	 * @param parent universally unique Id identifying the parent of this block
+	 * @param parent resource Id identifying the parent of this block (a diagram)
 	 * @param block universally unique Id for the block
 	 */
-	public Command(ExecutionController ec,UUID parent,UUID block) {
+	public Command(ExecutionController ec,ProjectResourceId parent,UUID block) {
 		super(ec,parent,block);
 		command = new Signal(BlockConstants.COMMAND_EVALUATE,"","");
 		initialize();

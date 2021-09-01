@@ -17,6 +17,7 @@ import com.ils.blt.common.notification.ConnectionPostNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 
 
 /**
@@ -31,29 +32,29 @@ public interface ExecutionController  {
 	public void acceptConnectionPostNotification(ConnectionPostNotification note);
 	public void clearCache();
 	public void clearSubscriptions();
-	public DiagnosticDiagram getDiagram(String diagramId);
+	public DiagnosticDiagram getDiagram(ProjectResourceId diagramId);
 	public String getIsolationDatabase();
 	public String getIsolationProvider();
 	public String getProductionDatabase();
-	public ProcessBlock getProcessBlock(String diagramId,String blockId);
+	public ProcessBlock getProcessBlock(ProjectResourceId diagramId,String blockId);
 	public String getProductionProvider();
 	public double getIsolationTimeFactor();
 	public String getSubscribedPath(ProcessBlock block,BlockProperty property);
 	public boolean hasActiveSubscription(ProcessBlock block,BlockProperty property,String tagPath);
-	public List<SerializableBlockStateDescriptor> listBlocksConnectedAtPort(String diagramId,String blockId,String portName);
-	public List<SerializableBlockStateDescriptor> listBlocksDownstreamOf(UUID diagramId,UUID blockId,boolean spanDiagrams);
-	public List<SerializableBlockStateDescriptor> listBlocksUpstreamOf(UUID diagramId,UUID blockId,boolean spanDiagrams);
-	public List<SerializableBlockStateDescriptor> listSinksForSource(String diagramId,String blockName);
-	public List<SerializableBlockStateDescriptor> listSourcesForSink(String diagramId,String blockName);
-	public QualifiedValue getTagValue(UUID diagramId,String path);
-	public void sendAlertNotification(long resid, String val);
+	public List<SerializableBlockStateDescriptor> listBlocksConnectedAtPort(ProjectResourceId diagramId,String blockId,String portName);
+	public List<SerializableBlockStateDescriptor> listBlocksDownstreamOf(ProjectResourceId diagramId,UUID blockId,boolean spanDiagrams);
+	public List<SerializableBlockStateDescriptor> listBlocksUpstreamOf(ProjectResourceId diagramId,UUID blockId,boolean spanDiagrams);
+	public List<SerializableBlockStateDescriptor> listSinksForSource(ProjectResourceId diagramId,String blockName);
+	public List<SerializableBlockStateDescriptor> listSourcesForSink(ProjectResourceId diagramId,String blockName);
+	public QualifiedValue getTagValue(ProjectResourceId diagramId,String path);
+	public void sendAlertNotification(ProjectResourceId resid, String val);
 	public void sendAuxDataNotification(String id,QualifiedValue val);
 	public void sendConnectionNotification(String blockid, String port, QualifiedValue val);
 	public void sendNameChangeNotification(String blockid, String name);
-	public void sendPropertyBindingNotification(String id, String propertyName, String val);
-	public void sendPropertyNotification(String id, String propertyName, QualifiedValue val);
-	public void sendStateNotification(long resid, String val);
-	public void sendWatermarkNotification(String diagramid, String val);
-	public void updateTag(UUID diagramId,String path,QualifiedValue val);
-	public String validateTag(UUID diagramId,String tagPath);
+	public void sendPropertyBindingNotification(String blockid, String propertyName, String val);
+	public void sendPropertyNotification(String blockid, String propertyName, QualifiedValue val);
+	public void sendStateNotification(ProjectResourceId resid, String val);
+	public void sendWatermarkNotification(ProjectResourceId diagramid, String val);
+	public void updateTag(ProjectResourceId diagramId,String path,QualifiedValue val);
+	public String validateTag(ProjectResourceId diagramId,String tagPath);
 }

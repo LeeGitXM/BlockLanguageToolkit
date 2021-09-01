@@ -46,7 +46,7 @@ public class RecommendationDelegate implements TextDelegate {
     @Override
     public String getBodyText(VisualItem item) {
     	int row = item.getInt(RecMapConstants.ROW);
-		Properties properties = propertyMap.get(new Integer(row));
+		Properties properties = propertyMap.get(row);
         StringBuilder sb = new StringBuilder();
         String auto = "0.0";
         String manual = "0.0";
@@ -84,7 +84,7 @@ public class RecommendationDelegate implements TextDelegate {
 	@Override
 	public String getTooltipText(VisualItem item) {
 		int row = item.getInt(RecMapConstants.ROW);
-		Properties properties = propertyMap.get(new Integer(row));
+		Properties properties = propertyMap.get(row);
 		return getHtml(item,properties);
 	}
 	

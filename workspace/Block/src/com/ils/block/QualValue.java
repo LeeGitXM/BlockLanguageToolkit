@@ -27,11 +27,9 @@ import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.Quality;
 import com.inductiveautomation.ignition.common.model.values.QualityCode;
-import com.inductiveautomation.ignition.common.sqltags.model.types.DataQuality;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 
 /**
  * Construct a qualified value from separate inputs for value, quality and time.
@@ -63,10 +61,10 @@ public class QualValue extends AbstractProcessBlock implements ProcessBlock {
 	 * Constructor. 
 	 * 
 	 * @param ec execution controller for handling block output
-	 * @param parent universally unique Id identifying the parent of this block
+	 * @param parent resource Id identifying the parent of this block (a diagram)
 	 * @param block universally unique Id for the block
 	 */
-	public QualValue(ExecutionController ec,UUID parent,UUID block) {
+	public QualValue(ExecutionController ec,ProjectResourceId parent,UUID block) {
 		super(ec,parent,block);
 		initialize();
 		dog = new Watchdog(getName(),this);
@@ -78,7 +76,7 @@ public class QualValue extends AbstractProcessBlock implements ProcessBlock {
 	private void initialize() {	
 		setName("QualifiedValue");
 		// Define the time for "coalescing" inputs ~ msec
-		BlockProperty synch = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL,new Double(synchInterval),PropertyType.TIME_SECONDS,true);
+		BlockProperty synch = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL,synchInterval,PropertyType.TIME_SECONDS,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL, synch);
 		BlockProperty formatProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_FORMAT,DEFAULT_FORMAT,PropertyType.STRING,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_FORMAT, formatProperty);

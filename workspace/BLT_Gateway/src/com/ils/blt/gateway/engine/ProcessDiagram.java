@@ -462,7 +462,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 								if( tagPath!=null && tagPath.length()>0 ) {
 									List<SerializableResourceDescriptor> descriptors = controller.getDiagramDescriptors();
 									for(SerializableResourceDescriptor desc:descriptors) {
-										UUID diaguuid = makeUUID(desc.getId());
+										UUID diaguuid = makeUUID(desc.getResourceId());
 										ProcessDiagram diagram = controller.getDiagram(diaguuid);
 										for(ProcessBlock sink:diagram.getProcessBlocks()) {
 											if( sink.getBlockId().equals(root.getBlockId())) continue;  // Skip the root
@@ -652,7 +652,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 	@Override
 	public SerializableResourceDescriptor toResourceDescriptor() {
 		SerializableResourceDescriptor descriptor = super.toResourceDescriptor();
-		descriptor.setType(BLTProperties.DIAGRAM_RESOURCE_TYPE);
+		descriptor.setType(BLTProperties.DIAGRAM_RESOURCE_TYPE.getTypeId());
 		return descriptor;
 	}
 	/**
