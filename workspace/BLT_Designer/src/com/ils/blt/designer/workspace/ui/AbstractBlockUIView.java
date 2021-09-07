@@ -133,7 +133,7 @@ public abstract class AbstractBlockUIView extends JComponent implements BlockVie
 		hiddenIndex = -1;     // Unless set, nothing is hidden
 		// Create counts for each side. There are both defaults and placement hints.
 		// Anchors come back unsorted, which may result in undesirable display behavior (y before x, etc) so sort them first
-		ArrayList<ProcessAnchorDescriptor> anchs = new ArrayList(block.getAnchors());
+		ArrayList<ProcessAnchorDescriptor> anchs = new ArrayList<>(block.getAnchors());
 		Collections.sort(anchs, Comparator.comparing(ProcessAnchorDescriptor::getSortOrder));  // I don't think sortOrder is actually used - CJL
 		
 		for(ProcessAnchorDescriptor desc:anchs) {

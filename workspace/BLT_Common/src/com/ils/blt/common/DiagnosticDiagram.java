@@ -5,7 +5,8 @@ package com.ils.blt.common;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.UUID;
+
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 
 /**
  * A diagram is the parent container for related blocks. Currently this interface
@@ -23,7 +24,7 @@ public interface DiagnosticDiagram  {
 	 */
 	public Collection<ProcessBlock> getProcessBlocks();
 	
-	public UUID getSelf();
+	public ProjectResourceId getResourceId();
 	public DiagramState getState();
 	
 	/**

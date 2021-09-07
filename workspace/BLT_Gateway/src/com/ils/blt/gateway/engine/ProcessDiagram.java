@@ -180,7 +180,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 			UUID id = sb.getId();
 			ProcessBlock pb = blocks.get(id);
 			if( pb==null ) {
-				pb = blockFactory.blockFromSerializable(getSelf(),sb,getProjectName());
+				pb = blockFactory.blockFromSerializable(id,sb,getProjectName());
 				if( pb!=null ) {
 					// Set the proper timer
 					if(DiagramState.ACTIVE.equals(state)) pb.setTimer(controller.getTimer());

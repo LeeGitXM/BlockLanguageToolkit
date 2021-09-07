@@ -52,7 +52,7 @@ public class ProcessNodeProvider implements ITreeProvider<ProcessNode> {
     	RootNode root = modelManager.getRootNode();
     	Collection<ProcessNode> roots = new ArrayList<>();
     	for(String name:root.allProjects() ){
-    		ProjectNode pn = new ProjectNode(root,UUID.randomUUID(),name);
+    		ProjectNode pn = new ProjectNode(root,resourceId);
     		roots.add(pn);
     	}
         return roots.iterator();

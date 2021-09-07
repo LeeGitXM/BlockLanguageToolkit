@@ -30,12 +30,12 @@ public interface ScriptConstants   {
 	public final static String SET_AUX_OPERATION     = "SetAux";
 	
 	// The arguments are fixed for each type of script
-	public final static String DELETE_SCRIPT_ARGS      = "uuid";
-	public final static String GET_AUX_SCRIPT_ARGS     = "uuid,properties,db";
+	public final static String DELETE_SCRIPT_ARGS      = "path";
+	public final static String GET_AUX_SCRIPT_ARGS     = "path,properties,db";
 	public final static String GET_LIST_SCRIPT_ARGS    = "key,lst,db";
-	public final static String RENAME_SCRIPT_ARGS      = "uuid,oldName,newName";
-	public final static String SAVE_SCRIPT_ARGS        = "uuid";
-	public final static String SET_AUX_SCRIPT_ARGS     = "uuid,properties,db";
+	public final static String RENAME_SCRIPT_ARGS      = "path,oldName,newName";
+	public final static String SAVE_SCRIPT_ARGS        = "path";
+	public final static String SET_AUX_SCRIPT_ARGS     = "path,properties,db";
 
 	// For the GetList extension function, these are the known keys
 	public final static String LIST_KEY_FEEDBCK_METHOD     = "FeedbackMethod";

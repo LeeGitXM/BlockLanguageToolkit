@@ -10,10 +10,10 @@ import java.util.Optional;
 import com.ils.blt.common.BLTProperties;
 import com.ils.common.log.ILSLogger;
 import com.ils.common.log.LogMaker;
-import com.inductiveautomation.ignition.common.model.ApplicationScope;
 import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.RuntimeProject;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
+import com.inductiveautomation.ignition.designer.project.DesignableProject;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 
 /**
@@ -99,9 +99,9 @@ public class ProcessNodeSynchronizer {
     		// Delete the current node and all its children.
     		GatewayContext context = modelManager.getContext();
     		Optional<RuntimeProject> optional = context.getProjectManager().getProject(key.getProjectName());
-    		Project project = optional.get();
+    		DesignableProject project = (DesignableProject) optional.get();
     		if( project!=null ) {
-    			project.deleteResource(key.getResourceId(), true); // Mark as dirty
+    			project.deleteResource(key.getResourceId()); // Mark as dirty
     			try {
     				context.getProjectManager().saveProject(project, null, null, "Removing orphan resource", false);
     			}
