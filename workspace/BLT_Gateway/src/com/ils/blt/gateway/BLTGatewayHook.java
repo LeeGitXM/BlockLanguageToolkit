@@ -20,7 +20,6 @@ import com.ils.blt.gateway.wicket.ToolkitStatusPanel;
 import com.ils.common.log.ILSLogger;
 import com.ils.common.log.LogMaker;
 import com.ils.common.persistence.ToolkitRecord;
-import com.ils.common.persistence.ToolkitRecordHandler;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.licensing.LicenseState;
 import com.inductiveautomation.ignition.common.project.Project;

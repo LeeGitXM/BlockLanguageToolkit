@@ -120,27 +120,27 @@ public class ModelManager implements ProjectListener  {
 	 * @param res the model resource
 	 * @param startup
 	 */
-	public void analyzeResource(ProjectResourceId projectId,ProjectResource res,boolean startup) {
-		
-		if( projectId.getResourceType().getModuleId()!=null && projectId.getResourceType().getModuleId().equalsIgnoreCase(BLTProperties.MODULE_ID)) {
+	public void analyzeResource(ProjectResource res,boolean startup) {
+		ProjectResourceId resourceId = res.getResourceId();
+		if( resourceId.getResourceType().getModuleId()!=null && resourceId.getResourceType().getModuleId().equalsIgnoreCase(BLTProperties.MODULE_ID)) {
 			ResourceType type = res.getResourceType();
 			
 			if( type.equals(BLTProperties.APPLICATION_RESOURCE_TYPE) ) {
 				if(DEBUG) log.infof("%s.analyzeResource: adding an application = %s %s", CLSS, res.getResourceName(), (startup?"(STARTUP)":""));
-				addModifyApplicationResource(projectId,res,startup);
+				addModifyApplicationResource(res,startup);
 			}
 			else if( type.equals(BLTProperties.FAMILY_RESOURCE_TYPE) ) {
 				if(DEBUG) log.infof("%s.analyzeResource: adding a family = %s %s", CLSS, res.getResourceName(), (startup?"(STARTUP)":""));
-				addModifyFamilyResource(projectId,res,startup);
+				addModifyFamilyResource(res,startup);
 			}
 			else if( type.equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
 				if(DEBUG) log.infof("%s.analyzeResource: adding a diagram = %s %s", CLSS, res.getResourceName(), (startup?"(STARTUP)":""));
-				addModifyDiagramResource(projectId,res,startup);
+				addModifyDiagramResource(res,startup);
 				if(DEBUG) log.infof("%s.analyzeResource: diagram %s successfully added!", CLSS, res.getResourceName() );
 			}
 			else if( type.equals(BLTProperties.FOLDER_RESOURCE_TYPE) ) {
 				if(DEBUG) log.infof("%s.analyzeResource: adding a folder = %s %s", CLSS, res.getResourceName(), (startup?"(STARTUP)":""));
-				addModifyFolderResource(projectId,res);
+				addModifyFolderResource(res);
 			}
 			else {
 				// Don't care
@@ -573,11 +573,11 @@ public class ModelManager implements ProjectListener  {
         if( staging!=null ) {
             if( staging.isEnabled() && staging.getResourceId()!=-1 ) {
                 long projectId = staging.getResourceId();
-                uuidByProjectId.put(new Long(projectId), staging.getUuid());
+                uuidByProjectId.put(projectId, staging.getUuid());
                 List<ProjectResource> resources = staging.getResources();
                 for( ProjectResource res:resources ) {
                 	if(DEBUG) log.infof("%s.projectAdded: resource %d.%d %s (%s)", CLSS, projectId, res.getResourceId(), res.getName(), res.getResourceType());
-                    analyzeResource(projectId,res,false);
+                    analyzeResource(res,false);
                 }
             }
         }

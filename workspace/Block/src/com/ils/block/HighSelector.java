@@ -27,9 +27,7 @@ import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.Quality;
 import com.inductiveautomation.ignition.common.model.values.QualityCode;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 
