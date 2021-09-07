@@ -77,7 +77,7 @@ public class ScriptExtensionManager {
 		try {
 			String path = tagPathForClass(className);
 			String moduleName = moduleFromTag(provider,path,operation);
-			String args = argumenstForOperation(operation);
+			String args = argumentsForOperation(operation);
 			if( moduleName != null) {
 				script = new Script(moduleName,args);
 			}
@@ -154,7 +154,7 @@ public class ScriptExtensionManager {
 				}
 			}
 			// NOTE: If the exception message consists of a single digit, it my be referring to an issue with 
-			// the nth argument (e.g. wrong numbr of arguments).
+			// the nth argument (e.g. wrong number of arguments).
 			catch(Exception ex) {
 				log.warnf("%s.runScript: Exception %s)",CLSS,ex.getMessage());
 			}
@@ -164,7 +164,7 @@ public class ScriptExtensionManager {
 		}
 	}
 	
-	private String argumenstForOperation(String operation) {
+	private String argumentsForOperation(String operation) {
 		String args = null;
 		if( ScriptConstants.DELETE_OPERATION.equalsIgnoreCase(operation)) {
 			args = ScriptConstants.DELETE_SCRIPT_ARGS;

@@ -59,7 +59,6 @@ import com.ils.common.watchdog.AcceleratedWatchdogTimer;
 import com.inductiveautomation.ignition.common.datasource.DatasourceStatus;
 import com.inductiveautomation.ignition.common.model.ApplicationScope;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualityCode;
 import com.inductiveautomation.ignition.common.project.Project;
@@ -510,9 +509,9 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * @return a SerializableBlockStateDescriptor
 	 */
 	@Override
-	public SerializableBlockStateDescriptor getInternalState(String diagramId,String blockId) {
+	public SerializableBlockStateDescriptor getInternalState(ProjectResourceId diagramId,String blockId) {
 		SerializableBlockStateDescriptor descriptor = null;
-		ProcessDiagram diagram = controller.getDiagram(UUID.fromString(diagramId));
+		ProcessDiagram diagram = controller.getDiagram(diagramId);
 		if(diagram!=null) {
 			ProcessBlock block = controller.getBlock(diagram, UUID.fromString(blockId));
 			if( block!=null ) descriptor = block.getInternalStatus();

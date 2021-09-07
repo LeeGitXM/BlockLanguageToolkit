@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -371,13 +373,9 @@ public class TagListener implements TagChangeListener   {
 				log.error(CLSS+".tagChanged exception ("+ex.getMessage()+")",ex);
 			}
 		}
-		else if(tag!=null && tag.getValue()==null) {
-			// Missing value
-			log.warnf("%s.tagChanged: Tag (%s) has no value (ignored)",CLSS,(tp==null?"null":tp.toStringFull()));
-		}
 		else {
 			// Tag or path is null
-			log.warnf("%s.tagChanged: Unknown tag (%s) or tag path (%s)",CLSS,(tag==null?"null":tag.getName()),(tp==null?"null":tp.toStringFull()));
+			log.warnf("%s.tagChanged: Unknown tag (%s)",CLSS,(tp==null?"null":tp.toStringFull()));
 		}
 	}
 	
@@ -444,21 +442,20 @@ public class TagListener implements TagChangeListener   {
 		QualifiedValue value = null;
 		try {
 			TagPath tp = TagPathParser.parse(tagPath);
-			Tag tag = tmgr.getTag(tp);
-			if( tag!=null ) {
-				value = tag.getValue();
-				if( DEBUG || log.isTraceEnabled() ) log.infof("%s.updatePropertyValueDirectlyFromTag: %s = %s (%s at %s)",CLSS,
-						tp.toStringFull(),value.getValue(),
-						(value.getQuality().isGood()?"GOOD":"BAD"),
-						dateFormatter.format(value.getTimestamp()));
-
-				if(value.getValue()==null ) {
-					QualityCode q = QualityCode.Bad;
-					value = new BasicQualifiedValue(null,q);
-				}
-			}
-			else {
-				log.errorf("%s.updatePropertyValueDirectlyFromTag: Failed. (%s unknown to provider)",CLSS,tp.toStringFull());
+			List<TagPath> paths = new ArrayList<>();
+			paths.add(tp);
+			CompletableFuture<List<QualifiedValue>> future = tmgr.readAsync(paths,SecurityContext.systemContext());
+			List<QualifiedValue> values;
+			try {
+				values = future.get();
+				if( values!=null && !values.isEmpty()) value = values.get(0);
+				if( !tp.getSource().equalsIgnoreCase("system")  )log.debugf("%s.readTag: %s = %s",CLSS,tagPath,value.toString());
+			} 
+			catch (InterruptedException iex) {
+				log.warnf("%s.readTag: Interupted getting value for path %s",CLSS,tagPath);
+			} 
+			catch (ExecutionException eex) {
+				log.warnf("%s.readTag: Execution exception for path %s (%s)",CLSS,tagPath,eex.getLocalizedMessage());
 			}
 		}
         catch(IllegalArgumentException iae ) {

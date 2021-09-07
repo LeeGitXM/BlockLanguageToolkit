@@ -15,6 +15,7 @@ import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.gateway.PythonRequestHandler;
 import com.ils.common.GeneralPurposeDataContainer;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 
 
@@ -39,7 +40,7 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	 * @param parent ID of the diagram of which the block is a part
 	 * @param block identifier
 	 */
-	public ProxyBlock(GatewayContext ctx,String clss,UUID parent,UUID block) {
+	public ProxyBlock(GatewayContext ctx,String clss,ProjectResourceId parent,UUID block) {
 		super(null,parent,block);
 		this.context = ctx;
 		this.className = clss;
