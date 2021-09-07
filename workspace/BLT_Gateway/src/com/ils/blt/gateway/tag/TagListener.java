@@ -405,7 +405,7 @@ public class TagListener implements TagChangeListener   {
 			}
 			// Convert any floats to doubles
 			else if( val instanceof Float ) {
-				val = new Double((Float)val);
+				val = (Float)val;
 			}
 			
 			// Treat the notification differently depending on the binding

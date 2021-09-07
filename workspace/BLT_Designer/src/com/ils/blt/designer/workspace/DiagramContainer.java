@@ -10,7 +10,6 @@ import java.awt.font.GlyphVector;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 
-import com.ils.blt.common.UtilityFunctions;
 import com.inductiveautomation.ignition.designer.blockandconnector.AbstractBlockWorkspace;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignableContainer;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.BlockDiagramModel;
@@ -20,11 +19,9 @@ import com.inductiveautomation.ignition.designer.blockandconnector.routing.EdgeR
 public class DiagramContainer extends BlockDesignableContainer {
 	private static final long serialVersionUID = 7484274138362308991L;
 	private static final double WATERMARK_ROTATION = -0.3; // Radians counter-clockwise
-	private final UtilityFunctions fncs;
 
 	public DiagramContainer(AbstractBlockWorkspace workspace,BlockDiagramModel model,EdgeRouter router,ConnectionPainter painter) {
 		super(workspace, model, router, painter);
-		fncs = new UtilityFunctions();
 		
 	}
 	

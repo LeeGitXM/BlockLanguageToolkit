@@ -170,7 +170,7 @@ public class ConfigurationDialog extends JDialog {
 	protected JFormattedTextField createIntegerField(String bundle,String text) {	
 		final JFormattedTextField field = new JFormattedTextField(NumberFormat.getInstance());
 		int i = fcns.coerceToInteger(text);
-		field.setValue(new Integer(i));
+		field.setValue(i);
 		field.setPreferredSize(NAME_BOX_SIZE);
 		field.setEditable(true);
 		field.setToolTipText(rb.getString(bundle));

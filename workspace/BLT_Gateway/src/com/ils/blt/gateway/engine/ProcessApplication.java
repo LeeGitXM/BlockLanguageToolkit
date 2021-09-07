@@ -1,9 +1,7 @@
 /**
- *   (c) 2014-2015  ILS Automation. All rights reserved. 
+ *   (c) 2014-2021  ILS Automation. All rights reserved. 
  */
 package com.ils.blt.gateway.engine;
-
-import java.util.UUID;
 
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagramState;
@@ -24,7 +22,7 @@ public class ProcessApplication extends ProcessNode {
 	 *
 	 * @param name of the node
 	 * @param parent UUID of the parent of this node.
-	 * @param self UUID of this node 
+	 * @param self ResourceId of this node 
 	 */
 	public ProcessApplication(String name,ResourcePath parent,ProjectResourceId self) { 
 		super(name,parent,self);
@@ -35,8 +33,8 @@ public class ProcessApplication extends ProcessNode {
 	 * @param app the serialized object that represents the application.
 	 * @param parent 
 	 */
-	public ProcessApplication(SerializableApplication app,UUID parent) { 
-		super(app.getName(),parent,app.getResourceId());
+	public ProcessApplication(SerializableApplication app,ResourcePath parent,String projectName) { 
+		super(app.getName(),parent,projectName,BLTProperties.APPLICATION_RESOURCE_TYPE.getTypeId());
 		setState(app.getState());
 	}
 	

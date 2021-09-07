@@ -9,11 +9,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.log.ILSLogger;
 import com.ils.common.log.LogMaker;
+import com.inductiveautomation.ignition.common.StringPath;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 import com.inductiveautomation.ignition.common.project.resource.ResourcePath;
 
@@ -28,6 +30,7 @@ public class ProcessNode implements Serializable {
 	private final Map<ProjectResourceId,ProcessNode> children;   // Key by resourceId
 	protected final ILSLogger log;
 	private String name;
+	protected final ApplicationRequestHandler requestHandler;
 	protected ResourcePath parent;
 	protected ProjectResourceId resourceId;   // Resource set when serialized.
 	private final String CLSS = "ProcessNode";
@@ -37,9 +40,28 @@ public class ProcessNode implements Serializable {
 	 * Constructor: 
 	 * @param nam of the node
 	 * @param parent UUID of the parent of this node.
+	 * @param projectName project for this resource
+	 * @param path string path to this resource
+	 * @param type resource type as a string 
+	 */
+	public ProcessNode(String nam, ResourcePath parent, String projectName,String type) { 
+		requestHandler = new ApplicationRequestHandler();
+		this.parent = parent;
+		StringPath path = StringPath.extend(parent.getPath(), nam);
+		this.resourceId = requestHandler.createResourceId(projectName, path.toString(),type);
+		this.auxiliaryData = new GeneralPurposeDataContainer();
+		this.children = new HashMap<>();
+		this.log = LogMaker.getLogger(this);
+	}
+	
+	/**
+	 * Constructor: 
+	 * @param nam of the node
+	 * @param parent UUID of the parent of this node.
 	 * @param me UUID of this node 
 	 */
 	public ProcessNode(String nam, ResourcePath parent, ProjectResourceId me) { 
+		requestHandler = new ApplicationRequestHandler();
 		this.resourceId = me;
 		this.parent = parent;
 		this.name = nam;
@@ -67,7 +89,16 @@ public class ProcessNode implements Serializable {
 		return result;
 	}
 
-	public ProcessNode getChildForName(String nam) { return children.get(nam); }
+	public ProcessNode getChildForName(String nam) {
+		ProcessNode child = null;
+		for(ProcessNode node:children.values()) {
+			if(node.getName().equalsIgnoreCase(name)) {
+				child = node;
+				break;
+			}
+		}
+		return child;
+	}
 	public Collection<ProcessNode> getChildren() { return children.values(); }
 	public String getName() {return name;}
 	/**

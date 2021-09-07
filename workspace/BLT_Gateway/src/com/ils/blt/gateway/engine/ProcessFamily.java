@@ -3,8 +3,6 @@
  */
 package com.ils.blt.gateway.engine;
 
-import java.util.UUID;
-
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.serializable.SerializableFamily;
@@ -32,11 +30,12 @@ public class ProcessFamily extends ProcessNode {
 	
 	/**
 	 * Constructor: Create a Gateway object that encapsulates attributes of a Family.
-	 * @param fam the serialized object that represents the family.
+	 * @param app the serialized object that represents the family.
 	 * @param parent 
 	 */
-	public ProcessFamily(SerializableFamily fam,ResourcePath parent) { 
-		super(fam.getName(),parent,fam.getResourceId());
+	public ProcessFamily(SerializableFamily fam,ResourcePath parent,String projectName) { 
+		super(fam.getName(),parent,projectName,BLTProperties.FAMILY_RESOURCE_TYPE.getTypeId());
+		setState(fam.getState());
 	}
 	
 	public DiagramState getState() {return state;}

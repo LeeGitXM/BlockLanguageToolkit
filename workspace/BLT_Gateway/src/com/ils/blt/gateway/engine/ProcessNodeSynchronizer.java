@@ -22,7 +22,7 @@ import com.inductiveautomation.ignition.gateway.model.GatewayContext;
  * This is used on the wicket status page.
  */
 public class ProcessNodeSynchronizer {
-    private final static String TAG = "ProcessNodeSynchronizer";
+    private final static String CLSS = "ProcessNodeSynchronizer";
     private final ILSLogger log;
     private final ModelManager modelManager;
     private final List<ProjectResourceKey> nodesToDelete;
@@ -42,16 +42,16 @@ public class ProcessNodeSynchronizer {
      * are not backed up in the model.
      */
     public void createMissingResources() {
-    	log.infof("%s.createMissingResources ========================== Create Missing Resources ==================================", TAG);
+    	log.infof("%s.createMissingResources ========================== Create Missing Resources ==================================", CLSS);
     	Map<ProjectResourceKey,ProcessNode> nodeMap = modelManager.getNodesByKey();
     	for(ProjectResourceKey key:resourceMap.keySet()) {
     		if( nodeMap.get(key)==null) {
-    			log.infof("%s.createMissingResources: ADDING node %d:%d %s (project resource not represented)", TAG,key.getProjectName(),key.getResourceId(),
+    			log.infof("%s.createMissingResources: ADDING node %d:%d %s (project resource not represented)", CLSS,key.getProjectName(),key.getResourceId(),
     					resourceMap.get(key).getProjectName());
-    			modelManager.analyzeResource(key.getProjectName(), resourceMap.get(key),true);
+    			modelManager.analyzeResource(resourceMap.get(key),true);
     		}
     	}
-    	log.infof("%s.createMissingResources ============================     Complete    ====================================", TAG);
+    	log.infof("%s.createMissingResources ============================     Complete    ====================================", CLSS);
     }
     
     /**
@@ -59,19 +59,19 @@ public class ProcessNodeSynchronizer {
      * Delete any that are not backed up by actual process resources.
      */
     public void removeExcessNodes() {
-    	log.infof("%s.removeExcessNodes ======================== Remove Excess Nodes ================================", TAG);
+    	log.infof("%s.removeExcessNodes ======================== Remove Excess Nodes ================================", CLSS);
     	nodesToDelete.clear();
     	Map<ProjectResourceKey,ProcessNode> nodeMap = modelManager.getNodesByKey();
     	for(ProjectResourceKey key:nodeMap.keySet()) {
     		if( resourceMap.get(key)==null ) {
     			nodesToDelete.add(key);
-    			log.infof("%s.removeExcessNodes: DELETING node %d:%d (not backed by project resource)", TAG,key.getProjectName(),key.getResourceId());
+    			log.infof("%s.removeExcessNodes: DELETING node %d:%d (not backed by project resource)", CLSS,key.getProjectName(),key.getResourceId());
     		}
     	}
     	for(ProjectResourceKey key:nodesToDelete) {
-    		modelManager.deleteResource(key.getProjectName(), key.getResourceId());
+    		modelManager.deleteResource(key.getResourceId());
     	}
-    	log.infof("%s.removeExcessNodes ==========================       Complete      ==================================", TAG);
+    	log.infof("%s.removeExcessNodes ==========================       Complete      ==================================", CLSS);
     }
     
     /**
@@ -81,37 +81,38 @@ public class ProcessNodeSynchronizer {
      * to a legacy issue and will never happen again.
      */
     public void removeOrphans() {
-    	log.infof("%s.removeOrphans ======================== Removing Orphans ================================", TAG);
+    	log.infof("%s.removeOrphans ======================== Removing Orphans ================================", CLSS);
     	nodesToDelete.clear();
     	Map<ProjectResourceKey,ProcessNode> nodesByKey = modelManager.getNodesByKey();
     	Collection<ProcessNode> nodes = nodesByKey.values();
     	RootNode root = modelManager.getRootNode();
     	for( ProcessNode child:nodes) {
-    		if( !child.getSelf().equals(root.getSelf()) && modelManager.getProcessNode(child.getParent())==null ) {
+    		if( !child.getResourceId().equals(root.getResourceId()) && modelManager.getProcessNode(child.getResourceId())==null ) {
     			ProjectResourceKey key = new ProjectResourceKey(child.getResourceId());
     			nodesToDelete.add(key);
-    			log.infof("%s.removeOrphans: DELETING node %d:%d (has no parent)", TAG,key.getProjectName(),key.getResourceId());
+    			log.infof("%s.removeOrphans: DELETING node %d:%d (has no parent)", CLSS,key.getProjectName(),key.getResourceId());
     		}
     	}
     	// Actually remove the resource.
     	for(ProjectResourceKey key:nodesToDelete) {
-    		modelManager.deleteResource(key.getProjectName(), key.getResourceId());
+    		modelManager.deleteResource(key.getResourceId());
     		// Delete the current node and all its children.
     		GatewayContext context = modelManager.getContext();
-    		Project project = context.getProjectManager().getProject(key.getProjectName(), ApplicationScope.GATEWAY, ProjectVersion.Staging);
+    		Optional<RuntimeProject> optional = context.getProjectManager().getProject(key.getProjectName());
+    		Project project = optional.get();
     		if( project!=null ) {
     			project.deleteResource(key.getResourceId(), true); // Mark as dirty
     			try {
     				context.getProjectManager().saveProject(project, null, null, "Removing orphan resource", false);
     			}
     			catch(Exception ex) {
-    				log.warnf("%s.removeOrphans: Failed to save project when deleting node %d:%d (%s)", TAG,key.getProjectName(),key.getResourceId(),
+    				log.warnf("%s.removeOrphans: Failed to save project when deleting node %d:%d (%s)", CLSS,key.getProjectName(),key.getResourceId(),
     						   ex.getMessage());
     			}
     		}
 
     	}
-    	log.infof("%s.removeOrphans ==========================       Complete      ==================================", TAG);
+    	log.infof("%s.removeOrphans ==========================       Complete      ==================================", CLSS);
     }
 
     private Map<ProjectResourceKey,ProjectResource> createResourceMap(GatewayContext context) {

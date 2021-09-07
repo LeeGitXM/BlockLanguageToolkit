@@ -38,6 +38,7 @@ import com.ils.common.persistence.ToolkitProperties;
 import com.ils.common.watchdog.WatchdogTimer;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
+import com.inductiveautomation.ignition.common.project.resource.ResourcePath;
 
 /**
  * This diagram is the "model" that encapsulates the structure of the blocks and connections
@@ -66,11 +67,9 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 	 * @param diagm the serializable version of this object.
 	 * @param parent 
 	 */
-	public ProcessDiagram(SerializableDiagram diagm,UUID parent,String projName) { 
-		super(diagm.getName(),parent,diagm.getId());
+	public ProcessDiagram(SerializableDiagram diagm,ResourcePath parent,String projectName) { 
+		super(diagm.getName(),parent,projectName,BLTProperties.DIAGRAM_RESOURCE_TYPE.getTypeId());
 		this.state = diagm.getState();
-		this.resourceId = diagm.getResourceId();
-		this.projectName = projName;
 		blocks = new HashMap<UUID,ProcessBlock>();
 		connectionMap = new HashMap<ConnectionKey,ProcessConnection>();
 		displays = new HashMap<>();
@@ -186,7 +185,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 					// Set the proper timer
 					if(DiagramState.ACTIVE.equals(state)) pb.setTimer(controller.getTimer());
 					else if(DiagramState.ISOLATED.equals(state)) pb.setTimer(controller.getSecondaryTimer());
-					pb.setProjectName(projectName);
+					pb.setProjectName(resourceId.getProjectName());
 					blocks.put(pb.getBlockId(), pb);
 					if( DEBUG ) log.infof("%s.createBlocks: New block %s(%d)", CLSS, pb.getName(), pb.hashCode());
 
@@ -462,8 +461,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 								if( tagPath!=null && tagPath.length()>0 ) {
 									List<SerializableResourceDescriptor> descriptors = controller.getDiagramDescriptors();
 									for(SerializableResourceDescriptor desc:descriptors) {
-										UUID diaguuid = makeUUID(desc.getResourceId());
-										ProcessDiagram diagram = controller.getDiagram(diaguuid);
+										ProcessDiagram diagram = controller.getDiagram(desc.getResourceId());
 										for(ProcessBlock sink:diagram.getProcessBlocks()) {
 											if( sink.getBlockId().equals(root.getBlockId())) continue;  // Skip the root
 											if( sink.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SINK) ) {
@@ -719,7 +717,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 	 * Stop all subscriptions for properties in blocks in this diagram
 	 */
 	public void stopSubscriptions() {
-		if( DEBUG ) log.infof("%s.stopSubscriptions: project %s:%s",CLSS,projectName,getName());
+		if( DEBUG ) log.infof("%s.stopSubscriptions: project %s:%s",CLSS,resourceId.getProjectName(),getName());
 		for( ProcessBlock pb:getProcessBlocks()) {
 			for(BlockProperty bp:pb.getProperties()) {
 				if(DEBUG && bp.getBinding()!=null && !bp.getBinding().isEmpty()) {

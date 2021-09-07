@@ -1098,7 +1098,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		boolean result = false;
 		try {
 			Boolean value = GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "sendTimestampedSignal",diagramId,command,message,arg,new Long(time));
+					BLTProperties.MODULE_ID, "sendTimestampedSignal",diagramId,command,message,arg,time);
 			if( value!=null ) result = value.booleanValue();
 		}
 		catch(Exception ex) {

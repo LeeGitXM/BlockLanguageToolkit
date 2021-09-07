@@ -28,10 +28,10 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
  */
 @SuppressWarnings("serial")
 public class SourceMainPanel extends MainPanel {
-	private final static String TAG = "SourceMainPanel";
+	private final static String CLSS = "SourceMainPanel";
 	public final static String PROP_NAME = "Associated Sink";
 	private SerializableBlockStateDescriptor sink;
-	private BlockProperty property = null;  // THe "pseudo" property
+	private BlockProperty property = null;  // The "pseudo" property
 	
 	public SourceMainPanel(DesignerContext context,BlockPropertyEditor editor,ProcessBlockView blk, DiagramWorkspace wrkspc) {
 		super(context,editor,blk,wrkspc);
