@@ -73,7 +73,7 @@ import simpleorm.dataset.SQuery;
 /**
  *  This handler provides is a common class for handling requests for block properties and control
  *  of the execution engine. The requests can be expected arrive both through the scripting interface
- *  and the RPC diispatcher.In general, the calls are made to update properties 
+ *  and the RPC dispatcher.In general, the calls are made to update properties 
  *  in the block objects and to trigger their evaluation.
  *  
  *  
@@ -114,8 +114,8 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		return instance;
 	}
 	@Override
-	public synchronized List<SerializableResourceDescriptor> childNodes(String nodeId) {
-		ProcessNode node = controller.getProcessNode(node.getResourceId());
+	public List<SerializableResourceDescriptor> childNodes(ProjectResourceId nodeId) {
+		ProcessNode node = controller.getProcessNode(nodeId);
 		List<SerializableResourceDescriptor> result = new ArrayList<>();
 		if( node!=null ) {
 			Collection<ProcessNode> children =  node.getChildren();
@@ -144,14 +144,13 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	}
 	
 	/**
-	 * Create an instance of a named class. If the class is not found in the JVM, try Python 
+	 * Create an instance of a named class. If the class is not found in the JVM, try Python. 
 	 * @param className class to create
 	 * @param parentId diagram identifier
 	 * @param blockId identifier to assign to the newly created block
 	 * @return the instance created, else null
 	 */
-	public ProcessBlock createInstance(String className,UUID parentId,UUID blockId) {
-		
+	public ProcessBlock createInstance(String className,ProjectResourceId parentId,UUID blockId) {
 		log.debugf("%s.createInstance of %s (%s:%s)",CLSS,className,(parentId==null?"null":parentId.toString()),blockId.toString());
 		ProcessBlock block = null;
 		try {
@@ -552,7 +551,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		return getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER);
 	}
 	@Override
-	public Object getPropertyBinding(String diagramId, String blockId,String propertyName) {
+	public Object getPropertyBinding(ProjectResourceId diagramId, String blockId,String propertyName) {
 		BlockProperty property = null;
 		UUID diagramUUID;
 		UUID blockUUID;

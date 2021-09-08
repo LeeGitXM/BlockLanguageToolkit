@@ -1068,8 +1068,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 						final ProjectResourceId newId = handler.createResourceId(diaId.getProjectName(), diaId.getResourcePath().getPath().toString(), diaId.getResourceType().toString());
 						SerializableDiagram diagram = new SerializableDiagram();
 						diagram.setName(pbv.getName());
-						diagram.setResourceId(newId);
-						diagram.setId(UUID.randomUUID());
 						diagram.setEncapsulationBlockId(pbv.getId());
 						diagram.setDirty(false);    // Will become dirty as soon as we add a block
 						log.infof("%s: new diagram for encapsulation block ...",CLSS);

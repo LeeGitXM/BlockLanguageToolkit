@@ -50,7 +50,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	}
 
 	@Override
-	public List<SerializableResourceDescriptor> childNodes(String nodeId) {
+	public List<SerializableResourceDescriptor> childNodes(ProjectResourceId nodeId) {
 		return null;
 	}
 

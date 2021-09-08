@@ -150,8 +150,7 @@ public class ProxyHandler   {
 	}
 
 	
-	public ProxyBlock createBlockInstance(String classNm,UUID parentId,UUID blockId,String projectName,String name) {
-		String className = removeXomFromClassName(classNm);  // EREIAM JH - temporary fix for existing XOM projects.
+	public ProxyBlock createBlockInstance(String className,ProjectResourceId parentId,UUID blockId,String projectName,String name) {
 		ProxyBlock block = new ProxyBlock(context,className,parentId,blockId);
 		log.debugf("%s.createBlockInstance --- python proxy for %s, project %d",CLSS,className,projectName); 
 		if( createBlockCallback.compileScript() ) {

@@ -338,7 +338,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		}
 		return result;
 	}
-	@Override
+	// Not part of the interface
 	public ProcessNode getProcessNode(ProjectResourceId id) {
 		return modelManager.getProcessNode(id);
 	}

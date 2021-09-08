@@ -32,7 +32,7 @@ public interface ToolkitRequestHandler  {
 	 * @param nodeId identifier of the parent node.
 	 * @return a list of resources that are children of the specified resource
 	 */
-	public List<SerializableResourceDescriptor> childNodes(String nodeId);
+	public List<SerializableResourceDescriptor> childNodes(ProjectResourceId id);
 	/**
 	 * Remove all current diagrams from the controller.
 	 */

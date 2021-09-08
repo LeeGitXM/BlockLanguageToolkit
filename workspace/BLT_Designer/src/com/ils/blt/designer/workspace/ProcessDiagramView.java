@@ -80,7 +80,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	 * @param diagram
 	 */
 	public ProcessDiagramView (ProjectResourceId resid,SerializableDiagram diagram, DesignerContext context) {
-		this(resid,diagram.getId(),diagram.getName());
+		this(resid,diagram.getResourceId(),diagram.getName());
 		if( DEBUG ) log.infof("%s.ProcessDiagramView: for diagram %s", CLSS, diagram.getName());
 		this.state = diagram.getState();
 		this.watermark = diagram.getWatermark();
@@ -320,8 +320,6 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	public SerializableDiagram createSerializableRepresentation() {
 		SerializableDiagram diagram = new SerializableDiagram();
 		diagram.setName(name);
-		diagram.setResourceId(resourceId);
-		diagram.setId(getId());
 		diagram.setState(state);
 		diagram.setDirty(dirty);
 		diagram.setWatermark(watermark);
