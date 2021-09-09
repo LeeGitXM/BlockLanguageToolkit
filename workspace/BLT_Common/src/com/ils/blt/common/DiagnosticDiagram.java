@@ -23,6 +23,10 @@ public interface DiagnosticDiagram  {
 	 * @return a collection of all blocks on the diagram;
 	 */
 	public Collection<ProcessBlock> getProcessBlocks();
+	/**
+	 * @return a particular process block
+	 */
+	public ProcessBlock getProcessBlock(String blockId);
 	
 	public ProjectResourceId getResourceId();
 	public DiagramState getState();

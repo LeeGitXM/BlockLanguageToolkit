@@ -12,6 +12,7 @@ import java.util.Date;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -62,8 +63,10 @@ import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualityCode;
 import com.inductiveautomation.ignition.common.project.Project;
+import com.inductiveautomation.ignition.common.project.RuntimeProject;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
+import com.inductiveautomation.ignition.common.project.resource.ResourceType;
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 import com.inductiveautomation.ignition.gateway.datasource.Datasource;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
@@ -184,6 +187,17 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		return block;
 	}
 	/**
+	 * Create a ProjectResourceId object from String components. This is designed for Python
+	 * scripts to easily generate resourceId inputs to the various methods.
+	 */
+	@Override
+	public ProjectResourceId createResourceId(String projectName, String path, String type) {
+		ResourceType rtype = new ResourceType(BLTProperties.MODULE_ID,type);
+		ProjectResourceId resourceId = new ProjectResourceId(projectName,rtype,path);
+		return resourceId;
+	}
+	
+	/**
 	 * Create the tag in both production and isolation
 	 */
 	@Override
@@ -256,7 +270,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			log.tracef("%s.getProperties existing %s = %s",CLSS,block.getClass().getName(),props.toString());
 		}
 		else {
-			block = createInstance(className,(diagram!=null?diagram.getSelf():null),blockId);  // Block is not (yet) attached to a diagram
+			block = createInstance(className,(diagram!=null?diagram.getResourceId():null),blockId);  // Block is not (yet) attached to a diagram
 			if(block!=null) {
 				props = block.getProperties();
 				log.tracef("%s.getProperties new %s = %s",CLSS,block.getClass().getName(),props.toString());
@@ -276,7 +290,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * @param propertyName name of the property
 	 * @return the properties of an existing or new block.
 	 */
-	public synchronized BlockProperty getBlockProperty(ProcessDiagram diagram,String propertyName) {
+	public synchronized BlockProperty getBlockProperty(ProcessDiagram diagram,UUID blockId,String propertyName) {
 		ProcessBlock block = null;
 		if( diagram!=null ) block = diagram.getBlock(blockId);
 		BlockProperty property = null;
@@ -284,7 +298,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			property = block.getProperty(propertyName);  // Existing block
 		}
 		else {
-			log.warnf("%s.getProperty Block not found for %s.%s",CLSS,parentId.toString(),blockId.toString());
+			log.warnf("%s.getProperty Block not found for %s.%s",CLSS,diagram.getPath(),blockId.toString());
 		}
 		return property;
 	}
@@ -295,8 +309,16 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		List<Class<?>> classes = cl.getAnnotatedClasses(BLTProperties.BLOCK_JAR_NAME, ExecutableBlock.class,"com/ils/block/");
 		for( Class<?> cls:classes) {
 			log.debugf("   found block class: %s",cls.getName());
+			Constructor[] ctors = cls.getDeclaredConstructors();
+			Constructor ctor = null;
+			for (int i = 0; i < ctors.length; i++) {
+			    ctor = ctors[i];
+			    if (ctor.getGenericParameterTypes().length == 0)
+				break;
+			}
 			try {
-				Object obj = cls.newInstance();
+				ctor.setAccessible(true);
+		 	    Object obj = ctor.newInstance();
 				if( obj instanceof ProcessBlock ) {
 					PalettePrototype bp = ((ProcessBlock)obj).getBlockPrototype();
 					log.tracef("%s.getBlockPrototypes: Adding %s on %s",CLSS,bp.getPaletteLabel(),bp.getTabName());
@@ -379,27 +401,28 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * @param nodeId identifier for node
 	 * @return database name
 	 */
-	public String getDatabaseForUUID(String nodeId) {
+	@Override
+	public String getDatabaseForId(ProjectResourceId nodeId) {
 		// Search up the tree for a parent diagram or application. Determine the
 		// state. Unless we find a diagram, we don't return any connection name.
 		String db = "NONE";
 		DiagramState ds = DiagramState.DISABLED;
 		try {
-			UUID uuid = UUID.fromString(nodeId);
-			
-			ProcessNode node = controller.getProcessNode(uuid);
+			ProcessNode node = controller.getProcessNode(nodeId);
 			while( node!=null ) {
 				if( node instanceof ProcessDiagram ) {
 					ds = ((ProcessDiagram)node).getState();
-					//log.debugf("%s.getApplication, found application = %s ",TAG,app.getName());
+					//log.debugf("%s.getApplication, found application = %s ",CLSS,app.getName());
 					break;
 				}
 				else if( node instanceof ProcessApplication ) {
 					ds = ((ProcessApplication)node).getState();
-					//log.debugf("%s.getApplication, found application = %s ",TAG,app.getName());
+					//log.debugf("%s.getApplication, found application = %s ",CLSS,app.getName());
 					break;
 				}
-				node = controller.getProcessNode(node.getParent());
+				// The parent can be either a folder, application, family or root
+				ProjectResourceId parent = createResourceId(nodeId.getProjectName(),node.getParent().getPath().toString(),)
+				node = controller.getProcessNode(parent);
 			}
 			if(ds.equals(DiagramState.ACTIVE)) {
 				db = getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_DATABASE);
@@ -409,7 +432,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			}
 		}
 		catch(IllegalArgumentException iae) {
-			log.warnf("%s.getDatabaseForUUID: %s is an illegal UUID (%s)",CLSS,nodeId,iae.getMessage());
+			log.warnf("%s.getDatabaseForId: %s is an unknown ID (%s)",CLSS,nodeId,iae.getMessage());
 		}
 		return db;
 	}
@@ -553,37 +576,34 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	@Override
 	public Object getPropertyBinding(ProjectResourceId diagramId, String blockId,String propertyName) {
 		BlockProperty property = null;
-		UUID diagramUUID;
+		ProcessDiagram diagram = controller.getDiagram(diagramId);
 		UUID blockUUID;
 		try {
-			diagramUUID = UUID.fromString(diagramId);
 			blockUUID = UUID.fromString(blockId);
-			property = getBlockProperty(diagramUUID,blockUUID,propertyName);
+			property = getBlockProperty(diagram,blockUUID,propertyName);
 		}
 		catch(IllegalArgumentException iae) {
-			log.warnf("%s.getPropertyBinding: Diagram or block UUID string is illegal (%s,%s),",CLSS,diagramId,blockId);
+			log.warnf("%s.getPropertyBinding: Diagram or block UUID string is illegal (%s,%s),",CLSS,diagramId.getResourcePath().getPath().toString(),blockId);
 		}
 		String binding = property.getBinding();
 		if( binding==null ) binding = "";
 		return binding;
 	}
 	@Override
-	public Object getPropertyValue(String diagramId, String blockId,String propertyName) {
+	public Object getPropertyValue(ProjectResourceId diagramId, String blockId,String propertyName) {
 		BlockProperty property = null;
-		UUID diagramUUID;
+		ProcessDiagram diagram = controller.getDiagram(diagramId);
 		UUID blockUUID;
 		try {
-			diagramUUID = UUID.fromString(diagramId);
 			blockUUID = UUID.fromString(blockId);
-			property = getBlockProperty(diagramUUID,blockUUID,propertyName);
+			property = getBlockProperty(diagram,blockUUID,propertyName);
 		}
 		catch(IllegalArgumentException iae) {
-			log.warnf("%s.getPropertyValue: Diagram or block UUID string is illegal (%s,%s),",CLSS,diagramId,blockId);
+			log.warnf("%s.getPropertyValue: Diagram or block UUID string is illegal (%s,%s),",CLSS,diagramId.getResourcePath().getPath().toString(),blockId);
 		}
 		return property.getValue();
 	}
-	
-	public Object getPropertyValue(UUID diagramId,UUID blockId,String propertyName) {
+	public Object getPropertyValue(ProjectResourceId diagramId,UUID blockId,String propertyName) {
 		Object val = null;
 		ProcessDiagram diagram = controller.getDiagram(diagramId);
 		if(diagram!=null) {
@@ -603,15 +623,14 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * @param nodeId identifier for node
 	 * @return database name
 	 */
-	public String getProviderForUUID(String nodeId) {
+	@Override
+	public String getProviderForId(ProjectResourceId nodeId) {
 		// Search up the tree for a parent diagram or application. Determine the
 		// state. Unless we find a diagram, we don't return any connection name.
 		String provider = "NONE";
 		DiagramState ds = DiagramState.DISABLED;
 		try {
-			UUID uuid = UUID.fromString(nodeId);
-			
-			ProcessNode node = controller.getProcessNode(uuid);
+			ProcessNode node = controller.getProcessNode(nodeId);
 			while( node!=null ) {
 				if( node instanceof ProcessDiagram ) {
 					ds = ((ProcessDiagram)node).getState();
@@ -623,7 +642,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 					//log.debugf("%s.getApplication, found application = %s ",TAG,app.getName());
 					break;
 				}
-				node = controller.getProcessNode(node.getParent());
+				node = controller.getProcessNode(node.getParent());  // getParentNode
 			}
 			if(ds.equals(DiagramState.ACTIVE)) {
 				provider = getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER);
@@ -633,7 +652,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			}
 		}
 		catch(IllegalArgumentException iae) {
-			log.warnf("%s.getProviderForUUID: %s is an illegal UUID (%s)",CLSS,nodeId,iae.getMessage());
+			log.warnf("%s.getProviderForId: %s is an illegal UUID (%s)",CLSS,nodeId.getResourcePath().getPath().toString(),iae.getMessage());
 		}
 		return provider;
 	}
@@ -643,12 +662,10 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * @return the time at which the block last changed its state
 	 */
 	@Override
-	public Date getTimeOfLastBlockStateChange(String diagramId, String blockName) {
+	public Date getTimeOfLastBlockStateChange(ProjectResourceId diagramId, String blockName) {
 		Date date = null;
-		UUID diagramUUID = null;
 		try {
-			diagramUUID = UUID.fromString(diagramId);
-			ProcessDiagram diagram = controller.getDiagram(diagramUUID);
+			ProcessDiagram diagram = controller.getDiagram(diagramId);
 			for(ProcessBlock block:diagram.getProcessBlocks()) {
 				if( block.getName().equalsIgnoreCase(blockName)) {
 					date = block.getTimeOfLastStateChange();
@@ -691,20 +708,19 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		return getExecutionState().equalsIgnoreCase("running");
 	}
 	@Override
-	public boolean isAlerting(Long projectId, Long resid) {
-		ProcessDiagram diagram = controller.getDiagram(projectId.longValue(), resid.longValue());
+	public boolean isAlerting(ProjectResourceId resid) {
+		ProcessDiagram diagram = controller.getDiagram(resid);
 		if( diagram==null ) {
 			// Node is most likely an application or family
-			log.debugf("%s.isAlerting: No diagram found in project %d with id = %d",CLSS,projectId.longValue(),resid.longValue());
+			log.debugf("%s.isAlerting: No diagram found in project %s with id = %s",CLSS,resid.getProjectName(),resid.getResourcePath().getPath().toString());
 			return false;
 		}
 		return pyHandler.isAlerting(diagram);
 	}
 	@Override
-	public synchronized List<SerializableBlockStateDescriptor> listBlocksConnectedAtPort(String diagramId,String blockId,String portName) {
+	public synchronized List<SerializableBlockStateDescriptor> listBlocksConnectedAtPort(ProjectResourceId diagramId,String blockId,String portName) {
 		List<SerializableBlockStateDescriptor> descriptors = new ArrayList<>();
-		UUID diauuid = makeUUID(diagramId);
-		ProcessDiagram diagram = controller.getDiagram(diauuid);
+		ProcessDiagram diagram = controller.getDiagram(diagramId);
 		if( diagram!=null ) {
 			ProcessBlock blk = diagram.getBlock(UUID.fromString(blockId));
 			if(blk!=null) {
@@ -716,22 +732,21 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			}
 		}
 		else {
-			log.warnf("%s.listBlocksConnectedAtPort: no diagram found for %s",CLSS,diauuid.toString());
+			log.warnf("%s.listBlocksConnectedAtPort: no diagram found for %s",CLSS,diagram.getPath());
 		}
 		return descriptors;
 	}
 	
 	@Override
-	public synchronized List<SerializableBlockStateDescriptor> listBlocksDownstreamOf(String diagramId,String blockName) {
+	public synchronized List<SerializableBlockStateDescriptor> listBlocksDownstreamOf(ProjectResourceId diagramId,String blockName) {
 		List<SerializableBlockStateDescriptor> descriptors = new ArrayList<>();
-		UUID diauuid = makeUUID(diagramId);
-		ProcessDiagram diagram = controller.getDiagram(diauuid);
+		ProcessDiagram diagram = controller.getDiagram(diagramId);
 		if( diagram!=null ) {
 			ProcessBlock blk = diagram.getBlockByName(blockName);
-			if(blk!=null) descriptors = controller.listBlocksDownstreamOf(diauuid,blk.getBlockId(),false);
+			if(blk!=null) descriptors = controller.listBlocksDownstreamOf(diagramId,blk.getBlockId(),false);
 		}
 		else {
-			log.warnf("%s.listBlocksDownstreamOf: no diagram found for id %s",CLSS,diagramId);
+			log.warnf("%s.listBlocksDownstreamOf: no diagram found for id %s",CLSS,diagramId.getResourcePath().getPath().toString());
 		}
 		return descriptors;
 	}
@@ -742,9 +757,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		if( tagpath!=null && !tagpath.isEmpty() ) {
 			List<SerializableResourceDescriptor> descriptors = controller.getDiagramDescriptors();
 			for(SerializableResourceDescriptor descriptor:descriptors) {
-				UUID diagId = makeUUID(descriptor.getResourceId());
-
-				ProcessDiagram diagram = controller.getDiagram(diagId);
+				ProcessDiagram diagram = controller.getDiagram(descriptor.getResourceId());
 				if( diagram!=null) {
 					Collection<ProcessBlock> blocks = diagram.getProcessBlocks();
 					for(ProcessBlock block:blocks) {
@@ -754,44 +767,44 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 					}
 				}
 				else {
-					log.warnf("%s.listBlocksForTag: no diagram found for id %s",CLSS,diagId.toString());
+					log.warnf("%s.listBlocksForTag: no diagram found for id %s",CLSS,descriptor.getPath());
 				}
 			}
 		}
 		log.warnf("%s.listBlocksForTag: %s returns %d blocks",CLSS,tagpath,results.size());
 		return results;
 	}
-	public synchronized List<SerializableBlockStateDescriptor> listBlocksGloballyDownstreamOf(String diagramId, String blockName) {
+	@Override
+	public synchronized List<SerializableBlockStateDescriptor> listBlocksGloballyDownstreamOf(ProjectResourceId diagramId, String blockName) {
 		List<SerializableBlockStateDescriptor> descriptors = new ArrayList<>();
-		UUID diauuid = makeUUID(diagramId);
-		ProcessDiagram diagram = controller.getDiagram(diauuid);
+		ProcessDiagram diagram = controller.getDiagram(diagramId);
 		if( diagram!=null ) {
 			ProcessBlock blk = diagram.getBlockByName(blockName);
-			if(blk!=null) descriptors = controller.listBlocksDownstreamOf(diauuid,blk.getBlockId(),true);
+			if(blk!=null) descriptors = controller.listBlocksDownstreamOf(diagramId,blk.getBlockId(),true);
 		}
 		else {
-			log.warnf("%s.listBlocksGloballyDownstreamOf: no diagram found for %s",CLSS,diagramId);
+			log.warnf("%s.listBlocksGloballyDownstreamOf: no diagram found for %s",CLSS,diagramId.getResourcePath().getPath().toString());
 		}
 		return descriptors;
 	}
-	public synchronized List<SerializableBlockStateDescriptor> listBlocksGloballyUpstreamOf(String diagramId, String blockName) {
+	@Override
+	public synchronized List<SerializableBlockStateDescriptor> listBlocksGloballyUpstreamOf(ProjectResourceId diagramId, String blockName) {
 		log.tracef("%s.listBlocksGloballyUpstreamOf: diagramId %s:%s",CLSS,diagramId,blockName);
 		List<SerializableBlockStateDescriptor> descriptors = new ArrayList<>();
-		UUID diauuid = makeUUID(diagramId);
-		ProcessDiagram diagram = controller.getDiagram(diauuid);
+		ProcessDiagram diagram = controller.getDiagram(diagramId);
 		if( diagram!=null ) {
 			ProcessBlock blk = diagram.getBlockByName(blockName);
 			if(blk!=null) {
-				descriptors = controller.listBlocksUpstreamOf(diauuid,blk.getBlockId(),true);
+				descriptors = controller.listBlocksUpstreamOf(diagramId,blk.getBlockId(),true);
 			}
 			else {
-				log.warnf("%s.listBlocksGloballyUpstreamOf: block %s not found on diagram %s",CLSS,blockName,diagramId);
+				log.warnf("%s.listBlocksGloballyUpstreamOf: block %s not found on diagram %s",CLSS,blockName,diagramId.getResourcePath().getPath().toString());
 			}
 		}
 		else {
-			log.warnf("%s.listBlocksGloballyUpstreamOf: no diagram found for %s",CLSS,diagramId);
+			log.warnf("%s.listBlocksGloballyUpstreamOf: no diagram found for %s",CLSS,diagramId.getResourcePath().getPath().toString());
 		}
-		log.tracef("%s.listBlocksGloballyUpstreamOf: diagramId %s returning %d descriptors",CLSS,diagramId,descriptors.size());
+		log.tracef("%s.listBlocksGloballyUpstreamOf: diagramId %s returning %d descriptors",CLSS,diagramId.getResourcePath().getPath().toString(),descriptors.size());
 		return descriptors;
 	}
 	
@@ -801,11 +814,10 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * @return a list of descriptors containing all blocks in the diagram
 	 */
 	@Override
-	public synchronized List<SerializableBlockStateDescriptor> listBlocksInDiagram(String diagramId) {
+	public synchronized List<SerializableBlockStateDescriptor> listBlocksInDiagram(ProjectResourceId diagramId) {
 		//log.infof("%s.listBlocksInDiagram: diagramId %s",TAG,diagramId);
 		List<SerializableBlockStateDescriptor> descriptors = new ArrayList<>();
-		UUID diauuid = makeUUID(diagramId);
-		ProcessDiagram diagram = controller.getDiagram(diauuid);
+		ProcessDiagram diagram = controller.getDiagram(diagramId);
 		if( diagram!=null) {
 			Collection<ProcessBlock> blocks = diagram.getProcessBlocks();
 			for(ProcessBlock block:blocks) {
@@ -818,7 +830,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			}
 		}
 		else {
-			log.warnf("%s.listBlocksInDiagram: no diagram found for %s",CLSS,diagramId);
+			log.warnf("%s.listBlocksInDiagram: no diagram found for %s",CLSS,diagramId.getResourcePath().getPath().toString());
 		}
 		//log.infof("%s.listBlocksInDiagram: diagramId %s returning %d descriptors",TAG,diagramId,descriptors.size());
 		return descriptors;
@@ -842,16 +854,15 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	}
 	
 	@Override
-	public synchronized List<SerializableBlockStateDescriptor> listBlocksUpstreamOf(String diagramId, String blockName) {
+	public synchronized List<SerializableBlockStateDescriptor> listBlocksUpstreamOf(ProjectResourceId diagramId, String blockName) {
 		List<SerializableBlockStateDescriptor> descriptors = new ArrayList<>();
-		UUID diauuid = makeUUID(diagramId);
-		ProcessDiagram diagram = controller.getDiagram(diauuid);
+		ProcessDiagram diagram = controller.getDiagram(diagramId);
 		if( diagram!=null ) {
 			ProcessBlock blk = diagram.getBlockByName(blockName);
-			if(blk!=null) descriptors = controller.listBlocksUpstreamOf(diauuid,blk.getBlockId(),false);
+			if(blk!=null) descriptors = controller.listBlocksUpstreamOf(diagramId,blk.getBlockId(),false);
 		}
 		else {
-			log.warnf("%s.listBlocksUpstreamOf: no diagram found for %s",CLSS,diagramId);
+			log.warnf("%s.listBlocksUpstreamOf: no diagram found for %s",CLSS,diagramId.getResourcePath().getPath().toString());
 		}
 		return descriptors;
 	}
@@ -863,13 +874,12 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		List<SerializableResourceDescriptor> descriptors = controller.getDiagramDescriptors();
 		try {
 			for(SerializableResourceDescriptor res:descriptors) {
-				UUID diagramId = makeUUID(res.getResourceId());
-				ProcessDiagram diagram = controller.getDiagram(diagramId);
+				ProcessDiagram diagram = controller.getDiagram(res.getResourceId());
 				for( ProcessBlock block:diagram.getProcessBlocks() ) {
 					String problem = block.validate();
 					if( problem!=null) {
 						SerializableBlockStateDescriptor descriptor = block.toDescriptor();
-						descriptor.getAttributes().put(BLTProperties.BLOCK_ATTRIBUTE_PATH, pathForBlock(diagramId.toString(),block.getName()));
+						descriptor.getAttributes().put(BLTProperties.BLOCK_ATTRIBUTE_PATH, pathForBlock(diagram.getResourceId(),block.getName()));
 						descriptor.getAttributes().put(BLTProperties.BLOCK_ATTRIBUTE_ISSUE, problem);
 						result.add(descriptor);
 					}
@@ -897,8 +907,8 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			for( ProcessNode child:descendants) {
 				if( child instanceof ProcessApplication ) continue;
 				SerializableResourceDescriptor desc = child.toResourceDescriptor();
-				if( child instanceof ProcessDiagram )     desc.setType(BLTProperties.DIAGRAM_RESOURCE_TYPE);
-				else if( child instanceof ProcessFamily ) desc.setType(BLTProperties.FAMILY_RESOURCE_TYPE);
+				if( child instanceof ProcessDiagram )     desc.setType(BLTProperties.DIAGRAM_RESOURCE_TYPE.getTypeId());
+				else if( child instanceof ProcessFamily ) desc.setType(BLTProperties.FAMILY_RESOURCE_TYPE.getTypeId());
 				result.add(desc);
 			}
 		}
@@ -921,7 +931,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			for( ProcessNode child:descendants) {
 				if( child instanceof ProcessFamily ) continue;
 				SerializableResourceDescriptor desc = child.toResourceDescriptor();
-				if( child instanceof ProcessDiagram ) desc.setType(BLTProperties.DIAGRAM_RESOURCE_TYPE);
+				if( child instanceof ProcessDiagram ) desc.setType(BLTProperties.DIAGRAM_RESOURCE_TYPE.getTypeId());
 				result.add(desc);
 			}
 		}
@@ -930,9 +940,8 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	}
 	
 	@Override
-	public synchronized List<SerializableBlockStateDescriptor> listDiagramBlocksOfClass(String diagramId, String className) {
-		UUID diagramuuid = makeUUID(diagramId);
-		ProcessDiagram diagram = controller.getDiagram(diagramuuid);
+	public synchronized List<SerializableBlockStateDescriptor> listDiagramBlocksOfClass(ProjectResourceId diagramId, String className) {
+		ProcessDiagram diagram = controller.getDiagram(diagramId);
 		List<SerializableBlockStateDescriptor> result = new ArrayList<>();
 		if( diagram!=null ) {
 			for(ProcessBlock block:diagram.getProcessBlocks()) {
@@ -969,10 +978,9 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * @return a list of block descriptors for the sinks that were found
 	 */
 	@Override
-	public synchronized List<SerializableBlockStateDescriptor> listSinksForSource(String diagramId,String blockId) {
+	public synchronized List<SerializableBlockStateDescriptor> listSinksForSource(ProjectResourceId diagramId,String blockId) {
 		List<SerializableBlockStateDescriptor> results = new ArrayList<>();
-		UUID diagramuuid = makeUUID(diagramId);
-		ProcessDiagram diagram = controller.getDiagram(diagramuuid);
+		ProcessDiagram diagram = controller.getDiagram(diagramId);
 		ProcessBlock source = null;
 		if(diagram!=null) {
 			source = diagram.getBlock(makeUUID(blockId));
@@ -987,8 +995,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		if( tagPath!=null && tagPath.length()>0 ) {
 			List<SerializableResourceDescriptor> descriptors = controller.getDiagramDescriptors();
 			for(SerializableResourceDescriptor desc:descriptors) {
-				UUID diaguuid = makeUUID(desc.getResourceId());
-				diagram = controller.getDiagram(diaguuid);
+				diagram = controller.getDiagram(desc.getResourceId());
 				for(ProcessBlock sink:diagram.getProcessBlocks()) {
 					if( sink.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SINK) ) {
 						BlockProperty prop = sink.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
@@ -1012,10 +1019,9 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * @return a list of descriptors for the sources that were found
 	 */
 	@Override
-	public synchronized List<SerializableBlockStateDescriptor> listSourcesForSink(String diagramId,String blockId) {
+	public synchronized List<SerializableBlockStateDescriptor> listSourcesForSink(ProjectResourceId diagramId,String blockId) {
 		List<SerializableBlockStateDescriptor> results = new ArrayList<>();
-		UUID diagramuuid = makeUUID(diagramId);
-		ProcessDiagram diagram = controller.getDiagram(diagramuuid);
+		ProcessDiagram diagram = controller.getDiagram(diagramId);
 		ProcessBlock sink = null;
 		if(diagram!=null) {
 			sink = diagram.getBlock(makeUUID(blockId));
@@ -1030,8 +1036,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		if( tagPath!=null && tagPath.length()>0 ) {
 			List<SerializableResourceDescriptor> descriptors = controller.getDiagramDescriptors();
 			for(SerializableResourceDescriptor descriptor:descriptors) {
-				UUID diaguuid = makeUUID(descriptor.getResourceId());
-				diagram = controller.getDiagram(diaguuid);
+				diagram = controller.getDiagram(descriptor.getResourceId());
 				for(ProcessBlock source:diagram.getProcessBlocks()) {
 					if( source.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SOURCE) ) {
 						BlockProperty prop = source.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
@@ -1054,14 +1059,14 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		List<SerializableResourceDescriptor> descriptors = controller.getDiagramDescriptors();
 		try {
 			for(SerializableResourceDescriptor res:descriptors) {
-				UUID diagramId = makeUUID(res.getResourceId());
-				ProcessDiagram diagram = controller.getDiagram(diagramId);
+				ProcessDiagram diagram = controller.getDiagram(res.getResourceId());
 				if( !diagram.getState().equals(DiagramState.DISABLED)) {
 					for( ProcessBlock block:diagram.getProcessBlocks() ) {
 						String problem = block.validateSubscription();
 						if( problem!=null) {
 							SerializableBlockStateDescriptor descriptor = block.toDescriptor();
-							descriptor.getAttributes().put(BLTProperties.BLOCK_ATTRIBUTE_PATH, pathForBlock(diagramId.toString(),block.getName()));
+							descriptor.getAttributes().put(BLTProperties.BLOCK_ATTRIBUTE_PATH, pathForBlock(diagram.getResourceId(),
+									block.getName()));
 							descriptor.getAttributes().put(BLTProperties.BLOCK_ATTRIBUTE_ISSUE, problem);
 							result.add(descriptor);
 						}
@@ -1084,8 +1089,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		long now = System.currentTimeMillis();
 		try {
 			for(SerializableResourceDescriptor res:descriptors) {
-				UUID diagramId = makeUUID(res.getResourceId());
-				ProcessDiagram diagram = controller.getDiagram(diagramId);
+				ProcessDiagram diagram = controller.getDiagram(res.getResourceId());
 				if( !diagram.getState().equals(DiagramState.DISABLED)) {
 					for( ProcessBlock block:diagram.getProcessBlocks() ) {
 						if( className==null || className.isEmpty() || block.getClassName().equals(className)) {
@@ -1093,7 +1097,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 							if( qv!=null && now-qv.getTimestamp().getTime()>interval ) {
 								double hrs = ((double)(now-qv.getTimestamp().getTime()))/(3600*1000);
 								SerializableBlockStateDescriptor descriptor = block.toDescriptor();
-								descriptor.getAttributes().put(BLTProperties.BLOCK_ATTRIBUTE_PATH, pathForBlock(diagramId.toString(),block.getName()));
+								descriptor.getAttributes().put(BLTProperties.BLOCK_ATTRIBUTE_PATH, pathForBlock(res.getResourceId(),block.getName()));
 								descriptor.getAttributes().put(BLTProperties.BLOCK_ATTRIBUTE_ISSUE, String.format("Unchanged for %.2f hrs", hrs));
 								result.add(descriptor);
 							}
@@ -1109,9 +1113,8 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	}
 	
 	@Override
-	public String pathForBlock(String diagramId,String blockName) {
-		UUID uuid = makeUUID(diagramId);
-		String path = controller.pathForNode(uuid);
+	public String pathForBlock(ProjectResourceId diagramId,String blockName) {
+		String path = controller.pathForNode(diagramId);
 		return String.format("%s:%s",path,blockName);
 	}
 	/** 
@@ -1120,10 +1123,33 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 *         root is a slash representing the top node of the navigation tree.
 	 */
 	@Override
-	public String pathForNode(String nodeId) {
-		UUID uuid = makeUUID(nodeId);
-		String path = controller.pathForNode(uuid);
+	public String pathForNode(ProjectResourceId nodeId) {
+		String path = controller.pathForNode(nodeId);
 		return path;
+	}
+	/**
+	 * Post a (simulated) block result on its output.
+	 * @param diagramId the parent diagram
+	 * @param blockId the block
+	 * @param port anchor for the incoming connection
+	 * @param value new value
+	 */
+	@Override
+	public void postResult(ProjectResourceId diagramId,String blockId,String port,String value) {
+		log.tracef("%s.postResult - %s = %s on %s",CLSS,blockId,value,port);
+		try {
+			UUID blockuuid   = UUID.fromString(blockId);
+			ProcessDiagram diagram = controller.getDiagram(diagramId);
+			for(ProcessBlock block:diagram.getProcessBlocks()) {
+				if( block.getBlockId().equals(blockuuid)) {
+					block.forcePost(port, value);
+					break;
+				}
+			}
+		}
+		catch(IllegalArgumentException iae) {
+			log.warnf("%s.postValue: one of %s or %s illegal UUID (%s)",CLSS,diagramId.getResourcePath().getPath().toString(),blockId,iae.getMessage());
+		}
 	}
 	/**
 	 * Handle the block placing a new value on its output. This minimalist version
@@ -1166,11 +1192,11 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 				controller.acceptCompletionNotification(note);
 			}
 			else {
-				log.warnf("%s.postValue: no diagram found for %s",CLSS,parentuuid);
+				log.warnf("%s.postValue: no diagram found for %s",CLSS,diagramId.getResourcePath().getPath().toString());
 			}
 		}
 		catch(IllegalArgumentException iae) {
-			log.warnf("%s.postValue: one of %s or %s illegal UUID (%s)",CLSS,parentuuid,blockId,iae.getMessage());
+			log.warnf("%s.postValue: one of %s or %s illegal UUID (%s)",CLSS,diagramId.getResourcePath().getPath().toString(),blockId,iae.getMessage());
 		}
 	}
 	/**
@@ -1202,7 +1228,10 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 */
 	@Override
 	public synchronized GeneralPurposeDataContainer readAuxData(ProjectResourceId resid,String nodeId,String provider,String db) {
-		ProjectResource res = context.getProjectManager().getProject(projectId, ApplicationScope.GATEWAY,ProjectVersion.Staging).getResource(resid);
+		Optional<RuntimeProject> optional = context.getProjectManager().getProject(resid.getProjectName());
+		Project project = optional.get();
+		Optional<ProjectResource> ores = project.getResource(resid);
+		ProjectResource res = ores.get();
 		GeneralPurposeDataContainer container = new GeneralPurposeDataContainer();
 		if( res!=null && res.getResourceType().equals(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
 			Script script = extensionManager.createExtensionScript(ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.GET_AUX_OPERATION, provider);
@@ -1215,12 +1244,13 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			controller.sendAuxDataNotification(nodeId, new BasicQualifiedValue(container));
 		}
 		else if( res!=null && res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
-			ProcessBlock block = controller.getDelegate().getBlock(projectId, resid, UUID.fromString(nodeId));
+			ProcessBlock block = controller.getDelegate().getBlock(resid, UUID.fromString(nodeId));
 			block.getAuxData(container);
 			controller.sendAuxDataNotification(nodeId, new BasicQualifiedValue(container));
 		}
 		return container;
 	}
+	
 	// Save a resource with aux data back into the project. Notify the client.
 	// Note: This triggers the ModelManager project change listener.
 	public void saveResource(ProjectResource resource,Object node,long projectId) {
@@ -1231,7 +1261,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			resource.setData(bytes);
 			Project project = context.getProjectManager().getProject(projectId, ApplicationScope.GATEWAY, ProjectVersion.Staging);
 			Project diff = project.getEmptyCopy();
-			log.infof("%s.saveResource: Saving, resource %s (%s)",CLSS,resource.getName(),resource.getResourceType());
+			log.infof("%s.saveResource: Saving, resource %s (%s)",CLSS,resource.getResourceName(),resource.getResourceType());
 			diff.putResource(resource);
 			context.getProjectManager().saveProject(diff, null, null, "Updated aux structure", true);
 
@@ -1328,7 +1358,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		if( diagram!=null ) {
 			// Create an output notification
 			Signal sig = new Signal(command,message,"");
-			BroadcastNotification broadcast = new BroadcastNotification(diagram.getSelf(),blockName,new BasicQualifiedValue(sig));
+			BroadcastNotification broadcast = new BroadcastNotification(diagram.getResourceId(),blockName,new BasicQualifiedValue(sig));
 			BlockExecutionController.getInstance().acceptBroadcastNotification(broadcast);
 		}
 		else {
@@ -1345,7 +1375,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			// Create a broadcast notification
 			log.warnf("%s.sendTimestampedSignal: Sending a signal to diagram %s for %s command",CLSS,diagramId,command);
 			Signal sig = new Signal(command,message,argument);
-			BroadcastNotification broadcast = new BroadcastNotification(diagram.getSelf(),TransmissionScope.LOCAL,
+			BroadcastNotification broadcast = new BroadcastNotification(diagram.getResourceId(),TransmissionScope.LOCAL,
 					                              new BasicQualifiedValue(sig,QualityCode.Good,new Date(time)));
 			BlockExecutionController.getInstance().acceptBroadcastNotification(broadcast);
 		}
@@ -1368,8 +1398,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 				ProcessApplication app = pyHandler.getApplication(srd.getResourceId());
 				if( app==null) continue;
 				if( app.getName().equals(appname)) {
-					UUID diagramuuid = UUID.fromString(srd.getResourceId());
-					ProcessDiagram pd = controller.getDiagram(diagramuuid);
+					ProcessDiagram pd = controller.getDiagram(srd.getResourceId());
 					if( pd!=null) {
 						pd.setState(ds);    // Must notify designer
 					}
@@ -1392,7 +1421,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * @param blockId id of the target block
 	 * @param properties a collection of properties that may have changed
 	 */
-	public void setBlockProperties(UUID parentId, UUID blockId, Collection<BlockProperty> properties) {
+	public void setBlockProperties(ProjectResourceId parentId, UUID blockId, Collection<BlockProperty> properties) {
 		ProcessDiagram diagram = controller.getDiagram(parentId);
 		ProcessBlock block = null;
 		if( diagram!=null ) block = diagram.getBlock(blockId);
@@ -1415,7 +1444,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * @param blockId Id of the target block
 	 * @param property the newly changed or added block property
 	 */
-	public void setBlockProperty(UUID parentId, UUID blockId, BlockProperty property) {
+	public void setBlockProperty(ProjectResourceId parentId, UUID blockId, BlockProperty property) {
 
 		ProcessDiagram diagram = controller.getDiagram(parentId);
 		ProcessBlock block = null;
@@ -1440,7 +1469,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * @param pname the changed property
 	 * @param binding the new binding value of the property. The value will be a tagpath as a String.
 	 */
-	public void setBlockPropertyBinding(String diagramId,String blockId,String pname,String binding )  {
+	public void setBlockPropertyBinding(ProjectResourceId diagramId,String blockId,String pname,String binding )  {
 		controller.sendPropertyBindingNotification(blockId, pname, binding);
 	}
 	
@@ -1452,10 +1481,9 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * @param pname the changed property
 	 * @param value the new value of the property. The value will be coerced into the correct data type in the gateway 
 	 */
-	public void setBlockPropertyValue(String diagramId,String bname,String pname,String value )  {
-		ProcessDiagram diagram = null;
-		UUID uuid = UUID.fromString(diagramId);
-		if( uuid!=null ) diagram = controller.getDiagram(uuid);
+	@Override
+	public void setBlockPropertyValue(ProjectResourceId diagramId,String bname,String pname,String value )  {
+		ProcessDiagram diagram = controller.getDiagram(diagramId);
 		if( diagram!=null ) {
 			ProcessBlock block = diagram.getBlockByName(bname);
 			if( block!=null ) {
@@ -1478,10 +1506,10 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			log.warnf("%s.setBlockPropertyValue: Unable to find diagram %s for block %s",CLSS,diagramId,bname);
 		}
 	}
-	public void setBlockState(String diagramId,String bname,String stateName ) {
+	@Override
+	public void setBlockState(ProjectResourceId diagramId,String bname,String stateName ) {
 		ProcessDiagram diagram = null;
-		UUID uuid = UUID.fromString(diagramId);
-		if( uuid!=null ) diagram = controller.getDiagram(uuid);
+		diagram = controller.getDiagram(diagramId);
 		if( diagram!=null ) {
 			ProcessBlock block = diagram.getBlockByName(bname);
 			if( block!=null ) {
@@ -1562,7 +1590,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	/**
 	 * Define a watermark for a diagram. 
 	 */
-	public void setWatermark(String diagramId,String text) {
+	public void setWatermark(ProjectResourceId diagramId,String text) {
 		controller.sendWatermarkNotification(diagramId,text);
 	}
 	
@@ -1588,47 +1616,11 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * @param blockId the uniqueId of the block
 	 * @param anchorUpdates the complete anchor list for the block.
 	 */
-	public void updateBlockAnchors(String diagramId,String blockId, Collection<SerializableAnchor> anchorUpdates) {
-		UUID diagramUUID = UUID.fromString(diagramId);
-		ProcessDiagram diagram = controller.getDiagram(diagramUUID);
+	@Override
+	public void updateBlockAnchors(ProjectResourceId diagramId,String blockId, Collection<SerializableAnchor> anchorUpdates) {
+		ProcessDiagram diagram = controller.getDiagram(diagramId);
 		ProcessBlock block = null;
 		UUID blockUUID = UUID.fromString(blockId);
-		if( diagram!=null ) block = diagram.getBlock(blockUUID);
-		if(block!=null) {
-			List<AnchorPrototype> anchors = block.getAnchors();
-			for( SerializableAnchor anchorUpdate:anchorUpdates ) {
-				// These are undoubtedly very short lists ... do linear searches
-				boolean found = false;
-				for( AnchorPrototype anchor:anchors ) {
-					if( anchor.getName().equalsIgnoreCase(anchorUpdate.getDisplay())) {
-						anchor.setConnectionType(anchorUpdate.getConnectionType());
-						found = true;
-						break;
-					}
-				}
-				if( !found ) {
-					// Add previously unknown anchor
-					AnchorPrototype proto = new AnchorPrototype(anchorUpdate.getDisplay(),anchorUpdate.getDirection(),anchorUpdate.getConnectionType());
-					proto.setAnnotation(anchorUpdate.getAnnotation());
-					proto.setHint(anchorUpdate.getHint());
-					anchors.add(proto);
-				}
-			}
-		}
-	}
-
-
-	/** Change the properties of anchors for a block. 
-	 * @param diagramUUID the uniqueId of the parent diagram
-	 * @param blockUUID the uniqueId of the block
-	 * @param anchorUpdates the complete anchor list for the block.
-	 */
-	@Override
-	public void updateBlockAnchors(UUID diagramUUID, UUID blockUUID,Collection<SerializableAnchor> anchorUpdates) {
-
-		ProcessDiagram diagram = controller.getDiagram(diagramUUID);
-		ProcessBlock block = null;
-
 		if( diagram!=null ) block = diagram.getBlock(blockUUID);
 		if(block!=null) {
 			List<AnchorPrototype> anchors = block.getAnchors();

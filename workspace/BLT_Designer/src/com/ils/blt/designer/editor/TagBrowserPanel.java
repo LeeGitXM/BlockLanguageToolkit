@@ -51,7 +51,7 @@ public class TagBrowserPanel extends BasicEditPanel {
 		jTree = new JTree();
 		jTree.setOpaque(true);
 		jTree.setCellRenderer(cellRenderer);
-		TagTreeModel model = new TagTreeModelImpl(context);
+		TagTreeModelImpl model = new TagTreeModelImpl(context);
 		model.resetRoot();
 		jTree.setModel(model);
 		tagTreeSelectionModel = jTree.getSelectionModel();
@@ -135,7 +135,7 @@ public class TagBrowserPanel extends BasicEditPanel {
 				TagTreeModel sttm = (TagTreeModel)jTree.getModel();
 
 				try {
-					TreeNode[] nodes = sttm.getPathToRoot(sttm.);
+					TreeNode[] nodes = sttm.getPathToRoot(sttm);
 					TreePath treePath = sttm.getPathForTag(tp);
 					if( treePath!=null ) {
 						tagTreeSelectionModel.setSelectionPath(treePath);

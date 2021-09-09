@@ -4,18 +4,20 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.UUID;
 
 import org.apache.wicket.extensions.markup.html.repeater.tree.ITreeProvider;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.LoadableDetachableModel;
 import org.apache.wicket.model.Model;
 
+import com.ils.blt.common.BLTProperties;
+import com.ils.blt.gateway.ControllerRequestHandler;
 import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.blt.gateway.engine.ModelManager;
 import com.ils.blt.gateway.engine.ProcessNode;
 import com.ils.blt.gateway.engine.ProjectNode;
 import com.ils.blt.gateway.engine.RootNode;
+import com.inductiveautomation.ignition.common.StringPath;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 
 /**
@@ -31,10 +33,12 @@ import com.inductiveautomation.ignition.common.project.resource.ProjectResourceI
 public class ProcessNodeProvider implements ITreeProvider<ProcessNode> {
     private static final long serialVersionUID = 1L;
     private static ModelManager modelManager = BlockExecutionController.getInstance().getDelegate();
+    private final ControllerRequestHandler handler;
     /**
      * Construct.
      */
     public ProcessNodeProvider() {
+    	this.handler = ControllerRequestHandler.getInstance();
     }
 
     /**
@@ -52,7 +56,9 @@ public class ProcessNodeProvider implements ITreeProvider<ProcessNode> {
     	RootNode root = modelManager.getRootNode();
     	Collection<ProcessNode> roots = new ArrayList<>();
     	for(String name:root.allProjects() ){
-    		ProjectNode pn = new ProjectNode(root,resourceId);
+    		StringPath path = StringPath.extend(root.getResourceId().getResourcePath().getPath(),name);
+    		ProjectResourceId id = handler.createResourceId(name, path.toString(), BLTProperties.FOLDER_RESOURCE_TYPE.getTypeId());
+    		ProjectNode pn = new ProjectNode(root,id);
     		roots.add(pn);
     	}
         return roots.iterator();
@@ -86,11 +92,11 @@ public class ProcessNodeProvider implements ITreeProvider<ProcessNode> {
      */
     private static class ProcessNodeModel extends LoadableDetachableModel<ProcessNode> {
         private static final long serialVersionUID = 1L;
-        private final UUID id;
+        private final ProjectResourceId id;
 
         public ProcessNodeModel(ProcessNode node) {
             super(node);
-            id = node.getSelf();
+            id = node.getResourceId();
         }
 
         @Override

@@ -27,7 +27,7 @@ import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 public class ApplicationScriptFunctions   {
 	private static ApplicationRequestHandler handler = new ApplicationRequestHandler();
 
-	public static List<SerializableResourceDescriptor> childNodes(String nodeId) {
+	public static List<SerializableResourceDescriptor> childNodes(ProjectResourceId nodeId) {
 		return handler.childNodes(nodeId);
 	}
 	/**

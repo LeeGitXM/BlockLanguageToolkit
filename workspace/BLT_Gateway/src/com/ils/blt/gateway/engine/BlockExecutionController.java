@@ -309,11 +309,11 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	public ProcessBlock getBlock(ProcessDiagram diagram,UUID blockId) {
 		return modelManager.getBlock(diagram,blockId);
 	}
-	public ProcessBlock getBlock(long projectId,long resourceId,UUID blockId) {
-		return modelManager.getBlock(projectId,resourceId,blockId);
+	public ProcessBlock getBlock(ProjectResourceId resourceId,UUID blockId) {
+		return modelManager.getBlock(resourceId,blockId);
 	}
-	public Connection getConnection(long projectId,long resourceId,String connectionId) {
-		return modelManager.getConnection(projectId,resourceId,connectionId);
+	public Connection getConnection(ProjectResourceId resourceId,String connectionId) {
+		return modelManager.getConnection(resourceId,connectionId);
 	}
 	public ModelManager getDelegate() {
 		return modelManager;

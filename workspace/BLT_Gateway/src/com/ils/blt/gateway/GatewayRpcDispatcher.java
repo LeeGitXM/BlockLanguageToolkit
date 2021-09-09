@@ -56,7 +56,7 @@ public class GatewayRpcDispatcher   {
 		this.requestHandler = ControllerRequestHandler.getInstance();
 	}
 	
-	public List<SerializableResourceDescriptor> childNodes(String nodeId) {
+	public List<SerializableResourceDescriptor> childNodes(ProjectResourceId nodeId) {
 		return requestHandler.childNodes(nodeId);
 	}
 	
@@ -196,11 +196,11 @@ public class GatewayRpcDispatcher   {
 	 * Find the parent application or diagram of the entity referenced by
 	 * the supplied id. Test the state and return the name of the appropriate
 	 * database.  
-	 * @param uuid id of the subject node as a String
+	 * @param id of the subject node, a ProjectResourceId
 	 * @return database name
 	 */
-	public String getDatabaseForUUID(String uuid) {
-		return requestHandler.getDatabaseForUUID(uuid);
+	public String getDatabaseForId(ProjectResourceId id) {
+		return requestHandler.getDatabaseForId(id);
 	}
 	
 
@@ -297,7 +297,7 @@ public class GatewayRpcDispatcher   {
 		return requestHandler.getPropertyBinding(diagramId, blockId, propertyName);
 	}
 	
-	public Object getPropertyValue(String diagramId,String blockId,String propertyName) {
+	public Object getPropertyValue(ProjectResourceId diagramId,String blockId,String propertyName) {
 		return requestHandler.getPropertyValue(diagramId, blockId, propertyName);
 	}
 	/**
@@ -307,8 +307,8 @@ public class GatewayRpcDispatcher   {
 	 * @param uuid id of the subject node as a String
 	 * @return provider name
 	 */
-	public String getProviderForUUID(String uuid) {
-		return requestHandler.getProviderForUUID(uuid);
+	public String getProviderForId(ProjectResourceId id) {
+		return requestHandler.getProviderForId(id);
 	}
 	public Date getTimeOfLastBlockStateChange(ProjectResourceId diagramId, String blockName) {
 		return requestHandler.getTimeOfLastBlockStateChange(diagramId,blockName);
@@ -323,8 +323,8 @@ public class GatewayRpcDispatcher   {
 		return requestHandler.getWindowsBrowserPath();
 	}
 
-    public Boolean isAlerting(Long projectId,Long resourceId) {
-    	boolean result = requestHandler.isAlerting(projectId, resourceId);
+    public Boolean isAlerting(ProjectResourceId resourceId) {
+    	boolean result = requestHandler.isAlerting(resourceId);
     	return result;
     }
 
@@ -382,7 +382,7 @@ public class GatewayRpcDispatcher   {
 		return requestHandler.listSourcesForSink(diagramId,blockId);
 	}
 	
-	public String pathForBlock(String diagramId,String blockName) {
+	public String pathForBlock(ProjectResourceId diagramId,String blockName) {
 		return requestHandler.pathForBlock(diagramId,blockName);
 	}
 	/** 
@@ -399,7 +399,7 @@ public class GatewayRpcDispatcher   {
 	 * @param port
 	 * @param value
 	 */
-	public void postResult(String diagramId,String blockId,String port,String value) {
+	public void postResult(ProjectResourceId diagramId,String blockId,String port,String value) {
 		requestHandler.postValue(diagramId,blockId, port, value);
 	}
 	/**
@@ -420,7 +420,7 @@ public class GatewayRpcDispatcher   {
 	 * @param diagId the identifier of the diagram of interest
 	 * @return a list of descriptors for blocks in the diagram
 	 */
-	public List<SerializableBlockStateDescriptor> queryDiagram(String diagId) {
+	public List<SerializableBlockStateDescriptor> queryDiagram(ProjectResourceId diagId) {
 		return  requestHandler.listBlocksInDiagram(diagId);
 	}
 	/**
@@ -520,7 +520,7 @@ public class GatewayRpcDispatcher   {
 		try {
 			Collection<BlockProperty> properties = mapper.readValue(json, 
 					new TypeReference<Collection<BlockProperty>>(){});
-			requestHandler.setBlockProperties(getBlockUUID(diagramId),getBlockUUID(blockId),properties);
+			requestHandler.setBlockProperties(diagramId,getBlockUUID(blockId),properties);
 		} 
 		catch (JsonParseException jpe) {
 			log.warnf("%s.setBlockProperties: parse exception (%s)",CLSS,jpe.getLocalizedMessage());
@@ -533,10 +533,9 @@ public class GatewayRpcDispatcher   {
 		}; 
 	}
 
-	public void setBlockProperties(String diagId, String blockId,Collection<BlockProperty> props) {
-		UUID duuid = getBlockUUID(diagId);
+	public void setBlockProperties(ProjectResourceId diagId, String blockId,Collection<BlockProperty> props) {
 		UUID buuid = getBlockUUID(blockId);
-		requestHandler.setBlockProperties(duuid,buuid,props);
+		requestHandler.setBlockProperties(diagId,buuid,props);
 	}
 
 	/** Set a new value for the specified block property. 
@@ -550,7 +549,7 @@ public class GatewayRpcDispatcher   {
 		ObjectMapper mapper = new ObjectMapper();
 		try {
 			BlockProperty property = mapper.readValue(json, BlockProperty.class);
-			requestHandler.setBlockProperty(getBlockUUID(diagramId),getBlockUUID(blockId),property);
+			requestHandler.setBlockProperty(diagramId,getBlockUUID(blockId),property);
 		} 
 		catch (JsonParseException jpe) {
 			log.warnf("%s.setBlockProperty: parse exception (%s)",CLSS,jpe.getLocalizedMessage());
@@ -571,7 +570,7 @@ public class GatewayRpcDispatcher   {
 	 * @param pname the changed property
 	 * @param bind the new binding value of the property. The binding is a tag path.
 	 */
-	public void setBlockPropertyBinding(String diagramId,String blockId,String pname,String binding )  {
+	public void setBlockPropertyBinding(ProjectResourceId diagramId,String blockId,String pname,String binding )  {
 		requestHandler.setBlockPropertyBinding(diagramId,blockId,pname,binding);
 	}
 
@@ -583,11 +582,11 @@ public class GatewayRpcDispatcher   {
 	 * @param pname the changed property
 	 * @param value the new value of the property. The value will be coerced into the correct data type in the gateway 
 	 */
-	public void setBlockPropertyValue(String diagramId,String bname,String pname,String value )  {
+	public void setBlockPropertyValue(ProjectResourceId diagramId,String bname,String pname,String value )  {
 		requestHandler.setBlockPropertyValue(diagramId,bname,pname,value);
 	}
 	
-	public void setBlockState(String diagramId,String bname,String state ) {
+	public void setBlockState(ProjectResourceId diagramId,String bname,String state ) {
 		requestHandler.setBlockState(diagramId,bname,state);
 	}
 	
@@ -617,7 +616,7 @@ public class GatewayRpcDispatcher   {
 	/**
 	 * Define a watermark for a diagram. 
 	 */
-	public void setWatermark(String diagramId,String text) {
+	public void setWatermark(ProjectResourceId diagramId,String text) {
 		requestHandler.setWatermark(diagramId,text);
 	}
 
@@ -648,16 +647,14 @@ public class GatewayRpcDispatcher   {
 	 * @param blockId the uniqueId of the block
 	 * @param json JSON representation of the complete anchor list for the block.
 	 */
-	public void updateBlockAnchors(String diagramId,String blockId, String json) {
+	public void updateBlockAnchors(ProjectResourceId diagramId,String blockId, String json) {
 		//log.infof("%s.updateBlockAnchors: %s %s: %s", TAG, diagramId, blockId, json);
 		// Deserialize the JSON
 		ObjectMapper mapper = new ObjectMapper();
 		try {
 			Collection<SerializableAnchor> anchors = mapper.readValue(json, 
 					new TypeReference<Collection<SerializableAnchor>>(){});
-			UUID diagramUUID = UUID.fromString(diagramId);
-			UUID blockUUID = UUID.fromString(blockId);
-			requestHandler.updateBlockAnchors(diagramUUID,blockUUID,anchors);
+			requestHandler.updateBlockAnchors(diagramId,blockId,anchors);
 		} 
 		catch (JsonParseException jpe) {
 			log.warnf("%s.updateBlockAnchors: parse exception (%s)",CLSS,jpe.getLocalizedMessage());

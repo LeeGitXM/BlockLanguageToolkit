@@ -678,11 +678,12 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * @param className fully qualified class name of blocks to be listed
 	 * @return a list of state descriptors for blocks that are of the specified class.
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public List<SerializableBlockStateDescriptor> listBlocksOfClass(String className) {
 		List<SerializableBlockStateDescriptor> result = null;
 		try {
-			result = (List<SerializableBlockStateDescriptor> )GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+			result = (List<SerializableBlockStateDescriptor>)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 					BLTProperties.MODULE_ID, "listBlocksOfClass",className);
 		}
 		catch(Exception ge) {
@@ -1380,9 +1381,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * @param buuid block unique Id
 	 */
 	@Override
-	public void updateBlockAnchors(ProjectResourceId duuid,UUID buuid, Collection<SerializableAnchor> anchors ) {
-		String diagId  = duuid.toString();
-		String blockId = buuid.toString();
+	public void updateBlockAnchors(ProjectResourceId diagId,String blockId, Collection<SerializableAnchor> anchors ) {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		String json="";

@@ -81,6 +81,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	private static final String PREFIX = BLTProperties.BUNDLE_PREFIX;  // Required for some defaults
 	private boolean dirty = false;     
 	protected final ProjectResourceId resourceId;
+	private final ApplicationRequestHandler requestHandler;
 	private final ExecutionManager executionEngine;
 	protected final DiagramWorkspace workspace;
 	private SaveDiagramAction saveAction = null;
@@ -110,6 +111,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		this.resourceId = resource.getResourceId();
 		this.workspace = ws;
 		this.executor = new BasicExecutionEngine();
+		this.requestHandler = new ApplicationRequestHandler();
 		statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
 		setName(resource.getResourceName());
 		setText(resource.getResourceName());
@@ -636,13 +638,13 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 			Optional<ProjectResource> option = getProjectResource();
 			ProjectResource res = option.get();
 			BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resourceId.getResourcePath());
-			ResourcePath viewPath = null;
+			ProjectResourceId viewId = null;
 			if( tab!=null ) {
 				log.infof("%s.setDiagramState: %s now %s (open)",CLSS, tab.getName(),state.name());
 				ProcessDiagramView view = (ProcessDiagramView)(tab.getModel());
 				view.setState(state);		// Simply sets the view state
 				tab.setBackground(view.getBackgroundColorForState());
-				viewPath = view.getResourceId().getResourcePath();
+				viewId = view.getResourceId();
 			}
 			// Otherwise we need to de-serialize and get the path
 			else {
@@ -650,11 +652,11 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 				SerializableDiagram sd = null;
 				ObjectMapper mapper = new ObjectMapper();
 				sd = mapper.readValue(bytes,SerializableDiagram.class);
-				viewPath = sd.getResourcePath();
+				viewId = requestHandler.createResourceId(res.getProjectName(), sd.getResourcePath().getPath().toString(), sd.getResourceType().getTypeId());
 			}
 			// Inform the gateway of the state and let listeners update the UI
 			ApplicationRequestHandler arh = new ApplicationRequestHandler();
-			arh.setDiagramState(viewPath, state.name());
+			arh.setDiagramState(viewId, state.name());
 			statusManager.setResourceState(resourceId,state,true);
 			setDirty(false);
 			setIcon(getIcon());

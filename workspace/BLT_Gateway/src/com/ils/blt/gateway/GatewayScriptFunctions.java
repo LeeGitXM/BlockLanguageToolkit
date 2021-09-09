@@ -32,7 +32,7 @@ public class GatewayScriptFunctions   {
 	 * @param nodeId identifier of a node in the Designer NavTree
 	 * @return a list of the node's children
 	 */
-	public static List<SerializableResourceDescriptor> childNodes(String nodeId) {
+	public static List<SerializableResourceDescriptor> childNodes(ProjectResourceId nodeId) {
 		return handler.childNodes(nodeId);
 	}
 	/**
@@ -103,11 +103,11 @@ public class GatewayScriptFunctions   {
 		return handler.getControllerState();
 	}
 	/**
-	 * @param uuid string value of node's UUID
+	 * @param id node's resourceId
 	 * @return name of the database connection appropriate to the node's state
 	 */
-	public static String getDatabaseForUUID(String uuid) {
-		return handler.getDatabaseForUUID(uuid);
+	public static String getDatabaseForId(ProjectResourceId id) {
+		return handler.getDatabaseForId(id);
 	}
 	/**
 	 * @return a list of datasource names
@@ -193,7 +193,7 @@ public class GatewayScriptFunctions   {
 	 * @param blockId identifier of the block
 	 * @return the the internal state of a block.
 	 */
-	public static SerializableBlockStateDescriptor getInternalState(String diagramId,String blockId) {
+	public static SerializableBlockStateDescriptor getInternalState(ProjectResourceId diagramId,String blockId) {
 		return handler.getInternalState(diagramId,blockId);
 	}
 	/**
@@ -230,7 +230,7 @@ public class GatewayScriptFunctions   {
 	 * @param propertyName name of the property for which a value is to be returned
 	 * @return the binding (e.g. tag path)  of a specified block property.
 	 */
-	public static Object getPropertyBinding(String diagramId,String blockId,String propertyName) {
+	public static Object getPropertyBinding(ProjectResourceId diagramId,String blockId,String propertyName) {
 		return handler.getPropertyBinding(diagramId,blockId,propertyName);
 	}
 	/**
@@ -239,7 +239,7 @@ public class GatewayScriptFunctions   {
 	 * @param propertyName name of the property for which a value is to be returned
 	 * @return the value of a specified block property.
 	 */
-	public static Object getPropertyValue(String diagramId,String blockId,String propertyName) {
+	public static Object getPropertyValue(ProjectResourceId diagramId,String blockId,String propertyName) {
 		return handler.getPropertyValue(diagramId,blockId,propertyName);
 	}
 	/**
@@ -256,7 +256,7 @@ public class GatewayScriptFunctions   {
 	 * @param blockName name of the block within the diagram
 	 * @return the time at which the block last changed its state
 	 */
-	public static Date getTimeOfLastBlockStateChange(String diagramId, String blockName) {
+	public static Date getTimeOfLastBlockStateChange(ProjectResourceId diagramId, String blockName) {
 		return handler.getTimeOfLastBlockStateChange(diagramId,blockName);
 	}
 	/**
@@ -275,7 +275,7 @@ public class GatewayScriptFunctions   {
 	 * @param portName of the anchor of interest
 	 * @return a list of blocks connected to the named port.
 	 */
-	public static List<SerializableBlockStateDescriptor> listBlocksConnectedAtPort(String diagramId,String blockId,String portName) {
+	public static List<SerializableBlockStateDescriptor> listBlocksConnectedAtPort(ProjectResourceId diagramId,String blockId,String portName) {
 		return handler.listBlocksConnectedAtPort(diagramId,blockId,portName);
 	}
 	/**
@@ -284,7 +284,7 @@ public class GatewayScriptFunctions   {
 	 * @param blockName name of the block within the diagram
 	 * @return a list of blocks belonging to the diagram.
 	 */
-	public static List<SerializableBlockStateDescriptor> listBlocksDownstreamOf(String diagramId,String blockName){
+	public static List<SerializableBlockStateDescriptor> listBlocksDownstreamOf(ProjectResourceId diagramId,String blockName){
 		return handler.listBlocksDownstreamOf(diagramId,blockName);
 	}
 	/**
@@ -295,10 +295,10 @@ public class GatewayScriptFunctions   {
 	public static List<SerializableBlockStateDescriptor> listBlocksForTag(String tagpath) {
 		return handler.listBlocksForTag(tagpath);
 	}
-	public static List<SerializableBlockStateDescriptor> listBlocksGloballyDownstreamOf(String diagramId, String blockName) {
+	public static List<SerializableBlockStateDescriptor> listBlocksGloballyDownstreamOf(ProjectResourceId diagramId, String blockName) {
 		return handler.listBlocksGloballyDownstreamOf(diagramId, blockName);
 	}
-	public static List<SerializableBlockStateDescriptor> listBlocksGloballyUpstreamOf(String diagramId, String blockName) {
+	public static List<SerializableBlockStateDescriptor> listBlocksGloballyUpstreamOf(ProjectResourceId diagramId, String blockName) {
 		return handler.listBlocksGloballyUpstreamOf(diagramId, blockName);
 	}
 	/**
@@ -306,7 +306,7 @@ public class GatewayScriptFunctions   {
 	 * @param diagramId of the parent diagram
 	 * @return a list of blocks belonging to the diagram.
 	 */
-	public static List<SerializableBlockStateDescriptor> listBlocksInDiagram(String diagramId) {
+	public static List<SerializableBlockStateDescriptor> listBlocksInDiagram(ProjectResourceId diagramId) {
 		return handler.listBlocksInDiagram(diagramId);
 	}
 	/**
@@ -323,7 +323,7 @@ public class GatewayScriptFunctions   {
 	 * @param blockName name of the block within the diagram
 	 * @return a list of blocks upstream of the block specified, in the diagram.
 	 */
-	public static List<SerializableBlockStateDescriptor> listBlocksUpstreamOf(String diagramId,String blockName){
+	public static List<SerializableBlockStateDescriptor> listBlocksUpstreamOf(ProjectResourceId diagramId,String blockName){
 		return handler.listBlocksUpstreamOf(diagramId,blockName);
 	}
 	/**
@@ -383,7 +383,7 @@ public class GatewayScriptFunctions   {
 	 *         specified class.
 	 */
 	@SuppressWarnings({ "rawtypes" })
-	public static List listDiagramBlocksOfClass(String diagramId,String className) {
+	public static List listDiagramBlocksOfClass(ProjectResourceId diagramId,String className) {
 		return handler.listDiagramBlocksOfClass(diagramId,className);
 	}
 	/**
@@ -441,7 +441,7 @@ public class GatewayScriptFunctions   {
 	 * @return a slash-separated path to the specified node. The path 
 	 *         root is a slash representing the top node of the navigation tree.
 	 */
-	public static String pathForNode(String nodeId) {
+	public static String pathForNode(ProjectResourceId nodeId) {
 		return handler.pathForNode(nodeId);
 	}
 	/**
@@ -564,7 +564,7 @@ public class GatewayScriptFunctions   {
 	 * @param pname the changed property
 	 * @param value the new binding of the property. The value must be a legal tag path 
 	 */
-	public static void setBlockPropertyBinding(String diagramId,String blockId,String pname,String value ) {
+	public static void setBlockPropertyBinding(ProjectResourceId diagramId,String blockId,String pname,String value ) {
 		handler.setBlockPropertyBinding(diagramId, blockId, pname, value);
 	}
 	/** Change the value of a block property in such a way that the block and UI

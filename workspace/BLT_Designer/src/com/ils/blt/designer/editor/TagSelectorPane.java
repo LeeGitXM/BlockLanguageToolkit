@@ -18,7 +18,10 @@ import javax.swing.tree.TreeSelectionModel;
 
 import com.inductiveautomation.ignition.client.tags.tree.TagRenderer;
 import com.inductiveautomation.ignition.client.tags.tree.node.TagTreeNode;
+import com.inductiveautomation.ignition.designer.DesignerContextImpl;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
+import com.inductiveautomation.ignition.designer.tags.frame.TagBrowserFrame;
+import com.inductiveautomation.ignition.designer.tags.tree.TagBrowserPanel;
 
 import net.miginfocom.swing.MigLayout;
 
@@ -58,7 +61,9 @@ class TagSelectorPane extends JPanel {
 		tagTree = new JTree();
 		tagTree.setOpaque(true);
 		tagTree.setCellRenderer(tagRenderer);
-		tagTree.setModel(context.getTagBrowser());
+		TagBrowserFrame frame = ((DesignerContextImpl)context).getTagBrowser();
+		TagBrowserPanel panel = frame.getTagBrowserPanel();
+		tagTree.setModel(panel.getTagTreeModel().);
 		tagTreeSelectionModel = tagTree.getSelectionModel();
 		tagTreeSelectionModel.setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 		tagTree.setBackground(getBackground());

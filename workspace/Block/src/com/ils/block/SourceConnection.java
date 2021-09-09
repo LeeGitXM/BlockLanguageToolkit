@@ -93,11 +93,11 @@ public class SourceConnection extends Input implements ProcessBlock {
 	private ProcessBlock getMostRecentlyChangedPredecessor(DiagnosticDiagram diagram) {
 		ProcessBlock result = null;
 		Date latestTime = null;
-		List<SerializableBlockStateDescriptor>predecessors = controller.listSinksForSource(diagram, getName());
+		List<SerializableBlockStateDescriptor>predecessors = controller.listSinksForSource(diagram.getResourceId(), getName());
 		for( SerializableBlockStateDescriptor predecessor:predecessors ) {
 			String connectedDiagramId = predecessor.getAttributes().get(BLTProperties.BLOCK_ATTRIBUTE_PARENT);
 			String connectedBlockId = predecessor.getIdString();
-			ProcessBlock block = controller.getProcessBlock(connectedDiagramId,connectedBlockId);
+			ProcessBlock block = diagram.getProcessBlock(connectedBlockId);
 			if( getState().equals(block.getState())) {
 				if( latestTime==null ||
 					(block.getTimeOfLastStateChange()!=null &&

@@ -143,7 +143,7 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor implements Noti
 	// Fill widgets with current values
 	private void setUI() {
 		nameField.setText(family.getName());
-		uuidField.setText(family.getResourceId().toString());
+		uuidField.setText(family.getPath().toString());
 		String description = model.getProperties().get("Description");
 		if( description==null) description="";
 		descriptionArea.setText(description);

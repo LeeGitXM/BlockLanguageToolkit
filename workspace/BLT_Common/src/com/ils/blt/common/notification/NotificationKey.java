@@ -152,7 +152,8 @@ public class NotificationKey
 	 * @return  a push-notification key for a diagram's watermark. The Id is
 	 *         simply the diagram Id.
 	 */
-	public static String watermarkKeyForDiagram(String did) {
-		return String.format("W:%s",did);
+	public static String watermarkKeyForDiagram(ProjectResourceId resourceId) {
+		String key = resourceId.getResourcePath().getPath().toString();
+		return String.format("W:%s",key);
 	}
 }

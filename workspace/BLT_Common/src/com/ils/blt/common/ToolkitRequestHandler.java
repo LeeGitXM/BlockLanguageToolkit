@@ -199,10 +199,10 @@ public interface ToolkitRequestHandler  {
 	 * Find the parent application or diagram of the entity referenced by
 	 * the supplied id. Test the state and return the name of the appropriate
 	 * tag provider.  
-	 * @param uuid the uniqueId (string) of any node in the nav tree.
+	 * @param id the uniqueId of any node in the nav tree.
 	 * @return tag provider name
 	 */
-	public String getProviderForId(ProjectResourceId uuid);
+	public String getProviderForId(ProjectResourceId id);
 	/**
 	 * @param diagramId string representation of the diagram's unique id
 	 * @param blockName name of the block within the diagram
@@ -551,11 +551,11 @@ public interface ToolkitRequestHandler  {
 	
 	/** Update connections for a block. New connections will be added, old connections
 	 * may undergo a type conversion.  
-	 * @param duuid diagram unique Id
+	 * @param id diagram unique Id
 	 * @param buuid block unique Id
 	 * @param anchors  a pre-provided list of anchors that will be augmented by this call
 	 */
-	public void updateBlockAnchors(ProjectResourceId duuid,UUID buuid, Collection<SerializableAnchor> anchors ) ;
+	public void updateBlockAnchors(ProjectResourceId id,String buuid, Collection<SerializableAnchor> anchors ) ;
 	/**
 	 * Execute the setAux extension function in Gateway scope for the indicated node
 	 * @param resid the resourceId of an application to be refreshed

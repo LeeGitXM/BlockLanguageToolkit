@@ -175,6 +175,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		super(context,resource,ApplicationScope.DESIGNER);
 		this.executionEngine = new BasicExecutionEngine(1,CLSS);
 		this.requestHandler = new ApplicationRequestHandler();
+		this.renameHandler = new SerializableNodeRenameHandler();
 		setName(resource.getResourceName());      // Also sets text for tree
 		deleteNodeAction = new DeleteNodeAction(this);
 		copyBranchAction = new CopyAction(this);
@@ -343,7 +344,9 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		try {
 			logger.infof("%s.onEdit: alterName from %s to %s",CLSS,oldName,newTextValue);
 			alterName(newTextValue);
-			executionEngine.executeOnce(new DiagramUpdateManager(workspace,getProjectResource()));
+			Optional<ProjectResource> optional = context.getProject().getResource(resourceId);
+			ProjectResource resource = optional.get();
+			executionEngine.executeOnce(new DiagramUpdateManager(workspace,resource));
 		}
 		catch (IllegalArgumentException ex) {
 			ErrorUtil.showError(CLSS+".onEdit: "+ex.getMessage());
@@ -457,7 +460,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		if( this.getParent()==null ) {
 			logger.errorf("%s.initPopupMenu: ERROR: Diagram (%d) has no parent",CLSS,hashCode());
 		}
-		context.addProjectChangeListener(this);
+		context.addProjectListener(this);
 		if (isRootFolder()) { 
 			if( context.getProject().isEnabled()) {
 				ApplicationCreateAction applicationCreateAction = new ApplicationCreateAction(this);
@@ -718,7 +721,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	// Deserialize them and add as proper children of the parent
 	// @param node a tree node corresponding to an application.
 	private SerializableApplication recursivelyDeserializeApplication(AbstractResourceNavTreeNode node) {
-		ProjectResource res = node.getProjectResource();
+		Optional<ProjectResource>optional = node.getProjectResource();
+		ProjectResource res = optional.get();
 		SerializableApplication sa = null;
 		if( res!=null ) {
 			logger.debugf("%s.recursivelyDeserializeApplication: %s (%d)",CLSS,res.getName(),res.getResourceId());
@@ -752,10 +756,11 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	// Deserialize them and add as proper children of the parent
 	// @param node a tree node corresponding to a diagram.
 	private SerializableDiagram recursivelyDeserializeDiagram(AbstractResourceNavTreeNode node) {
-		ProjectResource res = node.getProjectResource();
+		Optional<ProjectResource>optional = node.getProjectResource();
+		ProjectResource res = optional.get();
 		SerializableDiagram sdiag = null;
 		if( res!=null ) {
-			logger.debugf("%s.recursivelyDeserializeDiagram: %s (%d)",CLSS,res.getName(),res.getResourceId());
+			logger.debugf("%s.recursivelyDeserializeDiagram: %s (%d)",CLSS,res.getProjectName(),res.getResourceId());
 			sdiag = deserializeDiagram(res);
 		}
 		return sdiag;
@@ -764,10 +769,11 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	// Deserialize them and add as proper children of the parent
 	// @param node a tree node corresponding to an application.
 	private SerializableFamily recursivelyDeserializeFamily(AbstractResourceNavTreeNode node) {
-		ProjectResource res = node.getProjectResource();
+		Optional<ProjectResource>optional = node.getProjectResource();
+		ProjectResource res = optional.get();
 		SerializableFamily sfam = null;
 		if( res!=null ) {
-			logger.debugf("%s.recursivelyDeserializeFamily: %s (%d)",CLSS,res.getName(),res.getResourceId());
+			logger.debugf("%s.recursivelyDeserializeFamily: %s (%d)",CLSS,res.getResourceName(),res.getResourceId());
 			sfam = deserializeFamily(res);
 			sfam.setFolders(new SerializableFolder[0]);
 			sfam.setDiagrams(new SerializableDiagram[0]);
@@ -818,7 +824,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	// Deserialize them and add as proper children of the parent
 	// @param node a tree node corresponding to an application.
 	private SerializableFolder recursivelyDeserializeFolder(AbstractResourceNavTreeNode node) {
-		ProjectResource res = node.getProjectResource();
+		Optional<ProjectResource>optional = node.getProjectResource();
+		ProjectResource res = optional.get();
 		SerializableFolder sfold = null;
 		if( res!=null ) {
 			logger.infof("%s.recursivelyDeserializeFolder: %s (%d)",CLSS,res.getName(),res.getResourceId());
@@ -848,7 +855,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 					if( sf!=null ) sfold.addFolder(sf);
 				}
 				else {
-					logger.infof("%s.recursivelyDeserializeFolder: %s unexpected child resource type (%s)",CLSS,res.getName(),cres.getName(),cres.getResourceType());
+					logger.infof("%s.recursivelyDeserializeFolder: %s unexpected child resource type (%s)",CLSS,res.getName(),cres.getResourceName(),cres.getResourceType());
 				}
 			}
 		}

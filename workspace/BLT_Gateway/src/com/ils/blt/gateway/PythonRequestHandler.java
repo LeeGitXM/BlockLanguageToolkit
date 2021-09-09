@@ -108,28 +108,24 @@ public class PythonRequestHandler   {
 	 * @param uuidString identifier for a node, a string version of a UUID
 	 * @return the default database for the project containing this node
 	 */
-	public String getDefaultDatabase(String uuidString)  {
+	public String getDefaultDatabase(ProjectResourceId resourceId)  {
 		String dbName = "";
-		try {
-			UUID uuid = UUID.fromString(uuidString);
-			ProcessNode node = controller.getProcessNode(uuid);
-			while( node!=null) {
-				if(node instanceof ProcessDiagram ) {
-					ProcessDiagram diagram = (ProcessDiagram)node;
-					if( diagram.getState().equals(DiagramState.ISOLATED)) dbName = controller.getIsolationDatabase();
-					else dbName = controller.getProductionDatabase();
-					break;
-				}
-				node = controller.getProcessNode(node.getParent());
+
+		ProcessNode node = controller.getProcessNode(resourceId);
+		while( node!=null) {
+			if(node instanceof ProcessDiagram ) {
+				ProcessDiagram diagram = (ProcessDiagram)node;
+				if( diagram.getState().equals(DiagramState.ISOLATED)) dbName = controller.getIsolationDatabase();
+				else dbName = controller.getProductionDatabase();
+				break;
 			}
+			node = controller.getProcessNode(node.getParent());
 		}
-		catch(IllegalArgumentException iae) {
-			log.warnf("%s.getDefaultDatabase: %s is an illegal UUID (%s)",CLSS,uuidString,iae.getMessage());
-		}
+
 		if( !dbName.isEmpty() ) log.debugf("%s.getDefaultDatabase: %s ",CLSS,dbName);
 		else                   log.warnf("%s.getDefaultDatabase: Database for diagram %s not found,",CLSS,uuidString);
 		return dbName;
-	}
+	
 	/**
 	 * @return the name of the isolation datasource
 	 */
