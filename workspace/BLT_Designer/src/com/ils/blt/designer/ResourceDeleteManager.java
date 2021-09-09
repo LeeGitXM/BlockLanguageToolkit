@@ -26,7 +26,7 @@ public class ResourceDeleteManager implements Runnable {
 	private static final String CLSS = "ResourceDeleteManager";
 	private final ILSLogger log;
 	private static DesignerContext context = null;
-	private static NodeStatusManager w = null;
+	private static NodeStatusManager statusManager = null;
 	private final AbstractResourceNavTreeNode root;   // The highest node of the tree to delete.
 	private final List<ProjectResource> resources;
 	private final ThreadCounter counter = ThreadCounter.getInstance();

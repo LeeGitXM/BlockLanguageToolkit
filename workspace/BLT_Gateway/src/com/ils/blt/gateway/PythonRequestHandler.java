@@ -123,8 +123,9 @@ public class PythonRequestHandler   {
 		}
 
 		if( !dbName.isEmpty() ) log.debugf("%s.getDefaultDatabase: %s ",CLSS,dbName);
-		else                   log.warnf("%s.getDefaultDatabase: Database for diagram %s not found,",CLSS,uuidString);
+		else                   log.warnf("%s.getDefaultDatabase: Database for diagram %s not found,",CLSS,resourceId.getResourcePath().getPath().toString());
 		return dbName;
+	}
 	
 	/**
 	 * @return the name of the isolation datasource
@@ -143,12 +144,11 @@ public class PythonRequestHandler   {
 	 * @return the default tag provider for the project associated with 
 	 *         the specified diagram
 	 */
-	public String getDefaultTagProvider(String uuidString)  {
-		log.tracef("%s.getDefaultTagProvider, node = %s ",CLSS,uuidString);
+	public String getDefaultTagProvider(ProjectResourceId resid)  {
+		log.tracef("%s.getDefaultTagProvider, node = %s ",CLSS,resid.getResourcePath().getPath().toString());
 		String provider = "";
 		try {
-			UUID uuid = UUID.fromString(uuidString);
-			ProcessNode node = controller.getProcessNode(uuid);
+			ProcessNode node = controller.getProcessNode(resid);
 			while(  node!=null) {
 				if(node instanceof ProcessDiagram ) {
 					ProcessDiagram diagram = (ProcessDiagram)node;
@@ -160,9 +160,9 @@ public class PythonRequestHandler   {
 			}
 		}
 		catch(IllegalArgumentException iae) {
-			log.warnf("%s.getDefaultTagProvider: %s is an illegal UUID (%s)",CLSS,uuidString,iae.getMessage());
+			log.warnf("%s.getDefaultTagProvider: %s is an illegal UUID (%s)",CLSS,resid.getResourcePath().getPath().toString(,iae.getMessage());
 		}
-		if( provider.isEmpty() ) log.warnf("%s.getDefaultTagProvider: Provider for diagram %s not found,",CLSS,uuidString);
+		if( provider.isEmpty() ) log.warnf("%s.getDefaultTagProvider: Provider for diagram %s not found,",CLSS,resid.getResourcePath().getPath().toString();
 		return provider;
 	}
 	/**

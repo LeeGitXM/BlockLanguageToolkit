@@ -3,13 +3,10 @@ package com.ils.blt.designer.search;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
-import com.inductiveautomation.ignition.common.util.LogUtil;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.findreplace.SearchObjectCursor;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 public class PropertySearchCursor extends SearchObjectCursor {
-	private final String TAG = "PropertySearchCursor";
-	private final LoggerEx log;
+	private final String CLSS = "PropertySearchCursor";
 	private final DesignerContext context;
 	private final ProcessDiagramView diagram;
 	private final ProcessBlockView block;
@@ -20,7 +17,6 @@ public class PropertySearchCursor extends SearchObjectCursor {
 		this.context = ctx;
 		this.diagram = dia;
 		this.block = blk;
-		this.log = LogUtil.getLogger(getClass().getPackage().getName());
 		this.property = prop;
 		this.index = 0;
 	}
