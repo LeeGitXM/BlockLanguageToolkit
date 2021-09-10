@@ -55,27 +55,29 @@ public class TagHandler    {
 	public void deleteTag(String providerName,String path) {
 		path = stripProviderFromPath(path);
 		log.infof("%s.deleteTag [%s]%s",TAG,providerName,path);
-		TagPath tp = null;
-		try {
-			tp = TagPathParser.parse(providerName,path);
-		}
-		catch(IOException ioe) {
-			log.warnf("%s: deleteTag: Exception parsing tag [%s]%s (%s)",TAG,providerName,path,ioe.getLocalizedMessage());
-			return;
-		}
-		TagProvider provider = context.getTagManager().getTagProvider(providerName);
-		if( provider != null  ) {
-			List<TagPath> tags = new ArrayList<TagPath>();
-			tags.add(tp);
+		if( !path.isEmpty() ) {
+			TagPath tp = null;
 			try {
-				context.getTagManager().removeTags(tags);
+				tp = TagPathParser.parse(providerName,path);
 			}
-			catch(Exception ex) {
-				log.warnf("%s: deleteTag: Exception deleting tag [%s]%s (%s)",TAG,providerName,path,ex.getLocalizedMessage());
+			catch(IOException ioe) {
+				log.warnf("%s: deleteTag: Exception parsing tag [%s]%s (%s)",TAG,providerName,path,ioe.getLocalizedMessage());
+				return;
 			}
-		}
-		else {
-			log.warnf("%s.deleteTag: Provider %s does not exist",TAG,providerName);
+			TagProvider provider = context.getTagManager().getTagProvider(providerName);
+			if( provider != null  ) {
+				List<TagPath> tags = new ArrayList<TagPath>();
+				tags.add(tp);
+				try {
+					context.getTagManager().removeTags(tags);
+				}
+				catch(Exception ex) {
+					log.warnf("%s: deleteTag: Exception deleting tag [%s]%s (%s)",TAG,providerName,path,ex.getLocalizedMessage());
+				}
+			}
+			else {
+				log.warnf("%s.deleteTag: Provider %s does not exist",TAG,providerName);
+			}
 		}
 	} 
 	/**
