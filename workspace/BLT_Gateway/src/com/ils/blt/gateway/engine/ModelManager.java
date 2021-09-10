@@ -161,7 +161,7 @@ public class ModelManager implements ProjectListener  {
 		ProcessBlock block = null;
 		ProcessDiagram dm = getDiagram(resourceId);
 		if( dm!=null ) {
-			block = dm.getBlock(blockId);
+			block = dm.getProcessBlock(blockId);
 		}
 		return block;
 	}
@@ -171,7 +171,7 @@ public class ModelManager implements ProjectListener  {
 	 * @return the specified block. If not found, return null. 
 	 */
 	public ProcessBlock getBlock(ProcessDiagram diagram,UUID blockId) {
-		ProcessBlock node = diagram.getBlock(blockId);
+		ProcessBlock node = diagram.getProcessBlock(blockId);
 		return node;
 	}
 	
@@ -193,6 +193,7 @@ public class ModelManager implements ProjectListener  {
 	public GatewayContext getContext() { return this.context; }
 	
 	public Map<ProjectResourceKey,ProcessNode> getNodesByKey() { return nodesByKey; }
+	public Map<ResourcePath,ProcessNode> getNodesByResourcePath() { return nodesByResourcePath; }
 	
 	/**
 	 * Get a specified node by its Id. 
@@ -302,7 +303,7 @@ public class ModelManager implements ProjectListener  {
 				if( node instanceof ProcessFamily &&
 					node.getName().equals(famName)) {
 					// Check to see if the parent of the family is the app..
-					String parentPath = node.getParent().getPath().toString();
+					String parentPath = node.getParentPath().getPath().toString();
 					String applicationPath = app.getPath().toString();
 					if( applicationPath.equalsIgnoreCase(parentPath)) {
 						fam = (ProcessFamily)node;
@@ -864,21 +865,21 @@ public class ModelManager implements ProjectListener  {
 		
 		// If the parent is null, then we're the top of the chain for our project
 		// Add the node to the root.
-		if( node.getParent()==null )  {
+		if( node.getParentPath()==null )  {
 			root.addChild(node);
 			if(DEBUG) log.infof("%s.addToHierarchy: %s is a ROOT (null parent)",CLSS,node.getName());
 		}
-		else if( node.getParent().equals(BLTProperties.ROOT_FOLDER_UUID) )  {
+		else if( node.getParentPath().equals(BLTProperties.ROOT_FOLDER_UUID) )  {
 			root.addChild(node);
 			if(DEBUG) log.infof("%s.addToHierarchy: %s is a ROOT (parent is root folder)",CLSS,node.getName());
 		}
 		else {
 			// If the parent is already in the tree, simply add the node as a child
 			// Otherwise add to our list of orphans
-			ProcessNode parent = nodesByResourcePath.get(node.getParent());
+			ProcessNode parent = nodesByResourcePath.get(node.getParentPath());
 	
 			if(parent==null ) {
-				if(DEBUG) log.infof("%s.addToHierarchy: %s is an ORPHAN (parent is %s)",CLSS,node.getName(),node.getParent().toString());
+				if(DEBUG) log.infof("%s.addToHierarchy: %s is an ORPHAN (parent is %s)",CLSS,node.getName(),node.getParentPath().toString());
 				orphansByResourcePath.put(self.getResourcePath(), node);
 			}
 			else {
@@ -926,8 +927,8 @@ public class ModelManager implements ProjectListener  {
 				ProjectResourceKey nodekey = new ProjectResourceKey(node.getResourceId());
 				nodesByKey.remove(nodekey);
 				
-				if( node.getParent()!=null ) {
-					ProcessNode parent = nodesByResourcePath.get(node.getParent());
+				if( node.getParentPath()!=null ) {
+					ProcessNode parent = nodesByResourcePath.get(node.getParentPath());
 					if( parent!=null ) {
 						parent.removeChild(node);
 						if( parent.getResourceId().equals(root.getResourceId())) {
@@ -1087,7 +1088,7 @@ public class ModelManager implements ProjectListener  {
 	private void resolveOrphans() {
 		List<ProcessNode> reconciledOrphans = new ArrayList<ProcessNode>();
 		for( ProcessNode orphan:orphansByResourcePath.values()) {
-			ProcessNode parent = nodesByResourcePath.get(orphan.getParent());
+			ProcessNode parent = nodesByResourcePath.get(orphan.getParentPath());
 			// If is now resolved, remove node from orphan list and
 			// add as child of parent. Recurse it's children.
 			if(parent!=null ) {
@@ -1099,7 +1100,7 @@ public class ModelManager implements ProjectListener  {
 			}
 		}
 		for( ProcessNode orphan:reconciledOrphans) {
-			ProcessNode parent = nodesByResourcePath.get(orphan.getParent());
+			ProcessNode parent = nodesByResourcePath.get(orphan.getParentPath());
 			parent.addChild(orphan);
 			orphansByResourcePath.remove(orphan.getResourceId().getResourcePath());
 		}

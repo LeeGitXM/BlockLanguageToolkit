@@ -151,8 +151,9 @@ public class ProxyHandler   {
 	}
 
 	
-	public ProxyBlock createBlockInstance(String className,ProjectResourceId parentId,UUID blockId,String projectName,String name) {
+	public ProxyBlock createBlockInstance(String className,ProjectResourceId parentId,UUID blockId,String name) {
 		ProxyBlock block = new ProxyBlock(context,className,parentId,blockId);
+		String projectName = parentId.getProjectName();
 		log.debugf("%s.createBlockInstance --- python proxy for %s, project %d",CLSS,className,projectName); 
 		if( createBlockCallback.compileScript() ) {
 			synchronized(createBlockCallback) {

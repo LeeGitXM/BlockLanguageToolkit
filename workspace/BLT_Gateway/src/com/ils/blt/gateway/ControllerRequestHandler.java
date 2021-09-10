@@ -175,7 +175,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			ProcessDiagram diagram = controller.getDiagram(parentId);
 			if( diagram!=null ) {
 				String projectName = diagram.getProjectName();
-				block = ph.createBlockInstance(className,parentId,blockId,projectName,"");
+				block = ph.createBlockInstance(className,parentId,blockId,"");
 			}
 		}
 		catch( InstantiationException ie ) {
@@ -263,7 +263,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		List<BlockProperty> results = new ArrayList<>();
 		ProcessDiagram diagram = controller.getDiagram(resourceId);
 		ProcessBlock block = null;
-		if( diagram!=null ) block = diagram.getBlock(blockId);
+		if( diagram!=null ) block = diagram.getProcessBlock(blockId);
 		BlockProperty[] props = null;
 		if(block!=null) {
 			props = block.getProperties();  // Existing block
@@ -292,7 +292,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 */
 	public synchronized BlockProperty getBlockProperty(ProcessDiagram diagram,UUID blockId,String propertyName) {
 		ProcessBlock block = null;
-		if( diagram!=null ) block = diagram.getBlock(blockId);
+		if( diagram!=null ) block = diagram.getProcessBlock(blockId);
 		BlockProperty property = null;
 		if(block!=null) {
 			property = block.getProperty(propertyName);  // Existing block
@@ -421,7 +421,8 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 					break;
 				}
 				// The parent can be either a folder, application, family or root
-				ProjectResourceId parent = createResourceId(nodeId.getProjectName(),node.getParent().getPath().toString(),)
+				ProcessNode parentNode = controller.getParentNode(node);
+				ProjectResourceId parent = parentNode.getResourceId();
 				node = controller.getProcessNode(parent);
 			}
 			if(ds.equals(DiagramState.ACTIVE)) {
@@ -474,7 +475,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		UUID uuid = makeUUID(blockId);
 		List<ProcessDiagram> diagrams = controller.getDelegate().getDiagrams();
 		for(ProcessDiagram diagram:diagrams) {
-			if( diagram.getBlock(uuid)!=null) return diagram.toResourceDescriptor();
+			if( diagram.getProcessBlock(uuid)!=null) return diagram.toResourceDescriptor();
 		}
 		return null;
 	}
@@ -642,7 +643,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 					//log.debugf("%s.getApplication, found application = %s ",TAG,app.getName());
 					break;
 				}
-				node = controller.getProcessNode(node.getParent());  // getParentNode
+				node = controller.getParentNode(node);
 			}
 			if(ds.equals(DiagramState.ACTIVE)) {
 				provider = getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER);
@@ -722,7 +723,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		List<SerializableBlockStateDescriptor> descriptors = new ArrayList<>();
 		ProcessDiagram diagram = controller.getDiagram(diagramId);
 		if( diagram!=null ) {
-			ProcessBlock blk = diagram.getBlock(UUID.fromString(blockId));
+			ProcessBlock blk = diagram.getProcessBlock(blockId);
 			if(blk!=null) {
 				List<ProcessBlock>connectedBlocks =  diagram.getConnectedBlocksAtPort(blk,portName);
 				for( ProcessBlock pb:connectedBlocks ) {
@@ -983,7 +984,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		ProcessDiagram diagram = controller.getDiagram(diagramId);
 		ProcessBlock source = null;
 		if(diagram!=null) {
-			source = diagram.getBlock(makeUUID(blockId));
+			source = diagram.getProcessBlock(makeUUID(blockId));
 		}
 	
 		String tagPath = null;
@@ -1024,7 +1025,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		ProcessDiagram diagram = controller.getDiagram(diagramId);
 		ProcessBlock sink = null;
 		if(diagram!=null) {
-			sink = diagram.getBlock(makeUUID(blockId));
+			sink = diagram.getProcessBlock(makeUUID(blockId));
 		}
 
 		String tagPath = null;
@@ -1185,7 +1186,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		try {
 			ProcessDiagram diagram = controller.getDiagram(diagramId);
 			if( diagram!=null) {
-				ProcessBlock block = diagram.getBlock(blockId);
+				ProcessBlock block = diagram.getProcessBlock(blockId);
 				QualifiedValue qv = new BasicQualifiedValue(value,
 						(quality.equalsIgnoreCase(BLTProperties.QUALITY_GOOD)?QualityCode.Good:QualityCode.Bad));
 				OutgoingNotification note = new OutgoingNotification(block,port,qv);
@@ -1253,13 +1254,14 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	
 	// Save a resource with aux data back into the project. Notify the client.
 	// Note: This triggers the ModelManager project change listener.
-	public void saveResource(ProjectResource resource,Object node,long projectId) {
+	public void saveResource(ProjectResource resource,Object node,String projectName {
 		ObjectMapper mapper = new ObjectMapper();
 		try{
 			byte[] bytes = mapper.writeValueAsBytes(node);
 			//log.tracef("%s.run JSON = %s",CLSS,new String(bytes));
 			resource.setData(bytes);
-			Project project = context.getProjectManager().getProject(projectId, ApplicationScope.GATEWAY, ProjectVersion.Staging);
+			Optional<RuntimeProject> optional = context.getProjectManager().getProject(projectName);
+			Project project = optional.get();
 			Project diff = project.getEmptyCopy();
 			log.infof("%s.saveResource: Saving, resource %s (%s)",CLSS,resource.getResourceName(),resource.getResourceType());
 			diff.putResource(resource);
@@ -1284,7 +1286,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		ProcessDiagram diagram = controller.getDiagram(diagramId);
 		ProcessBlock block = null;
 		UUID blockUUID = makeUUID(blockId);
-		if( diagram!=null ) block = diagram.getBlock(blockUUID);
+		if( diagram!=null ) block = diagram.getProcessBlock(blockUUID);
 		if(block!=null) {
 			block.setName(name);
 			controller.sendNameChangeNotification(blockId, name);
@@ -1424,7 +1426,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	public void setBlockProperties(ProjectResourceId parentId, UUID blockId, Collection<BlockProperty> properties) {
 		ProcessDiagram diagram = controller.getDiagram(parentId);
 		ProcessBlock block = null;
-		if( diagram!=null ) block = diagram.getBlock(blockId);
+		if( diagram!=null ) block = diagram.getProcessBlock(blockId);
 		if(block!=null) {
 			for( BlockProperty property:properties ) {
 				BlockProperty existingProperty = block.getProperty(property.getName());
@@ -1448,7 +1450,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 
 		ProcessDiagram diagram = controller.getDiagram(parentId);
 		ProcessBlock block = null;
-		if( diagram!=null ) block = diagram.getBlock(blockId);
+		if( diagram!=null ) block = diagram.getProcessBlock(blockId);
 		if(block!=null) {
 			BlockProperty existingProperty = block.getProperty(property.getName());
 			if( existingProperty!=null ) {
@@ -1621,7 +1623,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		ProcessDiagram diagram = controller.getDiagram(diagramId);
 		ProcessBlock block = null;
 		UUID blockUUID = UUID.fromString(blockId);
-		if( diagram!=null ) block = diagram.getBlock(blockUUID);
+		if( diagram!=null ) block = diagram.getProcessBlock(blockUUID);
 		if(block!=null) {
 			List<AnchorPrototype> anchors = block.getAnchors();
 			for( SerializableAnchor anchorUpdate:anchorUpdates ) {

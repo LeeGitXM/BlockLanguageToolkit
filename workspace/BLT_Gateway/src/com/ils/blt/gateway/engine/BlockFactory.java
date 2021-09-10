@@ -23,6 +23,7 @@ import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.gateway.proxy.ProxyHandler;
 import com.ils.common.log.ILSLogger;
 import com.ils.common.log.LogMaker;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 
 
 
@@ -63,7 +64,7 @@ public class BlockFactory  {
 	 * @param projectName needed to find the correct script manager in the event of a block created from Python
 	 * @return the ProcessBlock created from the specified SerializableBlock
 	 */
-	public ProcessBlock blockFromSerializable(UUID parentId,SerializableBlock sb,String projectName) {
+	public ProcessBlock blockFromSerializable(ProjectResourceId parentId,SerializableBlock sb,String projectName) {
 		String className = sb.getClassName();
 		// Handle python class name changes for some older versions
 		if( className.startsWith("emc.block")) {
@@ -79,7 +80,7 @@ public class BlockFactory  {
 		try {
 			Class<?> clss = Class.forName(className);
 			Constructor<?> ctor = clss.getDeclaredConstructor(new Class[] {ExecutionController.class,UUID.class,UUID.class});
-			block = (ProcessBlock)ctor.newInstance(BlockExecutionController.getInstance(),parentId,sb.getId());
+			block = (ProcessBlock)ctor.newInstance(BlockExecutionController.getInstance(),parentId,sb.getId(),sb.getName());
 		}
 		catch(InvocationTargetException ite ) {
 			log.warnf("%s.blockFromSerializable %s: Invocation failed (%s)",CLSS,className,ite.getMessage()); 
@@ -89,7 +90,7 @@ public class BlockFactory  {
 		}
 		catch( ClassNotFoundException cnf ) {
 			log.debugf("%s.blockFromSerializable: No java class %s ... %s trying Python",CLSS,className,sb.getName()); 
-			block = proxyHandler.createBlockInstance(className,parentId,blockId,projectName,sb.getName());
+			block = proxyHandler.createBlockInstance(className,parentId,blockId,sb.getName());
 		}
 		catch( InstantiationException ie ) {
 			log.warnf("%s.blockFromSerializable: Error instantiating %s (%s)",CLSS,className,ie.getLocalizedMessage()); 

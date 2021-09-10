@@ -8,6 +8,7 @@ package com.ils.blt.gateway.engine;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -44,6 +45,7 @@ import com.ils.common.watchdog.WatchdogTimer;
 import com.inductiveautomation.ignition.common.model.ApplicationScope;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
+import com.inductiveautomation.ignition.common.project.resource.ResourcePath;
 import com.inductiveautomation.ignition.gateway.clientcomm.GatewaySessionManager;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 
@@ -334,13 +336,19 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		ProcessBlock result = null;
 		ProcessDiagram diagram = getDiagram(diagramId);
 		if( diagram!=null ) {
-			result = diagram.getBlock(UUID.fromString(blockId));
+			result = diagram.getProcessBlock(UUID.fromString(blockId));
 		}
 		return result;
 	}
 	// Not part of the interface
 	public ProcessNode getProcessNode(ProjectResourceId id) {
 		return modelManager.getProcessNode(id);
+	}
+	// Not part of the interface
+	public ProcessNode getParentNode(ProcessNode node) {
+		Map<ResourcePath,ProcessNode> map = modelManager.getNodesByResourcePath();
+		ResourcePath rp = node.getResourceId().getResourcePath();
+		return map.get(rp.getParent());
 	}
 	public List<SerializableResourceDescriptor> getDiagramDescriptors() {
 		return modelManager.getDiagramDescriptors();
@@ -600,7 +608,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 							if( outgoing.isEmpty() ) log.debugf("%s: no downstream connections found ...",CLSS);
 							for(IncomingNotification outNote:outgoing) {
 								UUID outBlockId = outNote.getConnection().getTarget();
-								ProcessBlock outBlock = dm.getBlock(outBlockId);
+								ProcessBlock outBlock = dm.getProcessBlock(outBlockId);
 								if( outBlock!=null ) {
 									log.tracef("%s.run: sending outgoing notification: to %s:%s = %s", CLSS,outBlock.toString(),
 											  outNote.getConnection().getDownstreamPortName(),outNote.getValue().toString());

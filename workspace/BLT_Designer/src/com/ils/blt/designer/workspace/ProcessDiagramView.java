@@ -62,7 +62,6 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	private static final int MIN_HEIGHT = 200;
 	private static final boolean DEBUG = true;
 	private Dimension diagramSize = new Dimension(MIN_WIDTH,MIN_HEIGHT);
-	private final UUID id;
 	private String name = "UNSET";
 	private UUID encapsulationBlockID = null;  // Used only if this diagram represents a sub-workspace
 	private final ProjectResourceId resourceId;
@@ -80,7 +79,9 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	 * @param diagram
 	 */
 	public ProcessDiagramView (ProjectResourceId resid,SerializableDiagram diagram, DesignerContext context) {
-		this(resid,diagram.getResourceId(),diagram.getName());
+		this.resourceId = resid;
+		this.name = diagram.getName();
+		this.appRequestHandler = new ApplicationRequestHandler();
 		if( DEBUG ) log.infof("%s.ProcessDiagramView: for diagram %s", CLSS, diagram.getName());
 		this.state = diagram.getState();
 		this.watermark = diagram.getWatermark();
@@ -143,13 +144,11 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	
 	/**
 	 * Constructor with no context ...
-	 * @param resId
-	 * @param uuid
+	 * @param resid
 	 * @param nam
 	 */
-	public ProcessDiagramView(ProjectResourceId resId,UUID uuid, String nam) {
-		this.id = uuid;
-		this.resourceId = resId;
+	public ProcessDiagramView(ProjectResourceId resid,String nam) {
+		this.resourceId = resid;
 		this.name = nam;
 		this.appRequestHandler = new ApplicationRequestHandler();
 	}
@@ -470,7 +469,6 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		return diagramSize;
 	}
 	public UUID getEncapsulationBlockID() {return encapsulationBlockID;}
-	public UUID getId() {return id;}
 
 	public String getName() {return name;}
 
@@ -480,9 +478,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		return resourceId.getResourcePath();
 	}
 	
-	public ProjectResourceId getResourceId() {
-		return resourceId;
-	}
+	public ProjectResourceId getResourceId() { return resourceId; }
 	
 	public String getWatermark() {return watermark;}
 	public void setWatermark(String mark) { this.watermark = mark; }
@@ -573,7 +569,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			}
 		}
 		// Register self for watermark changes
-		String key = NotificationKey.watermarkKeyForDiagram(getId().toString());
+		String key = NotificationKey.watermarkKeyForDiagram(resourceId);
 		handler.addNotificationChangeListener(key,CLSS,this);
 		
 		// Finally tell the Gateway to report status - on everything
@@ -608,7 +604,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			}
 		}
 		// Finally, deregister self
-		String key = NotificationKey.watermarkKeyForDiagram(getId().toString());
+		String key = NotificationKey.watermarkKeyForDiagram(resourceId);
 		handler.removeNotificationChangeListener(key,CLSS);
 	}
 	

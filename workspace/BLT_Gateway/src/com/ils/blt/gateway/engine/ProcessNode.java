@@ -20,7 +20,7 @@ import com.inductiveautomation.ignition.common.project.resource.ProjectResourceI
 import com.inductiveautomation.ignition.common.project.resource.ResourcePath;
 
 /**
- * A process node is a folder of type: application, family, folder, or diagram.
+ * A process node is a container of type: application, family, folder, or diagram.
  * We require the hierarchy in the gateway for purposes of routing conclusions
  * to the proper destination.
  */
@@ -105,7 +105,7 @@ public class ProcessNode implements Serializable {
 	 * @return the resource path of the parent of this node.
 	 *         The parent of the root node is null.
 	 */
-	public ResourcePath getParent() { return this.parent; }
+	public ResourcePath getParentPath() { return this.parent; }
 	public ProjectResourceId getResourceId() { return this.resourceId; }
 	public String getProjectName() {return resourceId.getProjectName();}
 	public void setParent(ResourcePath p) { this.parent = p; }
@@ -136,12 +136,12 @@ public class ProcessNode implements Serializable {
 	 */
 	public String getTreePath(Map<ResourcePath,ProcessNode> nodesByPath) {
 		StringBuffer buf = new StringBuffer(name);
-		ProcessNode parentNode = nodesByPath.get(getParent());
+		ProcessNode parentNode = nodesByPath.get(getParentPath());
 		while(parentNode!=null) {
 			buf.insert(0,PATH_SEPARATOR);
 			buf.insert(0,parentNode.getName());
-			if( parentNode.getParent()==null) break;
-			parentNode = nodesByPath.get(parentNode.getParent());
+			if( parentNode.getParentPath()==null) break;
+			parentNode = nodesByPath.get(parentNode.getParentPath());
 		}
 		buf.insert(0,PATH_SEPARATOR);  // Leading colon
 		return buf.toString();

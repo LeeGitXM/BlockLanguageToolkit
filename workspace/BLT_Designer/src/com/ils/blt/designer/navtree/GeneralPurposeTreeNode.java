@@ -75,6 +75,7 @@ import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.client.util.action.BaseAction;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
 import com.inductiveautomation.ignition.common.BundleUtil;
+import com.inductiveautomation.ignition.common.StringPath;
 import com.inductiveautomation.ignition.common.execution.ExecutionManager;
 import com.inductiveautomation.ignition.common.execution.impl.BasicExecutionEngine;
 import com.inductiveautomation.ignition.common.model.ApplicationScope;
@@ -1191,7 +1192,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 
 
 		// Run in foreground to avoid synchronization issues with display.
-		private synchronized void importDiagram(UUID parentId,SerializableDiagram sd) {
+		private synchronized void importDiagram(StringPath parentPath,SerializableDiagram sd) {
 			ObjectMapper mapper = new ObjectMapper();
 			try{
 				sd.setState(DiagramState.DISABLED);
@@ -1212,7 +1213,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			}
 		}
 		// Run in foreground to avoid synchronization issues with display.
-		private synchronized void importFamily(ProjectResourceId parentId,SerializableFamily sf) {
+		private synchronized void importFamily(StringPath parentPath,SerializableFamily sf) {
 			ObjectMapper mapper = new ObjectMapper();
 			try{
 				String json = mapper.writeValueAsString(sf);
@@ -1226,7 +1227,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				new ResourceCreateManager(resource).run();   // in-line
 				// Now import the diagrams
 				for(SerializableDiagram diagram:sf.getDiagrams()) {
-					importDiagram(sf.getResourceId(),diagram);
+					importDiagram(sf.getParentPath(),diagram);
 				}
 			} 
 			catch (Exception ex) {
@@ -1513,8 +1514,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 										sd.setState(DiagramState.DISABLED);
 										json = mapper.writeValueAsString(sd);
 										statusManager.setResourceState(newId, sd.getState(),false);
-										
-										
+															
 //										if (diagnosis) {
 //											ErrorUtil.showWarning("Diagram contains diagnosis blocks that must be renamed before saving");
 //										}
@@ -1805,7 +1805,6 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 						long newId;
 
 						try {
-							newId = context.newResourceId();
 							String title = BundleUtil.get().getString(PREFIX+".Import.Application.DialogTitle");
 							String label = BundleUtil.get().getString(PREFIX+".Import.Application.NameLabel");
 							ImportDialog dialog = new ImportDialog(context.getFrame(),label,title);

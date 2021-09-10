@@ -81,7 +81,13 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 		String key = NotificationKey.keyForProperty(id.toString(), pname);
 		return displays.get(key); 
 	}
-	public ProcessBlock getBlock(UUID id) { return blocks.get(id); }
+
+	public ProcessBlock getProcessBlock(UUID id) { return blocks.get(id); }
+	@Override
+	public ProcessBlock getProcessBlock(String idString) { 
+		UUID id = UUID.fromString(idString);
+		return blocks.get(id); 
+	}
 	
 	// For now we just do a linear search
 	public ProcessBlock getBlockByName(String name) { 
@@ -180,7 +186,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 			UUID id = sb.getId();
 			ProcessBlock pb = blocks.get(id);
 			if( pb==null ) {
-				pb = blockFactory.blockFromSerializable(id,sb,getProjectName());
+				pb = blockFactory.blockFromSerializable(getResourceId(),sb,getProjectName());
 				if( pb!=null ) {
 					// Set the proper timer
 					if(DiagramState.ACTIVE.equals(state)) pb.setTimer(controller.getTimer());

@@ -28,7 +28,7 @@ public abstract class SerializableNode {
 		return new ResourcePath(getResourceType(),path);
 	}
 	public String getName() { return name; }
-	public StringPath getParent() { return this.path.getParentPath(); }
+	public StringPath getParentPath() { return this.path.getParentPath(); }
 	public StringPath getPath() { return this.path; }
 	public DiagramState getState() {return state;}
 	

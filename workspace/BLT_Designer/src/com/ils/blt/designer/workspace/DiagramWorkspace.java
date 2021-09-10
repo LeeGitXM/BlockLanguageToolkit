@@ -36,7 +36,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import javax.swing.AbstractAction;
@@ -864,6 +863,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	// For a source/sink, tag must be in "Connections". For Input/Output it must not.
 	// Craig is correct in that there is an amount of ugliness that involves hard-coded block class names
 	// and properties
+	@SuppressWarnings("rawtypes")
 	public void handleBlockDrop(Object droppedOn, DropTargetDropEvent event) {
 		try {
 			DataFlavor flava = NodeListTransferable.FLAVOR_NODE_INFO_LIST;
@@ -1558,7 +1558,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				if( anchor.getDisplay().equalsIgnoreCase(BlockConstants.RECEIVER_PORT_NAME)) continue;
 				anchors.add(block.convertAnchorToSerializable((ProcessAnchorDescriptor)anchor));
 			}
-			handler.updateBlockAnchors(diagram.getResourceId(),block.getId(),anchors); // update gateway. 
+			handler.updateBlockAnchors(diagram.getResourceId(),block.getId().toString(),anchors); // update gateway. 
 			diagram.updateConnectionTypes(block,connectionType);
 			// Repaint the workspace
 			SwingUtilities.invokeLater(new WorkspaceRepainter());
