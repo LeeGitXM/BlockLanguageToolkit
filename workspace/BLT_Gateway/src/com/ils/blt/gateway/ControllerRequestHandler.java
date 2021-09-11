@@ -1254,7 +1254,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	
 	// Save a resource with aux data back into the project. Notify the client.
 	// Note: This triggers the ModelManager project change listener.
-	public void saveResource(ProjectResource resource,Object node,String projectName {
+	public void saveResource(ProjectResource resource,Object node) {
 		ObjectMapper mapper = new ObjectMapper();
 		try{
 			byte[] bytes = mapper.writeValueAsBytes(node);
@@ -1713,7 +1713,11 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 */
 	@Override
 	public synchronized void writeAuxData(ProjectResourceId resid,String nodeId,GeneralPurposeDataContainer container,String provider,String db) {
-		ProjectResource res = context.getProjectManager().getProject(projectId, ApplicationScope.GATEWAY,ProjectVersion.Staging).getResource(resid);
+		Optional<RuntimeProject> op = context.getProjectManager().getProject(resid.getProjectName());
+		Project proj = op.get();
+		proj.getResource(resid);
+		Optional<ProjectResource> optres = proj.getResource(resid);
+		ProjectResource res = optres.get();
 		if( res!=null && res.getResourceType().equals(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
 			Script script = extensionManager.createExtensionScript(ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.SET_AUX_OPERATION, provider);
 			extensionManager.runScript(context.getScriptManager(), script, nodeId,container,db);
@@ -1724,7 +1728,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			controller.sendAuxDataNotification(nodeId, new BasicQualifiedValue(container));
 		}
 		else if( res!=null && res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
-			ProcessBlock block = controller.getDelegate().getBlock(projectId, resid, UUID.fromString(nodeId));
+			ProcessBlock block = controller.getProcessBlock(resid, UUID.fromString(nodeId));
 			block.setAuxData(container);
 		}
 	}

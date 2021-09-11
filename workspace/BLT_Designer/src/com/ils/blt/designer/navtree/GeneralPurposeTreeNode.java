@@ -94,6 +94,7 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractNavTreeNode;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceNavTreeNode;
 import com.inductiveautomation.ignition.designer.navtree.model.FolderNode;
+import com.inductiveautomation.ignition.designer.project.ResourceNotFoundException;
 /**
  * Edit a folder in the designer scope to support the diagnostics toolkit diagram
  * layout. In addition to standard folders, folders can be of type "Application" or
@@ -1390,9 +1391,12 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 
 		@Override
 		public boolean undo() {
-			
-			context.getProject().deleteResource(pasted.getResourceId());
-
+			try {
+				context.getProject().deleteResource(pasted.getResourceId());
+			}
+			catch(ResourceNotFoundException rnfe) {
+				logger.warnf("%s: undo: Resource not found (%s)",CLSS,rnfe.getMessage());
+			}
 			return true;
 		}
 		
@@ -1432,7 +1436,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		}	
 		
 		public void paste(String data, boolean deleteOriginal) {
-			long clipId = Long.parseLong(data);
+			ProjectResourceId clipId = ProjectResourceId.fromJson(data);
 			Optional<ProjectResource> optional = context.getProject().getResource(clipId);
 			ProjectResource res = optional.get();
 			
