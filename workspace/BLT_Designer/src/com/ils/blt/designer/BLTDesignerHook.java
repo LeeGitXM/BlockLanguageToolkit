@@ -354,7 +354,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
     }
 	
 	
-	public GeneralPurposeTreeNode findApplicationForDiagram(ProcessDiagramView diagram) {
+	private GeneralPurposeTreeNode findApplicationForDiagram(ProcessDiagramView diagram) {
 		NodeStatusManager mgr = getNavTreeStatusManager();
 		GeneralPurposeTreeNode rtNode = (GeneralPurposeTreeNode)mgr.findNode(diagram.getResourceId());
 		AbstractResourceNavTreeNode ret = applicationForDiagram(null, rtNode, diagram);
@@ -362,7 +362,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 
 	}
 
-	public AbstractResourceNavTreeNode applicationForDiagram(AbstractResourceNavTreeNode app, AbstractResourceNavTreeNode node, ProcessDiagramView diagram) {
+	private AbstractResourceNavTreeNode applicationForDiagram(AbstractResourceNavTreeNode app, AbstractResourceNavTreeNode node, ProcessDiagramView diagram) {
 		AbstractResourceNavTreeNode ret = null;
 
 		if (node.getProjectResource() != null && node.getResourceId().getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
@@ -409,13 +409,13 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 				sd = mapper.readValue(json,SerializableDiagram.class);
 			} 
 			catch (JsonParseException jpe) {
-//				logger.warnf("%s: open parse exception (%s)",CLSS,jpe.getLocalizedMessage());
+				log.warnf("%s: open parse exception (%s)",CLSS,jpe.getLocalizedMessage());
 			} 
 			catch (JsonMappingException jme) {
-//				logger.warnf("%s: open mapping exception (%s)",CLSS,jme.getLocalizedMessage());
+				log.warnf("%s: open mapping exception (%s)",CLSS,jme.getLocalizedMessage());
 			} 
 			catch (IOException ioe) {
-//				logger.warnf("%s: open io exception (%s)",CLSS,ioe.getLocalizedMessage());
+				log.warnf("%s: open io exception (%s)",CLSS,ioe.getLocalizedMessage());
 			}
 			ProcessDiagramView diagram = new ProcessDiagramView(res.getResourceId(),sd, context);
 			for( Block blk:diagram.getBlocks()) {

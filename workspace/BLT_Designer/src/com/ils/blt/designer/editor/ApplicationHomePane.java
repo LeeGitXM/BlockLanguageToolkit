@@ -34,7 +34,6 @@ import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.log.ILSLogger;
 import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
-import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 
 import net.miginfocom.swing.MigLayout;
 

@@ -83,6 +83,7 @@ public class ForceValueSettingsDialog extends JDialog {
 		JButton okButton = new JButton(rb.getString("Force.ForceButton"));
 		buttonPanel.add(okButton, "");
 		okButton.addActionListener(new ActionListener() {
+			@SuppressWarnings("rawtypes")
 			public void actionPerformed(ActionEvent e) {
 				// Loop over the values and place on output
 				for(String port:componentMap.keySet()) {

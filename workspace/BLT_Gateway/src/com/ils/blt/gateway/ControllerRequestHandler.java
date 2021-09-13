@@ -58,16 +58,17 @@ import com.ils.common.persistence.ToolkitRecordHandler;
 import com.ils.common.tag.TagFactory;
 import com.ils.common.watchdog.AcceleratedWatchdogTimer;
 import com.inductiveautomation.ignition.common.datasource.DatasourceStatus;
-import com.inductiveautomation.ignition.common.model.ApplicationScope;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualityCode;
 import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.RuntimeProject;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceBuilder;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 import com.inductiveautomation.ignition.common.project.resource.ResourceType;
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
+import com.inductiveautomation.ignition.designer.project.DesignableProject;
 import com.inductiveautomation.ignition.gateway.datasource.Datasource;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 
@@ -1252,27 +1253,28 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		return container;
 	}
 	
-	// Save a resource with aux data back into the project. Notify the client.
+	// Modify a resource in a project with aux data back into the project.
+	// Do not save the resource.
 	// Note: This triggers the ModelManager project change listener.
-	public void saveResource(ProjectResource resource,Object node) {
+	public void modifyResource(ProjectResource resource,Object node) {
 		ObjectMapper mapper = new ObjectMapper();
 		try{
 			byte[] bytes = mapper.writeValueAsBytes(node);
 			//log.tracef("%s.run JSON = %s",CLSS,new String(bytes));
-			resource.setData(bytes);
-			Optional<RuntimeProject> optional = context.getProjectManager().getProject(projectName);
-			Project project = optional.get();
-			Project diff = project.getEmptyCopy();
-			log.infof("%s.saveResource: Saving, resource %s (%s)",CLSS,resource.getResourceName(),resource.getResourceType());
-			diff.putResource(resource);
-			context.getProjectManager().saveProject(diff, null, null, "Updated aux structure", true);
-
+			ProjectResourceBuilder builder = ProjectResource.newBuilder();
+			builder.setResourceId(resource.getResourceId());
+			builder.putData(bytes);
+			builder.setVersion(resource.getVersion());
+			Optional<RuntimeProject> optional = context.getProjectManager().getProject(resource.getProjectName());
+			DesignableProject project = (DesignableProject)(optional.get());
+			project.modifyResource(builder.build());
+			log.infof("%s.modifyResource: Saving, resource %s (%s)",CLSS,resource.getResourceName(),resource.getResourceType());
 		}
 		catch(JsonProcessingException jpe) {
-			log.warnf("%s.saveResource: Exception serializing application, resource %d (%s)",CLSS,resource.getResourceId(),jpe.getMessage());
+			log.warnf("%s.modifyResource: Exception serializing application, resource %d (%s)",CLSS,resource.getResourceId(),jpe.getMessage());
 		}
 		catch(Exception ex) {
-			log.warnf("%s.saveResource: Exception saving project, resource %d (%s)",CLSS,resource.getResourceId(),ex.getMessage());
+			log.warnf("%s.modifyResource: Exception saving project, resource %d (%s)",CLSS,resource.getResourceId(),ex.getMessage());
 		}
 	}
 	/**
@@ -1728,7 +1730,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			controller.sendAuxDataNotification(nodeId, new BasicQualifiedValue(container));
 		}
 		else if( res!=null && res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
-			ProcessBlock block = controller.getProcessBlock(resid, UUID.fromString(nodeId));
+			ProcessBlock block = controller.getProcessBlock(resid, nodeId);
 			block.setAuxData(container);
 		}
 	}

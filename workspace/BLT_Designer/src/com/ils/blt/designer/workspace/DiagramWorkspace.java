@@ -707,7 +707,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		if (event.isDataFlavorSupported(flava)) {
 			try {
 				Object node = event.getTransferable().getTransferData(flava);
-				if (node instanceof ArrayList && ((List) node).size() == 1) {
+				if (node instanceof ArrayList && ((List<?>) node).size() == 1) {
 					ArrayList<?> tagNodeArr = (ArrayList<?>)node;
 					// NOTE: This will fail (properly) if tag type is a dataset
 					if (tagNodeArr.get(0) instanceof TagTreeNode) {  // That's the thing we want!

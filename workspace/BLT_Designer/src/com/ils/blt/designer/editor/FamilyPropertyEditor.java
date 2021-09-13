@@ -7,8 +7,6 @@ package com.ils.blt.designer.editor;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -28,18 +26,11 @@ import com.ils.blt.designer.ResourceUpdateManager;
 import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.log.ILSLogger;
 import com.ils.common.log.LogMaker;
-import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
-import com.inductiveautomation.ignition.client.gateway_interface.GatewayInterface;
 import com.inductiveautomation.ignition.common.execution.ExecutionManager;
 import com.inductiveautomation.ignition.common.execution.impl.BasicExecutionEngine;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
-import com.inductiveautomation.ignition.common.project.ChangeOperation;
-import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
-import com.inductiveautomation.ignition.common.project.resource.ProjectResourceBuilder;
-import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
-import com.inductiveautomation.ignition.designer.project.ResourceNotFoundException;
 
 import net.miginfocom.swing.MigLayout;
 

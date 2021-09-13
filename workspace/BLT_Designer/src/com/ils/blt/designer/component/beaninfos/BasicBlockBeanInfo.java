@@ -11,7 +11,6 @@ import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
 import javax.swing.JTextField;
 
-import com.ils.blt.common.BLTProperties;
 import com.ils.common.component.PrefuseViewerComponent;
 import com.inductiveautomation.factorypmi.designer.property.customizers.DynamicPropertyProviderCustomizer;
 import com.inductiveautomation.vision.api.designer.beans.CommonBeanInfo;
@@ -24,8 +23,6 @@ import com.inductiveautomation.vision.api.designer.beans.InPlaceEditHandler;
  * here that are common to most, but not all block types.
  */
 public class BasicBlockBeanInfo extends CommonBeanInfo {
-	private final static String PREFIX = BLTProperties.BUNDLE_PREFIX+".Workspace.Menu.";
-	private Dimension preferredSize = null;
 	
    /**
     * Constructor: The superclass constructor takes an array of relevant custom

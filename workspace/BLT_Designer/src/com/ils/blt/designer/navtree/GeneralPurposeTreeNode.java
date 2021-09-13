@@ -61,6 +61,7 @@ import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.ResourceCreateManager;
 import com.ils.blt.designer.ResourceDeleteManager;
 import com.ils.blt.designer.ResourceSaveManager;
+import com.ils.blt.designer.ResourceUpdateManager;
 import com.ils.blt.designer.ThreadCounter;
 import com.ils.blt.designer.editor.ApplicationPropertyEditor;
 import com.ils.blt.designer.editor.FamilyPropertyEditor;
@@ -85,6 +86,7 @@ import com.inductiveautomation.ignition.common.project.ProjectResourceListener;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceBuilder;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
+import com.inductiveautomation.ignition.common.project.resource.ResourcePath;
 import com.inductiveautomation.ignition.designer.IgnitionDesigner;
 import com.inductiveautomation.ignition.designer.UndoManager;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
@@ -929,19 +931,20 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				if( newName==null) newName = "New App";  // Missing Resource
 				SerializableApplication app = new SerializableApplication();
 				app.setName(newName);
+				Optional<ProjectResource> ores = getProjectResource();
+				ProjectResource pr = ores.get();
 				String json = serializeApplication(app);
-
 				logger.debugf("%s.ApplicationCreateAction. json=%s",CLSS,json);
 				byte[] bytes = json.getBytes();
-				logger.infof("%s.ApplicationCreateAction. create new %s(%d), %s (%d bytes)",CLSS,BLTProperties.APPLICATION_RESOURCE_TYPE,newResId,
-						newName,bytes.length);
+				logger.infof("%s.ApplicationCreateAction. create %s(%s),(%d bytes)",CLSS,newName,BLTProperties.APPLICATION_RESOURCE_TYPE.toString(),bytes.length);
+				ProjectResourceId resid = requestHandler.createResourceId(pr.getProjectName(), getResourceId().getResourcePath().getFolderPath(), 
+						BLTProperties.APPLICATION_RESOURCE_TYPE.toString());
 				ProjectResourceBuilder builder = ProjectResource.newBuilder();
-				ProjectResource resource = new ProjectResource(newResId,BLTProperties.MODULE_ID, BLTProperties.APPLICATION_RESOURCE_TYPE,
-						newName, ApplicationScope.GATEWAY, bytes);
-				resource.setParentUuid(getResourceId());
-				logger.infof("%s: parent: %s",CLSS,getFolderId().toString());
-				new ResourceCreateManager(resource).run();	// Must be synchronous for child to show
-				currentNode.selectChild(new long[] {newResId} );
+				builder.setResourceId(resid);
+				builder.setVersion(pr.getVersion()+1);
+				builder.setApplicationScope(ApplicationScope.GATEWAY);
+				new ResourceCreateManager(builder.build()).run();	// Must be synchronous for child to show
+				currentNode.selectChild(new ResourcePath[] {getResourceId().getResourcePath()});
 			} 
 			catch (Exception err) {
 				ErrorUtil.showError(CLSS+" Exception creating application",err);
@@ -1055,9 +1058,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	
 	public void restoreAuxData(SerializableFamily sf) {
 		
-		String prodDb = requestHandler.getProductionDatabase();
 		GeneralPurposeDataContainer auxData = new GeneralPurposeDataContainer();
-
 		auxData.setProperties(new HashMap<String,String>());
 		auxData.setLists(new HashMap<>());
 		auxData.setMapLists(new HashMap<>());
@@ -1070,10 +1071,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		extensionManager.runScript(context.getScriptManager(), script, sf.getPath().toString(),auxData,db);
 		sf.setAuxiliaryData(auxData);
 	}
-	
-	
-	
-	
+
 	
 	private class ApplicationImportAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
@@ -1113,7 +1111,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 										SerializableApplication sa = mapper.readValue(new String(bytes), SerializableApplication.class);
 										if( sa!=null ) {
 											renameHandler.convertPaths(sa,sa.getParent());
-											logger.infof("%s:ApplicationImportAction importing application %s(%d) (%s)", CLSS,sa.getName(),newId,sa.getResourcePath().getPath().toString());
+											logger.infof("%s.s:ApplicationImportAction. create %s(%s),(%d bytes)",CLSS,sa.getName(),BLTProperties.APPLICATION_RESOURCE_TYPE.toString(),bytes.length);
 											String json = mapper.writeValueAsString(sa);
 											if(logger.isTraceEnabled() ) logger.trace(json);
 											ProjectResourceBuilder builder = ProjectResource.newBuilder();
@@ -1198,14 +1196,17 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			try{
 				sd.setState(DiagramState.DISABLED);
 				sd.setDirty(true);
-				String json = mapper.writeValueAsString(sd);
-				if(logger.isTraceEnabled() ) logger.trace(json);
+				byte[] bytes = mapper.writeValueAsBytes(sd);
+				if(logger.isTraceEnabled() ) logger.trace(bytes.toString());
 				ProjectResourceBuilder builder = ProjectResource.newBuilder();
+				builder.putData(bytes));
+				builder.setResourceId();
 				ProjectResource resource = new ProjectResource(newId,
 						BLTProperties.MODULE_ID, BLTProperties.DIAGRAM_RESOURCE_TYPE,
 						sd.getName(), ApplicationScope.GATEWAY, json.getBytes());
 				resource.setParentUuid(parentId);
 				logger.infof("%s:ApplicationImportAction importing diagram %s(%d) (%s)", CLSS,sd.getName(),newId,sd.getId().toString());
+				logger.infof("%s.s:ApplicationImportAction. create %s(%s),(%d bytes)",CLSS,sa.getName(),BLTProperties.APPLICATION_RESOURCE_TYPE.toString(),bytes.length);
 				statusManager.setResourceState(newId, sd.getState(),false);
 				new ResourceCreateManager(resource).run();
 			} 
@@ -1224,7 +1225,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 						BLTProperties.MODULE_ID, BLTProperties.FAMILY_RESOURCE_TYPE,
 						sf.getName(), ApplicationScope.GATEWAY, json.getBytes());
 				resource.setParentUuid(parentId);
-				logger.infof("%s:ApplicationImportAction importing family %s(%s) (%s/%s)", CLSS,sf.getName(),newId,parentId.toString(),sf.getResourceId().toString());
+				logger.infof("%s.s:FamilyImportAction. create %s(%s),(%d bytes)",CLSS,sf.getName(),BLTProperties.FAMILY_RESOURCE_TYPE.toString(),resource.getData().length);
 				new ResourceCreateManager(resource).run();   // in-line
 				// Now import the diagrams
 				for(SerializableDiagram diagram:sf.getDiagrams()) {
@@ -1517,12 +1518,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 										sd.setDirty(true);    // Dirty because gateway doesn't know about it yet
 										sd.setState(DiagramState.DISABLED);
 										json = mapper.writeValueAsString(sd);
-										statusManager.setResourceState(newId, sd.getState(),false);
-															
-//										if (diagnosis) {
-//											ErrorUtil.showWarning("Diagram contains diagnosis blocks that must be renamed before saving");
-//										}
-										
+										statusManager.setResourceState(node.getResourceId(), sd.getState(),false);
 									}
 									else {
 										ErrorUtil.showWarning(String.format("Failed to deserialize diagram (%s)",res.getResourceName()),"Paste Diagram");
@@ -1713,7 +1709,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				resource.setParentUuid(getResourceId());
 				logger.infof("%s: parent: %s",CLSS,getFolderId().toString());
 				new ResourceCreateManager(resource).run();	
-				currentNode.selectChild(new long[] {newId} );
+				currentNode.selectChild(new ResourcePath[] {newId} );
 				EventQueue.invokeLater(new Runnable() {
 					public void run() {
 						workspace.open(newId);
@@ -1742,21 +1738,20 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				if( newName==null) newName = "New Folks";  // Missing Resource
 				SerializableFamily fam = new SerializableFamily();
 				fam.setName(newName);
-
+				ProjectResourceId resid = requestHandler.createResourceId(getResourceId().getProjectName(), currentNode.getResourcePath().getFolderPath(), BLTProperties.FAMILY_RESOURCE_TYPE.toString());
 				String json = serializeFamily(fam);
-
 				logger.debugf("%s.FamilyCreateAction. json=%s",CLSS,json);
 				byte[] bytes = json.getBytes();
-				logger.infof("%s.FamilyCreateAction. create new %s(%d), %s (%d bytes)",CLSS,BLTProperties.FAMILY_RESOURCE_TYPE,newId,
-						newName,bytes.length);
+				logger.infof("%FamilyCreateAction. create %s(%s),(%d bytes)",CLSS,fam.getName(),BLTProperties.FAMILY_RESOURCE_TYPE.toString(),bytes.length);
 				ProjectResourceBuilder builder = ProjectResource.newBuilder();
-				ProjectResource resource = new ProjectResource(newId,BLTProperties.MODULE_ID, BLTProperties.FAMILY_RESOURCE_TYPE,
-						newName, ApplicationScope.GATEWAY, bytes);
-				resource.setParentUuid(getFolderId());
-				logger.infof("%s.familyCreateAction: res(%d) %s, fam %s, parent: %s",CLSS,newId,resource.getName(),fam.getName(),getFolderId().toString());
-				new ResourceCreateManager(resource).run();	
+				builder.setApplicationScope(ApplicationScope.GATEWAY);
+				builder.setResourceId(resid);
+				builder.putData(bytes);
+				builder.setVersion(0);
+				ProjectResource famResource = builder.build();
+				new ResourceCreateManager(builder.build()).run();	
 				//recreate();
-				currentNode.selectChild(new long[] {newId} );
+				currentNode.selectChild(new ResourcePath[] {famResource.getResourcePath()} );
 			} 
 			catch (Exception err) {
 				ErrorUtil.showError(CLSS+" Exception creating family",err);
@@ -1781,6 +1776,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				UUID newId = context.addFolder(newResId, BLTProperties.MODULE_ID, ApplicationScope.GATEWAY, newName, getFolderId());
 				logger.infof("%s.FolderCreateAction. create new %s(%d), %s (%s, parent %s)",CLSS,BLTProperties.FOLDER_RESOURCE_TYPE,newResId,newName,
 						newId.toString(),getFolderId().toString());
+				logger.infof("%FolderCreateAction. create %s(%s),(%ssddddddddddddddds)",CLSS,newName,BLTProperties.FOLDER_RESOURCE_TYPE.toString(),currentNode.pathToRoot().toString());
 				//recreate();
 				currentNode.selectChild(new long[] {newResId} );
 			} 
@@ -1999,7 +1995,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			long projectId = context.getProject().getResourceId();
 			db       = requestHandler.getProductionDatabase();
 			provider = requestHandler.getProductionTagProvider();
-			synchronizeNode(root,projectId,provider,db);
+			synchronizeNode(root,provider,db);
 			// Update the project
 			try {
 				DTGatewayInterface.getInstance().saveProject(IgnitionDesigner.getFrame(), diff, false, "Committing ...");  // Don't publish
@@ -2011,12 +2007,12 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			project.applyDiff(diff,false);
 		}	
 		
-		// This function is called recursively
+		// This function is called recursively to update the project resource with the nav tree, especially auxiliary data.
 		@SuppressWarnings("unchecked")
-		private void synchronizeNode(AbstractResourceNavTreeNode node,long projectId,String tagp,String dsource) {
+		private void synchronizeNode(AbstractResourceNavTreeNode node,String tagp,String dsource) {
 			//log.infof("%s.refreshNode: %s, (%s,%s)",CLSS,node.getName(),provider,dsource);
-			Optional<ProjectResource> optional = = node.getProjectResource();
-			ProjectResource pr = optional.get)();
+			Optional<ProjectResource> optional = node.getProjectResource();
+			ProjectResource pr = optional.get();
 			if(pr==null || pr.getResourceType()==null) return;
 			GeneralPurposeDataContainer container = null;
 			ObjectMapper mapper = new ObjectMapper();
@@ -2024,35 +2020,32 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			try {
 				if( pr.getResourceType().equals(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
 					SerializableApplication sa = deserializeApplication(pr);
-					container = ApplicationScriptFunctions.readAuxData(projectId,pr.getResourceId(),sa.getResourceId().toString(),tagp, dsource);
+					container = ApplicationScriptFunctions.readAuxData(pr.getResourceId(),sa.getResourcePath().toString(),tagp, dsource);
 					sa.setAuxiliaryData(container);
-					String json = mapper.writeValueAsString(sa);
-					pr.setData(json.getBytes());
-					context.updateResource(pr);   // Force an update
-					diff.putResource(pr,true);
+					byte[] bytes = mapper.writeValueAsBytes(sa);
+					ResourceUpdateManager rum = new ResourceUpdateManager(pr,bytes);
+					rum.run();
 				}
-				else if( pr.getResourceType().equalsIgnoreCase(BLTProperties.FAMILY_RESOURCE_TYPE)) {
+				else if( pr.getResourceType().equals(BLTProperties.FAMILY_RESOURCE_TYPE)) {
 					SerializableFamily sf = deserializeFamily(pr);
-					container = ApplicationScriptFunctions.readAuxData(projectId,pr.getResourceId(),sf.getResourceId().toString(),tagp, dsource);
+					container = ApplicationScriptFunctions.readAuxData(pr.getResourceId(),sf.getResourcePath).toString(),tagp, dsource);
 					sf.setAuxiliaryData(container);
-					String json = mapper.writeValueAsString(sf);
-					pr.setData(json.getBytes());
-					context.updateResource(pr);   // Force an update
-					diff.putResource(pr, true);
+					byte[] bytes = mapper.writeValueAsBytes(sa);
+					ResourceUpdateManager rum = new ResourceUpdateManager(pr,bytes);
+					rum.run();
 				}
-				else if( pr.getResourceType().equalsIgnoreCase(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
+				else if( pr.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
 					SerializableDiagram dia = deserializeDiagram(pr);
 					dia.setDirty(true);    // Dirty because gateway doesn't know about it yet
 					for(SerializableBlock blk:dia.getBlocks()) {
-						container = ApplicationScriptFunctions.readAuxData(projectId,pr.getResourceId(),blk.getId().toString(),tagp, dsource);
+						container = ApplicationScriptFunctions.readAuxData(pr.getResourceId(),blk.getId().toString(),tagp, dsource);
 						blk.setAuxiliaryData(container);
 					}
-					String json = mapper.writeValueAsString(dia);
-					pr.setData(json.getBytes());
-					context.updateResource(pr);   // Force an update
-					diff.putResource(pr, true);    // Mark as dirty for our controller as resource listener
+					byte[] bytes = mapper.writeValueAsBytes(dia);
+					ResourceUpdateManager rum = new ResourceUpdateManager(pr,bytes);
+					rum.run();
 				}
-				else if( pr.getResourceType().equalsIgnoreCase(BLTProperties.FOLDER_RESOURCE_TYPE) ) {
+				else if( pr.getResourceType().equals(BLTProperties.FOLDER_RESOURCE_TYPE) ) {
 					;
 				}
 				return;  // Non BLT type, not interested

@@ -25,6 +25,7 @@ import com.ils.common.log.LogMaker;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class BlockProperty  {
+	@SuppressWarnings("unused")
 	private static final long serialVersionUID = -8851989629221127947L;
 	private static final String CLSS = "BlockProperty";
 	private static final String COMMA = ",";
