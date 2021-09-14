@@ -1110,27 +1110,27 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 										ObjectMapper mapper = new ObjectMapper();
 										SerializableApplication sa = mapper.readValue(new String(bytes), SerializableApplication.class);
 										if( sa!=null ) {
-											renameHandler.convertPaths(sa,sa.getParent());
+											renameHandler.convertPaths(sa,getResourceId().getResourcePath().getPath());
 											logger.infof("%s.s:ApplicationImportAction. create %s(%s),(%d bytes)",CLSS,sa.getName(),BLTProperties.APPLICATION_RESOURCE_TYPE.toString(),bytes.length);
 											String json = mapper.writeValueAsString(sa);
 											if(logger.isTraceEnabled() ) logger.trace(json);
+											ProjectResourceId resid = requestHandler.createResourceId(getResourceId().getProjectName(), sa.getPath().toString(), BLTProperties.APPLICATION_RESOURCE_TYPE.toString());
 											ProjectResourceBuilder builder = ProjectResource.newBuilder();
-											ProjectResource resource = new ProjectResource(newId,
-													BLTProperties.MODULE_ID, BLTProperties.APPLICATION_RESOURCE_TYPE,
-													sa.getName(), ApplicationScope.GATEWAY, json.getBytes());
+											builder.putData(json.getBytes());
+											builder.setResourceId(resid);
+											builder.setApplicationScope(ApplicationScope.GATEWAY);
+											builder.setVersion(0);
+											ProjectResource resource = builder.build();
 
-
-											resource.setParentUuid(getFolderId());
 											// Now import families
 											for(SerializableFamily fam:sa.getFamilies()) {
-												importFamily(sa.getResourceId(),fam);
+												importFamily(resid.getResourcePath().getPath(),fam);
 											}
 											// Create after the children -- else sometimes folders are not populated.
 											new ResourceCreateManager(resource).run();   // In-line
-
 											saveApplicationAuxData(sa);
 											
-											root.selectChild(new long[] {newId} );
+											root.selectChild(new ResourcePath[] {resid.getResourcePath()} );
 										}
 										else {
 											ErrorUtil.showWarning(String.format("ApplicationImportAction: Failed to deserialize file (%s)",input.getAbsolutePath()),POPUP_TITLE);
@@ -1198,17 +1198,16 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				sd.setDirty(true);
 				byte[] bytes = mapper.writeValueAsBytes(sd);
 				if(logger.isTraceEnabled() ) logger.trace(bytes.toString());
+				ProjectResourceId resid = requestHandler.createResourceId(getResourceId().getProjectName(), sd.getPath().toString(), BLTProperties.DIAGRAM_RESOURCE_TYPE.toString());
 				ProjectResourceBuilder builder = ProjectResource.newBuilder();
-				builder.putData(bytes));
-				builder.setResourceId();
-				ProjectResource resource = new ProjectResource(newId,
-						BLTProperties.MODULE_ID, BLTProperties.DIAGRAM_RESOURCE_TYPE,
-						sd.getName(), ApplicationScope.GATEWAY, json.getBytes());
-				resource.setParentUuid(parentId);
-				logger.infof("%s:ApplicationImportAction importing diagram %s(%d) (%s)", CLSS,sd.getName(),newId,sd.getId().toString());
-				logger.infof("%s.s:ApplicationImportAction. create %s(%s),(%d bytes)",CLSS,sa.getName(),BLTProperties.APPLICATION_RESOURCE_TYPE.toString(),bytes.length);
-				statusManager.setResourceState(newId, sd.getState(),false);
-				new ResourceCreateManager(resource).run();
+				builder.putData(bytes);
+				builder.setResourceId(resid);
+				builder.setApplicationScope(ApplicationScope.GATEWAY);
+				builder.setVersion(0);
+				logger.infof("%s.s:ApplicationImportAction. create %s(%s),(%d bytes)",CLSS,sd.getName(),BLTProperties.APPLICATION_RESOURCE_TYPE.toString(),bytes.length);
+				statusManager.setResourceState(resid, sd.getState(),false);
+				ProjectResource pr = builder.build();
+				new ResourceCreateManager(pr).run();
 			} 
 			catch (Exception ex) {
 				ErrorUtil.showError(String.format("ApplicationImportAction: importing diagrm, unhandled Exception (%s)",ex.getMessage()),POPUP_TITLE,ex,true);
@@ -1223,7 +1222,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				ProjectResourceBuilder builder = ProjectResource.newBuilder();
 				ProjectResource resource = new ProjectResource(newId,
 						BLTProperties.MODULE_ID, BLTProperties.FAMILY_RESOURCE_TYPE,
-						sf.getName(), ApplicationScope.GATEWAY, json.getBytes());
+						sf.getName(), ApplicationScope.ALL, json.getBytes());
 				resource.setParentUuid(parentId);
 				logger.infof("%s.s:FamilyImportAction. create %s(%s),(%d bytes)",CLSS,sf.getName(),BLTProperties.FAMILY_RESOURCE_TYPE.toString(),resource.getData().length);
 				new ResourceCreateManager(resource).run();   // in-line
