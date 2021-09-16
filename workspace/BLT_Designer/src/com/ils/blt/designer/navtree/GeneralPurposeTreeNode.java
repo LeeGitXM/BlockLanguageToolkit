@@ -26,7 +26,6 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -79,7 +78,6 @@ import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.StringPath;
 import com.inductiveautomation.ignition.common.execution.ExecutionManager;
 import com.inductiveautomation.ignition.common.execution.impl.BasicExecutionEngine;
-import com.inductiveautomation.ignition.common.gson.JsonElement;
 import com.inductiveautomation.ignition.common.model.ApplicationScope;
 import com.inductiveautomation.ignition.common.project.ChangeOperation;
 import com.inductiveautomation.ignition.common.project.Project;
@@ -97,6 +95,7 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractNavTreeNode;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceNavTreeNode;
 import com.inductiveautomation.ignition.designer.navtree.model.FolderNode;
+import com.inductiveautomation.ignition.designer.project.DesignableProject;
 import com.inductiveautomation.ignition.designer.project.ResourceNotFoundException;
 /**
  * Edit a folder in the designer scope to support the diagnostics toolkit diagram
@@ -1468,6 +1467,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			ProjectResource res = optional.get();
 	        optional = parentNode.getProjectResource();
 	        ProjectResource dst = optional.get();
+	        String newName = nextFreeName((GeneralPurposeTreeNode)parentNode,res.getResourceName());
 			try {
 				EventQueue.invokeLater(new Runnable() {
 					public void run() {
@@ -1476,9 +1476,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 							mapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL,true);
 							SerializableDiagram sd = null;
 
-							UUID newResourceUUID = null;
 							String json = "";
-							
 							SerializableApplication sa = null; 
 							SerializableFamily sf = null;
 		
@@ -1486,6 +1484,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 								 AbstractResourceNavTreeNode closest = nearestNonFolderNode(parentNode);
 								if (closest instanceof GeneralPurposeTreeNode && ((GeneralPurposeTreeNode)closest).isRootFolder()) {
 									sa = mapper.readValue(new String(res.getData()), SerializableApplication.class);
+									sa.setName(newName);
 									if( sa!=null ) {
 										renameHandler.convertPaths(sa,res.getResourcePath().getPath());
 										json = mapper.writeValueAsString(sa);
@@ -1504,6 +1503,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 								AbstractResourceNavTreeNode node = nearestNonFolderNode(parentNode);
 								if (node.getProjectResource() != null && node.getResourcePath().getResourceType().equals(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
 									sf = mapper.readValue(new String(res.getData()), SerializableFamily.class);
+									sf.setName(newName);
 									if( sf!=null ) {
 										renameHandler.convertPaths(sf,res.getResourcePath().getPath());  // this goes deep but doesn't matter.  just getting a new UUID
 										json = mapper.writeValueAsString(sf);
@@ -1525,7 +1525,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 									if( sd!=null ) {
 										ProcessDiagramView diagram = new ProcessDiagramView(res.getResourceId(),sd, context);
 										renameHandler.convertPaths(sd,res.getResourcePath().getPath());  // converted UUIDs are thrown away because later CopyChildren also does it
-										
+										sd.setName(newName);
 										for( Block blk:diagram.getBlocks()) {
 											ProcessBlockView pbv = (ProcessBlockView)blk;
 											if (pbv.isDiagnosis()) {
@@ -1556,10 +1556,10 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 							// res is the project resource to copy - we just have to change the name
 							ProjectResourceId oldId = res.getResourceId();
 							ProjectResourceId newId = requestHandler.createResourceId(oldId.getProjectName(),
-									oldId.getFolderPath()+"/"+nextFreeName((GeneralPurposeTreeNode)parentNode,res.getResourceName()), oldId.getResourceType().toString());
+									oldId.getFolderPath()+"/"+name, oldId.getResourceType().toString());
 							
 							ProjectResourceBuilder builder = ProjectResource.newBuilder();
-							builder.setResourceId(newId);
+							builder.setResourceId(newId);;
 							builder.putData(res.getData());
 							builder.setVersion(res.getVersion());
 							builder.setApplicationScope(res.getApplicationScope());
@@ -1582,8 +1582,6 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 							UndoManager.getInstance().add(PasteAction.this,AbstractNavTreeNode.class);
 							pasted = resource;
 							((GeneralPurposeTreeNode)parentNode).selectChild(new ResourcePath[] {resource.getResourcePath().getParent()} );
-							
-							
 							
 						}
 						catch( IOException ioe) {
@@ -1706,7 +1704,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		public void actionPerformed(ActionEvent e) {
 			try {
 				String newName = BundleUtil.get().getString(PREFIX+".NewDiagram.Default.Name");
-				if( newName==null) newName = "New Diag";  // Missing string resource
+				if( newName==null) newName = "New Diagram";  // Missing string resource
 				SerializableDiagram diagram = new SerializableDiagram();
 				diagram.setName(newName);
 				diagram.setParentPath(currentNode.getResourcePath().getParentPath());
@@ -1715,18 +1713,21 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 
 				String json = serializeDiagram(diagram);	
 				logger.debugf("%s.DiagramCreateAction. json=%s",CLSS,json);
+				ProjectResourceId resid = requestHandler.createResourceId(currentNode.getResourceId().getProjectName(), currentNode.getResourcePath().getParentPath()+"/"+newName, BLTProperties.DIAGRAM_RESOURCE_TYPE.getTypeId());
 				byte[] bytes = json.getBytes();
-				logger.infof("%s.DiagramCreateAction. create new %s(%d), %s (%d bytes)",CLSS,BLTProperties.DIAGRAM_RESOURCE_TYPE,newId,
-						newName,bytes.length);
-				ProjectResource resource = new ProjectResource(newId,BLTProperties.MODULE_ID, BLTProperties.DIAGRAM_RESOURCE_TYPE,
-						newName, ApplicationScope.GATEWAY, bytes);
-				resource.setParentUuid(getResourceId());
-				logger.infof("%s: parent: %s",CLSS,getFolderId().toString());
+				logger.infof("%s.DiagramCreateAction. create new %s(%s), %s (%d bytes)",CLSS,BLTProperties.DIAGRAM_RESOURCE_TYPE.getTypeId(),
+						newName,currentNode.getResourcePath().getParentPath()+"/"+newName,bytes.length);
+				ProjectResourceBuilder builder = ProjectResource.newBuilder();
+				builder.setApplicationScope(ApplicationScope.GATEWAY);
+				builder.setResourceId(resid);
+				builder.putData(json.getBytes());
+				builder.setVersion(0);
+				ProjectResource resource = builder.build();
 				new ResourceCreateManager(resource).run();	
-				currentNode.selectChild(new ResourcePath[] {newId} );
+				currentNode.selectChild(new ResourcePath[] {resource.getResourcePath()} );
 				EventQueue.invokeLater(new Runnable() {
 					public void run() {
-						workspace.open(newId);
+						workspace.open(resid);
 					}
 				});
 
@@ -1796,7 +1797,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				new ResourceCreateManager(resource).run();	
 				logger.infof("%s.FolderCreateAction. create new %s(%s.%s)",CLSS,BLTProperties.FOLDER_RESOURCE_TYPE.toString(),resid.getFolderPath(),
 						resid.getResourcePath().getName());
-				logger.infof("%FolderCreateAction. create %s(%s),(%ssddddddddddddddds)",CLSS,newName,BLTProperties.FOLDER_RESOURCE_TYPE.toString(),currentNode.pathToRoot().toString());
+				logger.infof("%FolderCreateAction. create %s(%s),(%s)",CLSS,newName,BLTProperties.FOLDER_RESOURCE_TYPE.toString(),currentNode.pathToRoot().toString());
 				//recreate();
 				currentNode.selectChild(new ResourcePath[] {resid.getResourcePath()} );
 			} 
@@ -1995,35 +1996,29 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		}
 	}
 	// Navigate the NavTree from the top. Call GetAux on each application, family or block
-	// serializing the resource then save the project. Always execute for production database
+	// serializing the resource then save. Always execute for production database
 	// and tag provider. A similar exercise is performed by the Gateway hook on startup.
 	private class SynchronizeAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
 		private final AbstractResourceNavTreeNode root;
 		private String db;
 		private String provider;
-		private Project diff;
+		private DesignableProject proj;
 		
 
 		public SynchronizeAction(AbstractResourceNavTreeNode tnode)  {
 			super(PREFIX+".Synchronize",IconUtil.getIcon("refresh")); 
 			this.root = tnode;
-			this.diff = context.getProject().getEmptyCopy();
+			this.proj = (DesignableProject)context.getProject();
 		}
 
+		/**
+		 * Update resources within the project in memory. Do not do a final project save.
+		 */
 		public void actionPerformed(ActionEvent e) {
 			db       = requestHandler.getProductionDatabase();
 			provider = requestHandler.getProductionTagProvider();
 			synchronizeNode(root,provider,db);
-			// Update the project
-			try {
-				DTGatewayInterface.getInstance().saveProject(IgnitionDesigner.getFrame(), diff, false, "Committing ...");  // Don't publish
-			}
-			catch(GatewayException ge) {
-				logger.warnf("%s.run: Exception saving diff %d (%s)",CLSS,diff.getName(),ge.getMessage());
-			}
-			Project project = context.getProject();
-			project.applyDiff(diff,false);
 		}	
 		
 		// This function is called recursively to update the project resource with the nav tree, especially auxiliary data.
@@ -2036,22 +2031,19 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			GeneralPurposeDataContainer container = null;
 			ObjectMapper mapper = new ObjectMapper();
 			mapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL,true);
+			byte[] bytes = null; 
 			try {
 				if( pr.getResourceType().equals(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
 					SerializableApplication sa = deserializeApplication(pr);
 					container = ApplicationScriptFunctions.readAuxData(pr.getResourceId(),sa.getResourcePath().toString(),tagp, dsource);
 					sa.setAuxiliaryData(container);
-					byte[] bytes = mapper.writeValueAsBytes(sa);
-					ResourceUpdateManager rum = new ResourceUpdateManager(pr,bytes);
-					rum.run();
+					bytes = mapper.writeValueAsBytes(sa);
 				}
 				else if( pr.getResourceType().equals(BLTProperties.FAMILY_RESOURCE_TYPE)) {
 					SerializableFamily sf = deserializeFamily(pr);
 					container = ApplicationScriptFunctions.readAuxData(pr.getResourceId(),sf.getResourcePath().toString(),tagp, dsource);
 					sf.setAuxiliaryData(container);
-					byte[] bytes = mapper.writeValueAsBytes(sf);
-					ResourceUpdateManager rum = new ResourceUpdateManager(pr,bytes);
-					rum.run();
+					bytes = mapper.writeValueAsBytes(sf);
 				}
 				else if( pr.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
 					SerializableDiagram dia = deserializeDiagram(pr);
@@ -2060,13 +2052,13 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 						container = ApplicationScriptFunctions.readAuxData(pr.getResourceId(),blk.getId().toString(),tagp, dsource);
 						blk.setAuxiliaryData(container);
 					}
-					byte[] bytes = mapper.writeValueAsBytes(dia);
-					ResourceUpdateManager rum = new ResourceUpdateManager(pr,bytes);
-					rum.run();
+					bytes = mapper.writeValueAsBytes(dia);
 				}
 				else if( pr.getResourceType().equals(BLTProperties.FOLDER_RESOURCE_TYPE) ) {
 					;
 				}
+				ResourceUpdateManager rum = new ResourceUpdateManager(pr,bytes);
+				rum.run();
 				return;  // Non BLT type, not interested
 			}
 			catch(JsonProcessingException jpe) {
