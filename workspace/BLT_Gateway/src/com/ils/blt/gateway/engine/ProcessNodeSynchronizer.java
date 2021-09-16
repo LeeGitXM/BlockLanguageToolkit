@@ -14,6 +14,7 @@ import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.RuntimeProject;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
 import com.inductiveautomation.ignition.designer.project.DesignableProject;
+import com.inductiveautomation.ignition.designer.project.ResourceNotFoundException;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 
 /**
@@ -90,7 +91,7 @@ public class ProcessNodeSynchronizer {
     		if( !child.getResourceId().equals(root.getResourceId()) && modelManager.getProcessNode(child.getResourceId())==null ) {
     			ProjectResourceKey key = new ProjectResourceKey(child.getResourceId());
     			nodesToDelete.add(key);
-    			log.infof("%s.removeOrphans: DELETING node %d:%d (has no parent)", CLSS,key.getProjectName(),key.getResourceId());
+    			log.infof("%s.removeOrphans: DELETING node %s:%s (has no parent)", CLSS,key.getProjectName(),key.getResourceId().getResourcePath().getFolderPath());
     		}
     	}
     	// Actually remove the resource.
@@ -101,16 +102,13 @@ public class ProcessNodeSynchronizer {
     		Optional<RuntimeProject> optional = context.getProjectManager().getProject(key.getProjectName());
     		DesignableProject project = (DesignableProject) optional.get();
     		if( project!=null ) {
-    			project.deleteResource(key.getResourceId()); // Mark as dirty
     			try {
-    				context.getProjectManager().saveProject(project, null, null, "Removing orphan resource", false);
+    			project.deleteResource(key.getResourceId()); // Mark as dirty
     			}
-    			catch(Exception ex) {
-    				log.warnf("%s.removeOrphans: Failed to save project when deleting node %d:%d (%s)", CLSS,key.getProjectName(),key.getResourceId(),
-    						   ex.getMessage());
+    			catch(ResourceNotFoundException rnfe) {
+    				log.warnf("%s.removeOrphans: DELETING node %s:%s (%s)", CLSS,key.getProjectName(),key.getResourceId().getResourcePath().getFolderPath(),rnfe.getMessage());
     			}
     		}
-
     	}
     	log.infof("%s.removeOrphans ==========================       Complete      ==================================", CLSS);
     }

@@ -61,7 +61,6 @@ public class ApplicationHomePane extends JPanel implements  NotificationChangeLi
 	private final UtilityFunctions fcns = new UtilityFunctions();
 	protected final ILSLogger log;
 	private final String provider;
-	private final String database;
 
 	// Don't add an Apply button because then I need to manage getting the id's of any quant outputs they create 
 	// back from the extension manager.
@@ -73,10 +72,9 @@ public class ApplicationHomePane extends JPanel implements  NotificationChangeLi
 		this.requestHandler = new ApplicationRequestHandler();
 		this.model = editor.getModel();
 		this.log = LogMaker.getLogger(this);
-		this.database = requestHandler.getProductionDatabase();
 		this.provider = requestHandler.getProductionTagProvider();
 		this.key = NotificationKey.keyForAuxData(editor.getApplication().getResourcePath().getPath().toString());
-		this.setPreferredSize(editor.PANEL_SIZE);
+		this.setPreferredSize(ApplicationPropertyEditor.PANEL_SIZE);
 		
 		mainPanel = new JPanel(new MigLayout("fillx", "[right]rel[grow, fill]"));
 		add(mainPanel,BorderLayout.CENTER);

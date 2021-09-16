@@ -13,7 +13,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
-import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
@@ -21,10 +20,11 @@ import com.ils.blt.common.BusinessRules;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
 import com.inductiveautomation.ignition.client.tags.tree.TagRenderer;
-import com.inductiveautomation.ignition.client.tags.tree.TagTreeModel;
+import com.inductiveautomation.ignition.common.sqltags.model.TagTree;
 import com.inductiveautomation.ignition.common.tags.model.TagPath;
 import com.inductiveautomation.ignition.common.tags.paths.parser.TagPathParser;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
+import com.inductiveautomation.ignition.designer.tags.tree.TagBrowserTree;
 import com.inductiveautomation.ignition.designer.tags.tree.TagTreeModelImpl;
 import com.inductiveautomation.ignition.designer.tags.tree.node.TagTreeNode;
 
@@ -38,7 +38,7 @@ public class TagBrowserPanel extends BasicEditPanel {
 	private final DesignerContext context;
 	private static String selectedPath = "";
 	private BlockProperty property = null;
-	private final JTree jTree;
+	private final TagBrowserTree tagTree;
 	private final TagRenderer cellRenderer;
 	private final TreeSelectionModel tagTreeSelectionModel;
 	private static TreePath lastSelected = null;
@@ -48,17 +48,20 @@ public class TagBrowserPanel extends BasicEditPanel {
 		this.context = ctx;
 		this.cellRenderer = new TagRenderer();
 		setLayout(new BorderLayout());
-		jTree = new JTree();
-		jTree.setOpaque(true);
-		jTree.setCellRenderer(cellRenderer);
+		TagBrowserTree.Builder builder = TagBrowserTree.getBuilder();
+		builder.displaySimple();
+		builder.subscribeOnBrowse();
+		tagTree = builder.build(context);
+		tagTree.setOpaque(true);
+		tagTree.setCellRenderer(cellRenderer);
 		TagTreeModelImpl model = new TagTreeModelImpl(context);
 		model.resetRoot();
-		jTree.setModel(model);
-		tagTreeSelectionModel = jTree.getSelectionModel();
+		tagTree.setModel(model);
+		tagTreeSelectionModel = tagTree.getSelectionModel();
 		tagTreeSelectionModel.setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-		jTree.setBackground(getBackground());
+		tagTree.setBackground(getBackground());
 		cellRenderer.setBackground(Color.cyan);
-		JScrollPane treePane = new JScrollPane(jTree);
+		JScrollPane treePane = new JScrollPane(tagTree);
 		treePane.setPreferredSize(BlockEditConstants.TREE_SIZE);
 		add(treePane,BorderLayout.CENTER);
 		JPanel buttonPanel = new JPanel();
@@ -132,21 +135,12 @@ public class TagBrowserPanel extends BasicEditPanel {
 			log.debugf("%s.updateForProperty %s, binding = %s",CLSS,property.getName(),path);
 			TagPath tp = TagPathParser.parseSafe(path);
 			if( tp!=null ) {
-				TagTreeModel sttm = (TagTreeModel)jTree.getModel();
-
 				try {
-					TreeNode[] nodes = sttm.getPathToRoot(sttm);
-					TreePath treePath = sttm.getPathForTag(tp);
-					if( treePath!=null ) {
-						tagTreeSelectionModel.setSelectionPath(treePath);
-						jTree.expandPath(treePath); 
-						log.debugf("TagBrowserPanel.updateForProperty %s",treePath.toString());
-					}
-					else {
-						log.infof("TagBrowserPanel.updateForProperty: No tree path found for: %s:%s",property.getName(),property.getBinding());
-					}
+					TreePath treePath = new TreePath(tp.getLastPathComponent());
+					tagTreeSelectionModel.setSelectionPath(treePath);
+					tagTree.expandPath(treePath); 
+					log.debugf("TagBrowserPanel.updateForProperty %s",treePath.toString());
 				}
-				// getTagForPath() can throw a NPE
 				catch(Exception ex) {
 					log.infof("TagBrowserPanel.updateForProperty: Exception %s",ex.getLocalizedMessage());
 				}

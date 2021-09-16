@@ -54,7 +54,7 @@ public class OutputsPane extends JPanel {
 		this.detailEditor = detailEdit;
 		this.model = editor.getModel();
 		this.outputKeys = editor.getOutputKeys();
-		this.setPreferredSize(edit.PANEL_SIZE);
+		setPreferredSize(ApplicationPropertyEditor.PANEL_SIZE);
 		
 		JLabel label = new JLabel("Outputs");
 		label.setHorizontalAlignment(SwingConstants.CENTER);

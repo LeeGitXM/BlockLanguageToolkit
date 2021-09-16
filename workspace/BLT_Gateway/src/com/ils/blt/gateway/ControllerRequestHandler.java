@@ -303,6 +303,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		}
 		return property;
 	}
+	@SuppressWarnings("rawtypes")
 	@Override
 	public synchronized List<PalettePrototype> getBlockPrototypes() {
 		List<PalettePrototype> results = new ArrayList<>();

@@ -4,7 +4,6 @@
  */
 package com.ils.blt.designer.component.beaninfos;
 
-import java.awt.Dimension;
 import java.beans.IntrospectionException;
 import java.beans.PropertyChangeListener;
 
@@ -23,7 +22,6 @@ import com.inductiveautomation.vision.api.designer.beans.InPlaceEditHandler;
  * here that are common to most, but not all block types.
  */
 public class BasicBlockBeanInfo extends CommonBeanInfo {
-	
    /**
     * Constructor: The superclass constructor takes an array of relevant custom
     *               descriptors. The DynamicPropertyProviderCustomizer.VALUE_DESCRIPTOR
@@ -109,5 +107,4 @@ public class BasicBlockBeanInfo extends CommonBeanInfo {
 	
 	// Needed to satisfy introspection ...
 	public boolean isPreferredSize() { return false; }  // Works
-	public void setPreferredSize(Dimension dim) { this.preferredSize = dim; }
 }
