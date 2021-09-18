@@ -826,7 +826,8 @@ public class ModelManager implements ProjectListener  {
 			controller.sendAuxDataNotification(family.getPath(), new BasicQualifiedValue(family.getAuxiliaryData()));
 		}
 		else {
-			log.warnf("%s.addModifyFamilyResource: failed to deserialize %s(%d)",CLSS,res.getResourceName(),res.getResourceId());
+			log.warnf("%s.addModifyFamilyResource: failed to deserialize %s(%s)",CLSS,res.getResourceName(),
+					res.getResourceId().getResourcePath().getPath().toString());
 		}
 
 	}
@@ -982,26 +983,32 @@ public class ModelManager implements ProjectListener  {
 	 * @param res
 	 */ 
 	public SerializableApplication deserializeApplicationResource(ProjectResource res) {
-		byte[] serializedObj = res.getData();
-		String json = new String(serializedObj);
-		if(DEBUG) log.infof("%s.deserializeApplicationResource: json = %s",CLSS,json);
 		SerializableApplication sa = null;
-		try{
-			ObjectMapper mapper = new ObjectMapper();
-			sa = mapper.readValue(json, SerializableApplication.class);
-			if( sa!=null ) {
-				sa.setName(res.getProjectName());
-				if(DEBUG) log.infof("%s.deserializeApplicationResource: Successfully deserialized application %s",CLSS,sa.getName());
-				
+		byte[] serializedObj = res.getData();
+		if( serializedObj!=null && serializedObj.length>0 ) {
+			String json = new String(serializedObj);
+			if(DEBUG) log.infof("%s.deserializeApplicationResource: json = %s",CLSS,json);
+			try{
+				ObjectMapper mapper = new ObjectMapper();
+				sa = mapper.readValue(json, SerializableApplication.class);
+				if( sa!=null ) {
+					sa.setName(res.getProjectName());
+					if(DEBUG) log.infof("%s.deserializeApplicationResource: Successfully deserialized application %s",CLSS,sa.getName());
+
+				}
+				else {
+					log.warnf("%s.deserializeApplicationResource: deserialization failed",CLSS);
+				}
 			}
-			else {
-				log.warnf("%s.deserializeApplicationResource: deserialization failed",CLSS);
+			// Print stack trace
+			catch( Exception ex) {
+				log.warnf("%s.deserializeApplicationResource: exception (%s)",CLSS,ex.getLocalizedMessage(),ex);
 			}
 		}
-		// Print stack trace
-		catch( Exception ex) {
-			log.warnf("%s.deserializeApplicationResource: exception (%s)",CLSS,ex.getLocalizedMessage(),ex);
+		else {
+			log.warnf("%s.deserializeApplicationResource: resource (%s) has no data",CLSS,res.getResourceName());
 		}
+
 		return sa;
 	}
 	/**
@@ -1012,31 +1019,36 @@ public class ModelManager implements ProjectListener  {
 	 * @param res
 	 */ 
 	public SerializableDiagram deserializeDiagramResource(ProjectResource res) {
-		byte[] serializedObj = res.getData();
 		SerializableDiagram sd = null;
-		try{
-			String json = new String(serializedObj);
-			if(DEBUG) log.infof("%s.deserializeDiagramResource: json = %s",CLSS,json);
-			ObjectMapper mapper = new ObjectMapper();
-			mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-			mapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL,true);
-			sd = mapper.readValue(json, SerializableDiagram.class);
-			if( sd!=null ) {
-				sd.setName(res.getResourceName());       // Name comes from the resource
-				if(DEBUG) log.infof("%s.deserializeDiagramResource: Successfully deserialized diagram %s",CLSS,sd.getName());
-				if( DEBUG ) {
-					for(SerializableBlock sb:sd.getBlocks()) {
-						log.infof("%s: %s block, name = %s",CLSS,sb.getClassName(),sb.getName());
+		byte[] serializedObj = res.getData();
+		if( serializedObj!=null && serializedObj.length>0 ) {
+			try{
+				String json = new String(serializedObj);
+				if(DEBUG) log.infof("%s.deserializeDiagramResource: json = %s",CLSS,json);
+				ObjectMapper mapper = new ObjectMapper();
+				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+				mapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL,true);
+				sd = mapper.readValue(json, SerializableDiagram.class);
+				if( sd!=null ) {
+					sd.setName(res.getResourceName());       // Name comes from the resource
+					if(DEBUG) log.infof("%s.deserializeDiagramResource: Successfully deserialized diagram %s",CLSS,sd.getName());
+					if( DEBUG ) {
+						for(SerializableBlock sb:sd.getBlocks()) {
+							log.infof("%s: %s block, name = %s",CLSS,sb.getClassName(),sb.getName());
+						}
 					}
 				}
+				else {
+					log.warnf("%s.deserializeDiagramResource: deserialization failed",CLSS);
+				}
 			}
-			else {
-				log.warnf("%s.deserializeDiagramResource: deserialization failed",CLSS);
+			// Print stack trace
+			catch( Exception ex) {
+				log.warnf("%s.deserializeDiagramResource: exception (%s)",CLSS,ex.getLocalizedMessage(),ex);
 			}
 		}
-		// Print stack trace
-		catch( Exception ex) {
-			log.warnf("%s.deserializeDiagramResource: exception (%s)",CLSS,ex.getLocalizedMessage(),ex);
+		else {
+			log.warnf("%s.deserializeDiagramResource: resource (%s) has no data",CLSS,res.getResourceName());
 		}
 		return sd;
 	}
@@ -1047,24 +1059,30 @@ public class ModelManager implements ProjectListener  {
 	 * @param res
 	 */ 
 	public SerializableFamily deserializeFamilyResource(ProjectResource res) {
-		byte[] serializedObj = res.getData();
-		String json = new String(serializedObj);
-		if(DEBUG) log.infof("%s.deserializeFamilyResource: json = %s",CLSS,json);
 		SerializableFamily sf = null;
-		try{
-			ObjectMapper mapper = new ObjectMapper();
-			sf = mapper.readValue(json, SerializableFamily.class);
-			if( sf!=null ) {
-				sf.setName(res.getResourceName());     // Resource is the source of the name.
-				if(DEBUG) log.infof("%s.deserializeFamilyResource: Successfully deserialized family %s",CLSS,sf.getName());
+		byte[] serializedObj = res.getData();
+		if( serializedObj!=null && serializedObj.length>0 ) {
+			String json = new String(serializedObj);
+			if(DEBUG) log.infof("%s.deserializeFamilyResource: json = %s",CLSS,json);
+
+			try{
+				ObjectMapper mapper = new ObjectMapper();
+				sf = mapper.readValue(json, SerializableFamily.class);
+				if( sf!=null ) {
+					sf.setName(res.getResourceName());     // Resource is the source of the name.
+					if(DEBUG) log.infof("%s.deserializeFamilyResource: Successfully deserialized family %s",CLSS,sf.getName());
+				}
+				else {
+					log.warnf("%s: deserializeFamilyResource: deserialization failed",CLSS);
+				}
 			}
-			else {
-				log.warnf("%s: deserializeFamilyResource: deserialization failed",CLSS);
+			// Print stack trace
+			catch( Exception ex) {
+				log.warnf("%s.deserializeFamilyResource: exception (%s)",CLSS,ex.getLocalizedMessage(),ex);
 			}
 		}
-		// Print stack trace
-		catch( Exception ex) {
-			log.warnf("%s.deserializeFamilyResource: exception (%s)",CLSS,ex.getLocalizedMessage(),ex);
+		else {
+			log.warnf("%s.deserializeFamilyResource: resource (%s) has no data",CLSS,res.getResourceName());
 		}
 		return sf;
 	}

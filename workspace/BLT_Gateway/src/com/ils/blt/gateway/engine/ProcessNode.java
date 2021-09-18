@@ -46,6 +46,7 @@ public class ProcessNode implements Serializable {
 	 */
 	public ProcessNode(String nam, ResourcePath parent, String projectName,String type) { 
 		requestHandler = new ApplicationRequestHandler();
+		this.name = nam;
 		this.parent = parent;
 		StringPath path = StringPath.extend(parent.getPath(), nam);
 		this.resourceId = requestHandler.createResourceId(projectName, path.toString(),type);
@@ -57,7 +58,7 @@ public class ProcessNode implements Serializable {
 	/**
 	 * Constructor: 
 	 * @param nam of the node
-	 * @param parent UUID of the parent of this node.
+	 * @param parent resourece path of the parent of this node.
 	 * @param me UUID of this node 
 	 */
 	public ProcessNode(String nam, ResourcePath parent, ProjectResourceId me) { 

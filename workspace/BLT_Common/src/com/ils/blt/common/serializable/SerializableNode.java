@@ -35,10 +35,6 @@ public abstract class SerializableNode {
 	public void setParentPath(StringPath parent) {
 		path = StringPath.extend(parent, name);
 	}
-	public void setParentPath(String text) {
-		StringPath parent = StringPath.parse(text);
-		path = StringPath.extend(parent, name);
-	}
 	public void setPath(StringPath p) {this.path = p;}
 	public void setName(String nam) { if(nam!=null) name=nam; }
 	public void setState(DiagramState state) {this.state = state;}

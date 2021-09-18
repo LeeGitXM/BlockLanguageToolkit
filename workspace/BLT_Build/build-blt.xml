@@ -157,7 +157,7 @@
 			<param name="modName" value="${BLTModule.name}_Common" />
 			<param name="sourceDirFolder" value="${BLTModule.name}_Common" />
 			<param name="jarName" value="blt-common" />
-			<param name="javacSource" value="1.8" />
+			<param name="javacSource" value="11" />
 			<param name="module.build.classpath" value="${BLTModule.name}_Common.classpath"/>
 		</antcall>
 		

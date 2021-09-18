@@ -827,7 +827,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			logger.infof("%s.recursivelyDeserializeFolder: %s (%s)",CLSS,res.getResourceName(),res.getResourceId().getResourcePath().getPath().toString());
 			sfold = new SerializableFolder();
 			sfold.setName(res.getResourceName());
-			sfold.setParentPath(res.getFolderPath());
+			sfold.setParentPath(StringPath.parse(res.getFolderPath()));
 			sfold.setFolders(new SerializableFolder[0]);
 			sfold.setDiagrams(new SerializableDiagram[0]);
 
@@ -1707,7 +1707,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				if( newName==null) newName = "New Diagram";  // Missing string resource
 				SerializableDiagram diagram = new SerializableDiagram();
 				diagram.setName(newName);
-				diagram.setParentPath(currentNode.getResourcePath().getParentPath());
+				diagram.setParentPath(StringPath.parse(currentNode.getResourcePath().getParentPath()));
 				diagram.setDirty(false);    // Will become dirty as soon as we add a block
 				diagram.setState(DiagramState.DISABLED);
 

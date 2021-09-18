@@ -79,8 +79,9 @@ public class BlockFactory  {
 		// If we can't create a Java class, try python ...
 		try {
 			Class<?> clss = Class.forName(className);
-			Constructor<?> ctor = clss.getDeclaredConstructor(new Class[] {ExecutionController.class,UUID.class,UUID.class});
-			block = (ProcessBlock)ctor.newInstance(BlockExecutionController.getInstance(),parentId,sb.getId(),sb.getName());
+			Constructor<?> ctor = clss.getDeclaredConstructor(new Class[] {ExecutionController.class,ProjectResourceId.class,UUID.class});
+			block = (ProcessBlock)ctor.newInstance(BlockExecutionController.getInstance(),parentId,sb.getId());
+			block.setName(sb.getName());
 		}
 		catch(InvocationTargetException ite ) {
 			log.warnf("%s.blockFromSerializable %s: Invocation failed (%s)",CLSS,className,ite.getMessage()); 
@@ -143,6 +144,7 @@ public class BlockFactory  {
 			for( BlockProperty bp:properties) {
 				if( bp==null || bp.getName()==null) continue;
 				BlockProperty property = pb.getProperty(bp.getName());
+				if(property==null )  property = pb.getProperty(bp.getName().toUpperCase());
 				if( property!=null ) {
 					// Use the property change interface so as to properly trigger
 					// local handling within the block (if the new value is non-null)

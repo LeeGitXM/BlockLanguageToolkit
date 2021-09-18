@@ -735,7 +735,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			}
 		}
 		else {
-			log.warnf("%s.listBlocksConnectedAtPort: no diagram found for %s",CLSS,diagram.getPath());
+			log.warnf("%s.listBlocksConnectedAtPort: no diagram found for %s",CLSS,diagramId.getResourcePath().getPath().toString());
 		}
 		return descriptors;
 	}

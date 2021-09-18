@@ -205,7 +205,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 					}
 				}
 				else {
-					log.errorf("%s.analyze: ERROR, diagram %s failed to instantiate block of type %s",CLSS,getName(),sb.getClassName());
+					log.errorf("%s.createBlocks: ERROR, diagram %s failed to instantiate block of type %s",CLSS,getName(),sb.getClassName());
 				}
 			}
 		}
