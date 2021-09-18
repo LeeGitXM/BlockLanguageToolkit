@@ -1071,10 +1071,12 @@ public class ModelManager implements ProjectListener  {
 
 	private boolean isBLTResource(String type) {
 		boolean isBLTType = false;
-		if( type.equalsIgnoreCase(BLTProperties.APPLICATION_RESOURCE_TYPE.getTypeId()) ||
-			type.equalsIgnoreCase(BLTProperties.FAMILY_RESOURCE_TYPE.getTypeId()) ||
-			type.equalsIgnoreCase(BLTProperties.DIAGRAM_RESOURCE_TYPE.getTypeId()) ) {
-			 isBLTType = true;
+		if( type!=null ) {
+			if( type.equalsIgnoreCase(BLTProperties.APPLICATION_RESOURCE_TYPE.getTypeId()) ||
+				type.equalsIgnoreCase(BLTProperties.FAMILY_RESOURCE_TYPE.getTypeId()) ||
+				type.equalsIgnoreCase(BLTProperties.DIAGRAM_RESOURCE_TYPE.getTypeId()) ) {
+				isBLTType = true;
+			}
 		}
 		return isBLTType;
 	}
