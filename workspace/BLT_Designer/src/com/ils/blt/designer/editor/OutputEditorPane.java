@@ -62,6 +62,7 @@ public class OutputEditorPane extends JPanel implements ActionListener  {
 	final JComboBox<String> feedbackMethodComboBox = new JComboBox<String>();
 	private static Icon previousIcon = new ImageIcon(OutputEditorPane.class.getResource("/images/arrow_left_green.png"));
 	final JButton previousButton = new JButton(previousIcon);
+	final JButton cancelButton = new JButton("Cancel");
 	private static Icon tagBrowserIcon = new ImageIcon(OutputEditorPane.class.getResource("/images/arrow_right_green.png"));
 	final JButton tagButton = new JButton("Tags", tagBrowserIcon);
 	private final UtilityFunctions fcns = new UtilityFunctions();
@@ -185,9 +186,10 @@ public class OutputEditorPane extends JPanel implements ActionListener  {
 		
 		mainPanel.add(absoluteContainer, "span, growx, wrap");
 		
-		// Add the Previous / Back button - it should be all the way at the bottom, anchored to the left side.
+		// Add the Previous / Back button and a cancel button- it should be all the way at the bottom, anchored to the left side.
 		// Perform a save of all the fields before we go to the outputs
-		JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		//JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		JPanel bottomPanel = new JPanel(new MigLayout("","[25%, left][50%, center][25%]",""));
 		add(bottomPanel,BorderLayout.SOUTH);
 		bottomPanel.add(previousButton);
 		
@@ -201,6 +203,15 @@ public class OutputEditorPane extends JPanel implements ActionListener  {
 				editor.setSelectedPane(ApplicationPropertyEditor.OUTPUTS);
 			}
 		});
+		
+		/*
+		 * Add a cancel button in case they pressed the "+" button but didn't really mean to create a new output.  PAH 9/20/21
+		 */
+		cancelButton.setPreferredSize(ApplicationPropertyEditor.BUTTON_SIZE);
+		cancelButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {doCancel();}
+		});
+		bottomPanel.add(cancelButton,"wrap");
 
 		// There were two action listeners here - I think you should only have one, so maybe this was an attempt to cache the change until they select File-> Save PH 06/29/3021
 //		previousButton.setPreferredSize(ApplicationPropertyEditor.NAV_BUTTON_SIZE);
@@ -220,6 +231,7 @@ public class OutputEditorPane extends JPanel implements ActionListener  {
 	public void updateFields(Map<String,String> map){
 		log.infof("%s.updateFields()", CLSS);
 		outputMap=map;
+		log.infof("...the output id is %s...", outputMap.get("QuantOutputId").toString());
 		nameField.setText((String) outputMap.get("QuantOutput"));
 		tagField.setText((String) outputMap.get("TagPath"));
 		
@@ -280,6 +292,39 @@ public class OutputEditorPane extends JPanel implements ActionListener  {
 	
 	protected void doTagSelector() {
 		editor.setSelectedPane(ApplicationPropertyEditor.TAGSELECTOR);	
+	}
+	
+	protected void doCancel() {
+		log.infof("%s.doCancel: Cancelling edits...", CLSS);
+		String quantOutputId = outputMap.get("QuantOutputId");
+		String quantOutputName = nameField.getText();
+		log.tracef("Quant Output Name: %s - %s", quantOutputName, quantOutputId);
+		if (quantOutputId.equals("New")){
+			log.infof("Cancelling the edit of a new output");
+			
+			// PAH TODO
+			
+			/*
+			 * I'm not sure why this didn't work
+			 */
+/*			List<Map<String,String>> outputList=model.getMapLists().get("QuantOutputs");
+			outputList.remove(outputMap);*/
+			
+
+			// Look through the list of outputs for the new one ...
+			List<Map<String,String>> outputList=model.getMapLists().get("QuantOutputs");
+			if( outputList!=null ) {
+				for(Map<String,String> map : outputList) {
+					String str = (String) map.get("QuantOutputId");
+					if(str.equals(quantOutputId)){
+						log.tracef("Deleting the **new** output from the map!");
+						outputList.remove(map);
+						break;
+					}
+				}
+			}
+		}
+		editor.setSelectedPane(ApplicationPropertyEditor.OUTPUTS);	
 	}
 
 	// ============================================== Action listener ==========================================

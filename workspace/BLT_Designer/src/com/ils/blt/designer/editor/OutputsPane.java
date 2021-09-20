@@ -27,12 +27,17 @@ import com.ils.common.SortedListModel;
 
 /**
  * Select which output to edit, or make a new one.
+ * 
+ * A note about QuantOutputId - Initially this attribute was used to record the output id assigned by the database.
+ * Now that management of application data, which include Quant Outputs, is a one way street from Ignition to the database
+ * we will never get the quantOutputId from the database back into Ignition.  Therefore, this attribute was repurposed to
+ * help determine if we are editing a new or existing output.  It is used when the user presses "Cancel" and we use it to determine
+ * if we should delete the output (if they mistakenly created a new one and pressed "Cancel")  
  */
 public class OutputsPane extends JPanel {
 	private final ApplicationPropertyEditor editor;
 	private final GeneralPurposeDataContainer model;
 	private SortedListModel<String> outputKeys;
-	private Integer newOutputId = -1;
 	private static final long serialVersionUID = 2882399376824334428L;
 	private static Icon addIcon = new ImageIcon(OutputsPane.class.getResource("/images/add.png"));
 	private static Icon deleteIcon = new ImageIcon(OutputsPane.class.getResource("/images/delete.png"));
@@ -135,6 +140,7 @@ public class OutputsPane extends JPanel {
 		
 		if (outputMap != null){
 			System.out.println("Looking at an Output" + outputMap);
+			outputMap.put("QuantOutputId", "Existing"); //PAH TODO
 			// Get the output editor and call method that puts the output into the fields
 			detailEditor.updateFields(outputMap);
 			editor.setSelectedPane(ApplicationPropertyEditor.EDITOR);
@@ -164,7 +170,7 @@ public class OutputsPane extends JPanel {
 	}
 
 	protected void doAdd() {	
-		// Get the Map that corresponds to the name that is selected
+		// Create a new output map
 		Map<String,String> outputMap=newOutput();
 		if (outputMap != null){
 			System.out.println("Adding at an Output" + outputMap);
@@ -183,8 +189,7 @@ public class OutputsPane extends JPanel {
 		System.out.println("Creating a new output... ");
 
 		Map<String,String> outputMap = new HashMap<String,String>();
-		outputMap.put("QuantOutputId",String.valueOf(newOutputId));
-		newOutputId = newOutputId - 1;
+		outputMap.put("QuantOutputId", "New"); // PAH TODO
 		outputMap.put("QuantOutput", "");
 		outputMap.put("TagPath", "");
 		outputMap.put("MostNegativeIncrement",String.valueOf(-10.0));
