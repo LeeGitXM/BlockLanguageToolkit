@@ -45,7 +45,7 @@ public class OutputsPane extends JPanel {
 	final JPanel buttonPanel;
 	private final JList<String> jlist;
 	private final OutputEditorPane detailEditor;  // Handles a single output
-	final JScrollPane outputsScrollPane = new JScrollPane();
+	//final JScrollPane outputsScrollPane = new JScrollPane(); TODO Remove this is it still works PH 9/17/21
 
 	public OutputsPane(ApplicationPropertyEditor edit,OutputEditorPane detailEdit) {
 		//super(new BorderLayout(20, 30));
@@ -61,6 +61,7 @@ public class OutputsPane extends JPanel {
 		add(label, BorderLayout.NORTH);
 		
 		jlist = new JList<String>(outputKeys);
+		jlist.setFixedCellHeight(25);
 		JScrollPane scrollPane = new JScrollPane(jlist);
 		scrollPane.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(10,10,10,0),
 								BorderFactory.createEtchedBorder(EtchedBorder.RAISED)));
