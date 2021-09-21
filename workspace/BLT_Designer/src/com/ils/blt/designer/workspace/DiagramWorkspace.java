@@ -205,7 +205,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	// Initialize the workspace frames.
 	private void initialize() {
 		// Create palette
-		ProcessBlockPalette tabbedPalette = new ProcessBlockPalette(context, this);
+		ProcessBlockPalette tabbedPalette = new ProcessBlockPalette(this);
 		tabbedPalette.setInitMode(DockContext.STATE_FRAMEDOCKED);
 		tabbedPalette.setInitSide(DockContext.DOCK_SIDE_NORTH);
 		tabbedPalette.setInitIndex(0);

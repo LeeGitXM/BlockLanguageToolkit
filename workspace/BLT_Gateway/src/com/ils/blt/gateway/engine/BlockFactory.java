@@ -181,7 +181,7 @@ public class BlockFactory  {
 				}
 				else {
 					// We removed support for the NAME property, so there isn't a need to see 
-					if ( !(bp.getName().toString().equals("Name"))) {
+					if ( !(bp.getName().toString().equalsIgnoreCase("Name"))) {
 						log.warnf("%s: updateBlockFromSerializable: Property <%s> not found in process block %s",CLSS,bp.getName(),pb.getName());
 						log.warnf("     available names are: %s",pb.getPropertyNames().toString()); 
 					}

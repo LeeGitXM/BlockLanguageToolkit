@@ -39,7 +39,6 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.BlockDi
 import com.inductiveautomation.ignition.designer.designable.tools.AbstractDesignTool;
 import com.inductiveautomation.ignition.designer.gui.DragInitiatorListener;
 import com.inductiveautomation.ignition.designer.gui.IconUtil;
-import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.model.ResourceWorkspaceFrame;
 import com.jidesoft.docking.DockableFrame;
 
@@ -52,7 +51,6 @@ public class ProcessBlockPalette extends DockableFrame implements ResourceWorksp
 	private static final String TAG = "ProcessBlockPalette";
 	public static final String DOCKING_KEY = "ProcessBlockPalette";
 	private static final Dimension IMAGE_SIZE = new Dimension(32,32);
-	private final DesignerContext context;
 	private final DiagramWorkspace workspace;
 	private LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
 	
@@ -60,10 +58,9 @@ public class ProcessBlockPalette extends DockableFrame implements ResourceWorksp
 	/**
 	 * Constructor 
 	 */
-	public ProcessBlockPalette(DesignerContext ctx,DiagramWorkspace workspace) {
+	public ProcessBlockPalette(DiagramWorkspace workspace) {
 		super(DOCKING_KEY, IconUtil.getRootIcon("delay_block_16.png"));  // Pinned icon
 		setUndockedBounds(new Rectangle(200, 100, 550, 130));
-		this.context = ctx;
 		setAutohideHeight(100);
 		setAutohideWidth(120);
 		setDockedHeight(100);

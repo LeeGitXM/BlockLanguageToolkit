@@ -130,8 +130,8 @@ public class ProxyHandler   {
 	 * @param stub the input port of the block on which the new value has arrived
 	 * @param value one of a QualifiedValue, Signal, Truth-value or String
 	 */
-	public void acceptValue(ScriptManager mgr,PyObject block,String stub,QualifiedValue value) {
-
+	public void acceptValue(ScriptManager scriptManager,PyObject block,String stub,QualifiedValue value) {
+		if(scriptManager==null) scriptManager = context.getScriptManager();
 		if(block==null || stub==null || value==null || value.getValue()==null ) return;
 		String qualityName = BLTProperties.QUALITY_GOOD;
 		if(!value.getQuality().isGood() ) qualityName = value.getQuality().getName();
@@ -139,39 +139,40 @@ public class ProxyHandler   {
 		if( acceptValueCallback.compileScript() ) {
 			// There are 4 values to be specified - block,port,value,quality.
 			synchronized(acceptValueCallback) {
-				acceptValueCallback.initializeLocalsMap(mgr);
+				acceptValueCallback.initializeLocalsMap(scriptManager);
 				acceptValueCallback.setLocalVariable(0,block);
 				acceptValueCallback.setLocalVariable(1,new PyString(stub));
 				acceptValueCallback.setLocalVariable(2,new PyString(value.getValue().toString()));
 				acceptValueCallback.setLocalVariable(3,new PyString(qualityName));
 				acceptValueCallback.setLocalVariable(4,new PyLong(value.getTimestamp().getTime()));
-				acceptValueCallback.execute(mgr);
+				acceptValueCallback.execute(scriptManager);
 			}
 		}
 	}
 
-	
 	public ProxyBlock createBlockInstance(String className,ProjectResourceId parentId,UUID blockId,String name) {
 		ProxyBlock block = new ProxyBlock(context,className,parentId,blockId);
 		String projectName = parentId.getProjectName();
 		log.debugf("%s.createBlockInstance --- python proxy for %s, project %s",CLSS,className,projectName); 
 		if( createBlockCallback.compileScript() ) {
 			synchronized(createBlockCallback) {
+				ScriptManager scriptManager = context.getProjectManager().getProjectScriptManager(parentId.getProjectName());
+				if(scriptManager==null) scriptManager = context.getScriptManager();
 				PyDictionary pyDictionary = new PyDictionary();  // Empty
-				createBlockCallback.initializeLocalsMap(context.getProjectManager().getProjectScriptManager(projectName));
+				createBlockCallback.initializeLocalsMap(scriptManager);
 				createBlockCallback.setLocalVariable(0,new PyString(className));
 				createBlockCallback.setLocalVariable(1,new PyString(parentId.toString()));
 				createBlockCallback.setLocalVariable(2,new PyString(blockId.toString()));
 				createBlockCallback.setLocalVariable(3,new PyString(name));
 				createBlockCallback.setLocalVariable(4,pyDictionary);
-				log.debugf("%s.createBlockInstance --- executing create script for %s",CLSS,className); 
-				createBlockCallback.execute(context.getProjectManager().getProjectScriptManager(projectName));
+				log.infof("%s.createBlockInstance --- executing create script for %s",CLSS,className); 
+				createBlockCallback.execute(scriptManager);
 
 				// Contents of list are Hashtable<String,?>
 				PyObject pyBlock = (PyObject)pyDictionary.get("instance");
 				if( pyBlock!=null ) {
 					block.setPythonBlock(pyBlock);
-					BlockProperty[] props = getBlockProperties(context.getProjectManager().getProjectScriptManager(projectName),pyBlock);
+					BlockProperty[] props = getBlockProperties(scriptManager,pyBlock);
 					for(BlockProperty prop:props) {
 						if(prop!=null) block.addProperty(prop);
 					}
@@ -185,7 +186,6 @@ public class ProxyHandler   {
 		else {
 			log.warnf("%s.createBlockInstance --- failed to compile create script %s",CLSS,className);
 		}
-
 		return block;
 	}
 	
@@ -204,23 +204,27 @@ public class ProxyHandler   {
 	 * @param mgr the appropriate project-specific script manager
 	 * @param block the saved Py block
 	 */
-	public void evaluate(ScriptManager mgr,PyObject block) {
+	public void evaluate(ScriptManager scriptManager,PyObject block) {
 		log.debugf("%s.evaluate --- %s",CLSS,block.toString());
-		if( evaluateCallback.compileScript() ) {
-			evaluateCallback.initializeLocalsMap(mgr);
-			evaluateCallback.setLocalVariable(0,block);
-			evaluateCallback.execute(mgr);
+		synchronized(evaluateCallback) {
+			if(scriptManager==null) scriptManager = context.getScriptManager();
+			if( evaluateCallback.compileScript() ) {
+				evaluateCallback.initializeLocalsMap(scriptManager);
+				evaluateCallback.setLocalVariable(0,block);
+				evaluateCallback.execute(scriptManager);
+			}
 		}
 	}
-	public GeneralPurposeDataContainer getAuxData(ScriptManager mgr,PyObject block,GeneralPurposeDataContainer container) {
+	public GeneralPurposeDataContainer getAuxData(ScriptManager scriptManager,PyObject block,GeneralPurposeDataContainer container) {
 		log.debugf("%s.getAuxData ... ",CLSS);
 		if( getAuxDataCallback.compileScript() ) {
 			synchronized(getAuxDataCallback) {
+				if(scriptManager==null) scriptManager = context.getScriptManager();
 				PyList pylist = toPythonTranslator.dataContainerToPy(container);
-				getAuxDataCallback.initializeLocalsMap(mgr);
+				getAuxDataCallback.initializeLocalsMap(scriptManager);
 				getAuxDataCallback.setLocalVariable(0,block);
 				getAuxDataCallback.setLocalVariable(1,pylist);
-				getAuxDataCallback.execute(mgr);
+				getAuxDataCallback.execute(scriptManager);
 				//log.infof("%s.getAuxData returned %s",CLSS,pylist.toString());   // Should now be updated
 				// Contents of list are Hashtable<String,?>
 				// We're looking for a single string entry in the list
@@ -239,18 +243,19 @@ public class ProxyHandler   {
 	 * @param block the python block
 	 * @return a new array of block properties.
 	 */
-	public  BlockProperty[] getBlockProperties(ScriptManager mgr,PyObject block) {
+	public  BlockProperty[] getBlockProperties(ScriptManager scriptManager,PyObject block) {
 		BlockProperty[] properties = null;
 		log.debugf("%s.getBlockProperties ... ",CLSS);
 		if( getBlockPropertiesCallback.compileScript() ) {
 			Object val = null;
 			UtilityFunctions fns = new UtilityFunctions();
 			synchronized(getBlockPropertiesCallback) {
+				if(scriptManager==null) scriptManager = context.getScriptManager();
 				PyList pyList = new PyList();  // Empty
-				getBlockPropertiesCallback.initializeLocalsMap(mgr);
+				getBlockPropertiesCallback.initializeLocalsMap(scriptManager);
 				getBlockPropertiesCallback.setLocalVariable(0,block);
 				getBlockPropertiesCallback.setLocalVariable(1,pyList);
-				getBlockPropertiesCallback.execute(mgr);
+				getBlockPropertiesCallback.execute(scriptManager);
 				log.debug(CLSS+".getBlockProperties returned "+ pyList);   // Should now be updated
 				// Contents of list are Map<String,?>
 				List<?> list = toJavaTranslator.pyListToArrayList(pyList);
@@ -324,16 +329,17 @@ public class ProxyHandler   {
 	 * @param block the python block
 	 * @return a new array of block properties.
 	 */
-	public TruthValue getBlockState(ScriptManager mgr,PyObject block) {
+	public TruthValue getBlockState(ScriptManager scriptManager,PyObject block) {
 		TruthValue state = TruthValue.UNSET;
 		log.debugf("%s.getBlockState ... ",CLSS);
 		if( getBlockStateCallback.compileScript() ) {
-			synchronized(getBlockStateCallback) {
+			synchronized(getBlockStateCallback) {		
+				if(scriptManager==null) scriptManager = context.getScriptManager();
 				PyList pyList = new PyList();  // Empty
-				getBlockStateCallback.initializeLocalsMap(mgr);
+				getBlockStateCallback.initializeLocalsMap(scriptManager);
 				getBlockStateCallback.setLocalVariable(0,block);
 				getBlockStateCallback.setLocalVariable(1,pyList);
-				getBlockStateCallback.execute(mgr);
+				getBlockStateCallback.execute(scriptManager);
 				log.debug(CLSS+".getBlockState returned "+ pyList);   // Should now be updated
 				// Contents of list are Hashtable<String,?>
 				// We're looking for a single string entry in the list
@@ -468,31 +474,33 @@ public class ProxyHandler   {
 	 * @param mgr the appropriate project-specific script manager
 	 * @param block the saved Py block
 	 */
-	public void notifyOfStatus(ScriptManager mgr,PyObject block) {
+	public void notifyOfStatus(ScriptManager scriptManager,PyObject block) {
 		log.debugf("%s.notifyOfStatus --- %s",CLSS,block.toString());
 		if( notifyOfStatusCallback.compileScript() ) {
-			notifyOfStatusCallback.initializeLocalsMap(mgr);
+			notifyOfStatusCallback.initializeLocalsMap(scriptManager);
 			notifyOfStatusCallback.setLocalVariable(0,block);
-			notifyOfStatusCallback.execute(mgr);
+			notifyOfStatusCallback.execute(scriptManager);
 		}
 	}
-	public void onDelete(ScriptManager mgr,PyObject block) {
+	public void onDelete(ScriptManager scriptManager,PyObject block) {
 		if( block==null ) return;
 		if( onDeleteCallback.compileScript() ) {
 			synchronized(onDeleteCallback) {
-				onDeleteCallback.initializeLocalsMap(mgr);
+				if(scriptManager==null) scriptManager = context.getScriptManager();
+				onDeleteCallback.initializeLocalsMap(scriptManager);
 				onDeleteCallback.setLocalVariable(0,block);
-				onDeleteCallback.execute(mgr);
+				onDeleteCallback.execute(scriptManager);
 			}
 		}
 	}
-	public void onSave(ScriptManager mgr,PyObject block) {
+	public void onSave(ScriptManager scriptManager,PyObject block) {
 		if( block==null ) return;
 		if( onSaveCallback.compileScript() ) {
 			synchronized(onSaveCallback) {
-				onSaveCallback.initializeLocalsMap(mgr);
+				if(scriptManager==null) scriptManager = context.getScriptManager();
+				onSaveCallback.initializeLocalsMap(scriptManager);
 				onSaveCallback.setLocalVariable(0,block);
-				onSaveCallback.execute(mgr);
+				onSaveCallback.execute(scriptManager);
 			}
 		}
 	}
@@ -502,12 +510,15 @@ public class ProxyHandler   {
 	 * @param mgr the appropriate project-specific script manager
 	 * @param block the saved Py block
 	 */
-	public void propagate(ScriptManager mgr,PyObject block) {
+	public void propagate(ScriptManager scriptManager,PyObject block) {
 		log.debugf("%s.propagate --- %s",CLSS,block.toString());
-		if( propagateCallback.compileScript() ) {
-			propagateCallback.initializeLocalsMap(mgr);
-			propagateCallback.setLocalVariable(0,block);
-			propagateCallback.execute(mgr);
+		synchronized(propagateCallback) {
+			if(scriptManager==null) scriptManager = context.getScriptManager();
+			if( propagateCallback.compileScript() ) {
+				propagateCallback.initializeLocalsMap(scriptManager);
+				propagateCallback.setLocalVariable(0,block);
+				propagateCallback.execute(scriptManager);
+			}
 		}
 	}
 	/**
@@ -518,22 +529,24 @@ public class ProxyHandler   {
 	 * @param mgr the appropriate project-specific script manager
 	 * @param block the saved Py block
 	 */
-	public void reset(ScriptManager mgr,PyObject block) {
+	public void reset(ScriptManager scriptManager,PyObject block) {
 		log.debugf("%s.reset --- %s",CLSS,block.toString());
+		if(scriptManager==null) scriptManager = context.getScriptManager();
 		if( resetCallback.compileScript() ) {
-			resetCallback.initializeLocalsMap(mgr);
+			resetCallback.initializeLocalsMap(scriptManager);
 			resetCallback.setLocalVariable(0,block);
-			resetCallback.execute(mgr);
+			resetCallback.execute(scriptManager);
 		}
 	}
-	public void setAuxData(ScriptManager mgr,PyObject block,GeneralPurposeDataContainer container ) {
+	public void setAuxData(ScriptManager scriptManager,PyObject block,GeneralPurposeDataContainer container ) {
 		if( block==null ) return;
 		if( setAuxDataCallback.compileScript() ) {
 			synchronized(setAuxDataCallback) {
-				setAuxDataCallback.initializeLocalsMap(mgr);
+				if(scriptManager==null) scriptManager = context.getScriptManager();
+				setAuxDataCallback.initializeLocalsMap(scriptManager);
 				setAuxDataCallback.setLocalVariable(0,block);
 				setAuxDataCallback.setLocalVariable(1,toPythonTranslator.objectToPy(container));
-				setAuxDataCallback.execute(mgr);
+				setAuxDataCallback.execute(scriptManager);
 			}
 		}
 	}
@@ -565,15 +578,16 @@ public class ProxyHandler   {
 		}
 	}
 	
-	public synchronized void setBlockState(ScriptManager mgr,ProxyBlock block,TruthValue newState) {
+	public synchronized void setBlockState(ScriptManager scriptManager,ProxyBlock block,TruthValue newState) {
 		if( block==null || newState==null ) return;
 		log.debugf("%s.setBlockState --- %s:%s",CLSS,block.getClass(),newState.name()); 
 		if( setBlockStateCallback.compileScript() ) {
 			synchronized(setBlockStateCallback) {
-				setBlockStateCallback.initializeLocalsMap(mgr);
+				if(scriptManager==null) scriptManager = context.getScriptManager();
+				setBlockStateCallback.initializeLocalsMap(scriptManager);
 				setBlockStateCallback.setLocalVariable(0,block.getPythonBlock());
 				setBlockStateCallback.setLocalVariable(1,new PyString(newState.name()));
-				setBlockStateCallback.execute(mgr);
+				setBlockStateCallback.execute(scriptManager);
 			}
 		}
 	}

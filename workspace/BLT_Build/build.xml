@@ -7,12 +7,6 @@
 		</classpath>
 	</taskdef>
 
-	<!-- Create our packer task -->
-	<taskdef name="pack200" classname="com.sun.tools.apache.ant.pack200.Pack200Task" classpath="${basedir}/BLT_Build/AntLib/Pack200Task.jar" />
-
-	<!-- Create our unpacker task -->
-	<taskdef name="unpack200" classname="com.sun.tools.apache.ant.pack200.Unpack200Task" classpath="${basedir}/BLT_Build/AntLib/Pack200Task.jar" />
-
 	<!-- Add the postmodule task. This task can deploy a module to a local Ignition gateway. -->
 	<taskdef name="postmodule" classname="com.inductiveautomation.ant.PostModule">
 		<classpath location="${basedir}/BLT_Build/AntLib/ant-post-module.jar" />

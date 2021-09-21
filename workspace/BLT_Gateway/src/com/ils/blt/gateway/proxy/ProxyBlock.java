@@ -140,7 +140,7 @@ public class ProxyBlock extends AbstractProcessBlock  {
 		BlockProperty prop = getProperty(name);
 		if( prop!=null ) {
 			prop.setValue(obj);
-			delegate.setBlockProperty(context.getProjectManager().getProjectScriptManager(getProjectName()),this,prop);
+			delegate.setBlockProperty(context.getScriptManager(),this,prop);
 		}
 	}
 	/**
@@ -150,7 +150,7 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	@Override
 	public synchronized void setState(TruthValue newState) {
 		super.setState(newState);   // Records activity
-		delegate.setBlockState(context.getProjectManager().getProjectScriptManager(getProjectName()),this,newState);
+		delegate.setBlockState(context.getScriptManager(),this,newState);
 		requestHandler.postAlertingStatus(this);
 	}
 	

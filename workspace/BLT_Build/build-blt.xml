@@ -82,7 +82,7 @@
 	</path>
 	
 	<!-- This target will build the toolkit module and deploy it to the local Ignition gateway -->
-		<target name="BuildAndInstallModule" depends="clean, build, deploy" />
+	<target name="BuildAndInstallModule" depends="clean, build" />
 	
 	<!-- Clean Block Definition -->
 	<target name="clean.block" >
@@ -161,7 +161,6 @@
 			<param name="module.build.classpath" value="${BLTModule.name}_Common.classpath"/>
 		</antcall>
 		
-		
 		<antcall target="block.build">
 		</antcall>
 		
@@ -206,25 +205,15 @@
 		<replace file="${basedir}/BLT_Build/temp_modl/module.xml" token="@NAME@" value="${BLTModule.name}" />
 		<replace file="${basedir}/BLT_Build/temp_modl/module.xml" token="@DESCRIPTION@" value="${BLTModule.description}" />
 		<replace file="${basedir}/BLT_Build/temp_modl/module.xml" token="@VERSION@" value="${BLTModule.version}" />
-
-		<!-- Pack200 and then copy the designer, client jars -->
-		<pack200 src="${basedir}/BLT_Build/bin/${BLTModule.name}_Client/dist/blt-client.jar" destfile="${basedir}/BLT_Build/temp_modl/blt-client.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
-		<pack200 src="${basedir}/BLT_Build/bin/${BLTModule.name}_Designer/dist/blt-designer.jar" destfile="${basedir}/BLT_Build/temp_modl/blt-designer.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
-		<pack200 src="${basedir}/BLT_Build/bin/${BLTModule.name}_Common/dist/blt-common.jar" destfile="${basedir}/BLT_Build/temp_modl/blt-common.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
-		<pack200 src="${basedir}/../../external/lib/ils-common.jar" destfile="${basedir}/BLT_Build/temp_modl/ils-common.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
-		<pack200 src="${basedir}/../../external/lib/jackson-core-2.2.3.jar" destfile="${basedir}/BLT_Build/temp_modl/jackson-core-2.2.3.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
-		<pack200 src="${basedir}/../../external/lib/jackson-databind-2.2.3.jar" destfile="${basedir}/BLT_Build/temp_modl/jackson-databind-2.2.3.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
-		<pack200 src="${basedir}/../../external/lib/jackson-annotations-2.2.3.jar" destfile="${basedir}/BLT_Build/temp_modl/jackson-annotations-2.2.3.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
-		<pack200 src="${basedir}/../../external/lib/lucene-1.4.3.jar" destfile="${basedir}/BLT_Build/temp_modl/lucene-1.4.3.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
-		<pack200 src="${basedir}/../../external/lib/prefuse-1.0.1.jar" destfile="${basedir}/BLT_Build/temp_modl/prefuse-1.0.1.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
-		<pack200 src="${basedir}/../../external/lib/commons-math3-3.6.1.jar" destfile="${basedir}/BLT_Build/temp_modl/commons-math3-3.6.1.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
 		
-		<!-- Copy gateway jar -->
+		<!-- Copy jar files -->
 		<copy file="${basedir}/BLT_Build/bin/${BLTModule.name}_Gateway/dist/blt-gateway.jar" todir="${basedir}/BLT_Build/temp_modl/" />
 		<copy file="${basedir}/BLT_Build/bin/${BLTModule.name}_Common/dist/blt-common.jar" todir="${basedir}/BLT_Build/temp_modl/" />
-		
+		<copy file="${basedir}/BLT_Build/bin/${BLTModule.name}_Designer/dist/blt-designer.jar" todir="${basedir}/BLT_Build/temp_modl/" />
+		<copy file="${basedir}/BLT_Build/bin/${BLTModule.name}_Client/dist/blt-client.jar" todir="${basedir}/BLT_Build/temp_modl/" />
 		<!-- Copy dependent jars -->
 		<copy file="${jar.dir}/${common.jar.name}" todir="${basedir}/BLT_Build/temp_modl/" />
+		<copy file="${basedir}/../../external/lib/prefuse-1.0.1.jar" todir="${basedir}/BLT_Build/temp_modl/" />
 		<copy file="${basedir}/../../external/lib/jackson-core-2.2.3.jar" todir="${basedir}/BLT_Build/temp_modl/" />
 		<copy file="${basedir}/../../external/lib/jackson-databind-2.2.3.jar" todir="${basedir}/BLT_Build/temp_modl/" />
 		<copy file="${basedir}/../../external/lib/jackson-annotations-2.2.3.jar" todir="${basedir}/BLT_Build/temp_modl/" />
@@ -264,10 +253,8 @@
 		<copy todir="${ignition.py.lib}/../../lib/core/common">
 			<fileset dir="${basedir}/BLT_Build/temp_modl">
 				<include name="ils-common.jar" />
-				<include name="ils-common.jar.pack.gz" />
 				<include name="blt-common.jar" />
-				<include name="jackson*.gz" />
-				<include name="commons-math*.gz" />
+				<include name="jackson*.jar" />
 				<include name="commons-math*.jar" />
 			</fileset>
 		</copy>

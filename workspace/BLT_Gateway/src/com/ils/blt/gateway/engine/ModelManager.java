@@ -58,7 +58,7 @@ import com.inductiveautomation.ignition.gateway.model.GatewayContext;
  */
 public class ModelManager implements ProjectListener  {
 	private static final String CLSS = "ModelManager";
-	private static final boolean DEBUG = false;
+	private static final boolean DEBUG = true;
 	private final GatewayContext context;
 	private final ILSLogger log;
 	private RootNode root;
@@ -562,7 +562,7 @@ public class ModelManager implements ProjectListener  {
 		Project project = optional.get();
 		if( project!=null ) {
 			for( ProjectResource res:project.getResources() ) {
-				if(DEBUG) log.infof("%s.projectAdded: resource %s.%s %s (%s)", CLSS, projectName,res.getResourceName(), res.getResourceType());
+				if(DEBUG) log.infof("%s.projectAdded: resource %s.%s (%s)", CLSS, projectName,res.getResourceName(), res.getResourceType().getTypeId());
 				analyzeResource(res,false);
 			}
 		}
@@ -595,11 +595,6 @@ public class ModelManager implements ProjectListener  {
 		Optional<RuntimeProject> optional = context.getProjectManager().getProject(projectName);
 		Project diff = optional.get();
 		if(DEBUG) log.infof("%s.projectUpdated: %s",CLSS,diff.getName());
-		
-		if( diff==null ) {
-			log.warnf("%s.projectUpdated: No existing project (%s) found",CLSS,projectName);
-			return;
-		}
 		
 		if( diff.isEnabled() ) {
 			int countOfInteresting = 0;
@@ -870,7 +865,7 @@ public class ModelManager implements ProjectListener  {
 			root.addChild(node);
 			if(DEBUG) log.infof("%s.addToHierarchy: %s is a ROOT (null parent)",CLSS,node.getName());
 		}
-		else if( node.getParentPath().equals(BLTProperties.ROOT_FOLDER_UUID) )  {
+		else if( node.getParentPath().isModuleFolder() )  {
 			root.addChild(node);
 			if(DEBUG) log.infof("%s.addToHierarchy: %s is a ROOT (parent is root folder)",CLSS,node.getName());
 		}
@@ -1024,15 +1019,14 @@ public class ModelManager implements ProjectListener  {
 		if( serializedObj!=null && serializedObj.length>0 ) {
 			try{
 				String json = new String(serializedObj);
-				if(DEBUG) log.infof("%s.deserializeDiagramResource: json = %s",CLSS,json);
+				//if(DEBUG) log.infof("%s.deserializeDiagramResource: json = %s",CLSS,json);
 				ObjectMapper mapper = new ObjectMapper();
 				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 				mapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL,true);
 				sd = mapper.readValue(json, SerializableDiagram.class);
 				if( sd!=null ) {
-					sd.setName(res.getResourceName());       // Name comes from the resource
-					if(DEBUG) log.infof("%s.deserializeDiagramResource: Successfully deserialized diagram %s",CLSS,sd.getName());
 					if( DEBUG ) {
+						log.infof("%s.deserializeDiagramResource: Successfully deserialized diagram %s",CLSS,sd.getName());
 						for(SerializableBlock sb:sd.getBlocks()) {
 							log.infof("%s: %s block, name = %s",CLSS,sb.getClassName(),sb.getName());
 						}

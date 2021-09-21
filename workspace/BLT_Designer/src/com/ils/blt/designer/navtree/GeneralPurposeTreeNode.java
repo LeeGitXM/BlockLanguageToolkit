@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import javax.swing.Icon;
@@ -70,7 +71,6 @@ import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.log.ILSLogger;
 import com.ils.common.log.LogMaker;
-import com.inductiveautomation.ignition.client.gateway_interface.GatewayException;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.client.util.action.BaseAction;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
@@ -80,16 +80,13 @@ import com.inductiveautomation.ignition.common.execution.ExecutionManager;
 import com.inductiveautomation.ignition.common.execution.impl.BasicExecutionEngine;
 import com.inductiveautomation.ignition.common.model.ApplicationScope;
 import com.inductiveautomation.ignition.common.project.ChangeOperation;
-import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.ProjectResourceListener;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceBuilder;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 import com.inductiveautomation.ignition.common.project.resource.ResourcePath;
-import com.inductiveautomation.ignition.designer.IgnitionDesigner;
 import com.inductiveautomation.ignition.designer.UndoManager;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
-import com.inductiveautomation.ignition.designer.gateway.DTGatewayInterface;
 import com.inductiveautomation.ignition.designer.gui.IconUtil;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractNavTreeNode;
@@ -364,7 +361,13 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	public synchronized void onSelected() {
 		UndoManager.getInstance().setSelectedContext(GeneralPurposeTreeNode.class);
 		Optional<ProjectResource> optional = context.getProject().getResource(resourceId);
-		ProjectResource resource = optional.get();
+		ProjectResource resource = null;
+		try {
+			resource = optional.get();
+		}
+		catch(NoSuchElementException nsee) {
+			logger.infof("%s.onSelected: no such element (%s)",CLSS,nsee.getMessage());
+		}
 		if( resource==null) return;
 		if(resource.getResourceId().getResourceType().equals(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
 			SerializableApplication sap = recursivelyDeserializeApplication(this);
@@ -1797,7 +1800,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				new ResourceCreateManager(resource).run();	
 				logger.infof("%s.FolderCreateAction. create new %s(%s.%s)",CLSS,BLTProperties.FOLDER_RESOURCE_TYPE.toString(),resid.getFolderPath(),
 						resid.getResourcePath().getName());
-				logger.infof("%FolderCreateAction. create %s(%s),(%s)",CLSS,newName,BLTProperties.FOLDER_RESOURCE_TYPE.toString(),currentNode.pathToRoot().toString());
+				logger.infof("%s.FolderCreateAction. create %s(%s),(%s)",CLSS,newName,BLTProperties.FOLDER_RESOURCE_TYPE.toString(),currentNode.pathToRoot().toString());
 				//recreate();
 				currentNode.selectChild(new ResourcePath[] {resid.getResourcePath()} );
 			} 

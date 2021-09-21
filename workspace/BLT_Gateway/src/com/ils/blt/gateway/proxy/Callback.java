@@ -68,7 +68,7 @@ public class Callback {
 	public boolean compileScript() {
 		if( code !=null ) return true;   // Already compiled               
 		String script = String.format("import %s;%s.%s(%s)",pythonPackage,pythonPackage,module,localVariableList);
-		log.debugf("%s.compileScript: Compiling ... %s",CLSS,script);
+		log.infof("%s.compileScript: Compiling ... %s",CLSS,script);
 		try {
 			code = Py.compile_flags(script,pythonPackage,CompileMode.exec,CompilerFlags.getCompilerFlags());
 	     }
@@ -81,6 +81,7 @@ public class Callback {
 	 *  Run the script in-line. On completion return the contents of the shared variable.
 	 */
 	public void execute(ScriptManager scriptManager) {
+		if( scriptManager == null ) throw new IllegalArgumentException("Attempt to execute with null script manager.");
 		if( localsMap == null ) throw new IllegalArgumentException("Attempt to execute with uninitialized locals map.");
 		String script = pythonPackage+"."+module;
 		log.tracef("%s.execute: Running callback script ...(%s)",CLSS,script);

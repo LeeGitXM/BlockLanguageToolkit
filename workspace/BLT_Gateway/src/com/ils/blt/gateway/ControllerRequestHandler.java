@@ -323,7 +323,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		 	    Object obj = ctor.newInstance();
 				if( obj instanceof ProcessBlock ) {
 					PalettePrototype bp = ((ProcessBlock)obj).getBlockPrototype();
-					log.tracef("%s.getBlockPrototypes: Adding %s on %s",CLSS,bp.getPaletteLabel(),bp.getTabName());
+					log.infof("%s.getBlockPrototypes: Adding %s on %s",CLSS,bp.getPaletteLabel(),bp.getTabName());
 					results.add(bp);
 				}
 				else {
@@ -347,7 +347,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		try {
 			List<PalettePrototype> prototypes = phandler.getPalettePrototypes();
 			for( PalettePrototype pp:prototypes) {
-				log.tracef("%s.getBlockPrototypes: Adding python %s on %s",CLSS,pp.getPaletteLabel(),pp.getTabName());
+				log.info("%s.getBlockPrototypes: Adding python %s on %s",CLSS,pp.getPaletteLabel(),pp.getTabName());
 				results.add(pp);
 			}
 		}
@@ -735,7 +735,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			}
 		}
 		else {
-			log.warnf("%s.listBlocksConnectedAtPort: no diagram found for %s",CLSS,diagramId.getResourcePath().getPath().toString());
+			log.warnf("%s.listBlocksConnectedAtPort: no diagram found for %s at %s",CLSS,diagramId.getResourcePath().getPath().toString(),portName);
 		}
 		return descriptors;
 	}

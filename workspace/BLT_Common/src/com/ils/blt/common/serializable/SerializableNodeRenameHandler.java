@@ -17,10 +17,11 @@ import com.inductiveautomation.ignition.common.StringPath;
  *  in the special case of a diagram, handles  re-generating the UUIDs of the blocks within
  *  that diagram. When a UUID is replaced, the old UUID is 
  *  also retained for use in the Gateway to transfer state information.
+ *   
+ *  Do we reallyt serialize this? If not, put logger back.
  */
 public class SerializableNodeRenameHandler   {
 	private final static String CLSS = "SerializableNodeRenameHandler";
-	private final ILSLogger log;
 	private final HashMap<UUID,UUID> blockLookup;      // Save map of block UUIDs so we can deduce connections
 
 	
@@ -29,7 +30,6 @@ public class SerializableNodeRenameHandler   {
 	 * @param sd the diagram
 	 */
 	public SerializableNodeRenameHandler() {
-		log = LogMaker.getLogger(this);
 		this.blockLookup = new HashMap<UUID,UUID>();
 	}
 	
@@ -92,7 +92,7 @@ public class SerializableNodeRenameHandler   {
 			sb.setId(UUID.randomUUID());
 			sb.setOriginalId(original);
 			if (blockLookup.get(original) != null) {
-				log.error("Duplicate block UUID found!! We are about to lose a link!! Original - :" + original.toString() + ": was linked to :" + blockLookup.get(original).toString() + ": now switching to :" + sb.getId().toString());
+				//log.error("Duplicate block UUID found!! We are about to lose a link!! Original - :" + original.toString() + ": was linked to :" + blockLookup.get(original).toString() + ": now switching to :" + sb.getId().toString());
 			}
 			blockLookup.put(original, sb.getId());
 			for(SerializableAnchor sa:sb.getAnchors()) {
@@ -111,7 +111,7 @@ public class SerializableNodeRenameHandler   {
 					sc.setBeginBlock(revised);
 				}
 				else {
-					log.warnf("%s: UUID lookup failed for begin block.", CLSS);
+					//log.warnf("%s: UUID lookup failed for begin block.", CLSS);
 				}
 			}
 			// End
@@ -122,7 +122,7 @@ public class SerializableNodeRenameHandler   {
 					sc.setEndBlock(revised);
 				}
 				else {
-					log.warnf("%s: UUID lookup failed for end block.", CLSS);
+					//log.warnf("%s: UUID lookup failed for end block.", CLSS);
 				}
 			}
 			// And the anchors of the connections ...
@@ -133,7 +133,7 @@ public class SerializableNodeRenameHandler   {
 				sap.setParentId(revised);
 			}
 			else {
-				log.warnf("%s: UUID lookup failed for begin anchor.", CLSS);
+				//log.warnf("%s: UUID lookup failed for begin anchor.", CLSS);
 			}
 			sap = sc.getEndAnchor();
 			id = sap.getParentId();
@@ -142,7 +142,7 @@ public class SerializableNodeRenameHandler   {
 				sap.setParentId(revised);
 			}
 			else {
-				log.warnf("%s: UUID lookup failed for end anchor.", CLSS);
+				//og.warnf("%s: UUID lookup failed for end anchor.", CLSS);
 			}
 			
 		}

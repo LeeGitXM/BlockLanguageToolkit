@@ -65,7 +65,7 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	@Override
 	public boolean isFreeModule() { return true; }
 	
-	// NOTE: During this period, the module status is LOADED, not RUNNING
+	// NOTE: At the end of this period, the module status is "Loading"
 	//       This comes before startup().
 	@Override
 	public void setup(GatewayContext ctxt) {
@@ -73,7 +73,6 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 
 		// NOTE: Get serialization exception if ModelResourceManager is saved as a class member
 		//       Exception is thrown when we try to incorporate a StatusPanel
-		log.info(CLSS+".setup - enable project listeners.");
 		ProxyHandler.getInstance().setContext(context);
 		requestHandler.setContext(context);
 		dispatcher = new GatewayRpcDispatcher(context);
@@ -90,17 +89,15 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 			log.error("BLTGatewayHook.setup: Error registering ToolkitRecord",sqle);
 		}
 		log.info(CLSS+".setup() complete");
-		
 	}
-
+	// NOTE: At the end of this period, the module status is "Running"
 	@Override
 	public void startup(LicenseState licenseState) {
 		log.info(CLSS+".startup()");
 		this.mmgr = new ModelManager(context);
 		BlockExecutionController controller = BlockExecutionController.getInstance();
 		controller.setDelegate(mmgr);
-
-
+		
 		// Analyze existing projects - skip the global project and any that are disabled.
 		List<String> projectNames = context.getProjectManager().getProjectNames();
 		for( String name:projectNames ) {

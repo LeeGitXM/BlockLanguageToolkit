@@ -23,18 +23,19 @@ public class ProjectResourceKey implements Serializable {
 	public ProjectResourceKey(ProjectResourceId resid) {
 		this.resourceId = resid;
 	}
+
 	public String getProjectName() { return resourceId.getProjectName(); }
+	
 	public ProjectResourceId getResourceId() { return resourceId; }
 	public void setResourceId(ProjectResourceId id) { this.resourceId=id; }
-
 	// So that class may be used as a map key
-	// Same projectId and resourceId is sufficient to prove equality
+	// Same resourceId proves equality
 	@Override
 	public boolean equals(Object arg) {
 		boolean result = false;
 		if( arg instanceof ProjectResourceKey) {
 			ProjectResourceKey that = (ProjectResourceKey)arg;
-			if( this.getResourceId()==that.getResourceId()  ) {
+			if( this.getResourceId().equals(that.getResourceId())  ) {
 				result = true;
 			}
 		}
@@ -42,6 +43,6 @@ public class ProjectResourceKey implements Serializable {
 	}
 	@Override
 	public int hashCode() {
-		return (int)(this.resourceId.hashCode());
+		return 7*resourceId.getResourcePath().hashCode()+37*resourceId.getProjectName().hashCode();
 	}
 }
