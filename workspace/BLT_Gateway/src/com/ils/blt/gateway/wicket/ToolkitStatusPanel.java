@@ -74,7 +74,7 @@ public class ToolkitStatusPanel extends Panel {
         	@Override
         	public void onSubmit() {
         		ProcessNodeSynchronizer sync = new ProcessNodeSynchronizer();
-        		sync.removeExcessNodes();
+        		//sync.removeExcessNodes();
         		sync.createMissingResources();
         		sync.removeOrphans();
         	}

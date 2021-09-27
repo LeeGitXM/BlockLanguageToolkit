@@ -310,7 +310,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		ClassList cl = new ClassList();
 		List<Class<?>> classes = cl.getAnnotatedClasses(BLTProperties.BLOCK_JAR_NAME, ExecutableBlock.class,"com/ils/block/");
 		for( Class<?> cls:classes) {
-			log.debugf("   found block class: %s",cls.getName());
+			log.infof("%s.getBlockPrototypes:   found block class: %s",CLSS,cls.getName());
 			Constructor[] ctors = cls.getDeclaredConstructors();
 			Constructor ctor = null;
 			for (int i = 0; i < ctors.length; i++) {
@@ -347,7 +347,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		try {
 			List<PalettePrototype> prototypes = phandler.getPalettePrototypes();
 			for( PalettePrototype pp:prototypes) {
-				log.info("%s.getBlockPrototypes: Adding python %s on %s",CLSS,pp.getPaletteLabel(),pp.getTabName());
+				log.infof("%s.getBlockPrototypes: Adding python %s on %s",CLSS,pp.getPaletteLabel(),pp.getTabName());
 				results.add(pp);
 			}
 		}
@@ -735,7 +735,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			}
 		}
 		else {
-			log.warnf("%s.listBlocksConnectedAtPort: no diagram found for %s at %s",CLSS,diagramId.getResourcePath().getPath().toString(),portName);
+			log.warnf("%s.listBlocksConnectedAtPort: Parent diagram not found for %s at port %s",CLSS,diagramId.getResourcePath().getPath().toString(),portName);
 		}
 		return descriptors;
 	}

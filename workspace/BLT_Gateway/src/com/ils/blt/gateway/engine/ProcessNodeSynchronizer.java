@@ -13,6 +13,7 @@ import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.RuntimeProject;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 import com.inductiveautomation.ignition.designer.project.DesignableProject;
 import com.inductiveautomation.ignition.designer.project.ResourceNotFoundException;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
@@ -26,15 +27,15 @@ public class ProcessNodeSynchronizer {
     private final static String CLSS = "ProcessNodeSynchronizer";
     private final ILSLogger log;
     private final ModelManager modelManager;
-    private final List<ProjectResourceKey> nodesToDelete;
-    private final Map<ProjectResourceKey,ProjectResource> resourceMap;
+    private final List<ProjectResource> resourcesDelete;
+    private Map<String,ProjectResource> resourceMap;
     /**
      * Constructor.
      */
     public ProcessNodeSynchronizer() {
     	this.log = LogMaker.getLogger(this);
     	this.modelManager = BlockExecutionController.getInstance().getDelegate();
-    	this.nodesToDelete = new ArrayList<>();
+    	this.resourcesDelete = new ArrayList<>();
     	this.resourceMap = createResourceMap(modelManager.getContext());
     }
 
@@ -44,11 +45,10 @@ public class ProcessNodeSynchronizer {
      */
     public void createMissingResources() {
     	log.infof("%s.createMissingResources ========================== Create Missing Resources ==================================", CLSS);
-    	Map<ProjectResourceKey,ProcessNode> nodeMap = modelManager.getNodesByKey();
-    	for(ProjectResourceKey key:resourceMap.keySet()) {
+    	Map<String,ProcessNode> nodeMap = modelManager.getNodesById();
+    	for(String key:resourceMap.keySet()) {
     		if( nodeMap.get(key)==null) {
-    			log.infof("%s.createMissingResources: ADDING node %d:%d %s (project resource not represented)", CLSS,key.getProjectName(),key.getResourceId(),
-    					resourceMap.get(key).getProjectName());
+    			log.infof("%s.createMissingResources: ADDING node %s (project resource not represented)", CLSS,key);
     			modelManager.analyzeResource(resourceMap.get(key),true);
     		}
     	}
@@ -58,22 +58,25 @@ public class ProcessNodeSynchronizer {
     /**
      * Iterate through the ProcessNodes known to the model.
      * Delete any that are not backed up by actual process resources.
-     */
+   
     public void removeExcessNodes() {
     	log.infof("%s.removeExcessNodes ======================== Remove Excess Nodes ================================", CLSS);
-    	nodesToDelete.clear();
-    	Map<ProjectResourceKey,ProcessNode> nodeMap = modelManager.getNodesByKey();
-    	for(ProjectResourceKey key:nodeMap.keySet()) {
+    	resourcesDelete.clear();
+    	Map<String,ProcessNode> nodeMap = modelManager.getNodesById();
+    	for(String key:nodeMap.keySet()) {
     		if( resourceMap.get(key)==null ) {
-    			nodesToDelete.add(key);
-    			log.infof("%s.removeExcessNodes: DELETING node %d:%d (not backed by project resource)", CLSS,key.getProjectName(),key.getResourceId());
+    			resourcesDelete.add(nodeMap.get(key));
+    			log.infof("%s.removeExcessNodes: DELETING node %s (not backed by project resource)", CLSS,key);
     		}
     	}
-    	for(ProjectResourceKey key:nodesToDelete) {
-    		modelManager.deleteResource(key.getResourceId());
+    	for(ProjectResource res:resourcesDelete) {;
+    		modelManager.deleteResource(res.getResourceId());
     	}
     	log.infof("%s.removeExcessNodes ==========================       Complete      ==================================", CLSS);
+    	// Refresh map of actual resources
+    	resourceMap = createResourceMap(modelManager.getContext());
     }
+     */
     
     /**
      * Iterate through the ProcessNodes known to the model. This includes families.
@@ -83,40 +86,44 @@ public class ProcessNodeSynchronizer {
      */
     public void removeOrphans() {
     	log.infof("%s.removeOrphans ======================== Removing Orphans ================================", CLSS);
-    	nodesToDelete.clear();
-    	Map<ProjectResourceKey,ProcessNode> nodesByKey = modelManager.getNodesByKey();
+    	resourcesDelete.clear();
+    	Map<String,ProcessNode> nodesByKey = modelManager.getNodesById();
     	Collection<ProcessNode> nodes = nodesByKey.values();
     	RootNode root = modelManager.getRootNode();
     	for( ProcessNode child:nodes) {
     		if( !child.getResourceId().equals(root.getResourceId()) && modelManager.getProcessNode(child.getResourceId())==null ) {
-    			ProjectResourceKey key = new ProjectResourceKey(child.getResourceId());
-    			nodesToDelete.add(key);
-    			log.infof("%s.removeOrphans: DELETING node %s:%s (has no parent)", CLSS,key.getProjectName(),key.getResourceId().getResourcePath().getFolderPath());
+    			ProjectResourceId resid = child.getResourceId();
+    			resourcesDelete.add(resourceMap.get(ResourceKey.keyForResource(resid)));
+    			log.infof("%s.removeOrphans: DELETING node %s:%s (has no parent)", CLSS,child.getProjectName(),child.getResourceId().getResourcePath().getFolderPath());
     		}
     	}
     	// Actually remove the resource.
-    	for(ProjectResourceKey key:nodesToDelete) {
-    		modelManager.deleteResource(key.getResourceId());
+    	for(ProjectResource res:resourcesDelete) {
+    		modelManager.deleteResource(res.getResourceId());
     		// Delete the current node and all its children.
     		GatewayContext context = modelManager.getContext();
-    		Optional<RuntimeProject> optional = context.getProjectManager().getProject(key.getProjectName());
+    		Optional<RuntimeProject> optional = context.getProjectManager().getProject(res.getProjectName());
     		DesignableProject project = (DesignableProject) optional.get();
     		if( project!=null ) {
     			try {
-    			project.deleteResource(key.getResourceId()); // Mark as dirty
+    				project.deleteResource(res.getResourceId()); // Mark as dirty
     			}
     			catch(ResourceNotFoundException rnfe) {
-    				log.warnf("%s.removeOrphans: DELETING node %s:%s (%s)", CLSS,key.getProjectName(),key.getResourceId().getResourcePath().getFolderPath(),rnfe.getMessage());
+    				ProjectResourceId resid = res.getResourceId();
+    				log.warnf("%s.removeOrphans: DELETING node %s:%s (%s)", CLSS,resid.getProjectName(),resid.getResourcePath().getFolderPath(),rnfe.getMessage());
     			}
     		}
     	}
+    	// Refresh map of actual resources
+    	resourceMap = createResourceMap(modelManager.getContext());
     	log.infof("%s.removeOrphans ==========================       Complete      ==================================", CLSS);
     }
 
-    private Map<ProjectResourceKey,ProjectResource> createResourceMap(GatewayContext context) {
+    // Create 
+    private Map<String,ProjectResource> createResourceMap(GatewayContext context) {
     	// We need to pass something serializable to the panel, thus the list of resources
     	// We also need to make sure this is up-to-date.
-    	Map<ProjectResourceKey,ProjectResource> map = new HashMap<>();
+    	Map<String,ProjectResource> map = new HashMap<>();
     	List<String> projectNames = context.getProjectManager().getProjectNames();
     	for( String name:projectNames ) {
     		Optional<RuntimeProject> optional = context.getProjectManager().getProject(name);
@@ -129,7 +136,7 @@ public class ProcessNodeSynchronizer {
     						res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ||
     						res.getResourceType().equals(BLTProperties.FAMILY_RESOURCE_TYPE) ||
     						res.getResourceType().equals(BLTProperties.FOLDER_RESOURCE_TYPE)   ) {
-    					map.put(new ProjectResourceKey(res.getResourceId()),res);
+    					map.put(ResourceKey.keyForResource(res.getResourceId()),res);
     				}
     			}
     		}

@@ -62,7 +62,7 @@ public class ModelManager implements ProjectListener  {
 	private final GatewayContext context;
 	private final ILSLogger log;
 	private RootNode root;
-	private final Map<ProjectResourceKey,ProcessNode> nodesByKey; 
+	private final Map<String,ProcessNode> nodesByResourceId; 
 	private final Map<ResourcePath,ProcessNode> orphansByResourcePath;
 	private final Map<ResourcePath,ProcessNode> nodesByResourcePath;
 	private final BlockExecutionController controller = BlockExecutionController.getInstance();
@@ -81,7 +81,7 @@ public class ModelManager implements ProjectListener  {
 		this.log = LogMaker.getLogger(getClass().getPackage().getName());
 		this.toolkitHandler = new ToolkitRecordHandler(context);
 		
-		nodesByKey = new HashMap<>();
+		nodesByResourceId = new HashMap<>();
 		orphansByResourcePath = new HashMap<>();
 		nodesByResourcePath = new HashMap<>();
 		ResourceType rtype = BLTProperties.FOLDER_RESOURCE_TYPE;
@@ -144,7 +144,7 @@ public class ModelManager implements ProjectListener  {
 	 */
 	public List<ProcessDiagram> getDiagrams() {
 		List<ProcessDiagram> diagrams = new ArrayList<>();
-		for(ProcessNode node:nodesByKey.values()) {
+		for(ProcessNode node:nodesByResourceId.values()) {
 			if( node instanceof ProcessDiagram ) diagrams.add((ProcessDiagram)node);
 		}
 		return diagrams;
@@ -192,7 +192,7 @@ public class ModelManager implements ProjectListener  {
 	}
 	public GatewayContext getContext() { return this.context; }
 	
-	public Map<ProjectResourceKey,ProcessNode> getNodesByKey() { return nodesByKey; }
+	public Map<String,ProcessNode> getNodesById() { return nodesByResourceId; }
 	public Map<ResourcePath,ProcessNode> getNodesByResourcePath() { return nodesByResourcePath; }
 	
 	/**
@@ -215,8 +215,7 @@ public class ModelManager implements ProjectListener  {
 	 */
 	public ProcessDiagram getDiagram(ProjectResourceId resourceId) {
 		ProcessDiagram diagram = null;
-		ProjectResourceKey key = new ProjectResourceKey(resourceId);
-		ProcessNode node = nodesByKey.get(key);
+		ProcessNode node = nodesByResourceId.get(ResourceKey.keyForResource(resourceId));
 		if( node instanceof ProcessDiagram ) diagram = (ProcessDiagram)node;
 		return diagram;
 	}
@@ -226,7 +225,7 @@ public class ModelManager implements ProjectListener  {
 	 */
 	public ProcessApplication getApplication(String name) {
 		ProcessApplication app = null;
-		for(ProcessNode node:nodesByKey.values()) {
+		for(ProcessNode node:nodesByResourceId.values()) {
 			if( node instanceof ProcessApplication && 
 				node.getName().equals(name)) {
 				app = (ProcessApplication)node;
@@ -299,7 +298,7 @@ public class ModelManager implements ProjectListener  {
 		ProcessFamily fam = null;
 		ProcessApplication app = getApplication(appName);
 		if( app!=null ) {
-			for(ProcessNode node:nodesByKey.values()) {
+			for(ProcessNode node:nodesByResourceId.values()) {
 				if( node instanceof ProcessFamily &&
 					node.getName().equals(famName)) {
 					// Check to see if the parent of the family is the app..
@@ -510,7 +509,7 @@ public class ModelManager implements ProjectListener  {
 		for(ProcessNode child:children) {
 			root.removeChild(child);
 		}
-		nodesByKey.clear();
+		nodesByResourceId.clear();
 		orphansByResourcePath.clear();
 		nodesByResourcePath.clear();
 		nodesByResourcePath.put(root.getResourceId().getResourcePath(), root);
@@ -521,7 +520,7 @@ public class ModelManager implements ProjectListener  {
 	 * DISABLED, its blocks are started. It's just that their results are not propagated.
 	 */
 	public void startBlocks() {
-		for( ProcessNode node:nodesByKey.values() ) {
+		for( ProcessNode node:nodesByResourceId.values() ) {
 			if( node instanceof ProcessDiagram ) {
 				ProcessDiagram diagram = (ProcessDiagram)node;
 				// Start in two passes - input blocks come last
@@ -541,7 +540,7 @@ public class ModelManager implements ProjectListener  {
 	 * been stopped.
 	 */
 	public void stopBlocks() {
-		for( ProcessNode node:nodesByKey.values() ) {
+		for( ProcessNode node:nodesByResourceId.values() ) {
 			if( node instanceof ProcessDiagram ) {
 				ProcessDiagram diagram = (ProcessDiagram)node;
 				for( ProcessBlock pb:diagram.getProcessBlocks()) {
@@ -656,8 +655,7 @@ public class ModelManager implements ProjectListener  {
 			ProcessNode node = nodesByResourcePath.get(resId.getResourcePath());
 			if( node==null ) {
 				// Add in the new Application
-				ProjectResourceKey key = new ProjectResourceKey(res.getResourceId());
-				nodesByKey.put(key,application);
+				nodesByResourceId.put(ResourceKey.keyForResource(application.getResourceId()),application);
 				addToHierarchy(application);
 			}
 			else  {
@@ -715,8 +713,7 @@ public class ModelManager implements ProjectListener  {
 				diagram = new ProcessDiagram(sd,res.getResourcePath().getParent(),res.getProjectName());
 
 				// Add the new diagram to our hierarchy
-				ProjectResourceKey key = new ProjectResourceKey(res.getResourceId());
-				nodesByKey.put(key,diagram);
+				nodesByResourceId.put(ResourceKey.keyForResource(diagram.getResourceId()),diagram);
 				addToHierarchy(diagram);
 				diagram.createBlocks(sd.getBlocks());
 
@@ -790,8 +787,7 @@ public class ModelManager implements ProjectListener  {
 			ProcessNode node = nodesByResourcePath.get(resId.getResourcePath());
 			if( node==null ) {
 				// Add in the new Family
-				ProjectResourceKey key = new ProjectResourceKey(res.getResourceId());
-				nodesByKey.put(key,family);
+				nodesByResourceId.put(ResourceKey.keyForResource(family.getResourceId()),family);
 				addToHierarchy(family);
 			}
 			else {
@@ -839,8 +835,7 @@ public class ModelManager implements ProjectListener  {
 		if( node==null ) {
 			node = new ProcessNode(res.getResourceName(),resId.getResourcePath().getParent(),resId);
 			// Add in the new Folder
-			ProjectResourceKey key = new ProjectResourceKey(res.getResourceId());
-			nodesByKey.put(key,node);
+			nodesByResourceId.put(ResourceKey.keyForResource(node.getResourceId()),node);
 			addToHierarchy(node);
 		}
 		else {
@@ -895,8 +890,8 @@ public class ModelManager implements ProjectListener  {
 	 */
 	public void deleteResource(ProjectResourceId resourceId) {
 		if(DEBUG) log.infof("%s.deleteResource: %s:%s",CLSS,resourceId.getProjectName(),resourceId.getResourcePath().getPath());
-		ProjectResourceKey key = new ProjectResourceKey(resourceId);
-		ProcessNode head = nodesByKey.get(key);
+
+		ProcessNode head = nodesByResourceId.get(ResourceKey.keyForResource(resourceId));
 		DiagramState nodeState = DiagramState.ACTIVE;
 		if( head!=null ) {
 			List<ProcessNode> nodesToDelete = new ArrayList<>();
@@ -920,8 +915,7 @@ public class ModelManager implements ProjectListener  {
 						}
 					}
 				}
-				ProjectResourceKey nodekey = new ProjectResourceKey(node.getResourceId());
-				nodesByKey.remove(nodekey);
+				nodesByResourceId.remove(ResourceKey.keyForResource(resourceId));
 				
 				if( node.getParentPath()!=null ) {
 					ProcessNode parent = nodesByResourcePath.get(node.getParentPath());
@@ -1025,12 +1019,14 @@ public class ModelManager implements ProjectListener  {
 				mapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL,true);
 				sd = mapper.readValue(json, SerializableDiagram.class);
 				if( sd!=null ) {
+					/*
 					if( DEBUG ) {
 						log.infof("%s.deserializeDiagramResource: Successfully deserialized diagram %s",CLSS,sd.getName());
 						for(SerializableBlock sb:sd.getBlocks()) {
 							log.infof("%s: %s block, name = %s",CLSS,sb.getClassName(),sb.getName());
 						}
 					}
+					*/
 				}
 				else {
 					log.warnf("%s.deserializeDiagramResource: deserialization failed",CLSS);

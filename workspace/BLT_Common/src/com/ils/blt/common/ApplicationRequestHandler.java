@@ -222,7 +222,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		
 		if( jsonList!=null) {
 			for( String json:jsonList ) {
-				log.tracef("%s.getBlockPrototypes: %s",CLSS,json);
+				log.infof("%s.getBlockPrototypes: %s",CLSS,json);
 				PalettePrototype bp = PalettePrototype.createPrototype(json);
 				result.add(bp);
 			}

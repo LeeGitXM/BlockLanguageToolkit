@@ -10,7 +10,7 @@
 	<property name="BLTModule.release" value="0.5" />
 	<property name="BLTModule.description" value="Block Language Toolkit" />
 	<property name="root.dir" value="${basedir}/../.." />
-	<property name="jar.dir" value="${root.dir}/external/lib" />
+	<property name="external.lib.dir" value="${root.dir}/external/lib" />
 	<property name="sdk.dir" value="${root.dir}/ignition-80/lib" />
 	<property name="common.jar.name" value="ils-common.jar" />
 	<property name="common.bin.dir" value="${root.dir}/ils-common/ILS_Common/bin" />
@@ -18,16 +18,16 @@
 	<property name="block.jar.name" value="block-definition.jar" />
 	<property name="block.bin.dir" value="${root.dir}/blt/workspace/Block/bin" />
 	<property name="block.src.dir" value="${root.dir}/blt/workspace/Block/src" />
+	<property name="blt.common.jar.name" value="blt-common.jar" />
+	<property name="blt.gateway.jar.name" value="blt-common.jar" />
+	<property name="block.jar.name" value="block-definition.jar" />
 	<property name="ils.python.src.dir" value="${root.dir}/ils_python/ILS_Python/src" />
 	<property name="ant.build.javac.source" value="11"/>
 	<property name="ant.build.javac.target" value="11"/>
-	
-<!--   THE NEXT LINE IS ONLY NEEDED FOR XOM SAMPLES AND TESTING - CONSIDER HAVING A FLAG TO DISABLE COPY -->	
-<!--	<property name="xom.python.src.dir" value="${root.dir}/xom-python/XOM_Python/src" />  -->
 		
 	<!-- External jar classpath -->
 	<path id="ils-classpath">
-	   <fileset dir="${jar.dir}">
+	   <fileset dir="${external.lib.dir}">
 	      <include name="*.jar"/>
 	   </fileset>
 		<fileset dir="${sdk.dir}">
@@ -48,72 +48,67 @@
 	<path id="BlockDefinition.classpath">
 		<path refid="BLT_Common.classpath" />
 		<fileset dir="${basedir}/BLT_Build/bin/BLT_Common/dist/" includes="*.jar" />
-	</path>
-		
+	</path>	
 	<!-- Gateway jar classpath -->
 	<path id="BLT_Gateway.classpath">
 		<path refid="BLT_Common.classpath" />
 		<fileset dir="${basedir}/BLT_Build/bin/BLT_Common/dist/" includes="*.jar" />
-		<fileset dir="${jar.dir}" includes="${block.jar.name}" />
+		<fileset dir="${external.lib.dir}" includes="${block.jar.name}" />
 	</path>	
 	<!-- Client jar classpath -->
 	<path id="BLT_Client.classpath">
 		<path refid="BLT_Common.classpath" />
 		<path refid="ExternalJar.classpath" />
 		<fileset dir="${basedir}/BLT_Build/bin/BLT_Common/dist/" includes="*.jar" />
-		<fileset dir="${jar.dir}" includes="${block.jar.name}" />
 	</path>
-	
 	<!-- Designer jar classpath -->
 	<path id="BLT_Designer.classpath">
 		<path refid="BLT_Common.classpath" />
 		<path refid="ExternalJar.classpath" />
 		<fileset dir="${basedir}/BLT_Build/bin/BLT_Common/dist/" includes="*.jar" />
 		<fileset dir="${basedir}/BLT_Build/bin/${BLTModule.name}_Client/dist/" includes="*.jar" />
-		<fileset dir="${jar.dir}" includes="${block.jar.name}" />
 	</path>
 
-	<!-- Migration jar classpath -->
-	<path id="BLT_Migration.classpath">
-		<path refid="BLT_Common.classpath" />
-		<path refid="ExternalJar.classpath" />
-		<fileset dir="${basedir}/BLT_Build/bin/BLT_Common/dist/" includes="*.jar" />
-		<fileset dir="${basedir}/BLT_Build/bin/BLT_Designer/dist/" includes="*.jar" />
-	</path>
-	
 	<!-- This target will build the toolkit module and deploy it to the local Ignition gateway -->
-	<target name="BuildAndInstallModule" depends="clean, build" />
+	<target name="BuildAndInstallModule" depends="clean, deploy" />
+	
+	<!-- Cleans all previously built files (leaves doc) -->
+	<target name="clean" depends="clean.ils.common,clean.block" description="Remove existing build products" >
+		<delete dir="${basedir}/BLT_Build/bin" />
+		<delete file="${basedir}/BLT_Build/modules/${BLTModule.name}-module-unsigned.modl" />
+		<delete file="${basedir}/BLT_Build/modules/${BLTModule.name}-module-signed.modl" />
+		<delete dir="${basedir}/BLT_Build/release" />
+		<delete dir="${basedir}/BLT_Build/temp_modl" />   
+		<delete dir="${basedir}/BLT_Client/bin"/>
+		<delete dir="${basedir}/BLT_Common/bin"/>
+		<delete dir="${basedir}/BLT_Designer/bin"/>
+		<delete dir="${basedir}/BLT_Gateway/bin"/>
+		<delete file="${ignition.py.lib}/../../lib/core/common/${blt.common.jar.name}"/>
+		<delete file="${ignition.py.lib}/../../lib/core/gateway/${blt.gateway.jar.name}"/>
+	</target>
 	
 	<!-- Clean Block Definition -->
 	<target name="clean.block" >
 		<mkdir dir="${block.bin.dir}"/>
-		<delete file="${jar.dir}/${block.jar.name}" />
+		<delete file="${external.lib.dir}/${block.jar.name}" />
 		<delete>
 		    <fileset dir="${block.bin.dir}">
 		        <include name="**/*.class"/>
 		    </fileset>
 		</delete>
 	</target>
+	
 	<!-- Clean ILS common -->
-	<target name="clean.common" >
+	<target name="clean.ils.common" >
 		<mkdir dir="${common.bin.dir}"/>
-		<delete file="${jar.dir}/${common.jar.name}" />
+		<delete file="${external.lib.dir}/${common.jar.name}" />
 		<delete>
 		    <fileset dir="${common.bin.dir}">
 		        <include name="**/*.class"/>
 		    	<include name="**/*.png"/>
 		    </fileset>
 		</delete>
-	</target>
-
-	<!-- Cleans all previously built files (leaves doc) -->
-	<target name="clean" depends="clean.common,clean.block" description="Remove existing build products" >
-		<delete dir="${basedir}/BLT_Build/bin" />
-		<delete file="${basedir}/BLT_Build/modules/${BLTModule.name}-module-unsigned.modl" />
-		<delete dir="${basedir}/BLT_Build/release" />
-		<delete dir="${basedir}/BLT_Build/temp_modl" />   
-	</target>	
-	
+	</target> 
 	
 	<!-- Compile the Common library -->
 	<target name="common.build" description="Compile the source">
@@ -128,20 +123,20 @@
 		</copy>
 	</target>
 	<target name ="common.jar" description="Create a jar for the ILS Common library">
-	    <jar destfile="${jar.dir}/${common.jar.name}" includes="**/*.class,**/*.png" basedir="${common.bin.dir}"/>
+	    <jar destfile="${external.lib.dir}/${common.jar.name}" includes="**/*.class,**/*.png" basedir="${common.bin.dir}"/>
 	</target>
 	
 	<!-- Compile the Block Definition library -->
-			<target name="block.build" description="Compile the source">
-				<mkdir dir="${block.bin.dir}"/>
-				<javac destdir="${block.bin.dir}" debug="true" includeantruntime="false">
-					<src path="${block.src.dir}"/>
-					<classpath refid="BlockDefinition.classpath"/>
-				</javac>
-			</target>
-			<target name ="block.jar" description="Create a jar for the Block Definition library">
-				<jar destfile="${jar.dir}/${block.jar.name}" includes="**/*.class" basedir="${block.bin.dir}"/>
-			</target>
+	<target name="block.build" description="Compile the source">
+		<mkdir dir="${block.bin.dir}"/>
+		<javac destdir="${block.bin.dir}" debug="true" includeantruntime="false">
+			<src path="${block.src.dir}"/>
+			<classpath refid="BlockDefinition.classpath"/>
+		</javac>
+	</target>
+	<target name ="block.jar" description="Create a jar for the Block Definition library">
+				<jar destfile="${external.lib.dir}/${block.jar.name}" includes="**/*.class" basedir="${block.bin.dir}"/>
+	</target>
 
 	<!-- Builds the toolkit module jars and the final .modl file -->
 	<target name="build" depends="common.build,common.jar" description="Compile the source">
@@ -199,7 +194,6 @@
 		<mkdir dir="${basedir}/BLT_Build/temp_modl" />
 		<mkdir dir="${basedir}/BLT_Build/modules" />
 		
-
 		<copy file="${basedir}/BLT_Build/module-blt.xml" tofile="${basedir}/BLT_Build/temp_modl/module.xml" overwrite="true" />
 
 		<replace file="${basedir}/BLT_Build/temp_modl/module.xml" token="@NAME@" value="${BLTModule.name}" />
@@ -211,15 +205,19 @@
 		<copy file="${basedir}/BLT_Build/bin/${BLTModule.name}_Common/dist/blt-common.jar" todir="${basedir}/BLT_Build/temp_modl/" />
 		<copy file="${basedir}/BLT_Build/bin/${BLTModule.name}_Designer/dist/blt-designer.jar" todir="${basedir}/BLT_Build/temp_modl/" />
 		<copy file="${basedir}/BLT_Build/bin/${BLTModule.name}_Client/dist/blt-client.jar" todir="${basedir}/BLT_Build/temp_modl/" />
+		<!-- The Gateway and Common jar files are needed by Python scripts -->
+		<copy file= "${basedir}/BLT_Build/bin/${BLTModule.name}_Common/dist/blt-common.jar" todir="${basedir}/BLT_Build/temp_modl/" />
+		<copy file= "${basedir}/BLT_Build/bin/${BLTModule.name}_Gateway/dist/blt-gateway.jar" todir="${basedir}/BLT_Build/temp_modl/" />
+		
 		<!-- Copy dependent jars -->
-		<copy file="${jar.dir}/${common.jar.name}" todir="${basedir}/BLT_Build/temp_modl/" />
+		<copy file="${external.lib.dir}/${common.jar.name}" todir="${basedir}/BLT_Build/temp_modl/" />
 		<copy file="${basedir}/../../external/lib/prefuse-1.0.1.jar" todir="${basedir}/BLT_Build/temp_modl/" />
 		<copy file="${basedir}/../../external/lib/jackson-core-2.2.3.jar" todir="${basedir}/BLT_Build/temp_modl/" />
 		<copy file="${basedir}/../../external/lib/jackson-databind-2.2.3.jar" todir="${basedir}/BLT_Build/temp_modl/" />
 		<copy file="${basedir}/../../external/lib/jackson-annotations-2.2.3.jar" todir="${basedir}/BLT_Build/temp_modl/" />
 		<copy file="${basedir}/../../external/lib/commons-math3-3.6.1.jar" todir="${basedir}/BLT_Build/temp_modl/" />
 		<copy file="${basedir}/../../external/lib/ils-common.jar" todir="${basedir}/BLT_Build/temp_modl/" />
-		<copy file="${jar.dir}/${block.jar.name}" todir="${basedir}/BLT_Build/temp_modl/" />
+		<copy file="${external.lib.dir}/${block.jar.name}" todir="${basedir}/BLT_Build/temp_modl/" />
 
 		<!-- Copy license file, help and javadoc into the bundle -->
 		<mkdir dir="${basedir}/BLT_Build/doc/SymbolicAiUsersGuide_filtered_files" />
@@ -259,7 +257,7 @@
 			</fileset>
 		</copy>
 		<copy todir="${ignition.py.lib}/../../lib/core/common">
-			<fileset dir="${jar.dir}">
+			<fileset dir="${external.lib.dir}">
 				<include name="jackson*.jar" />
 			</fileset>
 		</copy>
@@ -282,7 +280,7 @@
 	<!-- Installs BLT module in local Ignition gateway. Note that the gateway must be running for this to succeed. -->
 	<target name="deploy" depends="build,python.jars" >
 		<echo message="Installing ${BLTModule.name} on Ignition Gateway." />
-		<postmodule posturl="${local.gateway.url}" modulefile="${basedir}/BLT_Build/modules/${BLTModule.name}-module-signed.modl" />
+		<!-- <postmodule posturl="${local.gateway.url}" modulefile="${basedir}/BLT_Build/modules/${BLTModule.name}-module-signed.modl" /> -->
 	</target>	
 
 </project>
