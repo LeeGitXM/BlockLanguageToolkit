@@ -52,9 +52,12 @@ public class ApplicationPropertyEditor extends AbstractPropertyEditor {
 	public ApplicationPropertyEditor(DesignerContext ctx, SerializableApplication app, ProjectResource res) {
 		super(res);
 		this.log = LogMaker.getLogger(this);
+		log.infof("%s: Application: %s", CLSS, app.toString());
+		log.infof("%s: Resource: %s", CLSS, res.toString());
 		this.context = ctx;
 		this.application = app;
 		this.model = application.getAuxiliaryData();
+		log.infof("%s: Model (aux data): %s", CLSS, model.toString());
 		this.homePanel = new ApplicationHomePane(this);
 		this.outputKeys = new SortedListModel<>();
 		buildOutputListModel();
@@ -89,17 +92,22 @@ public class ApplicationPropertyEditor extends AbstractPropertyEditor {
 	 */
 	private void buildOutputListModel(){
 		List< Map<String,String> > outputMapList = model.getMapLists().get("QuantOutputs");
-		log.tracef("OutputList: " + outputKeys);
+		log.infof("%s: OutputList: %s", CLSS, outputKeys.toString());
 		if( outputMapList==null ) {
 			outputMapList = new ArrayList<>();
 			model.getMapLists().put("QuantOutputs", outputMapList);
 		}
 		else {
-			for(Map<String,String> outmap:outputMapList) {
-				outputKeys.add(outmap.get("QuantOutput"));
+			Integer i = 0;
+			for(Map<String,String> outputMap:outputMapList) {
+				outputMap.put("QuantOutputId", i.toString());
+				log.infof("%s: Output Name: %s (%s) - %s", CLSS, outputMap.get("QuantOutput"), outputMap.get("QuantOutputId"), outputMap.toString());
+				outputKeys.add(outputMap.get("QuantOutput"));
+				i = i + 1;
 			}
 		}
 	}
+	
 	private void clearOutputKeyList(){
 		outputKeys.clear();
 	}
@@ -114,6 +122,7 @@ public class ApplicationPropertyEditor extends AbstractPropertyEditor {
 	// updating the entire project. Trigger a notification.
 	@Override
 	public void saveResource() {
+		log.infof("%s: Saving...", CLSS);
 		application.setAuxiliaryData(model);
 		ObjectMapper mapper = new ObjectMapper();
 		Project proj = context.getProject();

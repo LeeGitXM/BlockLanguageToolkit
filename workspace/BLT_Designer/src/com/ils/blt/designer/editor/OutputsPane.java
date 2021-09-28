@@ -119,7 +119,7 @@ public class OutputsPane extends JPanel {
 		// Get the name of the output that is selected, if nothing is selected then return
 		String outputName= (String) jlist.getSelectedValue();
 		if( outputName==null ) {	
-			JOptionPane.showMessageDialog(OutputsPane.this, "Please selecte an output to edit.");					
+			JOptionPane.showMessageDialog(OutputsPane.this, "Please select an output to edit.");					
 			return;
 		}
 		System.out.println("OutputsPane.doEdit: " + outputName);
@@ -140,7 +140,10 @@ public class OutputsPane extends JPanel {
 		
 		if (outputMap != null){
 			System.out.println("Looking at an Output" + outputMap);
-			outputMap.put("QuantOutputId", "Existing"); //PAH TODO
+			/* 
+			outputMap.put("QuantOutputId", "Existing"); // This will be used in the cancel logic and determines if the output will be deleted
+			*/
+			
 			// Get the output editor and call method that puts the output into the fields
 			detailEditor.updateFields(outputMap);
 			editor.setSelectedPane(ApplicationPropertyEditor.EDITOR);
@@ -189,7 +192,7 @@ public class OutputsPane extends JPanel {
 		System.out.println("Creating a new output... ");
 
 		Map<String,String> outputMap = new HashMap<String,String>();
-		outputMap.put("QuantOutputId", "New"); // PAH TODO
+		outputMap.put("QuantOutputId", "-1"); // This will signal the cancel logic to delete the output from the map
 		outputMap.put("QuantOutput", "");
 		outputMap.put("TagPath", "");
 		outputMap.put("MostNegativeIncrement",String.valueOf(-10.0));

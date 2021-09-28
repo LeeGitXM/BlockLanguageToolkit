@@ -122,7 +122,6 @@ public class ApplicationHomePane extends JPanel implements  NotificationChangeLi
 		List<String> items = new ArrayList<>();
 		extensionManager.runScript(editor.context.getScriptManager(),script,ScriptConstants.LIST_KEY_MESSAGE_QUEUE,items,db);
 		for(String item:items) {
-			System.out.println("COMBO="+item);
 			queueComboBox.addItem(item);
 		}
 		mainPanel.add(queueComboBox, "wrap");
