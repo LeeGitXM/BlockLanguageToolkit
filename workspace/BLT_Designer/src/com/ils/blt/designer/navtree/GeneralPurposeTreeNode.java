@@ -123,10 +123,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	private final SerializableNodeRenameHandler renameHandler;
 	private final NodeStatusManager statusManager;
 	private final FolderCreateAction folderCreateAction;
-	private TreeSaveAction treeSaveAction = null;
 	private final ApplicationRequestHandler requestHandler;
 	private final ExecutionManager executionEngine;
-	private final ThreadCounter threadCounter = ThreadCounter.getInstance();
 	protected final ImageIcon alertBadge;
 	private final ImageIcon defaultIcon = IconUtil.getIcon("folder_closed");
 	private final ImageIcon openIcon;
@@ -463,7 +461,6 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				ApplicationImportAction applicationImportAction = new ApplicationImportAction(context.getFrame(),this);
 				ClearAction clearAction = new ClearAction();
 				DebugAction debugAction = new DebugAction();
-				SaveAllAction saveAllAction = new SaveAllAction(this);
 				SynchronizeAction synchronizeAction = new SynchronizeAction(this);
 				if( requestHandler.isControllerRunning() ) {
 					startAction.setEnabled(false);
@@ -475,7 +472,6 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				menu.add(applicationCreateAction);
 				menu.add(applicationImportAction);
 				menu.add(folderCreateAction);
-				menu.add(saveAllAction);
 				menu.add(startAction);
 				menu.add(stopAction);
 				menu.add(pasteBranchAction);
@@ -491,7 +487,6 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		else if(getResourcePath().getResourceType().equals(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
 			ApplicationExportAction applicationExportAction = new ApplicationExportAction(menu.getRootPane(),this);
 			FamilyCreateAction familyAction = new FamilyCreateAction(this);
-			treeSaveAction = new TreeSaveAction(this,PREFIX+".SaveApplication");
 
 			menu.add(familyAction);
 			menu.add(folderCreateAction);
@@ -508,12 +503,10 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			menu.add(copyBranchAction);
 			menu.add(pasteBranchAction);
 			menu.add(applicationExportAction);
-			menu.add(treeSaveAction);
 			addEditActions(menu);
 		}
 		else if(getResourcePath().getResourceType().equals(BLTProperties.FAMILY_RESOURCE_TYPE)) {
 			DiagramCreateAction newDiagramAction = new DiagramCreateAction(this);
-			treeSaveAction = new TreeSaveAction(this,PREFIX+".SaveFamily");
 
 
 			ImportDiagramAction importAction = new ImportDiagramAction(menu.getRootPane(),this);
@@ -523,7 +516,6 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			menu.addSeparator();
 			menu.add(copyBranchAction);
 			menu.add(pasteBranchAction);;
-			menu.add(treeSaveAction);
 			addEditActions(menu);
 
 		}
@@ -559,8 +551,6 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			}
 			
 			menu.add(folderCreateAction);
-			treeSaveAction = new TreeSaveAction(this,PREFIX+".SaveFolder");
-			menu.add(treeSaveAction);
 			menu.addSeparator();
 
 			if( true /*something is selected*/ ) {
@@ -1898,28 +1888,6 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			}
 		}
 	}
-
-
-	// Save the entire Application hierarchy.
-	private class SaveAllAction extends BaseAction {
-		private static final long serialVersionUID = 1L;
-		private final AbstractResourceNavTreeNode node;
-
-		public SaveAllAction(AbstractResourceNavTreeNode treeNode)  {
-			super(PREFIX+".SaveAll",IconUtil.getIcon("add2")); 
-			this.node = treeNode;
-		}
-
-		public void actionPerformed(ActionEvent e) {
-			// Traverse the entire hierarchy, saving each step
-			if( !isRootFolder() ) return;
-			node.setBold(true);
-			threadCounter.reset();
-			statusManager.updateAll();
-			ResourceSaveManager rsm = new ResourceSaveManager(workspace,node);
-			rsm.saveSynchronously();;
-		}
-	}
 	
 	/**
 	 * Recursively set the state of every diagram under the application to the selected value.
@@ -2073,26 +2041,6 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				AbstractResourceNavTreeNode child = childWalker.nextElement();
 				synchronizeNode(child,tagp,dsource);
 			}
-		}
-	}
-	
-	// Save this node and all its descendants.
-	private class TreeSaveAction extends BaseAction {
-		private static final long serialVersionUID = 1L;
-		private final GeneralPurposeTreeNode node;
-
-		public TreeSaveAction(GeneralPurposeTreeNode treeNode, String bundleString)  {
-			super(bundleString,IconUtil.getIcon("add2")); 
-			node = treeNode;
-		}
-
-		public void actionPerformed(ActionEvent e) {
-			// Traverse the hierarchy under the selection, saving each step
-			node.setBold(true);
-			threadCounter.reset();
-			statusManager.updateAll();
-			ResourceSaveManager rsm = new ResourceSaveManager(workspace,node);
-			rsm.saveSynchronously();
 		}
 	}
 	
@@ -2256,7 +2204,6 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	public void updateUI(boolean dty) {
 		logger.debugf("%s.updateUI: %d dirty = %s",CLSS,resourceId,(dty?"true":"false"));
 		setItalic(dty);   // NOTE: italic system may be broken ?
-		if( treeSaveAction!=null ) treeSaveAction.setEnabled(dty);
 		refresh();  // Update the UI
 	}
 }
