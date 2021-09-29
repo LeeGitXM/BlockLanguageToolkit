@@ -41,9 +41,9 @@ import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.ils.blt.designer.workspace.WorkspaceRepainter;
-import com.ils.common.log.ILSLogger;
-import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.common.BundleUtil;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
 
 import net.miginfocom.swing.MigLayout;
@@ -56,7 +56,7 @@ import net.miginfocom.swing.MigLayout;
 
 public class AttributeDisplaySelector extends JDialog implements TableModelListener {
 	private static String CLSS = "AttributeDisplaySelector";
-	private final ILSLogger log;
+	private final LoggerEx log;
 	private static final String PREFIX = BLTProperties.BLOCK_PREFIX; // Required for text strings
 	private static final long serialVersionUID = 4004388376825535527L;
 	private final int DIALOG_HEIGHT = 400;
@@ -78,7 +78,7 @@ public class AttributeDisplaySelector extends JDialog implements TableModelListe
 		setAlwaysOnTop(true);
 		setModal(false);
 		setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
-		this.log = LogMaker.getLogger(this);
+		this.log = LogUtil.getLogger(getClass().getPackage().getName());
 		this.setPreferredSize(new Dimension(DIALOG_WIDTH, DIALOG_HEIGHT));
 		initialize();
 		setUI();

@@ -31,10 +31,10 @@ import com.ils.blt.designer.NotificationHandler;
 import com.ils.blt.designer.workspace.ui.AbstractBlockUIView;
 import com.ils.blt.designer.workspace.ui.UIFactory;
 import com.ils.common.GeneralPurposeDataContainer;
-import com.ils.common.log.ILSLogger;
-import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockComponent;
 import com.inductiveautomation.ignition.designer.blockandconnector.blockui.AnchorDescriptor;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorPoint;
@@ -77,7 +77,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 	private boolean ctypeEditable=false;          // Can we globally change our connection types
 	private boolean locked = false; 
 	private Point location = new Point(0,0);
-	private final ILSLogger log; 
+	private final LoggerEx log; 
 	private String name;
 	private int preferredHeight = 0;              // Size the view to "natural" size
 	private int preferredWidth  = 0;              // Size the view to "natural" size
@@ -98,7 +98,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 	public ProcessBlockView(BlockDescriptor descriptor) {
 		this.listenerList = new EventListenerList();
 		this.changeEvent  = new ChangeEvent(this);
-		this.log = LogMaker.getLogger(this);
+		this.log = LogUtil.getLogger(getClass().getPackage().getName());
 		this.uuid = UUID.randomUUID();
 		this.background = descriptor.getBackground();
 		this.className = descriptor.getBlockClass();
@@ -147,7 +147,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 		this.encapsulation = (sb.getSubworkspaceId()!=null);
 		this.iconPath = sb.getIconPath();
 		this.locked   = sb.isLocked();
-		this.log = LogMaker.getLogger(this);
+		this.log = LogUtil.getLogger(getClass().getPackage().getName());
 		this.preferredHeight = sb.getPreferredHeight();
 		this.preferredWidth = sb.getPreferredWidth();
 		this.style = sb.getStyle();

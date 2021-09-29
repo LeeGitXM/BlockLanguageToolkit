@@ -6,8 +6,6 @@ package com.ils.blt.designer.editor;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.beans.PropertyChangeEvent;
@@ -31,7 +29,6 @@ import javax.swing.SwingUtilities;
 
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
-import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.block.ActiveState;
 import com.ils.blt.common.block.BlockProperty;
@@ -49,14 +46,13 @@ import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.ils.blt.designer.workspace.WorkspaceRepainter;
 import com.ils.common.GeneralPurposeDataContainer;
-import com.ils.common.log.ILSLogger;
-import com.ils.common.log.LogMaker;
 import com.ils.common.ui.DualListBox;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
-import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceNavTreeNode;
 
 import net.miginfocom.swing.MigLayout;
 
@@ -110,7 +106,7 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 	private final String provider;
 	private final String database;
 	private final String key;
-	protected final ILSLogger log;
+	protected final LoggerEx log;
 	protected static final Dimension DUAL_SCROLL_AREA_SIZE  = new Dimension(250,600);
 	protected static final Dimension EXPLANATION_AREA_SIZE  = new Dimension(250,300);
 	protected static final Dimension TEXT_RECOMMENDATION_AREA_SIZE  = new Dimension(250,300);
@@ -136,7 +132,7 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		this.context = context;
         this.diagram = wrkspc.getActiveDiagram();
 		//this.corePanel = new CorePropertyPanel(this, block);
-		this.log = LogMaker.getLogger(this);
+		this.log = LogUtil.getLogger(getClass().getPackage().getName());
 		this.database = requestHandler.getProductionDatabase();
 		this.provider = requestHandler.getProductionTagProvider();
 		this.setPreferredSize(new Dimension(DIALOG_WIDTH,DIALOG_HEIGHT));

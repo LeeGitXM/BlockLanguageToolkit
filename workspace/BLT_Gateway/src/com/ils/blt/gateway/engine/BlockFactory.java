@@ -21,8 +21,8 @@ import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.gateway.proxy.ProxyHandler;
-import com.ils.common.log.ILSLogger;
-import com.ils.common.log.LogMaker;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 
 
 
@@ -32,7 +32,7 @@ import com.ils.common.log.LogMaker;
 public class BlockFactory  {
 	private final static String CLSS = "BlockFactory";
 	private static final boolean DEBUG = false;
-	private final ILSLogger log = LogMaker.getLogger(BlockFactory.class.getPackage().getName());
+	private final LoggerEx log = LogUtil.getLogger(BlockFactory.class.getPackage().getName());
 	private static BlockFactory instance = null;
 	private final BlockExecutionController controller = BlockExecutionController.getInstance();
 	private final ProxyHandler proxyHandler;

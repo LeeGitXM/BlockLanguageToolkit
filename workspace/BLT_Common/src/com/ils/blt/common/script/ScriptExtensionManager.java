@@ -15,12 +15,12 @@ import org.python.core.PyString;
 import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.JavaToPython;
 import com.ils.common.PythonToJava;
-import com.ils.common.log.ILSLogger;
-import com.ils.common.log.LogMaker;
 import com.ils.common.tag.TagReader;
 import com.inductiveautomation.ignition.common.model.BaseContext;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.script.ScriptManager;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 
 
 /**
@@ -31,7 +31,7 @@ import com.inductiveautomation.ignition.common.script.ScriptManager;
  */
 public class ScriptExtensionManager {
 	private static String CLSS = "ScriptExtensionManager";
-	protected final ILSLogger log;
+	protected final LoggerEx log;
 	private static final boolean DEBUG = false;
 	protected final JavaToPython j2p;
 	protected final PythonToJava p2j;
@@ -45,7 +45,7 @@ public class ScriptExtensionManager {
 	 */
 	private ScriptExtensionManager() {
 		// Initialize map with entry points and call list
-		log = LogMaker.getLogger(this);
+		log = LogUtil.getLogger(getClass().getPackage().getName());
 		j2p = new JavaToPython();
 		p2j = new PythonToJava();
 	}

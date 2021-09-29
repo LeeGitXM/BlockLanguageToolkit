@@ -13,9 +13,9 @@ import javax.swing.JScrollPane;
 
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
-import com.ils.common.log.ILSLogger;
-import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.client.designable.DesignableContainer;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockComponent;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignableContainer;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Connection;
@@ -40,7 +40,7 @@ public class PropertyEditorFrame extends DockableFrame implements ResourceWorksp
 	private final DiagramWorkspace workspace;
 	private final JPanel contentPanel;
 	private AbstractPropertyEditor editor = null;
-	private ILSLogger log = LogMaker.getLogger(getClass().getPackage().getName());
+	private LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
 	
 	/**
 	 * Constructor 

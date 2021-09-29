@@ -11,10 +11,10 @@ import org.python.core.PyCode;
 import org.python.core.PyObject;
 import org.python.core.PyStringMap;
 
-import com.ils.common.log.ILSLogger;
-import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.common.script.JythonExecException;
 import com.inductiveautomation.ignition.common.script.ScriptManager;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 
 
 /**
@@ -36,7 +36,7 @@ import com.inductiveautomation.ignition.common.script.ScriptManager;
 public class Script {
 	private final static String CLSS = "Script";
 	private final boolean DEBUG = false;
-	private final ILSLogger log;
+	private final LoggerEx log;
 	private PyCode code;
 	private String module = "";
 	private String pythonPackage;
@@ -50,7 +50,7 @@ public class Script {
 	 * @param args the script arguments
 	 */
 	public Script(String pythonPath,String args) {
-		this.log = LogMaker.getLogger(this);
+		this.log = LogUtil.getLogger(getClass().getPackage().getName());
 		setModulePath(pythonPath);
 		this.localVariables = args.split(",");
 		this.localVariableList=args;

@@ -1,13 +1,9 @@
 package com.ils.blt.designer.editor;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,8 +30,8 @@ import com.ils.blt.common.script.ScriptConstants;
 import com.ils.blt.common.script.ScriptExtensionManager;
 import com.ils.blt.common.serializable.SerializableApplication;
 import com.ils.common.GeneralPurposeDataContainer;
-import com.ils.common.log.ILSLogger;
-import com.ils.common.log.LogMaker;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 
 import net.miginfocom.swing.MigLayout;
 
@@ -51,7 +47,7 @@ public class OutputEditorPane extends JPanel implements ActionListener  {
 	private final JPanel mainPanel;
 	private final GeneralPurposeDataContainer model;
 	private Map<String,String> outputMap;  // Parameters for current output
-	private final ILSLogger log;
+	private final LoggerEx log;
 	final JTextField nameField = new JTextField();
 	final JTextField tagField = new JTextField();
 	final JFormattedTextField mostNegativeIncrementField = new JFormattedTextField(NumberFormat.getInstance());
@@ -76,7 +72,7 @@ public class OutputEditorPane extends JPanel implements ActionListener  {
 	public OutputEditorPane(ApplicationPropertyEditor editor) {
 		super(new BorderLayout(20, 30));
 		this.editor = editor;
-		this.log = LogMaker.getLogger(this);
+		this.log = LogUtil.getLogger(getClass().getPackage().getName());
 		this.model = editor.getModel();
 		this.setPreferredSize(editor.PANEL_SIZE);
 		

@@ -40,13 +40,13 @@ import com.ils.blt.common.notification.SignalNotification;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.common.FixedSizeQueue;
 import com.ils.common.GeneralPurposeDataContainer;
-import com.ils.common.log.ILSLogger;
-import com.ils.common.log.LogMaker;
 import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.ils.common.watchdog.WatchdogObserver;
 import com.ils.common.watchdog.WatchdogTimer;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 
 
 /**
@@ -84,7 +84,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	protected Date stateChangeTimestamp = null;
 	protected WatchdogTimer timer = null;
 
-	protected ILSLogger log = LogMaker.getLogger(this);
+	protected LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
 	/** Properties are a dictionary of attributes keyed by property name */
 	protected final Map<String,BlockProperty> propertyMap;
 	/** Describe ports/stubs where connections join the block */
@@ -589,7 +589,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 			if( bp.getBindingType().equals(BindingType.ENGINE) ) {
 				QualifiedValue qv = new TestAwareQualifiedValue(timer,bp.getValue());
 				controller.sendPropertyNotification(getBlockId().toString(),bp.getName(), qv);
-				if(DEBUG) log.info("%s.notifyOfStatus: %s %s = %s",getName(),getBlockId().toString(),bp.getName(),qv.getValue().toString());
+				if(DEBUG) log.infof("%s.notifyOfStatus: %s %s = %s",getName(),getBlockId().toString(),bp.getName(),qv.getValue().toString());
 			}
 		}
 	}

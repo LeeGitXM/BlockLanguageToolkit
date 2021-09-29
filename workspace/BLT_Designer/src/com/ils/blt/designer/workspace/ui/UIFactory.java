@@ -2,8 +2,8 @@ package com.ils.blt.designer.workspace.ui;
 
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.designer.workspace.ProcessBlockView;
-import com.ils.common.log.ILSLogger;
-import com.ils.common.log.LogMaker;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 
 
 /**
@@ -11,9 +11,9 @@ import com.ils.common.log.LogMaker;
  */
 public class UIFactory {
 	private final static String CLSS = "UIFactory";
-	private final ILSLogger log;
+	private final LoggerEx log;
 	public UIFactory() {
-		log = LogMaker.getLogger(getClass().getPackage().getName());
+		log = LogUtil.getLogger(getClass().getPackage().getName());
 	}
 	
 	public AbstractBlockUIView getUI(BlockStyle style,ProcessBlockView block) {   

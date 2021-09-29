@@ -36,8 +36,6 @@ import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.ils.blt.designer.workspace.WorkspaceRepainter;
 import com.ils.common.component.DiagramViewer;
 import com.ils.common.component.recmap.RecommendationMap;
-import com.ils.common.log.ILSLogger;
-import com.ils.common.log.LogMaker;
 import com.inductiveautomation.factorypmi.designer.palette.model.DefaultPaletteItemGroup;
 import com.inductiveautomation.ignition.client.util.action.StateChangeAction;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
@@ -46,6 +44,8 @@ import com.inductiveautomation.ignition.common.licensing.LicenseState;
 import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.script.ScriptManager;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
 import com.inductiveautomation.ignition.designer.gui.IconUtil;
 import com.inductiveautomation.ignition.designer.model.AbstractDesignerModuleHook;
@@ -61,7 +61,6 @@ import com.inductiveautomation.vision.api.designer.palette.Palette;
 import com.inductiveautomation.vision.api.designer.palette.PaletteItemGroup;
 import com.jidesoft.docking.DockingManager;
 
-import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 
 public class BLTDesignerHook extends AbstractDesignerModuleHook  {
@@ -74,7 +73,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 
 	private GeneralPurposeTreeNode rootNode = null;
 	private DesignerContext context = null;
-	private final ILSLogger log;
+	private final LoggerEx log;
 	private DiagramWorkspace workspace = null;
 	private ApplicationRequestHandler appRequestHandler = null;
 	private NodeStatusManager nodeStatusManager = null;
@@ -88,7 +87,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	}
 	
 	public BLTDesignerHook() {
-		log = LogMaker.getLogger(this);
+		log = LogUtil.getLogger(getClass().getPackage().getName());
 	}
 	
 	
@@ -209,7 +208,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		// Query the gateway for latest notifications from all blocks
 		appRequestHandler.triggerStatusNotifications();
 		
-		LogMaker.getLogger(Logger.ROOT_LOGGER_NAME);
+		LogUtil.getLogger(Logger.ROOT_LOGGER_NAME);
 	}
 	
 	public NodeStatusManager getNavTreeStatusManager() { return nodeStatusManager; }

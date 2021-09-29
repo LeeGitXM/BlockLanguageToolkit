@@ -69,8 +69,6 @@ import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.ils.common.GeneralPurposeDataContainer;
-import com.ils.common.log.ILSLogger;
-import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayException;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.client.util.action.BaseAction;
@@ -82,6 +80,8 @@ import com.inductiveautomation.ignition.common.model.ApplicationScope;
 import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.ProjectChangeListener;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.IgnitionDesigner;
 import com.inductiveautomation.ignition.designer.UndoManager;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
@@ -107,7 +107,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	public static final String BLT_COPY_OPERATION = "BLTCOPY";
 	private static final int OFFSET = 100;
 	private static final String PREFIX = BLTProperties.BUNDLE_PREFIX;  // Required for some defaults
-	private final ILSLogger logger = LogMaker.getLogger(this);
+	private final LoggerEx logger = LogUtil.getLogger(getClass().getPackage().getName());
 	private boolean dirty = false;
 	private DiagramState state = DiagramState.ACTIVE;  // Used for Applications and Families
 	private final DeleteNodeAction deleteNodeAction;

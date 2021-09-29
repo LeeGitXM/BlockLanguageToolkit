@@ -15,11 +15,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.serializable.SerializableApplication;
 import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.SortedListModel;
-import com.ils.common.log.ILSLogger;
-import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayException;
 import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.IgnitionDesigner;
 import com.inductiveautomation.ignition.designer.gateway.DTGatewayInterface;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
@@ -46,12 +46,12 @@ public class ApplicationPropertyEditor extends AbstractPropertyEditor {
 	private final SerializableApplication application;
 	private final GeneralPurposeDataContainer model;           // Data container operated on by panels
 	private final ApplicationHomePane homePanel;
-	private final ILSLogger log;
+	private final LoggerEx log;
 	private final SortedListModel<String> outputKeys;
 
 	public ApplicationPropertyEditor(DesignerContext ctx, SerializableApplication app, ProjectResource res) {
 		super(res);
-		this.log = LogMaker.getLogger(this);
+		this.log = LogUtil.getLogger(getClass().getPackage().getName());
 		log.infof("%s: Application: %s", CLSS, app.toString());
 		log.infof("%s: Resource: %s", CLSS, res.toString());
 		this.context = ctx;

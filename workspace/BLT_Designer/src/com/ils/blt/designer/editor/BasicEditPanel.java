@@ -11,8 +11,8 @@ import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.JTextField;
 
-import com.ils.common.log.ILSLogger;
-import com.ils.common.log.LogMaker;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 
 /**
  * The basic edit panel contains a collection of useful methods and constants 
@@ -20,13 +20,13 @@ import com.ils.common.log.LogMaker;
  */
 public class BasicEditPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
-	protected final ILSLogger log;
+	protected final LoggerEx log;
 	protected final AbstractPropertyEditor editor;
 	
 	
 	public BasicEditPanel(AbstractPropertyEditor bpe) {
 		this.editor = bpe;
-		this.log = LogMaker.getLogger(this);
+		this.log = LogUtil.getLogger(getClass().getPackage().getName());
 	}
 	protected void setSelectedPane(int selection) {
 		editor.setSelectedPane(selection);

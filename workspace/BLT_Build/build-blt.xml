@@ -21,6 +21,8 @@
 	<property name="block.jar.name" value="block-definition.jar" />
 	<property name="block.bin.dir" value="${root.dir}/blt/workspace/Block/bin" />
 	<property name="block.src.dir" value="${root.dir}/blt/workspace/Block/src" />
+	<property name="blt.common.jar.name" value="blt-common.jar" />
+	<property name="blt.gateway.jar.name" value="blt-gateway.jar" />
 	<property name="ils.python.src.dir" value="${root.dir}/ils_python/ILS_Python/src" />
 	
 <!--   THE NEXT LINE IS ONLY NEEDED FOR XOM SAMPLES AND TESTING - CONSIDER HAVING A FLAG TO DISABLE COPY -->	
@@ -115,7 +117,14 @@
 		<delete dir="${basedir}/BLT_Build/bin" />
 		<delete file="${basedir}/BLT_Build/modules/${BLTModule.name}-module-unsigned.modl" />
 		<delete dir="${basedir}/BLT_Build/release" />
-		<delete dir="${basedir}/BLT_Build/temp_modl" />   
+		<delete dir="${basedir}/BLT_Build/temp_modl" /> 
+		<delete dir="${basedir}/BLT_Client/bin" />
+		<delete dir="${basedir}/BLT_Common/bin" /> 
+		<delete dir="${basedir}/BLT_Designer/bin" /> 
+		<delete dir="${basedir}/BLT_Gateway/bin" />
+		<delete file="${ignition.py.lib}/../../lib/core/common/${blt.common.jar.name}" />
+		<delete file="${ignition.py.lib}/../../lib/core/common/${blt.common.jar.name}.pack.gz" /> 
+		<delete file="${ignition.py.lib}/../../lib/core/gateway/${blt.gateway.jar.name}" /> 
 	</target>	
 	
 	

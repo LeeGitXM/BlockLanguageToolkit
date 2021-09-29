@@ -30,8 +30,6 @@ import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableConnection;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.designer.NotificationHandler;
-import com.ils.common.log.ILSLogger;
-import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
@@ -39,6 +37,8 @@ import com.inductiveautomation.ignition.common.model.values.Quality;
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 import com.inductiveautomation.ignition.common.sqltags.model.types.ExpressionType;
 import com.inductiveautomation.ignition.common.util.AbstractChangeable;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorPoint;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorType;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
@@ -51,7 +51,7 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
  * This class represents a diagram in the designer.
  */
 public class ProcessDiagramView extends AbstractChangeable implements BlockDiagramModel,NotificationChangeListener {
-	private static ILSLogger log = LogMaker.getLogger(ProcessDiagramView.class.getPackage().getName());
+	private static LoggerEx log = LogUtil.getLogger(ProcessDiagramView.class.getPackage().getName());
 	// Use TAG as the "source" identifier when registering for notifications from Gateway
 	private static final String CLSS = "ProcessDiagramView";
 	private final ApplicationRequestHandler appRequestHandler;
