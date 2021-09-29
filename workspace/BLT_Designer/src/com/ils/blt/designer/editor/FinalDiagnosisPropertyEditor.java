@@ -41,12 +41,12 @@ import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.ils.common.GeneralPurposeDataContainer;
-import com.ils.common.log.ILSLogger;
-import com.ils.common.log.LogMaker;
 import com.ils.common.ui.DualListBox;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
 import net.miginfocom.swing.MigLayout;
@@ -92,7 +92,7 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 	private final String provider;
 	private final String database;
 	private final String key;
-	protected final ILSLogger log;
+	protected final LoggerEx log;
 	protected static final Dimension EXPLANATIION_AREA_SIZE  = new Dimension(250,300);
 	protected static final Dimension TEXT_RECOMMENDATION_AREA_SIZE  = new Dimension(250,300);
 	protected static final Dimension COMMENT_AREA_SIZE  = new Dimension(250,300);
@@ -119,7 +119,7 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		this.context = context;
         this.diagram = wrkspc.getActiveDiagram();
 		this.corePanel = new CorePropertyPanel(this,block);
-		this.log = LogMaker.getLogger(this);
+		this.log = LogUtil.getLogger(getClass().getPackageName());
 		this.database = requestHandler.getProductionDatabase();
 		this.provider = requestHandler.getProductionTagProvider();
 		this.setPreferredSize(new Dimension(DIALOG_WIDTH,DIALOG_HEIGHT));

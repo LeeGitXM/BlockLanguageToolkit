@@ -8,12 +8,12 @@ import java.util.Map;
 import java.util.Optional;
 
 import com.ils.blt.common.BLTProperties;
-import com.ils.common.log.ILSLogger;
-import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.RuntimeProject;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.project.DesignableProject;
 import com.inductiveautomation.ignition.designer.project.ResourceNotFoundException;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
@@ -25,7 +25,7 @@ import com.inductiveautomation.ignition.gateway.model.GatewayContext;
  */
 public class ProcessNodeSynchronizer {
     private final static String CLSS = "ProcessNodeSynchronizer";
-    private final ILSLogger log;
+    private final LoggerEx log;
     private final ModelManager modelManager;
     private final List<ProjectResource> resourcesDelete;
     private Map<String,ProjectResource> resourceMap;
@@ -33,7 +33,7 @@ public class ProcessNodeSynchronizer {
      * Constructor.
      */
     public ProcessNodeSynchronizer() {
-    	this.log = LogMaker.getLogger(this);
+    	this.log = LogUtil.getLogger(getClass().getPackageName());
     	this.modelManager = BlockExecutionController.getInstance().getDelegate();
     	this.resourcesDelete = new ArrayList<>();
     	this.resourceMap = createResourceMap(modelManager.getContext());

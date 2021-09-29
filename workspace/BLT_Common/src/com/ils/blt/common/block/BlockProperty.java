@@ -13,8 +13,8 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ils.common.log.ILSLogger;
-import com.ils.common.log.LogMaker;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 
 
 
@@ -29,7 +29,7 @@ public class BlockProperty  {
 	private static final long serialVersionUID = -8851989629221127947L;
 	private static final String CLSS = "BlockProperty";
 	private static final String COMMA = ",";
-	private static ILSLogger log = LogMaker.getLogger(PalettePrototype.class.getPackage().getName());
+	private static LoggerEx log = LogUtil.getLogger(PalettePrototype.class.getPackage().getName());
 	private boolean editable;
 	private PropertyType type = PropertyType.STRING;
 	private String binding = "";

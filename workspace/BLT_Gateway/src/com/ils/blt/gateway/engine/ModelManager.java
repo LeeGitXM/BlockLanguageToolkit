@@ -23,13 +23,10 @@ import com.ils.blt.common.script.Script;
 import com.ils.blt.common.script.ScriptConstants;
 import com.ils.blt.common.script.ScriptExtensionManager;
 import com.ils.blt.common.serializable.SerializableApplication;
-import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.SerializableFamily;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
-import com.ils.common.log.ILSLogger;
-import com.ils.common.log.LogMaker;
 import com.ils.common.persistence.ToolkitProperties;
 import com.ils.common.persistence.ToolkitRecordHandler;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
@@ -40,6 +37,8 @@ import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 import com.inductiveautomation.ignition.common.project.resource.ResourcePath;
 import com.inductiveautomation.ignition.common.project.resource.ResourceType;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 
 /**
@@ -60,7 +59,7 @@ public class ModelManager implements ProjectListener  {
 	private static final String CLSS = "ModelManager";
 	private static final boolean DEBUG = true;
 	private final GatewayContext context;
-	private final ILSLogger log;
+	private final LoggerEx log;
 	private RootNode root;
 	private final Map<String,ProcessNode> nodesByResourceId; 
 	private final Map<ResourcePath,ProcessNode> orphansByResourcePath;
@@ -78,7 +77,7 @@ public class ModelManager implements ProjectListener  {
 	 */
 	public ModelManager(GatewayContext ctx) { 
 		this.context = ctx;
-		this.log = LogMaker.getLogger(getClass().getPackage().getName());
+		this.log = LogUtil.getLogger(getClass().getPackage().getName());
 		this.toolkitHandler = new ToolkitRecordHandler(context);
 		
 		nodesByResourceId = new HashMap<>();

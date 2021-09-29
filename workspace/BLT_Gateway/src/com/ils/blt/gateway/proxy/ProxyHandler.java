@@ -32,11 +32,11 @@ import com.ils.blt.common.connection.ConnectionType;
 import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.JavaToPython;
 import com.ils.common.PythonToJava;
-import com.ils.common.log.ILSLogger;
-import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 import com.inductiveautomation.ignition.common.script.ScriptManager;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 
 /**
@@ -53,7 +53,7 @@ import com.inductiveautomation.ignition.gateway.model.GatewayContext;
  */
 public class ProxyHandler   {
 	private final static String CLSS = "ProxyHandler";
-	private final ILSLogger log;
+	private final LoggerEx log;
 	private GatewayContext context = null;
 	private final PythonToJava toJavaTranslator;
 	private final JavaToPython toPythonTranslator;
@@ -79,7 +79,7 @@ public class ProxyHandler   {
 	 * Initialize with instances of the classes to be controlled.
 	 */
 	private ProxyHandler() {
-		log = LogMaker.getLogger(getClass().getPackage().getName());
+		log = LogUtil.getLogger(getClass().getPackage().getName());
 		toJavaTranslator = new PythonToJava();
 		toPythonTranslator = new JavaToPython();
 		// Create an instance of each callback method

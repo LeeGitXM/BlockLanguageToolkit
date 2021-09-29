@@ -24,12 +24,12 @@ import com.ils.blt.common.serializable.SerializableFamily;
 import com.ils.blt.designer.NotificationHandler;
 import com.ils.blt.designer.ResourceUpdateManager;
 import com.ils.common.GeneralPurposeDataContainer;
-import com.ils.common.log.ILSLogger;
-import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.common.execution.ExecutionManager;
 import com.inductiveautomation.ignition.common.execution.impl.BasicExecutionEngine;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
 import net.miginfocom.swing.MigLayout;
@@ -47,7 +47,7 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor implements Noti
 	protected final DesignerContext context;
 	private final SerializableFamily family;
 	private final String key;
-	protected final ILSLogger log;
+	protected final LoggerEx log;
 	private final String provider;
 	private final String database;
 	private final GeneralPurposeDataContainer model;           // Data container operated on by panels
@@ -67,7 +67,7 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor implements Noti
 		this.key = NotificationKey.keyForAuxData(family.getResourcePath().getPath().toString());
 		this.executionEngine = new BasicExecutionEngine(1,CLSS);
 		this.requestHandler = new ApplicationRequestHandler();
-		this.log = LogMaker.getLogger(this);
+		this.log = LogUtil.getLogger(getClass().getPackageName());
 		this.database = requestHandler.getProductionDatabase();
 		this.provider = requestHandler.getProductionTagProvider();
         initialize();

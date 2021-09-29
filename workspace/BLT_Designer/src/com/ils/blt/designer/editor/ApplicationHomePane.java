@@ -31,9 +31,9 @@ import com.ils.blt.common.script.ScriptExtensionManager;
 import com.ils.blt.common.serializable.SerializableApplication;
 import com.ils.blt.designer.NotificationHandler;
 import com.ils.common.GeneralPurposeDataContainer;
-import com.ils.common.log.ILSLogger;
-import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 
 import net.miginfocom.swing.MigLayout;
 
@@ -59,7 +59,7 @@ public class ApplicationHomePane extends JPanel implements  NotificationChangeLi
 	private static Icon nextIcon = new ImageIcon(ApplicationHomePane.class.getResource("/images/arrow_right_green.png"));
 	private final JButton nextButton = new JButton("Outputs", nextIcon);;
 	private final UtilityFunctions fcns = new UtilityFunctions();
-	protected final ILSLogger log;
+	protected final LoggerEx log;
 	private final String provider;
 
 	// Don't add an Apply button because then I need to manage getting the id's of any quant outputs they create 
@@ -71,7 +71,7 @@ public class ApplicationHomePane extends JPanel implements  NotificationChangeLi
 		this.editor = editor;
 		this.requestHandler = new ApplicationRequestHandler();
 		this.model = editor.getModel();
-		this.log = LogMaker.getLogger(this);
+		this.log = LogUtil.getLogger(getClass().getPackageName());
 		this.provider = requestHandler.getProductionTagProvider();
 		this.key = NotificationKey.keyForAuxData(editor.getApplication().getResourcePath().getPath().toString());
 		this.setPreferredSize(ApplicationPropertyEditor.PANEL_SIZE);

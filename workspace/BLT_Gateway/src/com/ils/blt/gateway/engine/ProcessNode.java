@@ -13,11 +13,11 @@ import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.common.GeneralPurposeDataContainer;
-import com.ils.common.log.ILSLogger;
-import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.common.StringPath;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 import com.inductiveautomation.ignition.common.project.resource.ResourcePath;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 
 /**
  * A process node is a container of type: application, family, folder, or diagram.
@@ -28,7 +28,7 @@ public class ProcessNode implements Serializable {
 	private static final long serialVersionUID = 6280701183405134254L;
 	private final static String PATH_SEPARATOR = ":";
 	private final Map<ProjectResourceId,ProcessNode> children;   // Key by resourceId
-	protected final ILSLogger log;
+	protected final LoggerEx log;
 	private String name;
 	protected final ApplicationRequestHandler requestHandler;
 	protected ResourcePath parent;
@@ -52,7 +52,7 @@ public class ProcessNode implements Serializable {
 		this.resourceId = requestHandler.createResourceId(projectName, path.toString(),type);
 		this.auxiliaryData = new GeneralPurposeDataContainer();
 		this.children = new HashMap<>();
-		this.log = LogMaker.getLogger(this);
+		this.log = LogUtil.getLogger(getClass().getPackageName());
 	}
 	
 	/**
@@ -68,7 +68,7 @@ public class ProcessNode implements Serializable {
 		this.name = nam;
 		this.auxiliaryData = new GeneralPurposeDataContainer();
 		this.children = new HashMap<>();
-		this.log = LogMaker.getLogger(this);
+		this.log = LogUtil.getLogger(getClass().getPackageName());
 	}
 
 	public void addChild(ProcessNode child)    { 

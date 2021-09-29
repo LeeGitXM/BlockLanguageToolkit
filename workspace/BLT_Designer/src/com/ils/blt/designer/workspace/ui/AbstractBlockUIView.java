@@ -34,9 +34,9 @@ import com.ils.blt.designer.workspace.BasicAnchorPoint;
 import com.ils.blt.designer.workspace.ProcessAnchorDescriptor;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.WorkspaceConstants;
-import com.ils.common.log.ILSLogger;
-import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockComponent;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorPoint;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorType;
@@ -52,7 +52,7 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorT
 @SuppressWarnings("serial")
 public abstract class AbstractBlockUIView extends JComponent implements BlockViewUI,ChangeListener {
 	private static final String CLSS = "AbstractBlockUIView";
-	protected final ILSLogger log = LogMaker.getLogger(getClass().getPackage().getName());
+	protected final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
 	protected ProcessBlockView block = null;
 	private final List<AnchorPoint> anchorPoints;  // Entries are BasicAnchorPoint
 	protected BlockComponent blockComponent = null;

@@ -6,10 +6,10 @@ import java.util.Iterator;
 import java.util.List;
 
 import com.ils.blt.common.BLTProperties;
-import com.ils.common.log.ILSLogger;
-import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.common.gui.progress.TaskProgressListener;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.findreplace.SearchObject;
 import com.inductiveautomation.ignition.designer.findreplace.SearchObjectAggregator;
 import com.inductiveautomation.ignition.designer.findreplace.SearchProvider;
@@ -22,12 +22,12 @@ public class BLTSearchProvider implements SearchProvider {
 	public final static int SEARCH_DIAGRAM = 4;
 	public final static int SEARCH_BLOCK = 8;
 	public final static int SEARCH_PROPERTY = 16;
-	private final ILSLogger log;
+	private final LoggerEx log;
 	private final DesignerContext context;
 	
 	public BLTSearchProvider(DesignerContext ctx ) {
 		this.context = ctx;
-		this.log = LogMaker.getLogger(this);
+		this.log = LogUtil.getLogger(getClass().getPackageName());
 	}
 
 	@Override

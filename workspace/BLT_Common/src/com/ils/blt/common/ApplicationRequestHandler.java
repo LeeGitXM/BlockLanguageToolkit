@@ -20,13 +20,13 @@ import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.common.GeneralPurposeDataContainer;
-import com.ils.common.log.ILSLogger;
-import com.ils.common.log.LogMaker;
 import com.ils.common.persistence.ToolkitProperties;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 import com.inductiveautomation.ignition.common.project.resource.ResourceType;
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 
 
 /**
@@ -39,14 +39,14 @@ import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
  */
 public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	private final static String CLSS = "ApplicationRequestHandler";
-	private final ILSLogger log;
+	private final LoggerEx log;
 
 	/**
 	 * Constructor adds common attributes that are needed to generate unique keys to identify
 	 * blocks and connectors.
 	 */
 	public ApplicationRequestHandler()  {
-		log = LogMaker.getLogger(this);
+		log = LogUtil.getLogger(getClass().getPackageName());
 	}
 
 	@Override

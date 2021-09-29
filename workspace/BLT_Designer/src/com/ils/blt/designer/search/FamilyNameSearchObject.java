@@ -7,11 +7,11 @@ import java.util.ResourceBundle;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 
-import com.ils.common.log.ILSLogger;
-import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.findreplace.SearchObject;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 /**
@@ -21,7 +21,7 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
  */
 public class FamilyNameSearchObject implements SearchObject {
 	private final String TAG = "FamilyNameSearchObject";
-	private final ILSLogger log;
+	private final LoggerEx log;
 	private static final Dimension IMAGE_SIZE = new Dimension(18,18);
 	private final String applicationName;
 	private final String familyName;
@@ -35,7 +35,7 @@ public class FamilyNameSearchObject implements SearchObject {
 		this.familyName = fam;
 		this.parentId = parentUUID;
 		this.rb = ResourceBundle.getBundle("com.ils.blt.designer.designer");  // designer.properties
-		this.log = LogMaker.getLogger(this);
+		this.log = LogUtil.getLogger(getClass().getPackageName());
 	}
 	@Override
 	public Icon getIcon() {

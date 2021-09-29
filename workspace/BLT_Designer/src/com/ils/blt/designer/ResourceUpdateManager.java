@@ -8,13 +8,13 @@ import java.util.List;
 
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
-import com.ils.common.log.ILSLogger;
-import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayInterface;
 import com.inductiveautomation.ignition.common.project.ChangeOperation;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceBuilder;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.project.ResourceNotFoundException;
 
@@ -29,7 +29,7 @@ import com.inductiveautomation.ignition.designer.project.ResourceNotFoundExcepti
  */
 public class ResourceUpdateManager implements Runnable {
 	private static final String CLSS = "ResourceUpdateManager";
-	private final ILSLogger log;
+	private final LoggerEx log;
 	private static final boolean DEBUG = true;
 	private static DesignerContext context = null;
 	private static NodeStatusManager statusManager = null; 
@@ -39,7 +39,7 @@ public class ResourceUpdateManager implements Runnable {
 	private final ApplicationRequestHandler requestHandler;
 	
 	public ResourceUpdateManager(ProjectResource pr,byte[] contents) {
-		this.log = LogMaker.getLogger(this);
+		this.log = LogUtil.getLogger(getClass().getPackageName());
 		if(DEBUG) log.infof("%s.run: Creating a new ResourceUpdateManager ...", CLSS);;
 		this.resource = pr;
 		this.bytes = contents;

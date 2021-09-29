@@ -13,12 +13,12 @@ import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.notification.NotificationChangeListener;
 import com.ils.blt.common.notification.NotificationKey;
 import com.ils.blt.designer.workspace.WorkspaceRepainter;
-import com.ils.common.log.ILSLogger;
-import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
 import com.inductiveautomation.ignition.client.gateway_interface.PushNotificationListener;
 import com.inductiveautomation.ignition.common.gateway.messages.PushNotification;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 
 
 /**
@@ -35,7 +35,7 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
  */
 public class NotificationHandler implements PushNotificationListener {
 	private static String CLSS = "NotificationHandler";
-	private final ILSLogger log;
+	private final LoggerEx log;
 	private final boolean DEBUG = false;
 	private final Map<String,Map<String,NotificationChangeListener>> changeListenerMap;
 	private final Map<String,Object> payloadMap;        // Keyed by the message type.
@@ -46,7 +46,7 @@ public class NotificationHandler implements PushNotificationListener {
 	 * The handler, make this private per Singleton pattern ...
 	 */
 	private NotificationHandler() {
-		log = LogMaker.getLogger(this);
+		log = LogUtil.getLogger(getClass().getPackageName());
 		// Register as listener for notifications
 		GatewayConnectionManager.getInstance().addPushNotificationListener(this);
 		// The first string is the key that we're listening on. Then we get a map

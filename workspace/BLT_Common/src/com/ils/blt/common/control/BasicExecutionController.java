@@ -17,10 +17,10 @@ import com.ils.blt.common.notification.BroadcastNotification;
 import com.ils.blt.common.notification.ConnectionPostNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
-import com.ils.common.log.ILSLogger;
-import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 
 /**
  *  This is a rudimentary implementation of the Execution Controller interface. 
@@ -30,7 +30,7 @@ import com.inductiveautomation.ignition.common.project.resource.ProjectResourceI
 public class BasicExecutionController implements ExecutionController  {
 	protected static final String CLSS = "BasicExecutionController";
 
-	protected static final ILSLogger log = LogMaker.getLogger(BasicExecutionController.class.getPackage().getName());
+	protected static final LoggerEx log = LogUtil.getLogger(BasicExecutionController.class.getPackage().getName());
 
 	public void acceptBroadcastNotification(BroadcastNotification note){
 		log.warnf("%s.acceptBroadcastNotification: WARNING: Executed from stub class",CLSS);

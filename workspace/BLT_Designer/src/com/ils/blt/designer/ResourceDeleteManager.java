@@ -6,12 +6,12 @@ import java.util.List;
 import java.util.Optional;
 
 import com.ils.blt.common.BLTProperties;
-import com.ils.common.log.ILSLogger;
-import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayInterface;
 import com.inductiveautomation.ignition.common.project.ChangeOperation;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceNavTreeNode;
 import com.inductiveautomation.ignition.designer.project.ResourceNotFoundException;
@@ -24,7 +24,7 @@ import com.inductiveautomation.ignition.designer.project.ResourceNotFoundExcepti
  */
 public class ResourceDeleteManager implements Runnable {
 	private static final String CLSS = "ResourceDeleteManager";
-	private final ILSLogger log;
+	private final LoggerEx log;
 	private static DesignerContext context = null;
 	private static NodeStatusManager statusManager = null;
 	private final AbstractResourceNavTreeNode root;   // The highest node of the tree to delete.
@@ -32,7 +32,7 @@ public class ResourceDeleteManager implements Runnable {
 	private final ThreadCounter counter = ThreadCounter.getInstance();
 
 	public ResourceDeleteManager(AbstractResourceNavTreeNode treeNode) {
-		this.log = LogMaker.getLogger(this);
+		this.log = LogUtil.getLogger(getClass().getPackageName());
 		this.root = treeNode;
 		this.resources = new ArrayList<>();
 		this.counter.incrementCount();

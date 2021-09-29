@@ -30,8 +30,8 @@ import com.ils.blt.common.script.ScriptConstants;
 import com.ils.blt.common.script.ScriptExtensionManager;
 import com.ils.blt.common.serializable.SerializableApplication;
 import com.ils.common.GeneralPurposeDataContainer;
-import com.ils.common.log.ILSLogger;
-import com.ils.common.log.LogMaker;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 
 import net.miginfocom.swing.MigLayout;
 
@@ -47,7 +47,7 @@ public class OutputEditorPane extends JPanel implements ActionListener  {
 	private final JPanel mainPanel;
 	private final GeneralPurposeDataContainer model;
 	private Map<String,String> outputMap;  // Parameters for current output
-	private final ILSLogger log;
+	private final LoggerEx log;
 	final JTextField nameField = new JTextField();
 	final JTextField tagField = new JTextField();
 	final JFormattedTextField mostNegativeIncrementField = new JFormattedTextField(NumberFormat.getInstance());
@@ -71,7 +71,7 @@ public class OutputEditorPane extends JPanel implements ActionListener  {
 	public OutputEditorPane(ApplicationPropertyEditor editor) {
 		super(new BorderLayout(20, 30));
 		this.editor = editor;
-		this.log = LogMaker.getLogger(this);
+		this.log = LogUtil.getLogger(getClass().getPackageName());
 		this.model = editor.getModel();
 		this.setPreferredSize(editor.PANEL_SIZE);
 		

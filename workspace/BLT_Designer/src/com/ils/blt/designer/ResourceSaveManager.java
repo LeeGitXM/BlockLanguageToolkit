@@ -13,12 +13,12 @@ import com.ils.blt.common.BLTProperties;
 import com.ils.blt.designer.navtree.DiagramTreeNode;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
-import com.ils.common.log.ILSLogger;
-import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayInterface;
 import com.inductiveautomation.ignition.common.project.ChangeOperation;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignableContainer;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceNavTreeNode;
@@ -36,7 +36,7 @@ import com.inductiveautomation.ignition.designer.project.ResourceNotFoundExcepti
  */
 public class ResourceSaveManager implements Runnable {
 	private static final String CLSS = "ResourceSaveManager";
-	private final ILSLogger log;
+	private final LoggerEx log;
 	private static final boolean DEBUG = true;
 	private static DesignerContext context = null;
 	private final AbstractResourceNavTreeNode root;	      // Root of our save.
@@ -47,7 +47,7 @@ public class ResourceSaveManager implements Runnable {
 	private List<ChangeOperation> ops = null;
 	
 	public ResourceSaveManager(DiagramWorkspace wksp,AbstractResourceNavTreeNode node) {
-		this.log = LogMaker.getLogger(this);
+		this.log = LogUtil.getLogger(getClass().getPackageName());
 		this.root = node;
 		this.workspace = wksp;
 		this.counter.incrementCount();

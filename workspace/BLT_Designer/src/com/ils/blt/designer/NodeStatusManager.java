@@ -15,10 +15,10 @@ import com.ils.blt.common.notification.NotificationChangeListener;
 import com.ils.blt.common.notification.NotificationKey;
 import com.ils.blt.designer.navtree.GeneralPurposeTreeNode;
 import com.ils.blt.designer.navtree.NavTreeNodeInterface;
-import com.ils.common.log.ILSLogger;
-import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractNavTreeNode;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceNavTreeNode;
@@ -45,7 +45,7 @@ import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceN
  */
 public class NodeStatusManager implements NotificationChangeListener   {
 	private static String CLSS = "NodeStatusManager";
-	private final ILSLogger log;
+	private final LoggerEx log;
 	public final DesignerContext context;
 	private final ApplicationRequestHandler handler;
 	private final NotificationHandler notificationHandler;
@@ -58,7 +58,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 	 * The handler. There should be only one - owned by the hook instance
 	 */
 	public NodeStatusManager(DesignerContext ctx,ApplicationRequestHandler h) {
-		this.log = LogMaker.getLogger(getClass().getPackage().getName());
+		this.log = LogUtil.getLogger(getClass().getPackage().getName());
 		this.context = ctx;
 		this.handler = h;
 		this.notificationHandler = NotificationHandler.getInstance();

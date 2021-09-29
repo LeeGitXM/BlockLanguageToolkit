@@ -4,11 +4,11 @@
 package com.ils.blt.common;
 
 import com.ils.blt.common.block.TruthValue;
-import com.ils.common.log.ILSLogger;
-import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualityCode;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 
 
 /**
@@ -17,12 +17,12 @@ import com.inductiveautomation.ignition.common.model.values.QualityCode;
  */
 public class UtilityFunctions  {
 	private final static String TAG = "UtilityFunctions";
-	private final ILSLogger log;
+	private final LoggerEx log;
 	/**
 	 * No-argument constructor. 
 	 */
 	public UtilityFunctions() {
-		log = LogMaker.getLogger(this);
+		log = LogUtil.getLogger(getClass().getPackageName());
 	}
 	
 	

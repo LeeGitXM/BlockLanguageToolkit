@@ -69,8 +69,6 @@ import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.ils.common.GeneralPurposeDataContainer;
-import com.ils.common.log.ILSLogger;
-import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.client.util.action.BaseAction;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
@@ -85,6 +83,8 @@ import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceBuilder;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 import com.inductiveautomation.ignition.common.project.resource.ResourcePath;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.UndoManager;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
 import com.inductiveautomation.ignition.designer.gui.IconUtil;
@@ -111,7 +111,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	public static final String BLT_COPY_OPERATION = "BLTCOPY";
 	private static final int OFFSET = 100;
 	private static final String PREFIX = BLTProperties.BUNDLE_PREFIX;  // Required for some defaults
-	private final ILSLogger logger = LogMaker.getLogger(this);
+	private final LoggerEx logger = LogUtil.getLogger(getClass().getPackageName());
 	private boolean dirty = false;
 	private DiagramState state = DiagramState.ACTIVE;  // Used for Applications and Families
 	private final DeleteNodeAction deleteNodeAction;
@@ -1454,15 +1454,15 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			
 			}
 			catch(JsonParseException jpe) {
-				logger.warn("%s: paste: Parse exception of paste object (%s)",CLSS,jpe.getMessage());
+				logger.warnf("%s: paste: Parse exception of paste object (%s)",CLSS,jpe.getMessage());
 				return;
 			}
 			catch(JsonMappingException jme) {
-				logger.warn("%s: paste: Json mapping exception of paste object (%s)",CLSS,jme.getMessage());
+				logger.warnf("%s: paste: Json mapping exception of paste object (%s)",CLSS,jme.getMessage());
 				return;
 			}
 			catch(IOException ioe) {
-				logger.warn("%s: paste: IO exception of paste object (%s)",CLSS,ioe.getMessage());
+				logger.warnf("%s: paste: IO exception of paste object (%s)",CLSS,ioe.getMessage());
 				return;
 			}
 //			*Note cut disabled for now.  Just copy & delete	

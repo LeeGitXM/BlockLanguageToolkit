@@ -13,13 +13,13 @@ import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
-import com.ils.common.log.ILSLogger;
-import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayInterface;
 import com.inductiveautomation.ignition.common.project.ChangeOperation;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceBuilder;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignableContainer;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.project.ResourceNotFoundException;
@@ -36,7 +36,7 @@ import com.inductiveautomation.ignition.designer.project.ResourceNotFoundExcepti
  */
 public class DiagramUpdateManager implements Runnable {
 	private static final String CLSS = "DiagramUpdateManager";
-	private final ILSLogger log;
+	private final LoggerEx log;
 	private static final boolean DEBUG = true;
 	private static DesignerContext context = null; 
 	private ProjectResource res;
@@ -45,7 +45,7 @@ public class DiagramUpdateManager implements Runnable {
 	private final ApplicationRequestHandler requestHandler;
 
 public DiagramUpdateManager(DiagramWorkspace wksp,ProjectResource pr) {
-	this.log = LogMaker.getLogger(this);
+	this.log = LogUtil.getLogger(getClass().getPackageName());
 	if(DEBUG) log.infof("%s.run: Creating a new ResourceUpdateManager for DiagramWorkspace %s...", CLSS, wksp.getName());
 	this.workspace = wksp;
 	this.res = pr;

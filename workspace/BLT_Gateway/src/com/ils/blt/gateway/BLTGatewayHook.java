@@ -17,14 +17,14 @@ import com.ils.blt.gateway.engine.ModelManager;
 import com.ils.blt.gateway.persistence.ToolkitRecordListener;
 import com.ils.blt.gateway.proxy.ProxyHandler;
 import com.ils.blt.gateway.wicket.ToolkitStatusPanel;
-import com.ils.common.log.ILSLogger;
-import com.ils.common.log.LogMaker;
 import com.ils.common.persistence.ToolkitRecord;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.licensing.LicenseState;
 import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.RuntimeProject;
 import com.inductiveautomation.ignition.common.script.ScriptManager;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.gateway.clientcomm.ClientReqSession;
 import com.inductiveautomation.ignition.gateway.model.AbstractGatewayModuleHook;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
@@ -46,7 +46,7 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	private final String prefix = "BLT";
 	private transient GatewayRpcDispatcher dispatcher = null;
 	private transient ModelManager mmgr = null;
-	private final ILSLogger log;
+	private final LoggerEx log;
 	private ToolkitRecord record = null;
 	private final ControllerRequestHandler requestHandler;
 	private ToolkitRecordListener recordListener;
@@ -56,7 +56,7 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	}
 	
 	public BLTGatewayHook() {
-		log = LogMaker.getLogger(this);
+		log = LogUtil.getLogger(getClass().getPackageName());
 		log.info(CLSS+".Initializing BLT Gateway hook FOO");
 		BundleUtil.get().addBundle(prefix, getClass(), BUNDLE_NAME);
 		requestHandler = ControllerRequestHandler.getInstance();

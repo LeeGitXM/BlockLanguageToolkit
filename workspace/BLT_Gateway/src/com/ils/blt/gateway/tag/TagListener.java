@@ -28,8 +28,6 @@ import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.blt.gateway.engine.IncomingValueChangeTask;
 import com.ils.blt.gateway.engine.ProcessDiagram;
 import com.ils.blt.gateway.engine.PropertyChangeEvaluationTask;
-import com.ils.common.log.ILSLogger;
-import com.ils.common.log.LogMaker;
 import com.ils.common.tag.TagReader;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
@@ -40,6 +38,8 @@ import com.inductiveautomation.ignition.common.tags.model.TagPath;
 import com.inductiveautomation.ignition.common.tags.model.event.TagChangeEvent;
 import com.inductiveautomation.ignition.common.tags.model.event.TagChangeListener;
 import com.inductiveautomation.ignition.common.tags.paths.parser.TagPathParser;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 
 /**
@@ -55,7 +55,7 @@ public class TagListener implements TagChangeListener   {
 	private static final String CLSS = "TagListener";
 	private static int THREAD_POOL_SIZE = 10;   // Notification threads
 	private static final boolean DEBUG = false;
-	private final ILSLogger log;
+	private final LoggerEx log;
 	private GatewayContext context = null;
 	private final Map<String,List<BlockPropertyPair>> blockMap;  // Blocks-Properties keyed by tag path (case-insensitive)
 	private final Map<BlockPropertyPair,String>       tagMap;    // Tag paths keyed by Block-Property
@@ -69,7 +69,7 @@ public class TagListener implements TagChangeListener   {
 	 * Constructor: 
 	 */
 	public TagListener(BlockExecutionController ec) {
-		log = LogMaker.getLogger(this);
+		log = LogUtil.getLogger(getClass().getPackageName());
 		this.blockMap = new HashMap<String,List<BlockPropertyPair>>();
 		this.tagMap   = new HashMap<BlockPropertyPair,String>();
 		this.dateFormatter = new SimpleDateFormat(BlockConstants.TIMESTAMP_FORMAT);

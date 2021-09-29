@@ -51,8 +51,6 @@ import com.ils.blt.gateway.proxy.ProxyHandler;
 import com.ils.common.ClassList;
 import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.help.HelpRecordProxy;
-import com.ils.common.log.ILSLogger;
-import com.ils.common.log.LogMaker;
 import com.ils.common.persistence.ToolkitProperties;
 import com.ils.common.persistence.ToolkitRecordHandler;
 import com.ils.common.tag.TagFactory;
@@ -68,6 +66,8 @@ import com.inductiveautomation.ignition.common.project.resource.ProjectResourceB
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 import com.inductiveautomation.ignition.common.project.resource.ResourceType;
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.project.DesignableProject;
 import com.inductiveautomation.ignition.gateway.datasource.Datasource;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
@@ -85,7 +85,7 @@ import simpleorm.dataset.SQuery;
  */
 public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	private final static String CLSS = "ControllerRequestHandler";
-	private final ILSLogger log;
+	private final LoggerEx log;
 	private GatewayContext context = null;
 	private static ControllerRequestHandler instance = null;
 	private final BlockExecutionController controller = BlockExecutionController.getInstance();
@@ -99,7 +99,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * Initialize with instances of the classes to be controlled.
 	 */
 	private ControllerRequestHandler() {
-		log = LogMaker.getLogger(getClass().getPackage().getName());
+		log = LogUtil.getLogger(getClass().getPackage().getName());
 		pyHandler = new PythonRequestHandler();
 		fcns = new UtilityFunctions();
 	}

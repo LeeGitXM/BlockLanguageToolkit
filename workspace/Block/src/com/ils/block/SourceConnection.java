@@ -18,8 +18,8 @@ import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
-import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
+import com.inductiveautomation.ignition.common.util.LogUtil;
 
 /**
  * A Source Connection is a special class that receives values directly
@@ -34,7 +34,7 @@ public class SourceConnection extends Input implements ProcessBlock {
 	public SourceConnection() {
 		initialize();
 		initializePrototype();
-		log = LogMaker.getLogger(getClass().getPackage().getName()+".source");
+		log = LogUtil.getLogger(getClass().getPackage().getName()+".source");
 		log.debugf("Creating a SourceConnection for the palette");
 	}
 

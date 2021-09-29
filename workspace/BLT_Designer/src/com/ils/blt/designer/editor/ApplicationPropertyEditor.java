@@ -17,11 +17,11 @@ import com.ils.blt.common.serializable.SerializableApplication;
 import com.ils.blt.designer.ResourceUpdateManager;
 import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.SortedListModel;
-import com.ils.common.log.ILSLogger;
-import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.common.execution.ExecutionManager;
 import com.inductiveautomation.ignition.common.execution.impl.BasicExecutionEngine;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 /**
  * Display a dialog to configure an Application node
@@ -46,14 +46,14 @@ public class ApplicationPropertyEditor extends AbstractPropertyEditor {
 	private final SerializableApplication application;
 	private final GeneralPurposeDataContainer model;           // Data container operated on by panels
 	private final ApplicationHomePane homePanel;
-	private final ILSLogger log;
+	private final LoggerEx log;
 	private final SortedListModel<String> outputKeys;
 	private final ApplicationRequestHandler requestHandler;
 	private final ExecutionManager executionEngine;
 
 	public ApplicationPropertyEditor(DesignerContext ctx, SerializableApplication app, ProjectResource res) {
 		super(res);
-		this.log = LogMaker.getLogger(this);
+		this.log = LogUtil.getLogger(getClass().getPackageName());
 		this.context = ctx;
 		this.application = app;
 		this.model = application.getAuxiliaryData();

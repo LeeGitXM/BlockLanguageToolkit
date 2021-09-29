@@ -9,8 +9,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.PlacementHint;
 import com.ils.blt.common.connection.ConnectionType;
-import com.ils.common.log.ILSLogger;
-import com.ils.common.log.LogMaker;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 
 /**
  * Implement a plain-old-java-object representing an anchor point
@@ -24,7 +24,7 @@ public class SerializableAnchor {
 	private Object id = null;            // The port name
 	private String display = null;
 	private UUID parentId = null;
-	private ILSLogger log = LogMaker.getLogger(getClass().getPackage().getName());
+	private LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
 	private String annotation = "";
 	private ConnectionType connectionType = ConnectionType.ANY;
 	private PlacementHint hint = PlacementHint.UNSPECIFIED;

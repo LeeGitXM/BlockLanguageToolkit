@@ -24,10 +24,10 @@ import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.common.GeneralPurposeDataContainer;
-import com.ils.common.log.ILSLogger;
-import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 
 
@@ -44,7 +44,7 @@ import com.inductiveautomation.ignition.gateway.model.GatewayContext;
  */
 public class GatewayRpcDispatcher   {
 	private static String CLSS = "GatewayRpcDispatcher";
-	private final ILSLogger log;
+	private final LoggerEx log;
 	private final ControllerRequestHandler requestHandler;
 
 	/**
@@ -52,7 +52,7 @@ public class GatewayRpcDispatcher   {
 	 * @param ctx Gateway context
 	 */
 	public GatewayRpcDispatcher(GatewayContext ctx) {
-		this.log = LogMaker.getLogger(this);
+		this.log = LogUtil.getLogger(getClass().getPackageName());
 		this.requestHandler = ControllerRequestHandler.getInstance();
 	}
 	

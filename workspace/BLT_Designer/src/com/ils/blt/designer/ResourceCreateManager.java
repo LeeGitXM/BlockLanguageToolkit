@@ -3,12 +3,12 @@ package com.ils.blt.designer;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.ils.common.log.ILSLogger;
-import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayInterface;
 import com.inductiveautomation.ignition.common.project.ChangeOperation;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.project.ResourceNotFoundException;
 
@@ -23,7 +23,7 @@ import com.inductiveautomation.ignition.designer.project.ResourceNotFoundExcepti
  */
 public class ResourceCreateManager implements Runnable {
 	private static final String CLSS = "ResourceCreateManager";
-	private final ILSLogger log;
+	private final LoggerEx log;
 	private static DesignerContext context = null;
 	private final ProjectResource res;
 	private final ThreadCounter counter = ThreadCounter.getInstance();
@@ -31,7 +31,7 @@ public class ResourceCreateManager implements Runnable {
 	public ResourceCreateManager(ProjectResource pr) {
 		this.res = pr;
 		this.counter.incrementCount();
-		this.log = LogMaker.getLogger(this);
+		this.log = LogUtil.getLogger(getClass().getPackageName());
 	}
 	
 	/**

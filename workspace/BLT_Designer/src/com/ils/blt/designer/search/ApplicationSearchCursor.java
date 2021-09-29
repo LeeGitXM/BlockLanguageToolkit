@@ -2,9 +2,9 @@ package com.ils.blt.designer.search;
 
 import java.util.Enumeration;
 
-import com.ils.common.log.ILSLogger;
-import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.findreplace.SearchObjectCursor;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractNavTreeNode;
@@ -14,13 +14,13 @@ public class ApplicationSearchCursor extends SearchObjectCursor {
 	private final String CLSS = "DiagramSearchCursor";
 	private final DesignerContext context;
 	private ProjectResource application; 
-	private final ILSLogger log;
+	private final LoggerEx log;
 	private int index = 0;
 	
 	public ApplicationSearchCursor(DesignerContext ctx,ProjectResource res) {
 		this.context = ctx;
 		this.application = res;
-		this.log = LogMaker.getLogger(this);
+		this.log = LogUtil.getLogger(getClass().getPackageName());
 		this.index = 0;
 	}
 	@Override

@@ -1,9 +1,9 @@
 package com.ils.blt.designer.search;
 
 import com.ils.blt.common.ApplicationRequestHandler;
-import com.ils.common.log.ILSLogger;
-import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.findreplace.SearchObjectCursor;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
@@ -13,14 +13,14 @@ public class FamilySearchCursor extends SearchObjectCursor {
 	private final String CLSS = "FamilySearchCursor";
 	private final DesignerContext context;
 	private ProjectResource family; 
-	private final ILSLogger log;
+	private final LoggerEx log;
 
 	private int index = 0;
 	
 	public FamilySearchCursor(DesignerContext ctx,ProjectResource res) {
 		this.context = ctx;
 		this.family = res;
-		this.log = LogMaker.getLogger(this);
+		this.log = LogUtil.getLogger(getClass().getPackageName());
 		this.index = 0;
 	}
 	@Override

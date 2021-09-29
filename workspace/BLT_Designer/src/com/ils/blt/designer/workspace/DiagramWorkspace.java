@@ -89,8 +89,6 @@ import com.ils.blt.designer.config.ForceValueSettingsDialog;
 import com.ils.blt.designer.editor.BlockEditConstants;
 import com.ils.blt.designer.editor.PropertyEditorFrame;
 import com.ils.blt.designer.navtree.DiagramTreeNode;
-import com.ils.common.log.ILSLogger;
-import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.client.designable.DesignableContainer;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.client.tags.model.ClientTagManager;
@@ -113,6 +111,8 @@ import com.inductiveautomation.ignition.common.tags.config.TagConfigurationModel
 import com.inductiveautomation.ignition.common.tags.config.properties.WellKnownTagProps;
 import com.inductiveautomation.ignition.common.tags.config.types.TagObjectType;
 import com.inductiveautomation.ignition.common.tags.model.TagPath;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.common.xmlserialization.SerializationException;
 import com.inductiveautomation.ignition.designer.UndoManager;
 import com.inductiveautomation.ignition.designer.blockandconnector.AbstractBlockWorkspace;
@@ -173,7 +173,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	private final ExecutionManager executionEngine;
 	private final NodeStatusManager statusManager;
 	private Collection<ResourceWorkspaceFrame> frames;
-	private ILSLogger log = LogMaker.getLogger(this);
+	private LoggerEx log = LogUtil.getLogger(getClass().getPackageName());
 	private final PropertyEditorFrame propertyEditorFrame;
 	private PopupListener rightClickHandler;
 	private JPopupMenu zoomPopup;

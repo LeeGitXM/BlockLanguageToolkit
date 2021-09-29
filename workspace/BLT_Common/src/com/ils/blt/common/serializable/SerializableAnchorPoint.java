@@ -5,8 +5,8 @@ import java.awt.Rectangle;
 import java.util.UUID;
 
 import com.ils.blt.common.block.AnchorDirection;
-import com.ils.common.log.ILSLogger;
-import com.ils.common.log.LogMaker;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 
 
 /**
@@ -34,7 +34,7 @@ public class SerializableAnchorPoint {
 	private int hotSpotWidth = 0;
 	private Object lastValue = null;
 	private String lastQuality = null;    // Name of the most recent quality value
-	private static ILSLogger log = LogMaker.getLogger(SerializableAnchorPoint.class.getPackage().getName());
+	private static LoggerEx log = LogUtil.getLogger(SerializableAnchorPoint.class.getPackage().getName());
 	
 	public SerializableAnchorPoint() {
 	}

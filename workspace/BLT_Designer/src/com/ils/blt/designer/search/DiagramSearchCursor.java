@@ -12,10 +12,10 @@ import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
-import com.ils.common.log.ILSLogger;
-import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
 import com.inductiveautomation.ignition.designer.findreplace.SearchObjectCursor;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
@@ -24,7 +24,7 @@ public class DiagramSearchCursor extends SearchObjectCursor {
 	private final String TAG = "DiagramSearchCursor";
 	private final DesignerContext context;
 	private ProcessDiagramView diagram; 
-	private final ILSLogger log;
+	private final LoggerEx log;
 	private final ProjectResource resource;
 	private final boolean searchDiagrams;
 	private final boolean searchBlocks;
@@ -38,7 +38,7 @@ public class DiagramSearchCursor extends SearchObjectCursor {
 		this.searchKey = key;
 		this.searchDiagrams = (key&BLTSearchProvider.SEARCH_DIAGRAM)!=0;
 		this.searchBlocks = (key & (BLTSearchProvider.SEARCH_BLOCK +BLTSearchProvider.SEARCH_PROPERTY) )!=0;
-		this.log = LogMaker.getLogger(this);
+		this.log = LogUtil.getLogger(getClass().getPackageName());
 		this.index = 0;
 	}
 	@Override

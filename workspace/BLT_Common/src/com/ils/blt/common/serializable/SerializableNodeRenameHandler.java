@@ -8,8 +8,6 @@ import java.util.HashMap;
 import java.util.UUID;
 
 import com.ils.blt.common.BLTProperties;
-import com.ils.common.log.ILSLogger;
-import com.ils.common.log.LogMaker;
 import com.inductiveautomation.ignition.common.StringPath;
 
 /**
