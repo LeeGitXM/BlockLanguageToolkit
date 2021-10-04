@@ -102,7 +102,6 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 		BlockExecutionController controller = BlockExecutionController.getInstance();
 		controller.setDelegate(mmgr);
 
-
 		// Analyze existing projects - skip the global project and any that are disabled.
 		List<Project> projects = context.getProjectManager().getProjectsFull(ProjectVersion.Staging);
 		for( Project project:projects ) {
@@ -110,11 +109,9 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 				log.infof(CLSS+".startup() - adding project %s", project.getName());
 				mmgr.projectAdded(project,null); 
 		}
-
 		// Register for changes to our permanent settings
 		ToolkitRecord.META.addRecordListener(recordListener);
 		controller.start(context);     // Start the controller once the project has been analyzed
-		
 		context.getProjectManager().addProjectListener(mmgr);  
 		log.infof("%s: Startup complete.",CLSS);
 	}

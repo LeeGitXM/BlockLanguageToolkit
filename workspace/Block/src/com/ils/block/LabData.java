@@ -151,7 +151,7 @@ public class LabData extends Input implements ProcessBlock {
 			
 		if( port.equalsIgnoreCase(timePathProperty.getName())  ) {
 			// Ignore empty strings or nulls
-			if( incoming.getValue().getValue()!=null && !incoming.getValue().getValue().toString().isEmpty()) {
+			if( incoming.getValue().getValue()!=null && !incoming.getValue().getValue().toString().trim().isEmpty()) {
 				// The input can be either a date or string 
 				Date timestamp = null;
 				if( incoming.getValue().getValue() instanceof Date ) {

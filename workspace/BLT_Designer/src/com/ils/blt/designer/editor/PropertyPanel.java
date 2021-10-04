@@ -347,9 +347,13 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 				valueDisplayField.setEnabled(false);
 				valueDisplayField.setEditable(false);
 			}
-			else {
+			else if(property.isEditable() ){
 				valueDisplayField.setEnabled(true);
 				valueDisplayField.setEditable(true);
+			}
+			else {
+				valueDisplayField.setEnabled(false);
+				valueDisplayField.setEditable(false);
 			}
 		}
 	}
@@ -357,13 +361,15 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 	
 	// =============================== Component Creation Methods ================================
 	/**
-	 * Create a text box for the binding field. This is editable.
+	 * Create a text box for the binding field. This is editable if the property is editable.
 	 */
 	private JTextField createBindingDisplayField(final BlockProperty prop) {	
 		Object val = prop.getBinding();
 		if(val==null) val = "";
 		EditableTextField field = new EditableTextField(prop,val.toString());
-		field.addFocusListener(this);
+		field.setEditable(prop.isEditable());
+		field.setEnabled(prop.isEditable());
+		if(prop.isEditable())field.addFocusListener(this);
 		return field;
 	}
 	/**
@@ -388,19 +394,22 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 		if( prop.getValue()!=null ) {
 			final String selection = prop.getValue().toString().toUpperCase();
 			valueCombo.setSelectedItem(selection);
-			// Add the listener after we've initialized
-			valueCombo.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent event) {
-					String selxn = valueCombo.getSelectedItem().toString(); 
-					if( !prop.getValue().toString().equalsIgnoreCase(selxn)) {
-						prop.setValue(selxn);
-						parent.saveDiagramClean();   // Update property immediately
+			valueCombo.setEditable(prop.isEditable());
+			valueCombo.setEnabled(prop.isEditable());
+			if(prop.isEditable()) {
+				// Add the listener after we've initialized
+				valueCombo.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent event) {
+						String selxn = valueCombo.getSelectedItem().toString(); 
+						if( !prop.getValue().toString().equalsIgnoreCase(selxn)) {
+							prop.setValue(selxn);
+							parent.saveDiagramClean();   // Update property immediately
+						}
+						if(DEBUG) log.infof("%s.valueCombo: selected %s=%s",CLSS,prop.getName(),selxn);
 					}
-					if(DEBUG) log.infof("%s.valueCombo: selected %s=%s",CLSS,prop.getName(),selxn);
-				}
-			});
+				});
+			}
 		}
-
 		return valueCombo;
 	}
 	/**

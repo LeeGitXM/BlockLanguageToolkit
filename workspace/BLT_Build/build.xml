@@ -33,7 +33,7 @@
 	
 	<!-- External jar classpath. This classpath includes all the jars needed to build a module against the SDK. -->
 	<path id="ExternalJar.classpath">
-		 <fileset dir="${basedir}/../../external/lib" includes="ils-common.jar" />
+		 <fileset dir="${ignition.py.lib}/../../lib/core/common" includes="ils-common.jar" />
 		 <fileset dir="${basedir}/../../external/lib" includes="commons-lang3*.jar" />
 		 <fileset dir="${basedir}/../../external/lib" includes="commons-math3*.jar" />
 		 <fileset dir="${basedir}/../../external/lib" includes="jackson-*.jar" />

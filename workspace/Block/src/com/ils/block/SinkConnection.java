@@ -43,11 +43,6 @@ public class SinkConnection extends Output implements ProcessBlock {
 		initialize();
 	}
 	
-	/* Not sure why this was added, removed PAH 8/19/21
-	@Override
-	public String getClassName() {return BlockConstants.BLOCK_CLASS_SINK;}
-	*/
-	
 	/**
 	 * On reset, set the value of the backing tag to "UNSET". This prevents
 	 * a refresh of the block to re-propagate the last value.
@@ -60,12 +55,12 @@ public class SinkConnection extends Output implements ProcessBlock {
 		}
 	}
 	/**
-	 * Add properties that are new for this class.
-	 * Populate them with default values.
+	 * Make the tag path property non-editable
 	 */
 	protected void initialize() {
 		super.initialize();
 		setName("SinkConnection");
+		pathProperty.setEditable(false);
 	}
 	
 	

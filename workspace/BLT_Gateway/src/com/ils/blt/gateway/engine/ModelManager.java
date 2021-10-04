@@ -550,7 +550,6 @@ public class ModelManager implements ProjectListener  {
 				for( ProcessBlock pb:diagram.getProcessBlocks()) {
 					if( !pb.delayBlockStart() ) pb.start();
 				}
-				try{ Thread.sleep(5000); } catch(InterruptedException ignore) {}
 				for( ProcessBlock pb:diagram.getProcessBlocks()) {
 					if( pb.delayBlockStart() ) pb.start();
 				}
