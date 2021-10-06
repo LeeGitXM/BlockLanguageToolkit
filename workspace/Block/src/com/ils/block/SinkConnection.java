@@ -44,17 +44,6 @@ public class SinkConnection extends Output implements ProcessBlock {
 	}
 	
 	/**
-	 * On reset, set the value of the backing tag to "UNSET". This prevents
-	 * a refresh of the block to re-propagate the last value.
-	 */
-	@Override
-	public void reset() {
-		super.reset();
-		if( pathProperty.getBindingType().equals(BindingType.TAG_WRITE)) {
-			controller.updateTag(getParentId(),pathProperty.getBinding().toString(), new BasicQualifiedValue("UNSET"));
-		}
-	}
-	/**
 	 * Make the tag path property non-editable
 	 */
 	protected void initialize() {
@@ -62,7 +51,6 @@ public class SinkConnection extends Output implements ProcessBlock {
 		setName("SinkConnection");
 		pathProperty.setEditable(false);
 	}
-	
 	
 	/**
 	 * Augment the palette prototype for this block class.
@@ -80,6 +68,24 @@ public class SinkConnection extends Output implements ProcessBlock {
 		desc.setBackground(new Color(127,127,127).getRGB()); // Dark gray
 		desc.setStyle(BlockStyle.ARROW);
 		desc.setCtypeEditable(true);
+	}
+	
+	/**
+	 * Guarantee that the clas name matches the constant used throughout
+	 * the application to identify a sink.
+	 */
+	@Override
+	public String getClassName() { return BlockConstants.BLOCK_CLASS_SINK; }
+	/**
+	 * On reset, set the value of the backing tag to "UNSET". This prevents
+	 * a refresh of the block to re-propagate the last value.
+	 */
+	@Override
+	public void reset() {
+		super.reset();
+		if( pathProperty.getBindingType().equals(BindingType.TAG_WRITE)) {
+			controller.updateTag(getParentId(),pathProperty.getBinding().toString(), new BasicQualifiedValue("UNSET"));
+		}
 	}
 	
 	/**

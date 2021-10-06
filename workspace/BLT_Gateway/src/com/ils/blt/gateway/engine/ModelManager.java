@@ -28,6 +28,7 @@ import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.SerializableFamily;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
+import com.ils.blt.gateway.BlockTagSynchronizer;
 import com.ils.common.persistence.ToolkitProperties;
 import com.ils.common.persistence.ToolkitRecordHandler;
 import com.inductiveautomation.ignition.common.model.ApplicationScope;
@@ -771,6 +772,7 @@ public class ModelManager implements ProjectListener  {
 		SerializableDiagram sd = deserializeDiagramResource(projectId,res);
 
 		if( sd!=null ) {
+			BlockTagSynchronizer bts = new BlockTagSynchronizer();
 			ProcessDiagram diagram = (ProcessDiagram)nodesByUUID.get(sd.getId());
 			if( diagram==null) {   // this is usually run during gateway start up.
 				// Create a new diagram
@@ -784,8 +786,9 @@ public class ModelManager implements ProjectListener  {
 				ProjectResourceKey key = new ProjectResourceKey(projectId,res.getResourceId());
 				nodesByKey.put(key,diagram);
 				addToHierarchy(projectId,diagram);
+				bts.synchBlocks(sd);
 				diagram.createBlocks(sd.getBlocks());
-
+				
 				diagram.updateConnections(sd.getConnections());
 				if(!diagram.getState().equals(sd.getState()) ) {
 					diagram.setState(sd.getState()); 
@@ -820,6 +823,7 @@ public class ModelManager implements ProjectListener  {
 				nodesByKey.put(key,diagram);
 				addToHierarchy(projectId,diagram);
 				// New Diagrams are always disabled
+				bts.synchBlocks(sd);
 				diagram.createBlocks(sd.getBlocks());
 				diagram.createAttributeDisplays(sd.getAttributeDisplays());
 				diagram.updateConnections(sd.getConnections());
@@ -840,7 +844,9 @@ public class ModelManager implements ProjectListener  {
 				List<ProcessBlock> deletedBlocks = diagram.removeUnusedBlocks(sd.getBlocks());
 				for(ProcessBlock deletedBlock:deletedBlocks) {
 					deletedBlock.onDelete();
+					bts.synchDeletedBlock(deletedBlock);
 				}
+				bts.synchBlocks(sd);
 				diagram.createBlocks(sd.getBlocks());            // Adds blocks that are new in update
 				diagram.createAttributeDisplays(sd.getAttributeDisplays());
 				diagram.updateConnections(sd.getConnections());  // Adds connections that are new in update
@@ -1054,6 +1060,7 @@ public class ModelManager implements ProjectListener  {
 	public void deleteResource(long projectId,long resourceId) {
 		if(DEBUG) log.infof("%s.deleteResource: %d:%d",CLSS,projectId,resourceId);
 		ProjectResourceKey key = new ProjectResourceKey(projectId,resourceId);
+		BlockTagSynchronizer synchronizer = new BlockTagSynchronizer();
 		ProcessNode head = nodesByKey.get(key);
 		DiagramState nodeState = DiagramState.ACTIVE;
 		if( head!=null ) {
@@ -1070,12 +1077,7 @@ public class ModelManager implements ProjectListener  {
 							controller.removeSubscription(block, prop);
 						}
 						block.onDelete();
-
-						// If this is a source connection, delete its associated tag
-						if(block.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK)) {
-							BlockProperty prop = block.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
-							if(DEBUG) log.infof("%s.deleteResource:Deleting a sink",CLSS,projectId,resourceId);
-						}
+						synchronizer.synchDeletedBlock(block);
 					}
 				}
 				ProjectResourceKey nodekey = new ProjectResourceKey(projectId,node.getResourceId());

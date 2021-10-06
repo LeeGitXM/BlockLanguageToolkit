@@ -109,6 +109,11 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 		this.bindingKey = NotificationKey.keyForPropertyBinding(block.getId().toString(), property.getName());
 		this.valueKey = NotificationKey.keyForProperty(block.getId().toString(), property.getName());
 
+		// Make the tagpath property of sources and sinks read-only. We modify here to handle legacy diagrams
+		if( (block.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SINK) || block.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SOURCE)) &&
+				property.getName().equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_TAG_PATH) ) {
+			property.setEditable(false);
+		}
 
 		this.currentTimeUnit = TimeUnit.MINUTES;   // Force all to be in minutes, to avoid confusing behavior in UI
 		property.addChangeListener(this);

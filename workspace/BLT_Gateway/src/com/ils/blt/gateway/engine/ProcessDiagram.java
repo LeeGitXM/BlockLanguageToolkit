@@ -52,7 +52,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 	private static String CLSS = "ProcessDiagram";
 	private static final boolean DEBUG = false;
 	private boolean valid = false;
-	protected final Map<UUID,ProcessBlock> blocks;
+	protected final Map<UUID,ProcessBlock> blockMap;
 	private final Map<ConnectionKey,ProcessConnection> connectionMap;            // Key by connection number
 	protected final Map<BlockPort,List<ProcessConnection>> incomingConnections; // Key by downstream block:port
 	protected final Map<String,AttributeDisplay> displays;                      // Key is a property notification key (UUID,property name)
@@ -71,7 +71,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 		this.state = diagm.getState();
 		this.resourceId = diagm.getResourceId();
 		this.projectId = projId;
-		blocks = new HashMap<UUID,ProcessBlock>();
+		blockMap = new HashMap<UUID,ProcessBlock>();
 		connectionMap = new HashMap<ConnectionKey,ProcessConnection>();
 		displays = new HashMap<>();
 		incomingConnections = new HashMap<BlockPort,List<ProcessConnection>>();
@@ -82,7 +82,8 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 		String key = NotificationKey.keyForProperty(id.toString(), pname);
 		return displays.get(key); 
 	}
-	public ProcessBlock getBlock(UUID id) { return blocks.get(id); }
+	public ProcessBlock getBlock(UUID id) { return blockMap.get(id); }
+	public Collection<ProcessBlock> getBlocks() { return blockMap.values(); }
 	
 	// For now we just do a linear search
 	public ProcessBlock getBlockByName(String name) { 
@@ -98,7 +99,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 		return result;
 	}
 	public Collection<AttributeDisplay> getAttributeDisplays()  { return displays.values(); }
-	public Collection<ProcessBlock> getProcessBlocks()          { return blocks.values(); }
+	public Collection<ProcessBlock> getProcessBlocks()          { return blockMap.values(); }
 
 	public String getProviderForState(DiagramState s) {
 		String provider = "";
@@ -130,11 +131,11 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 			uuids.add(sb.getId());
 		}
 		List<ProcessBlock> blocksToRemove = new ArrayList<>();
-		for(ProcessBlock oldBlock:blocks.values()) {
+		for(ProcessBlock oldBlock:blockMap.values()) {
 			if(!uuids.contains(oldBlock.getBlockId()) ) blocksToRemove.add(oldBlock);
 		}
 		for(ProcessBlock oldBlock:blocksToRemove) {
-			blocks.remove(oldBlock.getBlockId());
+			blockMap.remove(oldBlock.getBlockId());
 			for(BlockProperty prop:oldBlock.getProperties()) {
 				controller.removeSubscription(oldBlock, prop);
 			}
@@ -179,7 +180,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 		// Update the blocks - we've already deleted any not present in the new
 		for( SerializableBlock sb:sblks ) {
 			UUID id = sb.getId();
-			ProcessBlock pb = blocks.get(id);
+			ProcessBlock pb = blockMap.get(id);
 			if( pb==null ) {
 				pb = blockFactory.blockFromSerializable(getSelf(),sb,getProjectId());
 				if( pb!=null ) {
@@ -187,7 +188,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 					if(DiagramState.ACTIVE.equals(state)) pb.setTimer(controller.getTimer());
 					else if(DiagramState.ISOLATED.equals(state)) pb.setTimer(controller.getSecondaryTimer());
 					pb.setProjectId(projectId);
-					blocks.put(pb.getBlockId(), pb);
+					blockMap.put(pb.getBlockId(), pb);
 					if( DEBUG ) log.infof("%s.createBlocks: New block %s(%d)", CLSS, pb.getName(), pb.hashCode());
 
 					if( BlockExecutionController.CONTROLLER_RUNNING_STATE.equalsIgnoreCase(BlockExecutionController.getExecutionState()) ) {
@@ -229,7 +230,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 					connectionFactory.updateConnectionFromSerializable(pc,sc);
 				}
 				// Add the connection to the map. The block-port is for the upstream block
-				ProcessBlock upstreamBlock = blocks.get(pc.getSource());
+				ProcessBlock upstreamBlock = blockMap.get(pc.getSource());
 				if( upstreamBlock!=null ) {
 					BlockPort key = new BlockPort(upstreamBlock,pc.getUpstreamPortName());
 					List<ProcessConnection> connections = outgoingConnections.get(key);
@@ -243,7 +244,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 				else {
 					log.warnf("%s.updateConnections: Source block (%s) not found for connection",CLSS,pc.getSource().toString());
 				}
-				ProcessBlock downstreamBlock = blocks.get(pc.getTarget());
+				ProcessBlock downstreamBlock = blockMap.get(pc.getTarget());
 				if( downstreamBlock!=null && pc.getDownstreamPortName()!=null) {
 					BlockPort key = new BlockPort(downstreamBlock,pc.getDownstreamPortName());
 					List<ProcessConnection> connections = incomingConnections.get(key);
@@ -281,7 +282,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 		SerializableBlock[] sblks = diagram.getBlocks();
 		for( SerializableBlock sb:sblks ) {
 			UUID id = sb.getId();
-			ProcessBlock pb = blocks.get(id);
+			ProcessBlock pb = blockMap.get(id);
 			if( pb!=null && sb.getProperties()!=null ) {
 				if( DEBUG ) log.infof("%s.updateProperties: Update block %s",CLSS,pb.getName());
 				boolean hasChanged = false;
@@ -398,7 +399,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 		if( cxns!=null ) {
 			for(ProcessConnection cxn:cxns) {
 				UUID blockId = cxn.getSource();
-				connectedBlocks.add(blocks.get(blockId));		
+				connectedBlocks.add(blockMap.get(blockId));		
 			}
 		}
 		else {
@@ -406,7 +407,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 			if( cxns!=null ) {
 				for(ProcessConnection cxn:cxns) {
 					UUID blockId = cxn.getTarget();
-					connectedBlocks.add(blocks.get(blockId));		
+					connectedBlocks.add(blockMap.get(blockId));		
 				}
 			}
 		}
@@ -426,7 +427,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 				if( cxns!=null ) {
 					for(ProcessConnection cxn:cxns) {
 						UUID blockId = cxn.getTarget();
-						downstream.add(blocks.get(blockId));
+						downstream.add(blockMap.get(blockId));
 					}
 				}		
 			}
@@ -454,7 +455,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 					for(ProcessConnection cxn:cxns) {
 						UUID blockId = cxn.getSource();
 						if( blockId.equals(root.getBlockId())) break;  // A loop
-						ProcessBlock blk = blocks.get(blockId);
+						ProcessBlock blk = blockMap.get(blockId);
 						if( blk.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SOURCE)) {
 							BlockProperty tagProperty = blk.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
 							if( tagProperty!=null ) {
@@ -504,7 +505,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 				if( cxns!=null ) {
 					for(ProcessConnection cxn:cxns) {
 						UUID blockId = cxn.getSource();
-						upstream.add(blocks.get(blockId));
+						upstream.add(blockMap.get(blockId));
 					}
 				}		
 			}
@@ -530,7 +531,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 			List<ProcessConnection> cxns = new ArrayList<>(outgoingConnections.get(key));
 			for(ProcessConnection cxn:cxns) {
 				UUID blockId = cxn.getTarget();
-				ProcessBlock blk = blocks.get(blockId);
+				ProcessBlock blk = blockMap.get(blockId);
 				if( blk!=null ) {
 					IncomingNotification vcn = new IncomingNotification(cxn,value);
 					notifications.add(vcn);
@@ -566,7 +567,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 			List<ProcessConnection> cxns = new ArrayList<>(outgoingConnections.get(key));
 			for(ProcessConnection cxn:cxns) {
 				UUID blockId = cxn.getTarget();
-				ProcessBlock blk = blocks.get(blockId);
+				ProcessBlock blk = blockMap.get(blockId);
 				if( blk!=null ) {
 					SignalNotification vcn = new SignalNotification(blk,value);
 					notifications.add(vcn);
@@ -604,7 +605,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 				stopSubscriptions();
 			}
 			// Stop blocks
-			for(ProcessBlock blk:blocks.values()) {
+			for(ProcessBlock blk:blockMap.values()) {
 				blk.stop();
 			}
 			
@@ -622,7 +623,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 				// The two-phase start is probably not necessary here
 				// since we start the subscriptions after starting the blocks,
 				// but we'll do it anyway for consistency
-				for(ProcessBlock blk:blocks.values()) {
+				for(ProcessBlock blk:blockMap.values()) {
 					if( !blk.delayBlockStart() ) blk.start();
 				}
 				
@@ -630,7 +631,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 				
 				// The Inputs should not propagate an old value, 
 				// but instead react to the new subscriptions
-				for(ProcessBlock blk:blocks.values()) {
+				for(ProcessBlock blk:blockMap.values()) {
 					if( blk.delayBlockStart() ) {
 						blk.start();
 					}
@@ -663,7 +664,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 		// Set the proper timer
 		WatchdogTimer timer = controller.getTimer();
 		if( DiagramState.ISOLATED.equals(s) )  timer = controller.getSecondaryTimer();
-		for(ProcessBlock blk:blocks.values()) {
+		for(ProcessBlock blk:blockMap.values()) {
 			blk.setTimer(timer);
 		}
 	}

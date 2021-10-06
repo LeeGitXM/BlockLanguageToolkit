@@ -58,6 +58,13 @@ public class SourceConnection extends Input implements ProcessBlock {
 		tagPathProperty.setEditable(false);
 	}
 	
+	/**
+	 * Guarantee that the clas name matches the constant used throughout
+	 * the application to identify a source.
+	 */
+	@Override
+	public String getClassName() { return BlockConstants.BLOCK_CLASS_SOURCE; }
+	
 	
 	/**
 	 * A source block has has a special form of the explanation method in that
