@@ -17,7 +17,6 @@ import com.ils.blt.gateway.persistence.ToolkitRecordListener;
 import com.ils.blt.gateway.proxy.ProxyHandler;
 import com.ils.blt.gateway.wicket.ToolkitStatusPanel;
 import com.ils.common.persistence.ToolkitRecord;
-import com.ils.common.persistence.ToolkitRecordHandler;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.licensing.LicenseState;
 import com.inductiveautomation.ignition.common.project.Project;
@@ -46,7 +45,6 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	private final String prefix = "BLT";
 	private transient GatewayRpcDispatcher dispatcher = null;
 	private transient ModelManager mmgr = null;
-	private ToolkitRecordHandler toolkitHandler;
 	private final LoggerEx log;
 	private ToolkitRecord record = null;
 	private final ControllerRequestHandler requestHandler;
@@ -97,11 +95,9 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	@Override
 	public void startup(LicenseState licenseState) {
 		log.info(CLSS+".startup()");
-		this.toolkitHandler = new ToolkitRecordHandler(context);
 		this.mmgr = new ModelManager(context);
 		BlockExecutionController controller = BlockExecutionController.getInstance();
 		controller.setDelegate(mmgr);
-
 
 		// Analyze existing projects - skip the global project and any that are disabled.
 		List<Project> projects = context.getProjectManager().getProjectsFull(ProjectVersion.Staging);
@@ -110,11 +106,9 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 				log.infof(CLSS+".startup() - adding project %s", project.getName());
 				mmgr.projectAdded(project,null); 
 		}
-
 		// Register for changes to our permanent settings
 		ToolkitRecord.META.addRecordListener(recordListener);
 		controller.start(context);     // Start the controller once the project has been analyzed
-		
 		context.getProjectManager().addProjectListener(mmgr);  
 		log.infof("%s: Startup complete.",CLSS);
 	}

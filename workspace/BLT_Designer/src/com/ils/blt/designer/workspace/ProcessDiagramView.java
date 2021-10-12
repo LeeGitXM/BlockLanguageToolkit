@@ -380,29 +380,6 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		}
 		
 		log.infof("%s.deleteBlock: deleting a sink (%s)",CLSS,blk.getClass().getCanonicalName());
-		
-		// For a Sink, remove its bound tag
-		if( blk instanceof ProcessBlockView ) {
-			ProcessBlockView view = (ProcessBlockView)blk;
-			if( view.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK)) {
-				BlockProperty prop = view.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
-				List<SerializableBlockStateDescriptor> sources = appRequestHandler.listSourcesForSink(getId().toString(),
-						view.getId().toString());
-				String tp = prop.getBinding();
-				appRequestHandler.deleteTag(tp);
-				if( sources.size()>0 ) {
-					StringBuffer msg = new StringBuffer("The following SourceConnections are no longer connected:\n");
-					for(SerializableBlockStateDescriptor source:sources) {
-						msg.append("\t");
-						msg.append(appRequestHandler.getDiagramForBlock(source.getIdString()).getName());
-						msg.append(": ");
-						msg.append(source.getName());
-						msg.append("\n");
-					}
-					JOptionPane.showMessageDialog(null, msg.toString(), "Warning", JOptionPane.INFORMATION_MESSAGE);
-				}
-			}
-		}
 		// Delete the block by removing it from the map
 		blockMap.remove(blk.getId());
 		fireStateChanged();
@@ -685,13 +662,6 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 				prop.getName().equals(BlockConstants.BLOCK_PROPERTY_TAG_PATH) &&
 				BusinessRules.isStandardConnectionsFolder(tagPath) ) {  
 			msg = "Input and outputs cannot be bound to tags in the connections folder";
-		}
-		// require sources and sinks be bound to tags in connections
-		else if( (pblock.getClassName().equals(BlockConstants.BLOCK_CLASS_SOURCE)    ||
-				pblock.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK))  &&
-				prop.getName().equals(BlockConstants.BLOCK_PROPERTY_TAG_PATH) &&
-				!BusinessRules.isStandardConnectionsFolder(tagPath) ) {  
-			msg = String.format("Sources and sinks must be bound to tags in %s",BlockConstants.SOURCE_SINK_TAG_FOLDER);
 		}
 
 		return msg;  // this could return an error message

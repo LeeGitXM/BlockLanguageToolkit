@@ -246,7 +246,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	 * @param context the gateway context
 	 */
 	public synchronized void start(GatewayContext context) {
-		log.infof("%s: ============================ STARTED ===================================",CLSS);
+		log.infof("%s.start: --- starting",CLSS);
 		if(!stopped) return;  
 		stopped = false;
 		this.notificationThread = new Thread(this, "BlockExecutionController");
@@ -265,6 +265,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		modelManager.startBlocks();
 		// Once blocks are started, start tag subscriptions
 		tagListener.restartSubscriptions(context);
+		log.infof("%s.start: --- startup complete",CLSS);
 	}
 	
 	/**
@@ -272,7 +273,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	 * instance values to null to, hopefully, allow garbage collection.
 	 */
 	public synchronized void stop() {
-		log.infof("%s: ============================== STOPPING ===========================",CLSS);
+		log.infof("%s.stop: --- stopping",CLSS);
 		if(stopped) return;
 		stopped = true;
 		if(notificationThread!=null) {

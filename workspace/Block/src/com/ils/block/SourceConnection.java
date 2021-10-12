@@ -48,10 +48,22 @@ public class SourceConnection extends Input implements ProcessBlock {
 		super(ec,parent,block);
 	}
 	
-	/* Not sure why this was added, removed PAH 8/19/21
+	/**
+	 * Make the tag path property non-editable
+	 */
 	@Override
-	public String getClassName() {return BlockConstants.BLOCK_CLASS_SOURCE;}
-	*/
+	protected void initialize() {
+		super.initialize();
+		setName("SourceConnection");
+		tagPathProperty.setEditable(false);
+	}
+	
+	/**
+	 * Guarantee that the clas name matches the constant used throughout
+	 * the application to identify a source.
+	 */
+	@Override
+	public String getClassName() { return BlockConstants.BLOCK_CLASS_SOURCE; }
 	
 	
 	/**
@@ -111,14 +123,6 @@ public class SourceConnection extends Input implements ProcessBlock {
 			}
 		}
 		return result;
-	}
-	/**
-	 * Add properties that are new for this class.
-	 * Populate them with default values.
-	 */
-	protected void initialize() {
-		super.initialize();
-		setName("SourceConnection");
 	}
 	
 	/**

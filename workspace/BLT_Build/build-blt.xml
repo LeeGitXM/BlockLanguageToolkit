@@ -240,7 +240,7 @@
 		<copy file="${basedir}/BLT_Build/bin/${BLTModule.name}_Common/dist/blt-common.jar" todir="${basedir}/BLT_Build/temp_modl/" />
 		
 		<!-- Copy dependent jars -->
-		<copy file="${jar.dir}/${common.jar.name}" todir="${basedir}/BLT_Build/temp_modl/" />
+		<copy file="${ignition.py.lib}/../../lib/core/common/${common.jar.name}" todir="${basedir}/BLT_Build/temp_modl/" />
 		<copy file="${basedir}/../../external/lib/jackson-core-2.2.3.jar" todir="${basedir}/BLT_Build/temp_modl/" />
 		<copy file="${basedir}/../../external/lib/jackson-databind-2.2.3.jar" todir="${basedir}/BLT_Build/temp_modl/" />
 		<copy file="${basedir}/../../external/lib/jackson-annotations-2.2.3.jar" todir="${basedir}/BLT_Build/temp_modl/" />

@@ -21,13 +21,16 @@ import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import com.ils.blt.common.DiagramState;
+import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.PropertyType;
+import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
+import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
+import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
@@ -42,7 +45,7 @@ import net.miginfocom.swing.MigLayout;
  */
 @SuppressWarnings("serial")
 public class MainPanel extends BasicEditPanel {
-	private final static String TAG = "MainPanel";
+	private final static String CLSS = "MainPanel";
 	private static final boolean DEBUG = true;
 	protected final ProcessBlockView block;
 	protected final Map<String,PropertyPanel> panelMap;
@@ -53,7 +56,7 @@ public class MainPanel extends BasicEditPanel {
 
 	public MainPanel(DesignerContext context, BlockPropertyEditor editor, ProcessBlockView blk, DiagramWorkspace wrkspc) {
 		super(editor);
-		if(DEBUG)log.infof("%s:MainPanel()", TAG);
+		if(DEBUG)log.infof("%s:MainPanel()", CLSS);
 		this.bpe = editor;
 		this.block = blk;
 		this.panelMap = new HashMap<String,PropertyPanel>();
@@ -66,7 +69,7 @@ public class MainPanel extends BasicEditPanel {
 	}
 	// This must be called after the constructor in order to lay out the components
 	public void initialize() {
-		if(DEBUG)log.infof("%s.mainPanel: - editing %s (%s)",TAG,block.getId().toString(),block.getClassName());
+		if(DEBUG)log.infof("%s.mainPanel: - editing %s (%s)",CLSS,block.getId().toString(),block.getClassName());
 		PropertyPanel propertyPanel = null;
 		// Now fill the editor. We use the same panel class for each property.
 		for(BlockProperty property:block.getProperties()) {
@@ -104,13 +107,13 @@ public class MainPanel extends BasicEditPanel {
 	 * @param prop
 	 */
 	public void updatePanelForProperty(BlockProperty prop ) {
-		log.infof("%s.updatePanelForProperty: %s = %s", TAG,prop.getName(),prop.getValue().toString());
+		log.infof("%s.updatePanelForProperty: %s = %s", CLSS,prop.getName(),prop.getValue().toString());
 		PropertyPanel pp = panelMap.get(prop.getName());
 		if( pp!=null ) pp.updatePanelUI();
 	}
 	
 	public void updatePanelValue(String propertyName,Object val) {
-		log.infof("%s.updatePanelValue: %s = %s", TAG,propertyName,val.toString());
+		log.infof("%s.updatePanelValue: %s = %s", CLSS,propertyName,val.toString());
 		PropertyPanel pp = panelMap.get(propertyName);
 		if( pp!=null ) pp.valueChange(new BasicQualifiedValue(val));
 	}
@@ -139,80 +142,34 @@ public class MainPanel extends BasicEditPanel {
 		}
 		
 		public void saveName() {
-			
-			if(block.getName().equals(nameField.getText())){
-				log.infof("%s.saveName() the name was unchanged", TAG);
-			} else{
-				log.infof("%s.saveName(). changed name from %s to %s", TAG, block.getName(), nameField.getText());
-				
-				// The block has a name property, but we simply use the setter
+			String oldName = block.getName();
+			if(oldName.equals(nameField.getText())){
+				log.infof("%s.saveName() the name was unchanged", CLSS);
+			} 
+			else{
+				log.infof("%s.saveName(). changed name from %s to %s", CLSS, block.getName(), nameField.getText());
 				block.setName(nameField.getText());
-				
 				// Make the diagram dirty (mustard) since we aren't saving automatically - PAH 07/15/2021
 				bpe.setDiagramDirty();
 			}
-
-			// Removed this save as we we change policy to NEVER save automatically - PAH 07/15/2021
-			//bpe.saveDiagramClean();    // Update property directly, immediately
 			
-			// For Sinks we update the associated tag path
-			
-			/*
-			 * This attempts to keep the tags that we use for sources and sinks synchronized with the name of the Sink as we change the 
-			 * name of the sink.  But we need to move this logic to when we actually save the diagram, not when we rename the block.
-			 * By saving automatically we could get away here since the save followed immediately. PAH 7/15/2021
-			 * TODO Figure out where this can go to execute when we actually do the save 
-			 
+			// Sources and Sinks are correlated simply by their names. In order to keep the correlation
+			// as synchronized as possible, when we change the name of a sink, we will change the block
+			// names of the corresponding source(s). Actual bindings and tags are not modified until the 
+			// project is saved.
 			if( block.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK) ) {
-				BlockProperty prop = block.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
-				String path = prop.getBinding();
 				ApplicationRequestHandler handler = bpe.getRequestHandler();
-				// If the tag is is in the standard location, rename it
-				// otherwise, create a new one. Name must be a legal tag path element.
-				if( !BusinessRules.isStandardConnectionsFolder(path) ) {
-					String provider = getProvider();
-					path = String.format("[%s]%s/%s",provider,BlockConstants.SOURCE_SINK_TAG_FOLDER,nameField.getText());
-					handler.createTag(DataType.String,path);
-				}
-				else {
-					handler.renameTag(nameField.getText(), path);
-					path = renamePath(nameField.getText(), path);
-				}
-				prop.setBinding(path);
-				
-				// Perform similar modification on connected sources
-				// Use the scripting interface to handle diagrams besides the current
-				// The block name has already changed.
 				ProcessDiagramView diagram = bpe.getDiagram();
 				for(SerializableBlockStateDescriptor desc:handler.listSourcesForSink(diagram.getId().toString(),block.getId().toString())) {
 					SerializableResourceDescriptor rd = handler.getDiagramForBlock(desc.getIdString());
 					if( rd==null ) continue;
-					log.infof("NameEditPanel.actionPerformed: sink connected to %s",desc.getName());
-					handler.setBlockPropertyBinding(rd.getId(), desc.getIdString(),BlockConstants.BLOCK_PROPERTY_TAG_PATH,path);
+					log.infof("%s.actionPerformed: sink connected to %s",CLSS,desc.getName());
 					handler.renameBlock(rd.getId(), desc.getIdString(), nameField.getText());
-					bpe.saveDiagram(rd.getResourceId());
 				}
 			}
-			*/
+			
 		}
 		
-		// return the name of the appropriate tag provider
-		private String getProvider() {
-			DiagramState state = bpe.getDiagram().getState();
-			String provider = (state.equals(DiagramState.ISOLATED)?
-					bpe.getRequestHandler().getIsolationTagProvider():
-					bpe.getRequestHandler().getIsolationTagProvider());
-			return provider;
-		}
-		// Replace the last element of path with name
-		private String renamePath(String name,String path) {
-			int index = path.lastIndexOf("/");
-			if( index>0 ) {
-				path = path.substring(0, index+1);
-				path = path + name;
-			}
-			return path;
-		}
 		public void updatePanelForBlock(ProcessBlockView pbv) {
 			nameField.setText(pbv.getName());
 		}
@@ -303,7 +260,7 @@ public class MainPanel extends BasicEditPanel {
 					}
 					// Use special editor for list types
 					else if( prop.getType().equals(PropertyType.LIST) ) {
-						log.debugf("%s.editButton actionPerformed for property %s (%s)",TAG,prop.getName(),prop.getType());
+						log.debugf("%s.editButton actionPerformed for property %s (%s)",CLSS,prop.getName(),prop.getType());
 						bpe.updatePanelForProperty(BlockEditConstants.LIST_EDIT_PANEL,prop);
 						setSelectedPane(BlockEditConstants.LIST_EDIT_PANEL);
 					}
@@ -314,7 +271,7 @@ public class MainPanel extends BasicEditPanel {
 			});
 		}
 		else {
-			log.warnf("%s.editButton Unable to load image for %s (%s)",TAG,prop.getName(),ICON_PATH);
+			log.warnf("%s.editButton Unable to load image for %s (%s)",CLSS,prop.getName(),ICON_PATH);
 		}
 		return btn;
 	}	

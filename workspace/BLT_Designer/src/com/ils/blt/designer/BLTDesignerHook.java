@@ -155,7 +155,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		context.addBeanInfoSearchPath("com.ils.blt.designer.component.beaninfos");
 		searchProvider = new BLTSearchProvider(context);
 		context.registerSearchProvider(searchProvider);
-				
+			
 		// Place icons for our custom widgets on the Vision palette
 		VisionDesignerInterface vdi = 
 					(VisionDesignerInterface) context.getModule(VisionDesignerInterface.VISION_MODULE_ID);
@@ -209,6 +209,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		appRequestHandler.triggerStatusNotifications();
 		
 		LogUtil.getLogger(Logger.ROOT_LOGGER_NAME);
+		log.infof("%s.startup: ----- Complete -----",CLSS);
 	}
 	
 	public NodeStatusManager getNavTreeStatusManager() { return nodeStatusManager; }
