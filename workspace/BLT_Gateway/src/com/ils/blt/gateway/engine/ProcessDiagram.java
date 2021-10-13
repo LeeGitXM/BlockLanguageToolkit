@@ -197,6 +197,12 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 						// After we start the new block, then start any appropriate subscriptions
 						for(BlockProperty bp:pb.getProperties()) {
 							controller.startSubscription(getState(),pb,bp);
+							// Source/Sink tag paths can be changed outside the property editor.
+							if(  bp.getName().equals(BlockConstants.BLOCK_PROPERTY_TAG_PATH) &&
+								(pb.getClassName().equals(BlockConstants.BLOCK_CLASS_SOURCE) ||
+								 pb.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK) ) ) {
+								controller.sendPropertyBindingNotification(pb.getBlockId().toString(), bp.getName(), bp.getBinding());
+							}
 						}
 					}
 				}

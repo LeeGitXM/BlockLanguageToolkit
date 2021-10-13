@@ -56,7 +56,7 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	
 	public BLTGatewayHook() {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
-		log.info(CLSS+".Initializing BLT Gateway hook FOO");
+		log.infof("%s.Initializing BLT Gateway hook ------------------",CLSS);
 		BundleUtil.get().addBundle(prefix, getClass(), BUNDLE_NAME);
 		requestHandler = ControllerRequestHandler.getInstance();
 	}
@@ -72,7 +72,6 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 
 		// NOTE: Get serialization exception if ModelResourceManager is saved as a class member
 		//       Exception is thrown when we try to incorporate a StatusPanel
-		log.info(CLSS+".setup - enable project listeners.");
 		ProxyHandler.getInstance().setContext(context);
 		requestHandler.setContext(context);
 		dispatcher = new GatewayRpcDispatcher(context);
@@ -80,7 +79,6 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 		
 		// Set context in the ScriptManager instance
 		ScriptExtensionManager.getInstance().setContext(context);
-		log.info(CLSS+".setup - done setting up scriptExtensionManager.");
 		// Register the ToolkitRecord making sure that the table exists
 		try {
 			context.getSchemaUpdater().updatePersistentRecords(ToolkitRecord.META);
@@ -88,13 +86,13 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 		catch(SQLException sqle) {
 			log.error("BLTGatewayHook.setup: Error registering ToolkitRecord",sqle);
 		}
-		log.info(CLSS+".setup() complete");
+		log.infof("%s.setup: complete ------------------",CLSS);
 		
 	}
 
 	@Override
 	public void startup(LicenseState licenseState) {
-		log.info(CLSS+".startup()");
+		log.infof("%s.startup: ------------------",CLSS);
 		this.mmgr = new ModelManager(context);
 		BlockExecutionController controller = BlockExecutionController.getInstance();
 		controller.setDelegate(mmgr);
@@ -103,14 +101,14 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 		List<Project> projects = context.getProjectManager().getProjectsFull(ProjectVersion.Staging);
 		for( Project project:projects ) {
 			if( !project.isEnabled() || project.getId()==-1 ) continue;
-				log.infof(CLSS+".startup() - adding project %s", project.getName());
+				log.infof("%s.startup: adding project %s ------------------",CLSS,project.getName());
 				mmgr.projectAdded(project,null); 
 		}
 		// Register for changes to our permanent settings
 		ToolkitRecord.META.addRecordListener(recordListener);
 		controller.start(context);     // Start the controller once the project has been analyzed
 		context.getProjectManager().addProjectListener(mmgr);  
-		log.infof("%s: Startup complete.",CLSS);
+		log.infof("%s.startup: complete ------------------",CLSS);
 	}
 
 	@Override
@@ -118,6 +116,7 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 		ToolkitRecord.META.removeRecordListener(recordListener);
 		context.getProjectManager().removeProjectListener(mmgr);
 		BlockExecutionController.getInstance().stop();
+		log.infof("%s.shutdown: complete ------------------",CLSS);
 	}
 
 	@Override
@@ -152,5 +151,4 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	}
 	
 	public ToolkitRecord getPersistentRecord() { return record; }
-
 }

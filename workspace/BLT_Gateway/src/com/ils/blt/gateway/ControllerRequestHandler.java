@@ -47,12 +47,14 @@ import com.ils.blt.gateway.engine.ProcessDiagram;
 import com.ils.blt.gateway.engine.ProcessFamily;
 import com.ils.blt.gateway.engine.ProcessNode;
 import com.ils.blt.gateway.proxy.ProxyHandler;
-import com.ils.blt.gateway.tag.TagHandler;
 import com.ils.common.ClassList;
 import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.help.HelpRecordProxy;
 import com.ils.common.persistence.ToolkitProperties;
 import com.ils.common.persistence.ToolkitRecordHandler;
+import com.ils.common.tag.TagFactory;
+import com.ils.common.tag.TagUtility;
+import com.ils.common.tag.TagValidator;
 import com.ils.common.watchdog.AcceleratedWatchdogTimer;
 import com.inductiveautomation.ignition.common.datasource.DatasourceStatus;
 import com.inductiveautomation.ignition.common.model.ApplicationScope;
@@ -88,9 +90,10 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	private final BlockExecutionController controller = BlockExecutionController.getInstance();
 	private final ScriptExtensionManager extensionManager = ScriptExtensionManager.getInstance();
 	private final PythonRequestHandler pyHandler;
+	private TagFactory tagFactory;
+	private TagValidator tagValidator;
 	private ToolkitRecordHandler toolkitRecordHandler;
 	private final UtilityFunctions fcns;
-	private TagHandler tagHandler; 
     
 	/**
 	 * Initialize with instances of the classes to be controlled.
@@ -98,6 +101,8 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	private ControllerRequestHandler() {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 		pyHandler = new PythonRequestHandler();
+		tagFactory = null;
+		tagValidator = null;
 		fcns = new UtilityFunctions();
 	}
 	
@@ -151,9 +156,9 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	@Override
 	public void deleteTag(String path) {
 		String provider = getProductionTagProvider();
-		tagHandler.deleteTag(provider,path);
+		tagFactory.deleteTag(provider,path);
 		provider = getIsolationTagProvider();
-		tagHandler.deleteTag(provider,path);
+		tagFactory.deleteTag(provider,path);
 	}
 	
 	/**
@@ -203,9 +208,16 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	@Override
 	public void createTag(DataType type,String path) {
 		String provider = getProductionTagProvider();
-		tagHandler.createTag(provider,type,path);
+		path = TagUtility.replaceProviderInPath(provider, path);
+		if(!tagValidator.exists(path)) {
+			
+			tagFactory.createTag(provider,type.toString(),path);
+		}
 		provider = getIsolationTagProvider();
-		tagHandler.createTag(provider,type,path);
+		path = TagUtility.replaceProviderInPath(provider, path);
+		if(!tagValidator.exists(path)) {
+			tagFactory.createTag(provider,type.toString(),path);
+		}
 	}
 	@Override
 	public boolean diagramExists(String uuidString) {
@@ -1304,9 +1316,9 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	@Override
 	public void renameTag(String name,String path) {
 		String provider = getProductionTagProvider();
-		tagHandler.renameTag(provider,name,path);
+		tagFactory.renameTag(provider,name,path);
 		provider = getIsolationTagProvider();
-		tagHandler.renameTag(provider,name,path);
+		tagFactory.renameTag(provider,name,path);
 	}
 	@Override
 	public void resetBlock(String diagramId, String blockName) {
@@ -1574,7 +1586,8 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	public void setContext(GatewayContext cntx) {
 		this.context = cntx;
 		toolkitRecordHandler = new ToolkitRecordHandler(context); 
-		tagHandler = new TagHandler(context);
+		tagFactory = new TagFactory(context);
+		tagValidator = new TagValidator(context);
 	}
 
 

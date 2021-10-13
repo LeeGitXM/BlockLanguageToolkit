@@ -29,7 +29,6 @@ import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
-import com.ils.blt.gateway.tag.SetName;
 import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.JavaToPython;
 import com.ils.common.PythonToJava;

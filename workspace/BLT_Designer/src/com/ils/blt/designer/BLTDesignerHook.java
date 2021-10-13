@@ -220,7 +220,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	// serialized into project resources.
 	@Override
 	public void notifyProjectSaveStart(SaveContext save) {
-		log.infof("%s: NotifyProjectSaveStart",CLSS);
+		log.infof("%s.notifyProjectSaveStart --------",CLSS);
 		
 		// check if problems with save, just notify for now.  Can do save.abort() if it's serious
 		StringBuffer msg = new StringBuffer();
