@@ -65,8 +65,7 @@ import net.miginfocom.swing.MigLayout;
  */
 public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor implements NotificationChangeListener, PropertyChangeListener, FocusListener {
 	private static final long serialVersionUID = 7211480530910862375L;
-	private static final String CLSS = "FinalDiagnosisPanel";
-	private static final boolean DEBUG = true;
+	private static final String CLSS = "FinalDiagnosisPropertyEditor";
 	private final NotificationHandler notificationHandler = NotificationHandler.getInstance();
 	private final NodeStatusManager nodeStatusMgr;			// PH 06/30/2021
 	private final DiagramTreeNode diagramTreeNode;		// PH 06/30/2021
@@ -131,8 +130,8 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		this.requestHandler = new ApplicationRequestHandler();
 		this.context = context;
         this.diagram = wrkspc.getActiveDiagram();
-		//this.corePanel = new CorePropertyPanel(this, block);
 		this.log = LogUtil.getLogger(getClass().getPackage().getName());
+		log.infof("%s: creating a Final Diagnosis Editor", CLSS);
 		this.database = requestHandler.getProductionDatabase();
 		this.provider = requestHandler.getProductionTagProvider();
 		this.setPreferredSize(new Dimension(DIALOG_WIDTH,DIALOG_HEIGHT));
@@ -167,7 +166,7 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
         initialize(block);
         setUI();
 		// Register for notifications
-		if (DEBUG) log.infof("%s: adding notification listener %s", CLSS, key);
+		log.tracef("%s: adding notification listener %s", CLSS, key);
 		notificationHandler.addNotificationChangeListener(key, CLSS, this);
 	}
 
@@ -207,11 +206,16 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 	}
 	
 	public void shutdown() {
-		notificationHandler.removeNotificationChangeListener(key,CLSS);
-		save();
-		requestHandler.writeAuxData(context.getProject().getId(), diagram.getResourceId(), block.getId().toString(), model, provider, database);
-		if (DEBUG) log.infof("%s.shutdown: writing aux data",CLSS);
+		/*
+		 * This is a concrete method for the abstract method defined on AbstractPropertyEditor.  
+		 * This is called by the setEditor() method in PropertyEditorFrame, which encapsulates the editor, whenever something in
+		 * the project tree is selected or another block on the diagram.
+		 */
+		log.tracef("%s.shutdown: removing change listener and saving", CLSS);
+		notificationHandler.removeNotificationChangeListener(key, CLSS);
+		save();		
 	}
+	
 	
 	/**
 	 * Create the main data pane as a grid 2 columns wide:
@@ -221,21 +225,20 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		JPanel panel = new JPanel();
 		panel.setLayout(new MigLayout("ins 2", "[para]0[]0[]", "[para]0[]0[]"));
 		
-		
 		panel.add(new JLabel("Name"),"skip");
-		final JTextField finalDiagnosisNameField = new JTextField(blk.getName());
+		finalDiagnosisNameField = new JTextField(blk.getName());
 		finalDiagnosisNameField.setEditable(false);
 		panel.add(finalDiagnosisNameField,"growx,pushx");
 		finalDiagnosisNameField.setEditable(true);
 		finalDiagnosisNameField.addFocusListener(this);
 		
 		panel.add(new JLabel("Class"),"newline,skip");
-		final JTextField finalDiagnosisClassField = new JTextField(blk.getClassName());
+		finalDiagnosisClassField = new JTextField(blk.getClassName());
 		finalDiagnosisClassField.setEditable(false);
 		panel.add(finalDiagnosisClassField, "growx,pushx");
 		
 		panel.add(new JLabel("UUID"),"newline, skip");
-		final JTextField finalDiagnosisUUIDField = new JTextField(blk.getId().toString());
+		finalDiagnosisUUIDField = new JTextField(blk.getId().toString());
 		finalDiagnosisUUIDField.setEditable(false);
 		panel.add(finalDiagnosisUUIDField, "growx,pushx");
 		return panel;
@@ -330,22 +333,22 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		
 		// Get the list of quant outputs that have been defined for the application
 		List< Map<String,String> > outputMapList = appModel.getMapLists().get("QuantOutputs");
-		if (DEBUG) log.infof("Application Output Map List: %s", outputMapList);
+		log.tracef("Application Output Map List: %s", outputMapList);
 		
 		// Convert the list of output maps to a list of strings (output names)
 		List<String> q0 = new ArrayList<>();
 		for(Map<String,String> outmap:outputMapList) {
 			q0.add(outmap.get("QuantOutput"));
 		}
-		if (DEBUG) log.infof("Total list of outputs: %s", q0);
+		log.tracef("Total list of outputs: %s", q0);
 		
 		// Remove the outputs that are already in use
 		for( String inUse:q1) {
 			q0.remove(inUse);
 		}
 		
-		if (DEBUG) log.infof("Left list: %s", q0);
-		if (DEBUG) log.infof("Right list: %s", q1);
+		log.tracef("Left list: %s", q0);
+		log.tracef("Right list: %s", q1);
 
 		dual.setSourceElements(q0);
 
@@ -411,17 +414,21 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 	}
 
 	/*
-	 * Copy the FinalDiagnosis auxiliary data back into the block's aux data
+	 * Copy the FinalDiagnosis auxiliary data back into the block's aux data.
+	 * This saves the edits made in the editor to the Designer's copy of the block.
+	 * It does NOT do a permanent change of the resource in the gateway.
+	 * If this is working correctly, you should be able to select a FD, edit something, select a different block, select the FD again and you 
+	 * will see the edit, quit the designer (without a File->Save), open designer, select the same block, and you will not see the change. 
 	 */
 	private void save(){
-		if (DEBUG) log.infof("%s:save() copying the AUX data back into the block's aux data...",CLSS);
+		log.tracef("%s:save() copying the AUX data back into the block's aux data...",CLSS);
 		model.getProperties().put("Constant", (constantCheckBox.isSelected()?"1":"0"));
 		model.getProperties().put("ManualMoveAllowed", (manualMoveAllowedCheckBox.isSelected()?"1":"0"));
 		model.getProperties().put("CalculationMethod",calculationMethodField.getText());
 		model.getProperties().put("FinalDiagnosisLabel",finalDiagnosisLabelField.getText());
 		model.getProperties().put("TextRecommendation", textRecommendationArea.getText());
 		model.getProperties().put("Comment", commentArea.getText());
-		if (DEBUG) log.infof("Comment: %s", commentArea.getText());
+		log.tracef("Comment: %s", commentArea.getText());
 		model.getProperties().put("Explanation", explanationArea.getText());
 		model.getProperties().put("PostTextRecommendation", (postTextRecommendationCheckBox.isSelected()?"1":"0"));
 		model.getProperties().put("ShowExplanationWithRecommendation", (showExplanationWithRecommendationCheckBox.isSelected()?"1":"0"));
@@ -432,6 +439,15 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		
 		List<String> inUseList = dual.getDestinations();
 		model.getLists().put("OutputsInUse",inUseList);
+		
+		/*
+		 * This sends the block model, which we just updated to the gateway where the data is written to the database.  This does NOT save the updated model 
+		 * as a serialized internal resource, i.e., the project is not saved.  So if the user closed designer, while the workspace is dirty after editing a final diagnosis,
+		 * then the internal Ignition resource and the data in the database will be out of sync.  However, if I comment this out here then it needs to be called 
+		 * somewhere else when they actually do the save. 
+		 */
+		log.tracef("%s.save: writing aux data",CLSS);
+		requestHandler.writeAuxData(context.getProject().getId(), diagram.getResourceId(), block.getId().toString(), model, provider, database);
 	}
 	
 	/*
@@ -550,8 +566,13 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 	// ============================================== PropertyChange listener ==========================================
 	@Override
 	public void propertyChange(PropertyChangeEvent event) {
-		if (DEBUG) log.infof("%s: in propertyChange()",CLSS);
+		/*
+		 * This is called when the editor is built - I think the purpose is to handle changes made via a tag binding where the tag changes value while
+		 * the editor is open.  Not sure why the code below seems to single out the dual list box. PAH 10/6/21 (This is just a theory)
+		 */
+		log.tracef("%s: in propertyChange()",CLSS);
 		if (event.getPropertyName().equalsIgnoreCase(DualListBox.PROPERTY_CHANGE_UPDATE)) {
+			setDiagramDirty();
 			save();
 		}
 	}	
@@ -561,15 +582,19 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 	@Override
 	public void diagramStateChange(long resId, String state) {}
 	@Override
-	public void nameChange(String name) {}
+	public void nameChange(String name) {
+		log.tracef("%s.nameChange()", CLSS);
+	}
 	@Override
-	public void propertyChange(String pname,Object value) {}
+	public void propertyChange(String pname,Object value) {
+		log.tracef("%s.propertyChange()", CLSS);
+	}
 
 	// The value is the aux data of the application. Note that the method is not
 	// called on the Swing thread
 	@Override
 	public void valueChange(final QualifiedValue value) {
-		log.infof("%s.valueChange: new aux data for %s",CLSS,block.getName());
+		log.tracef("%s.valueChange: new aux data for %s",CLSS,block.getName());
 		if( value==null ) return;
 		GeneralPurposeDataContainer container = (GeneralPurposeDataContainer)value.getValue();
 		if( container==null) return;
@@ -588,20 +613,94 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 	// ======================================= Focus Change Listener ===================================
 	@Override
 	public void focusGained(FocusEvent e) {
-		if (DEBUG) log.infof("%s: focusGained()...",CLSS);
+		log.tracef("%s: focusGained()...",CLSS);
 	}
 
 	@Override
 	public void focusLost(FocusEvent event) {
-		if (DEBUG) log.infof("%s: focusLost()...",CLSS);
-		if( event.getSource() instanceof EditableField ) {
-			log.infof("%s.focusLost(): %s", CLSS,event.getSource().getClass().getName());
-			EditableField field = (EditableField)event.getSource();
-			BlockProperty prop = field.getProperty();
-			if( DEBUG ) log.infof("%s.focusLost(): %s (%s:%s)", CLSS, prop.getName(), prop.getType().name(), prop.getBindingType().name());
-			// If there is a value change, then update the property (or binding)
-			//updatePropertyForField(field,false);
+		log.tracef("%s: focusLost() for a %s...", CLSS, event.getSource().getClass().getName());
+		
+		Map<String,String> properties = model.getProperties();
+		
+		/*
+		 * If the value was changed then set the diagram dirty
+		 */
+		
+		if(event.getSource() instanceof JTextField){
+			JTextField textField = (JTextField)event.getSource();
+			log.tracef("%s.focusLost() *** JTextField ***", CLSS);
+			if (textField == finalDiagnosisLabelField && !textField.getText().equals(properties.get("FinalDiagnosisLabel"))){
+					log.tracef("--------  THE LABEL HAS BEEN CHANGED -------------");
+					setDiagramDirty();
+					save();
+			}
+			else if (textField == calculationMethodField && !textField.getText().equals(properties.get("CalculationMethod"))){
+				log.tracef("--------  THE CALCULATION METHOD HAS BEEN CHANGED -------------");
+				setDiagramDirty();
+				save();
+			}
+			else if (textField == postProcessingCallbackField && !textField.getText().equals(properties.get("PostProcessingCallback"))){
+				log.tracef("--------  THE POST PROCESSING CALLBACK HAS BEEN CHANGED -------------");
+				setDiagramDirty();
+				save();
+			}
+			else if (textField == finalDiagnosisNameField && !textField.getText().equals(block.getName())){
+				log.tracef("--------  THE FINAL DIAGNOSIS NAME HAS BEEN CHANGED -------------");
+				log.tracef("Old name: %s", block.getName());
+				log.tracef("New name: %s", textField.getText());
+				setDiagramDirty();
+				save();
+			}
 		}
-		//saveName();
+		
+		else if( event.getSource() instanceof JTextArea ) {
+			JTextArea textArea = (JTextArea)event.getSource();
+			log.tracef("%s.focusLost() *** JTextArea ***", CLSS);
+			if (textArea == textRecommendationArea && !textArea.getText().equals(properties.get("TextRecommendation"))){
+				log.tracef("--------  THE TEXT RECOMMENDATION HAS BEEN CHANGED -------------");
+				setDiagramDirty();
+				save();
+			}
+			else if (textArea == explanationArea && !textArea.getText().equals(properties.get("Explanation"))){
+				log.tracef("--------  THE EXPLANATION HAS BEEN CHANGED -------------");
+				setDiagramDirty();
+				save();
+			}
+			else if (textArea == commentArea && !textArea.getText().equals(properties.get("Comment"))){
+				log.tracef("--------  THE COMMENT HAS BEEN CHANGED -------------");
+				setDiagramDirty();
+				save();
+			}
+		}
+		
+		else if( event.getSource() instanceof JCheckBox ) {
+			JCheckBox checkBox = (JCheckBox)event.getSource();
+			log.tracef("%s.focusLost() *** JCheckBox ***", CLSS);
+			if (checkBox == constantCheckBox && !(checkBox.isSelected()?"1":"0").equals(properties.get("Constant"))){
+				log.tracef("--------  THE CONSTANT CHECK BOX HAS BEEN CHANGED -------------");				
+				setDiagramDirty();
+				save();
+			}
+			else 	if (checkBox == postTextRecommendationCheckBox && !(checkBox.isSelected()?"1":"0").equals(properties.get("PostTextRecommendation"))){
+				log.tracef("--------  THE POST TEXT RECOMMENDATION CHECK BOX HAS BEEN CHANGED -------------");				
+				setDiagramDirty();
+				save();
+			}
+			else 	if (checkBox == showExplanationWithRecommendationCheckBox && !(checkBox.isSelected()?"1":"0").equals(properties.get("ShowExplanationWithRecommendation"))){
+				log.tracef("--------  THE SHOW EXPLANATION CHECK BOX HAS BEEN CHANGED -------------");				
+				setDiagramDirty();
+				save();
+			}
+			else 	if (checkBox == manualMoveAllowedCheckBox && !(checkBox.isSelected()?"1":"0").equals(properties.get("ManualMoveAllowed"))){
+				log.tracef("--------  THE MANUAL MOVE ALLOWED CHECK BOX HAS BEEN CHANGED -------------");				
+				setDiagramDirty();
+				save();
+			}
+			else 	if (checkBox == trapBox && !(checkBox.isSelected()?"1":"0").equals(properties.get("TrapInsignificantRecommendations"))){
+				log.tracef("--------  THE TRAP INSIGNIFICANT RECOMMENDATIONS CHECK BOX HAS BEEN CHANGED -------------");				
+				setDiagramDirty();
+				save();
+			}			
+		}
 	}
 }

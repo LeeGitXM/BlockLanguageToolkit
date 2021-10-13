@@ -3,8 +3,8 @@
 	<import file="${basedir}/BLT_Build/build.xml"/>
 
 	<property name="version.major" value="2" />	
-	<property name="version.minor" value="0" />	
-	<property name="version.release" value="3" />	
+	<property name="version.minor" value="1" />	
+	<property name="version.release" value="5" />	
 	<property name="version.build" value="${DSTAMP}" />	
 	<!-- Change version.beta value to "" for release builds -->
 	<property name="version.beta" value="-development" />		
