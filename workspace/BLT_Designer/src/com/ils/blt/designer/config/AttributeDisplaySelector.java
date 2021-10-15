@@ -16,6 +16,8 @@ import java.awt.Frame;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -61,17 +63,18 @@ public class AttributeDisplaySelector extends JDialog implements TableModelListe
 	private static final long serialVersionUID = 4004388376825535527L;
 	private final int DIALOG_HEIGHT = 400;
 	private final int DIALOG_WIDTH = 600;
+	private final int OFFSET_X = 200;
+	private final int OFFSET_Y = 100;
+	private final int SEPARATION = 50;
 	private final int TABLE_HEIGHT = 200;
 	private final int TABLE_WIDTH = 800;
 	private final ProcessDiagramView diagram;
 	private final ProcessBlockView block;
 	private JTable table = null;
 	JPanel internalPanel = null;
-	private final DiagramWorkspace workspace;
 
-	public AttributeDisplaySelector(Frame frame, ProcessDiagramView dia, ProcessBlockView view, DiagramWorkspace wkspc) {
+	public AttributeDisplaySelector(Frame frame, ProcessDiagramView dia, ProcessBlockView view) {
 		super(frame);
-		this.workspace = wkspc;
 		this.diagram = dia;
 		this.block = view;
 		this.setTitle(String.format(BundleUtil.get().getString(PREFIX + ".ViewInternals.Title", view.getName())));
@@ -85,7 +88,6 @@ public class AttributeDisplaySelector extends JDialog implements TableModelListe
 	}
 
 	private void initialize() {
-
 		setLayout(new BorderLayout());
 		internalPanel = new JPanel();
 		internalPanel.setLayout(new MigLayout("ins 2,fillx", "", ""));
@@ -116,9 +118,10 @@ public class AttributeDisplaySelector extends JDialog implements TableModelListe
 		internalPanel.repaint();
 	}
 
-	/*
-	 * This is called then they check or uncheck a row in the table.
-	 * As a result of that we create or delete a readout.
+	/**
+	 * This is called when a checkbox in the table is selected or de-selected.
+	 * As a result of that we create or delete AttributeDisplays. Worry about
+	 * positioning after the blocks are created or deleted.
 	 */
 	public void tableChanged(TableModelEvent e) {
 		if (e.getType() == TableModelEvent.UPDATE) {
@@ -130,31 +133,39 @@ public class AttributeDisplaySelector extends JDialog implements TableModelListe
 				String propName = (String) model.getValueAt(row, 1);
 				boolean newValue = ((Boolean) model.getValueAt(row, column)).booleanValue();
 				
-				BlockAttributeView pad = findDisplay(diagram,block,propName);
+				BlockAttributeView bav = findDisplay(diagram,block,propName);
 				// CASE I - checked box, display does not exist. Create it.
-				// Add to diagram
-				if ( newValue && (pad==null) ) {
-					pad = new BlockAttributeView(new AttributeDisplayDescriptor());
-					pad.setDiagram(diagram);
-					pad.setReferenceBlock(block);
-					pad.setPropertyName(propName);
-					pad.setLocation(new Point(100,40));
-					diagram.addBlock(pad);
+				// Add to diagram. Reposition after all the displays have been created.
+				if ( newValue && (bav==null) ) {
+					bav = new BlockAttributeView(new AttributeDisplayDescriptor());
+					bav.setBlockId(block.getId().toString());
+					bav.setPropName(propName);
+					if(propName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_NAME)) {
+						bav.setValue(block.getName());
+					}
+					else {
+						bav.setValue(block.getProperty(propName).getValue().toString());
+					}
+					bav.startListener();
+					diagram.addBlock(bav);
 					diagram.setDirty(true);
 				}
 				// CASE II - checked box, but display already exists. Do nothing, just use it.
-				else if(newValue && (pad!=null) ) {
-					diagram.setDirty(false);
+				else if(newValue && (bav!=null) ) {
+	
 				}
 				// CASE III - unchecked box and there is display. Delete it.
-				else if ( !newValue && (pad!=null)) {
-					diagram.deleteBlock(pad);
+				else if ( !newValue && (bav!=null)) {
+					diagram.deleteBlock(bav);
 				}
 				// CASE IV - unchecked box and there is no display. Do nothing.
 				else  {
 				}
+				
 				SwingUtilities.invokeLater(new WorkspaceRepainter());
 			}
+			diagram.setDirty(true);
+			arrangeDisplays();
 		}
 	}
 
@@ -220,6 +231,20 @@ public class AttributeDisplaySelector extends JDialog implements TableModelListe
 	}
 
 	/**
+	 * Arrange the locations of the displays in a stack pattern.
+	 * The
+	 */
+	private void arrangeDisplays() {
+		Point ref = block.getLocation();
+		int count = 0;
+		for(BlockAttributeView bav:findDisplays(diagram,block)) {
+			Point loc = new Point(ref.x,ref.y);
+			bav.setLocation(loc);
+			bav.fireBlockMoved();
+			count++;
+		}
+	}
+	/**
 	 * The "display" is a BlockAttributeView block with the indicated reference block and property.
 	 * @return the attribute display for the given block and property
 	 */
@@ -228,15 +253,30 @@ public class AttributeDisplaySelector extends JDialog implements TableModelListe
 		for(Block block:dia.getBlocks()) {
 			if( block instanceof BlockAttributeView ) {
 				BlockAttributeView bav = (BlockAttributeView)block;
-				BlockProperty viewProp = bav.getProperty(BlockConstants.BLOCK_PROPERTY_PROPERTY);
-				if( viewProp!=null && propName.equalsIgnoreCase(viewProp.getValue().toString()) ) {
-					BlockProperty idProp =  bav.getProperty(BlockConstants.ATTRIBUTE_DISPLAY_BLOCK_ID);
-					if( idProp!=null && bav.getId().equals(refBlock.getId())) {
+				// First check for the same block
+				if( bav.getBlockId().equalsIgnoreCase(refBlock.getId().toString())) {
+					if( propName.equalsIgnoreCase(bav.getPropName())) {
 						display = bav;
 					}
 				}
 			}
 		}
 		return display;
+	}
+	/**.
+	 * @return a list of attribute display for the given block
+	 */
+	private List<BlockAttributeView> findDisplays(ProcessDiagramView dia, ProcessBlockView refBlock) {
+		List<BlockAttributeView> displays = new ArrayList<>();;
+		for(Block block:dia.getBlocks()) {
+			if( block instanceof BlockAttributeView ) {
+				BlockAttributeView bav = (BlockAttributeView)block;
+				// Check for the specified block
+				if( bav.getBlockId().equalsIgnoreCase(refBlock.getId().toString())) {
+					displays.add(bav);
+				}
+			}
+		}
+		return displays;
 	}
 }

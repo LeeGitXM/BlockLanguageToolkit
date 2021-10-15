@@ -1,5 +1,5 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved.
+ *   (c) 2014-2021  ILS Automation. All rights reserved.
  */
 package com.ils.blt.designer.workspace;
 
@@ -23,6 +23,7 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.Connect
 import com.inductiveautomation.ignition.designer.blockandconnector.routing.AbstractEdgeRouter;
  
 /**
+ * Route paths ignoring the issue of painting over blocks.
  * Created by carl.gould on 1/23/2015.
  */
 public class HighPerformanceEdgeRouter extends AbstractEdgeRouter {

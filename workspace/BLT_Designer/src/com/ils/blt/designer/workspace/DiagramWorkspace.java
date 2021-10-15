@@ -521,7 +521,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		
 		// Display the internals viewer
 		public void actionPerformed(final ActionEvent e) {
-			final JDialog viewer = (JDialog)new AttributeDisplaySelector(context.getFrame(),diagram,block, workspace);
+			final JDialog viewer = (JDialog)new AttributeDisplaySelector(context.getFrame(),diagram,block);
 			
 			Object source = e.getSource();
 			if( source instanceof Component) {

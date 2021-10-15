@@ -20,18 +20,17 @@ import com.ils.blt.designer.workspace.ProcessDiagramView;
 
 
 /**
- * Create a rectangular display similar to a "readout". The block has a large number of properties
- * related to formatting of the output.
+ * Create a rectangular display similar to a "readout", or a G2 attribute-display. The
+ * subject AttributeView is listening on a specified property of a different block.
+ * The view has a large number of properties related to formatting of the output.
  * 
  * There are no anchor points.
  */
 public class AttributeUIView extends AbstractBlockUIView implements BlockViewUI {
 	private static final long serialVersionUID = 2160868310475735865L; 
-	private ProcessDiagramView diagram = null;
-	private ProcessBlockView referenceBlock = null;
 	private static final int DEFAULT_HEIGHT = 40;
 	private static final int DEFAULT_WIDTH = 80;
-	private BlockAttributeView attributeView;
+	private BlockAttributeView attributeView = null;
 	private String propertyName;
 	private int height = DEFAULT_HEIGHT;
 	private int width  = DEFAULT_WIDTH;
@@ -45,16 +44,7 @@ public class AttributeUIView extends AbstractBlockUIView implements BlockViewUI 
 		super(view,DEFAULT_WIDTH,DEFAULT_HEIGHT);
 		if( view instanceof BlockAttributeView ) {
 			attributeView = (BlockAttributeView)view;
-			diagram = attributeView.getDiagram();
-			referenceBlock = attributeView.getReferenceBlock();
-			propertyName = attributeView.getProperty(BlockConstants.ATTRIBUTTE_DISPLAY_PROPERTY).getValue().toString();
-			if(propertyName.equals(BlockConstants.BLOCK_PROPERTY_NAME)) {
-				valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_NAME,referenceBlock.getName(),PropertyType.STRING,false);
-			}
-			else {
-				valueProperty = referenceBlock.getProperty(propertyName);
-			}
-			
+			propertyName = attributeView.getPropName();
 		}
 		this.fncs = new UtilityFunctions();
 		setOpaque(false);
@@ -79,11 +69,11 @@ public class AttributeUIView extends AbstractBlockUIView implements BlockViewUI 
 		Rectangle ifb = new Rectangle();   // Interior, frame and border
 		ifb = SwingUtilities.calculateInnerArea(this,ifb);
 		// Now translate so that 0,0 is is at the inner origin
-		if( referenceBlock!=null ) {
-			ifb.x += 80;
-			ifb.y += 40;
-			//setLocation(referenceBlock.getLocation().x+50,referenceBlock.getLocation().y+30);
-		}
+		if( attributeView==null ) return;
+		ifb.x += 80;
+		ifb.y += 40;
+		//setLocation(referenceBlock.getLocation().x+50,referenceBlock.getLocation().y+30);
+	
 		g.translate(ifb.x, ifb.y);
 
 		// Now leave space for stubs and border
@@ -128,16 +118,12 @@ public class AttributeUIView extends AbstractBlockUIView implements BlockViewUI 
 		// Reverse any transforms we made
 		g.setTransform(originalTx);
 		g.setBackground(originalBackground);
-		// Update embedded text - the block formats the output
-		// We are guaranteed that the property value is a qualified value.
-		String value  = "not set";
-		if( valueProperty!=null ) {
-			value = fncs.coerceToString(valueProperty.getValue());   // Just to be safe
-		}
+
 		
 		// NOTE* No longer assume 100px width.  TimeReadout is wider.  The old setting of 8 for small was unreadable
 		// Set the font size based on the string length.
 		// Assumes 100px block width
+		String value = attributeView.getValue();
 		int fontSize = 12;  // Small
 		if( value.length()<7 ) fontSize = 14;
 		else if( value.length()<13 ) fontSize = 12;

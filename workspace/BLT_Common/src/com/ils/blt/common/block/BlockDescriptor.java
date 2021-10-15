@@ -20,7 +20,7 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  */
 public class BlockDescriptor {
 	private static LoggerEx log = LogUtil.getLogger(BlockDescriptor.class.getPackage().getName());
-	private static final String TAG = "BlockDescription";
+	private static final String TAG = "BlockDescriptor";
 	private List<AnchorPrototype> anchors;
 	private int background = Color.WHITE.getRGB();  // Transmit color as an int for serialization.
 	protected String blockClass = null;               // Class of the block in the Gateway (ils. ... implies Python)

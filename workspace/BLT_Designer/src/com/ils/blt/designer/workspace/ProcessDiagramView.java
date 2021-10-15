@@ -87,7 +87,13 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		suppressStateChangeNotification = true;
 		synchronized (diagram) {
 			for( SerializableBlock sb:diagram.getBlocks()) {
-				ProcessBlockView pbv = new ProcessBlockView(sb);
+				ProcessBlockView pbv = null;
+				if( sb.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_ATTRIBUTE)) {
+					pbv = new BlockAttributeView(sb);
+				}
+				else {
+					pbv = new ProcessBlockView(sb);
+				}
 				blockMap.put(sb.getId(), pbv);
 				if( DEBUG ) log.infof("%s.ProcessDiagramView: Added a ProcessBlockView for %s to map", CLSS, sb.getName());
 				this.addBlock(pbv);
@@ -364,22 +370,35 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	
 	@Override
 	public void deleteBlock(Block blk) {
-		// Delete every connection attached to the block
-		List<Connection> connectionsToBeDeleted = new ArrayList<Connection>();
-		UUID blockId = blk.getId();
-		for( AnchorPoint ap:blk.getAnchorPoints()) {
-			boolean isOrigin = ap.isConnectorOrigin();
-			for(Connection cxn:connections) {
-				if(isOrigin && blockId.equals(cxn.getOrigin().getBlock().getId()) )         connectionsToBeDeleted.add(cxn);
-				else if(!isOrigin && blockId.equals(cxn.getTerminus().getBlock().getId()) ) connectionsToBeDeleted.add(cxn);
+		
+		if( !(blk instanceof BlockAttributeView) ) {
+			// Delete every connection attached to the block
+			List<Connection> connectionsToBeDeleted = new ArrayList<Connection>();
+			UUID blockId = blk.getId();
+			for( AnchorPoint ap:blk.getAnchorPoints()) {
+				boolean isOrigin = ap.isConnectorOrigin();
+				for(Connection cxn:connections) {
+					if(isOrigin && blockId.equals(cxn.getOrigin().getBlock().getId()) )         connectionsToBeDeleted.add(cxn);
+					else if(!isOrigin && blockId.equals(cxn.getTerminus().getBlock().getId()) ) connectionsToBeDeleted.add(cxn);
+				}
+			}
+
+			for(Connection cxn:connectionsToBeDeleted) {
+				connections.remove(cxn);
+			}
+			
+			// Delete any associated attribute views associated with the block
+			List<ProcessBlockView> views = new ArrayList<>();
+			for(ProcessBlockView view:blockMap.values()) {
+				if(view.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_ATTRIBUTE)) {
+					BlockAttributeView bav = (BlockAttributeView)view;
+					if(bav.getBlockId().equals(blk.getId().toString()) )  {
+						blockMap.remove(bav.getId());
+					}
+				}
 			}
 		}
-		
-		for(Connection cxn:connectionsToBeDeleted) {
-			connections.remove(cxn);
-		}
-		
-		log.infof("%s.deleteBlock: deleting a sink (%s)",CLSS,blk.getClass().getCanonicalName());
+		log.infof("%s.deleteBlock: deleting a block (%s)",CLSS,blk.getClass().getCanonicalName());
 		// Delete the block by removing it from the map
 		blockMap.remove(blk.getId());
 		fireStateChanged();

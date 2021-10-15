@@ -77,12 +77,12 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 	private boolean ctypeEditable=false;          // Can we globally change our connection types
 	private boolean locked = false; 
 	private Point location = new Point(0,0);
-	private final LoggerEx log; 
-	private String name;
-	private int preferredHeight = 0;              // Size the view to "natural" size
-	private int preferredWidth  = 0;              // Size the view to "natural" size
-	private String backgroundColor  = "GREY";
-	private Map<String,BlockProperty> propertyMap = new HashMap<String,BlockProperty>();
+	protected final LoggerEx log; 
+	protected String name;
+	protected int preferredHeight = 0;              // Size the view to "natural" size
+	protected int preferredWidth  = 0;              // Size the view to "natural" size
+	protected String backgroundColor  = "GREY";
+	protected Map<String,BlockProperty> propertyMap = new HashMap<String,BlockProperty>();
 	private TruthValue state = TruthValue.UNSET;
 	private String badgeChar = null;
 	private String statusText;                    // Auxiliary text to display
@@ -300,6 +300,9 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 	
 	public GeneralPurposeDataContainer getAuxiliaryData() {
 		return auxiliaryData;
+	}
+	public void fireBlockMoved() {
+		super.fireBlockMoved();
 	}
 	
 	public int getBackground() { 

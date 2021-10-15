@@ -1,5 +1,5 @@
 /**
- *   (c) 2019  ILS Automation. All rights reserved. 
+ *   (c) 2019-2021  ILS Automation. All rights reserved. 
  */
 package com.ils.block;
 
@@ -16,20 +16,20 @@ import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.control.ExecutionController;
 
 /**
- * Display a single property of another block.
+ * This block is obsolete and has been replaced by AttributeDisplay. Its only purpose is to allow
+ * diagrams that contain these blocks to be successfully deserialized.
  */
 @ExecutableBlock
 public class BlockPropertyDisplay extends AbstractProcessBlock implements ProcessBlock {
-	private static final String TAG = "PropertyDisplay";
-	public static final int DEFAULT_WIDTH = 120;
+	private static final String CLSS = "BlockPropertyDisplay";
+	public static final int DEFAULT_WIDTH = 180;
 	public static final int DEFAULT_HEIGHT = 15;
 	protected BlockProperty text = null;
 	
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
-	 * This may not be used because this does not exist on a palette - the only way to make one of these is via the 
-	 * Property Display select dialog by right-clicking on a block.
+	 * This may not be used because this does not exist on a palette.
 	 */
 	public BlockPropertyDisplay() {
 		initialize();
@@ -49,12 +49,9 @@ public class BlockPropertyDisplay extends AbstractProcessBlock implements Proces
 		initialize();
 		
 		// Overwrite blocks stored before 10/01/2015
-		BlockDescriptor desc = prototype.getBlockDescriptor();
-		desc.setEditorClass("com.ils.blt.designer.config.BlockPropertyEditor");
-	}
 
-	@Override
-	public boolean delayBlockStart() { return true; }
+	}
+	
 	@Override
 	public void propagate() {}
 	/**
@@ -62,10 +59,10 @@ public class BlockPropertyDisplay extends AbstractProcessBlock implements Proces
 	 * Populate them with default values.
 	 */
 	private void initialize() {
-		setName(TAG);
-		// Property property is to designate what property of the connected block this shows
-//		BlockProperty property = new BlockProperty(BlockConstants.BLOCK_PROPERTY_PROPERTY,"", PropertyType.STRING, true);
-//		setProperty(BlockConstants.BLOCK_PROPERTY_PROPERTY, property);		
+		setName(CLSS);
+		// Property designates what property of the connected block this shows
+		BlockProperty property = new BlockProperty(BlockConstants.BLOCK_PROPERTY_PROPERTY,"", PropertyType.STRING, true);
+		setProperty(BlockConstants.BLOCK_PROPERTY_PROPERTY, property);	
 
 		text = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TEXT,"",PropertyType.STRING,false);
 		text.setBindingType(BindingType.ENGINE);
@@ -84,13 +81,9 @@ public class BlockPropertyDisplay extends AbstractProcessBlock implements Proces
 	}
 	
 	/**
-	 * Augment the palette prototype for this block class.
+	 * This block does not appear on a palette.
 	 */
 	private void initializePrototype() {
-		/* Leaving these two uninitialized will cause it to be left off of the palette, but we must still specify a palette!
-		prototype.setPaletteIconPath("Block/icons/palette/note.png");
-		prototype.setPaletteLabel("PropertyDisplay");
-		*/
 		prototype.setTooltipText("Single property of a block");
 		prototype.setTabName(BlockConstants.PALETTE_TAB_NONE);
 		

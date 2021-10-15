@@ -1,5 +1,5 @@
 /**
- *   (c) 2013-2020  ILS Automation. All rights reserved.
+ *   (c) 2013-2021  ILS Automation. All rights reserved.
  */
 package com.ils.blt.common.block;
 
@@ -25,7 +25,7 @@ public interface BlockConstants   {
 	public static final String RECEIVER_PORT_NAME   = "recv";     // Receive
 	public static final String SIGNAL_PORT_NAME    = "signal";   // Signal (every block has one)
 		
-	// These are block property names used specially for attrbute displays
+	// These are block property names used specially for attribute displays
 	public static final String ATTRIBUTE_DISPLAY_BACKGROUND_COLOR   = "BackgroundColor";
 	public static final String ATTRIBUTE_DISPLAY_BLOCK_ID    		= "BlockId";
 	public static final String ATTRIBUTE_DISPLAY_FONT        		= "Font";
@@ -33,8 +33,10 @@ public interface BlockConstants   {
 	public static final String ATTRIBUTE_DISPLAY_HEIGHT        		= "Height";
 	public static final String ATTRIBUTE_DISPLAY_OFFSET_X        	= "OffsetX";
 	public static final String ATTRIBUTE_DISPLAY_OFFSET_Y        	= "OffsetY";
-	public static final String ATTRIBUTTE_DISPLAY_PROPERTY    		= "Property";
+	public static final String ATTRIBUTE_DISPLAY_PROPERTY    		= "Property";
 	public static final String ATTRIBUTE_DISPLAY_USE_PREFIX        	= "Prefix?";
+	public static final String ATTRIBUTE_DISPLAY_VALUE    			= "Value";
+
 	public static final String ATTRIBUTE_DISPLAY_WIDTH        		= "Width";
 	// These are block property names that used in multiple block definitions
 	public static final String BLOCK_PROPERTY_ACTIVITY_BUFFER_SIZE 	= "ActivityBufferSize";

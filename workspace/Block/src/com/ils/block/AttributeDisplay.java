@@ -17,7 +17,9 @@ import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 
 /**
  * This is a pseudo-block that displays the current value of another, associated
- * block. The "value" property is what is displayed.
+ * block. The "value" property is what is displayed. The gateway version of this block
+ * has no behavior. It only exists to support serialization. The designer version of 
+ * the block is a BlockAttributeView.
  */
 @ExecutableBlock
 public class AttributeDisplay extends AbstractProcessBlock implements ProcessBlock {
@@ -29,7 +31,6 @@ public class AttributeDisplay extends AbstractProcessBlock implements ProcessBlo
 	public static final int DEFAULT_OFFSET_X = 50;
 	public static final int DEFAULT_OFFSET_Y = 25;
 	public static final int DEFAULT_WIDTH = 100;
-	
 
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -40,7 +41,7 @@ public class AttributeDisplay extends AbstractProcessBlock implements ProcessBlo
 	}
 	
 	/**
-	 * Constructor. Custom property is "Text".
+	 * Constructor. 
 	 * 
 	 * @param ec execution controller for handling block output
 	 * @param parent universally unique Id identifying the parent of this block
@@ -50,7 +51,13 @@ public class AttributeDisplay extends AbstractProcessBlock implements ProcessBlo
 		super(ec,parent,block);
 		initialize();
 	}
-
+	/**
+	 * Guarantee that the class name matches the constant used throughout
+	 * the application to identify an attribute display.
+	 */
+	@Override
+	public String getClassName() { return BlockConstants.BLOCK_CLASS_ATTRIBUTE; }
+	
 	/**
 	 * Handle a change to the property value
 	 */
@@ -68,10 +75,15 @@ public class AttributeDisplay extends AbstractProcessBlock implements ProcessBlo
 	 */
 	private void initialize() {
 		setName(CLSS);
-		BlockProperty blockId = new BlockProperty(BlockConstants.ATTRIBUTE_DISPLAY_BLOCK_ID,"The id of the block to be displayed", PropertyType.STRING, false);
-		setProperty(BlockConstants.ATTRIBUTE_DISPLAY_BLOCK_ID, blockId);	
-		BlockProperty property = new BlockProperty(BlockConstants.ATTRIBUTTE_DISPLAY_PROPERTY,"Name", PropertyType.STRING, false);
-		setProperty(BlockConstants.ATTRIBUTTE_DISPLAY_PROPERTY, property);	
+		// These two properties define which property to display
+		BlockProperty blockId = new BlockProperty(BlockConstants.ATTRIBUTE_DISPLAY_BLOCK_ID,"", PropertyType.STRING, false);
+		setProperty(BlockConstants.ATTRIBUTE_DISPLAY_BLOCK_ID, blockId);
+		BlockProperty property = new BlockProperty(BlockConstants.ATTRIBUTE_DISPLAY_PROPERTY,"Name", PropertyType.STRING, false);
+		setProperty(BlockConstants.ATTRIBUTE_DISPLAY_PROPERTY, property);
+		BlockProperty value = new BlockProperty(BlockConstants.ATTRIBUTE_DISPLAY_VALUE,"", PropertyType.STRING, false);
+		setProperty(BlockConstants.ATTRIBUTE_DISPLAY_VALUE, value);
+		
+		// These attributes defined how the display is configured
 		BlockProperty width = new BlockProperty(BlockConstants.ATTRIBUTE_DISPLAY_WIDTH, Integer.valueOf(DEFAULT_WIDTH), PropertyType.INTEGER,true);
 		setProperty(BlockConstants.ATTRIBUTE_DISPLAY_WIDTH, width);		
 		BlockProperty height = new BlockProperty(BlockConstants.ATTRIBUTE_DISPLAY_HEIGHT, Integer.valueOf(DEFAULT_HEIGHT), PropertyType.INTEGER,true);
