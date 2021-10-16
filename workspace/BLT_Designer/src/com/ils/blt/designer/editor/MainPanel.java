@@ -46,7 +46,7 @@ import net.miginfocom.swing.MigLayout;
 @SuppressWarnings("serial")
 public class MainPanel extends BasicEditPanel {
 	private final static String CLSS = "MainPanel";
-	private static final boolean DEBUG = true;
+	private static final boolean DEBUG = false;
 	protected final ProcessBlockView block;
 	protected final Map<String,PropertyPanel> panelMap;
 	protected final CorePropertyPanel corePanel;
@@ -56,7 +56,6 @@ public class MainPanel extends BasicEditPanel {
 
 	public MainPanel(DesignerContext context, BlockPropertyEditor editor, ProcessBlockView blk, DiagramWorkspace wrkspc) {
 		super(editor);
-		if(DEBUG)log.infof("%s:MainPanel()", CLSS);
 		this.bpe = editor;
 		this.block = blk;
 		this.panelMap = new HashMap<String,PropertyPanel>();

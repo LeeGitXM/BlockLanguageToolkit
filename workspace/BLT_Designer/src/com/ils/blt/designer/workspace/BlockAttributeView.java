@@ -47,9 +47,10 @@ public class BlockAttributeView extends ProcessBlockView implements Notification
 	public BlockAttributeView(SerializableBlock sb) {
 		super(sb);
 		this.fncs = new UtilityFunctions();
-		blockId = getProperty(BlockConstants.ATTRIBUTE_DISPLAY_BLOCK_ID);
-		propName= getProperty(BlockConstants.ATTRIBUTE_DISPLAY_PROPERTY);
-		value   = getProperty(BlockConstants.ATTRIBUTE_DISPLAY_VALUE);
+		blockId = getProperty(BlockConstants.ATTRIBUTE_PROPERTY_BLOCK_ID);
+		propName= getProperty(BlockConstants.ATTRIBUTE_PROPERTY_PROPERTY);
+		value   = getProperty(BlockConstants.ATTRIBUTE_PROPERTY_VALUE);
+		startListener();
 	}
 	/**
 	 * Add properties that are required for this class.
@@ -58,23 +59,23 @@ public class BlockAttributeView extends ProcessBlockView implements Notification
 	private void initialize() {
 		setName(CLSS);
 		// These two properties define which property to display
-		blockId = new BlockProperty(BlockConstants.ATTRIBUTE_DISPLAY_BLOCK_ID,"", PropertyType.STRING, false);
+		blockId = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_BLOCK_ID,"", PropertyType.STRING, false);
 		setProperty(blockId);
-		propName = new BlockProperty(BlockConstants.ATTRIBUTE_DISPLAY_PROPERTY,"Name", PropertyType.STRING, false);
+		propName = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_PROPERTY,"Name", PropertyType.STRING, false);
 		setProperty(propName);
-		value = new BlockProperty(BlockConstants.ATTRIBUTE_DISPLAY_VALUE,"", PropertyType.STRING, false);
+		value = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_VALUE,"", PropertyType.STRING, false);
 		setProperty(value);
 		
 		// These attributes defined how the display is configured
-		BlockProperty property = new BlockProperty(BlockConstants.ATTRIBUTE_DISPLAY_WIDTH, Integer.valueOf(DEFAULT_WIDTH), PropertyType.INTEGER,true);
+		BlockProperty property = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_WIDTH, Integer.valueOf(DEFAULT_WIDTH), PropertyType.INTEGER,true);
 		setProperty(property);		
-		property = new BlockProperty(BlockConstants.ATTRIBUTE_DISPLAY_HEIGHT, Integer.valueOf(DEFAULT_HEIGHT), PropertyType.INTEGER,true);
+		property = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_HEIGHT, Integer.valueOf(DEFAULT_HEIGHT), PropertyType.INTEGER,true);
 		setProperty(property);		
-		property = new BlockProperty(BlockConstants.ATTRIBUTE_DISPLAY_BACKGROUND_COLOR, "TRANSPARENT", PropertyType.COLOR,true);
+		property = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_BACKGROUND_COLOR, "TRANSPARENT", PropertyType.COLOR,true);
 		setProperty(property);
-		property = new BlockProperty(BlockConstants.ATTRIBUTE_DISPLAY_OFFSET_X, Integer.valueOf(DEFAULT_WIDTH), PropertyType.INTEGER,true);
+		property = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_OFFSET_X, Integer.valueOf(DEFAULT_WIDTH), PropertyType.INTEGER,true);
 		setProperty(property);		
-		property = new BlockProperty(BlockConstants.ATTRIBUTE_DISPLAY_OFFSET_Y, Integer.valueOf(DEFAULT_HEIGHT), PropertyType.INTEGER,true);
+		property = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_OFFSET_Y, Integer.valueOf(DEFAULT_HEIGHT), PropertyType.INTEGER,true);
 		setProperty(property);
 	}
 	
@@ -85,8 +86,8 @@ public class BlockAttributeView extends ProcessBlockView implements Notification
 	public String getValue()  {return this.value.getValue().toString(); }
 	public void setValue(String val) { this.value.setValue(val); }
 
-	public int getOffsetX () { return fncs.parseInteger(this.getProperty(BlockConstants.ATTRIBUTE_DISPLAY_OFFSET_X).getValue().toString()); }
-	public int getOffsetY () { return fncs.parseInteger(this.getProperty(BlockConstants.ATTRIBUTE_DISPLAY_OFFSET_Y).getValue().toString()); }
+	public int getOffsetX () { return fncs.parseInteger(this.getProperty(BlockConstants.ATTRIBUTE_PROPERTY_OFFSET_X).getValue().toString()); }
+	public int getOffsetY () { return fncs.parseInteger(this.getProperty(BlockConstants.ATTRIBUTE_PROPERTY_OFFSET_Y).getValue().toString()); }
 	
 	/**
 	 * Start listening to the value of the indicated property block

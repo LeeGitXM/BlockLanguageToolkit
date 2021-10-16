@@ -1,22 +1,25 @@
 package com.ils.blt.designer.workspace.ui;
 
 import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.Shape;
+import java.awt.font.FontRenderContext;
+import java.awt.font.GlyphVector;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Rectangle2D;
 
 import javax.swing.SwingUtilities;
 
 import com.ils.blt.common.UtilityFunctions;
-import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
-import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.designer.workspace.BlockAttributeView;
 import com.ils.blt.designer.workspace.ProcessBlockView;
-import com.ils.blt.designer.workspace.ProcessDiagramView;
 
 
 /**
@@ -31,11 +34,6 @@ public class AttributeUIView extends AbstractBlockUIView implements BlockViewUI 
 	private static final int DEFAULT_HEIGHT = 40;
 	private static final int DEFAULT_WIDTH = 80;
 	private BlockAttributeView attributeView = null;
-	private String propertyName;
-	private int height = DEFAULT_HEIGHT;
-	private int width  = DEFAULT_WIDTH;
-	private int offsetx = 0;
-	private int offsety = 0;
 	private final UtilityFunctions fncs;
 	private BlockProperty valueProperty = null;  /// This is the watched property on the reference block
 	
@@ -44,13 +42,10 @@ public class AttributeUIView extends AbstractBlockUIView implements BlockViewUI 
 		super(view,DEFAULT_WIDTH,DEFAULT_HEIGHT);
 		if( view instanceof BlockAttributeView ) {
 			attributeView = (BlockAttributeView)view;
-			propertyName = attributeView.getPropName();
 		}
 		this.fncs = new UtilityFunctions();
 		setOpaque(false);
 	}
-
-	
 	
 	@Override
 	protected void paintComponent(Graphics _g) {
@@ -131,5 +126,45 @@ public class AttributeUIView extends AbstractBlockUIView implements BlockViewUI 
 		block.setEmbeddedFontSize(fontSize);
 		block.setEmbeddedLabel(value);
 		drawEmbeddedText(g,0,0);
+	}
+	
+	// Draw the text that is part of the rendered box. Recognize \n or \\n as newlines.
+	// Left adjust
+	@Override
+	protected void drawEmbeddedText(Graphics2D g,int offsetx,int offsety) {
+		String text = block.getEmbeddedLabel();
+		if( text == null || text.length()==0 ) return;
+		Dimension sz = getPreferredSize();
+		String[] lines = text.split("\n");
+		if( lines.length==1 ) lines = text.split("\\n");
+		int lineCount = lines.length;
+		int dy = 3*block.getEmbeddedFontSize()/4;
+		int y = sz.height/2 - (lineCount-1)*dy/2;
+		for( String line: lines) {
+			paintTextAt(g,line,offsetx,y+offsety,Color.BLACK,block.getEmbeddedFontSize());
+			y+=dy;
+		}
+	}
+	/**
+	 * Utility method to paint a text string - left aligned.
+	 * @param g
+	 * @param text
+	 * @param xpos center of the text
+	 * @param ypos center of the text
+	 * @param fill color of the text
+	 */
+	protected void paintTextAt(Graphics2D g, String text, float xpos, float ypos, Color fill,int fontSize) {
+		Font font = g.getFont();
+		font = font.deriveFont((float)fontSize);  // This is, presumably the correct way
+		FontRenderContext frc = g.getFontRenderContext();
+		GlyphVector vector = font.createGlyphVector(frc, text);
+		Rectangle2D bounds = vector.getVisualBounds();
+		// xpos, ypos are centers. Adjust to upper left.
+		ypos+= bounds.getHeight()/2f;
+		//xpos-= bounds.getWidth()/2f;
+
+		Shape textShape = vector.getOutline(xpos, ypos);
+		g.setColor(fill);
+		g.fill(textShape);
 	}
 }

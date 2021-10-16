@@ -14,6 +14,8 @@ public class AttributeDisplayDescriptor extends BlockDescriptor {
 	public AttributeDisplayDescriptor() {
 		this.blockClass = BlockConstants.BLOCK_CLASS_ATTRIBUTE;
 		setStyle(BlockStyle.ATTRIBUTE);
+		setPreferredHeight(BlockConstants.ATTRIBUTE_DISPLAY_HEIGHT);
+		setPreferredWidth(BlockConstants.ATTRIBUTE_DISPLAY_WIDTH);
 	}
 	
 	

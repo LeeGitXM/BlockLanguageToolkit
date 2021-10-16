@@ -39,7 +39,6 @@ import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.designer.workspace.AttributeDisplayDescriptor;
 import com.ils.blt.designer.workspace.BlockAttributeView;
-import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.ils.blt.designer.workspace.WorkspaceRepainter;
@@ -63,9 +62,7 @@ public class AttributeDisplaySelector extends JDialog implements TableModelListe
 	private static final long serialVersionUID = 4004388376825535527L;
 	private final int DIALOG_HEIGHT = 400;
 	private final int DIALOG_WIDTH = 600;
-	private final int OFFSET_X = 200;
-	private final int OFFSET_Y = 100;
-	private final int SEPARATION = 50;
+	private final int SEPARATION = 15;
 	private final int TABLE_HEIGHT = 200;
 	private final int TABLE_WIDTH = 800;
 	private final ProcessDiagramView diagram;
@@ -148,11 +145,11 @@ public class AttributeDisplaySelector extends JDialog implements TableModelListe
 					}
 					bav.startListener();
 					diagram.addBlock(bav);
-					diagram.setDirty(true);
+					bav.setDirty(true);
 				}
 				// CASE II - checked box, but display already exists. Do nothing, just use it.
 				else if(newValue && (bav!=null) ) {
-	
+					bav.setDirty(true);
 				}
 				// CASE III - unchecked box and there is display. Delete it.
 				else if ( !newValue && (bav!=null)) {
@@ -161,11 +158,10 @@ public class AttributeDisplaySelector extends JDialog implements TableModelListe
 				// CASE IV - unchecked box and there is no display. Do nothing.
 				else  {
 				}
-				
-				SwingUtilities.invokeLater(new WorkspaceRepainter());
 			}
 			diagram.setDirty(true);
 			arrangeDisplays();
+			SwingUtilities.invokeLater(new WorkspaceRepainter());
 		}
 	}
 
@@ -178,7 +174,6 @@ public class AttributeDisplaySelector extends JDialog implements TableModelListe
 		table = new JTable();
 		outerPanel.setLayout(new MigLayout("ins 2,fillx,filly", "", ""));
 		String PRE = PREFIX + ".ViewInternals.Col.";
-		//String[] columnNames = { "Shown", BundleUtil.get().getString(PRE + "Name"), BundleUtil.get().getString(PRE + "Value") };
 		String[] columnNames = { "Shown", BundleUtil.get().getString(PRE + "Name") };
 		DefaultTableModel dataModel = new DefaultTableModel(columnNames, 0) {
 			private static final long serialVersionUID = 1L;
@@ -236,11 +231,15 @@ public class AttributeDisplaySelector extends JDialog implements TableModelListe
 	 */
 	private void arrangeDisplays() {
 		Point ref = block.getLocation();
+		//log.infof("%s.arrangeDisplay: reference %s %d:%d", CLSS,block.getName(),block.getLocation().x,block.getLocation().y);
 		int count = 0;
 		for(BlockAttributeView bav:findDisplays(diagram,block)) {
 			Point loc = new Point(ref.x,ref.y);
+			loc.x += BlockConstants.ATTRIBUTE_DISPLAY_OFFSET_X;
+			loc.y += BlockConstants.ATTRIBUTE_DISPLAY_OFFSET_Y + count*SEPARATION;
 			bav.setLocation(loc);
 			bav.fireBlockMoved();
+			//log.infof("%s.arrangeDisplay: -- %s %d:%d", CLSS,bav.getPropName(),bav.getLocation().x,bav.getLocation().y);
 			count++;
 		}
 	}

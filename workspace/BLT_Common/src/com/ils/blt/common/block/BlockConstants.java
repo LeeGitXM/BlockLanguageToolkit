@@ -26,18 +26,17 @@ public interface BlockConstants   {
 	public static final String SIGNAL_PORT_NAME    = "signal";   // Signal (every block has one)
 		
 	// These are block property names used specially for attribute displays
-	public static final String ATTRIBUTE_DISPLAY_BACKGROUND_COLOR   = "BackgroundColor";
-	public static final String ATTRIBUTE_DISPLAY_BLOCK_ID    		= "BlockId";
-	public static final String ATTRIBUTE_DISPLAY_FONT        		= "Font";
-	public static final String ATTRIBUTE_DISPLAY_FONT_SIZE        	= "FontSize";
-	public static final String ATTRIBUTE_DISPLAY_HEIGHT        		= "Height";
-	public static final String ATTRIBUTE_DISPLAY_OFFSET_X        	= "OffsetX";
-	public static final String ATTRIBUTE_DISPLAY_OFFSET_Y        	= "OffsetY";
-	public static final String ATTRIBUTE_DISPLAY_PROPERTY    		= "Property";
-	public static final String ATTRIBUTE_DISPLAY_USE_PREFIX        	= "Prefix?";
-	public static final String ATTRIBUTE_DISPLAY_VALUE    			= "Value";
-
-	public static final String ATTRIBUTE_DISPLAY_WIDTH        		= "Width";
+	public static final String ATTRIBUTE_PROPERTY_BACKGROUND_COLOR   = "BackgroundColor";
+	public static final String ATTRIBUTE_PROPERTY_BLOCK_ID    		= "BlockId";
+	public static final String ATTRIBUTE_PROPERTY_FONT        		= "Font";
+	public static final String ATTRIBUTE_PROPERTY_FONT_SIZE        	= "FontSize";
+	public static final String ATTRIBUTE_PROPERTY_HEIGHT        		= "Height";
+	public static final String ATTRIBUTE_PROPERTY_OFFSET_X        	= "OffsetX";
+	public static final String ATTRIBUTE_PROPERTY_OFFSET_Y        	= "OffsetY";
+	public static final String ATTRIBUTE_PROPERTY_PROPERTY    		= "Property";
+	public static final String ATTRIBUTE_PROPERTY_USE_PREFIX        	= "Prefix?";
+	public static final String ATTRIBUTE_PROPERTY_VALUE    			= "Value";
+	public static final String ATTRIBUTE_PROPERTY_WIDTH        		= "Width";
 	// These are block property names that used in multiple block definitions
 	public static final String BLOCK_PROPERTY_ACTIVITY_BUFFER_SIZE 	= "ActivityBufferSize";
 	public static final String BLOCK_PROPERTY_BACKGROUND_COLOR     	= "BackgroundColor";
@@ -123,13 +122,11 @@ public interface BlockConstants   {
 	public static final String PALETTE_TAB_TIMERS_COUNTERS    = "Counters";
 	public static final String PALETTE_TAB_MISC               = "Misc";
 	
-	// Default attribute offsets
-	public static final int DEFAULT_ATTRIBUTE_OFFSET_X     = 30;
-	public static final int DEFAULT_ATTRIBUTE_OFFSET_Y     = 75;
-	public static final int DEFAULT_ATTRIBUTE_HEIGHT     = 30;
-	public static final int DEFAULT_ATTRIBUTE_WIDTH      = 180;
-	public static final int PREFERRED_ATTRIBUTE_HEIGHT     = 30;
-	public static final int PREFERRED_ATTRIBUTE_WIDTH      = 180;
+	// Attribute Display Dimensions and Positions
+	public static final int ATTRIBUTE_DISPLAY_OFFSET_X     = 10;
+	public static final int ATTRIBUTE_DISPLAY_OFFSET_Y     = 30;
+	public static final int ATTRIBUTE_DISPLAY_HEIGHT     = 25;
+	public static final int ATTRIBUTE_DISPLAY_WIDTH      = 180;
 	// Block filler colors
 	public static final int BLOCK_BACKGROUND_BLUE_GRAY      = (new Color(143,172,183)).getRGB();
 	public static final int BLOCK_BACKGROUND_GRAYISH        = (new Color(208,215,220)).getRGB();
