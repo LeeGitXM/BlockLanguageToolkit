@@ -27,13 +27,23 @@ public class BlockAttributeView extends ProcessBlockView implements Notification
 	public static final int DEFAULT_OFFSET_Y = 25;
 	public static final int DEFAULT_WIDTH = 100;
 	private final NotificationHandler notificationHandler = NotificationHandler.getInstance();
+	private ProcessBlockView reference = null;
+	private BlockProperty backgroundColor = null;
 	private BlockProperty blockId = null;
+	private BlockProperty fontSize = null;
+	private BlockProperty foregroundColor = null;
+	private BlockProperty height = null;
+	private BlockProperty format = null;
+	private BlockProperty offsetX = null;
+	private BlockProperty offsetY = null;
 	private BlockProperty propName = null;
+	private BlockProperty width = null;
 	private BlockProperty value = null;
 	private final UtilityFunctions fncs;
 	/**
 	 * Constructor: Used when a new block is created from the selection dialog. 
 	 *              We do not have enough information to become a listener.
+	 *              Become a listener once the block and property are defined.
 	 */
 	public BlockAttributeView(BlockDescriptor descriptor) {
 		super(descriptor);
@@ -47,9 +57,19 @@ public class BlockAttributeView extends ProcessBlockView implements Notification
 	public BlockAttributeView(SerializableBlock sb) {
 		super(sb);
 		this.fncs = new UtilityFunctions();
+		backgroundColor = getProperty(BlockConstants.ATTRIBUTE_PROPERTY_BACKGROUND_COLOR);
 		blockId = getProperty(BlockConstants.ATTRIBUTE_PROPERTY_BLOCK_ID);
+		fontSize = getProperty(BlockConstants.ATTRIBUTE_PROPERTY_FONT_SIZE);
+		backgroundColor = getProperty(BlockConstants.ATTRIBUTE_PROPERTY_FOREGROUND_COLOR);
+		height = getProperty(BlockConstants.ATTRIBUTE_PROPERTY_HEIGHT);
+		format = getProperty(BlockConstants.ATTRIBUTE_PROPERTY_FORMAT);
+		offsetX = getProperty(BlockConstants.ATTRIBUTE_PROPERTY_OFFSET_X);
+		offsetY = getProperty(BlockConstants.ATTRIBUTE_PROPERTY_OFFSET_Y);
 		propName= getProperty(BlockConstants.ATTRIBUTE_PROPERTY_PROPERTY);
+		width = getProperty(BlockConstants.ATTRIBUTE_PROPERTY_WIDTH);
 		value   = getProperty(BlockConstants.ATTRIBUTE_PROPERTY_VALUE);
+
+		
 		startListener();
 	}
 	/**
@@ -58,7 +78,7 @@ public class BlockAttributeView extends ProcessBlockView implements Notification
 	 */
 	private void initialize() {
 		setName(CLSS);
-		// These two properties define which property to display
+		// These properties define which block and property to display
 		blockId = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_BLOCK_ID,"", PropertyType.STRING, false);
 		setProperty(blockId);
 		propName = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_PROPERTY,"Name", PropertyType.STRING, false);
@@ -67,28 +87,58 @@ public class BlockAttributeView extends ProcessBlockView implements Notification
 		setProperty(value);
 		
 		// These attributes defined how the display is configured
-		BlockProperty property = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_WIDTH, Integer.valueOf(DEFAULT_WIDTH), PropertyType.INTEGER,true);
-		setProperty(property);		
-		property = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_HEIGHT, Integer.valueOf(DEFAULT_HEIGHT), PropertyType.INTEGER,true);
-		setProperty(property);		
-		property = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_BACKGROUND_COLOR, "TRANSPARENT", PropertyType.COLOR,true);
-		setProperty(property);
-		property = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_OFFSET_X, Integer.valueOf(DEFAULT_WIDTH), PropertyType.INTEGER,true);
-		setProperty(property);		
-		property = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_OFFSET_Y, Integer.valueOf(DEFAULT_HEIGHT), PropertyType.INTEGER,true);
-		setProperty(property);
+		backgroundColor = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_BACKGROUND_COLOR, "TRANSPARENT", PropertyType.COLOR,true);
+		setProperty(backgroundColor);
+		foregroundColor = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_FOREGROUND_COLOR, "BLACK", PropertyType.COLOR,true);
+		setProperty(foregroundColor);
+		height = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_HEIGHT, BlockConstants.ATTRIBUTE_DISPLAY_HEIGHT, PropertyType.INTEGER,true);
+		setProperty(height);		
+		format = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_FORMAT, "%s", PropertyType.STRING,true);
+		setProperty(format);
+		fontSize = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_FONT_SIZE, 10, PropertyType.INTEGER,true);
+		setProperty(fontSize);
+		offsetX = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_OFFSET_X, 0, PropertyType.INTEGER,false);
+		setProperty(offsetX);		
+		offsetY = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_OFFSET_Y, 0, PropertyType.INTEGER,false);
+		setProperty( offsetY);
+		width = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_WIDTH, BlockConstants.ATTRIBUTE_DISPLAY_WIDTH, PropertyType.INTEGER,true);
+		setProperty(width);
 	}
 	
 	public String getBlockId() { return this.blockId.getValue().toString(); }
-	public void setBlockId(String id) { this.blockId.setValue(id); }
+	public void setBlockId(String id) { 
+		this.blockId.setValue(id);
+		if( !blockId.getValue().toString().isEmpty() &&
+			!propName.getValue().toString().isEmpty() ) {
+			startListener();
+		}
+	}
+	
 	public String getPropName()  {return this.propName.getValue().toString(); }
-	public void setPropName(String name) { this.propName.setValue(name); }
+	public void setPropName(String name) { 
+		this.propName.setValue(name);
+		if( !blockId.getValue().toString().isEmpty() &&
+			!propName.getValue().toString().isEmpty() ) {
+				startListener();
+		}
+	}
 	public String getValue()  {return this.value.getValue().toString(); }
+	// When we change the value, we need to change the label
 	public void setValue(String val) { this.value.setValue(val); }
 
-	public int getOffsetX () { return fncs.parseInteger(this.getProperty(BlockConstants.ATTRIBUTE_PROPERTY_OFFSET_X).getValue().toString()); }
-	public int getOffsetY () { return fncs.parseInteger(this.getProperty(BlockConstants.ATTRIBUTE_PROPERTY_OFFSET_Y).getValue().toString()); }
-	
+	public String getBackgroundColor() { return backgroundColor.getValue().toString(); } 
+	public int getFontSize() { return fncs.parseInteger(fontSize.getValue().toString()); }
+	public String getForegroundColor() { return foregroundColor.getValue().toString(); }  
+	public String getFormat()    { return format.getValue().toString(); }
+	public void setFormat(String lbl) { this.format.setValue(lbl); }
+	public int getOffsetX () { return fncs.parseInteger(offsetX.getValue().toString()); }
+	public void setOffsetX(int offset) { this.offsetX.setValue(offset); }
+	public int getOffsetY () { return fncs.parseInteger(offsetY.getValue().toString()); }
+	public void setOffsetY(int offset) { this.offsetY.setValue(offset); }
+	public int getPreferredHeight ()  { return fncs.parseInteger(height.getValue().toString()); }
+	public int getPreferredWidth ()   { return fncs.parseInteger(width.getValue().toString()); }
+	public ProcessBlockView getReferenceBlock() { return this.reference; }
+	public void setReferenceBlock(ProcessBlockView ref) { this.reference=ref; }
 	/**
 	 * Start listening to the value of the indicated property block
 	 */

@@ -78,16 +78,22 @@ public class AttributeDisplay extends AbstractProcessBlock implements ProcessBlo
 		setProperty(BlockConstants.ATTRIBUTE_PROPERTY_VALUE, value);
 		
 		// These attributes defined how the display is configured
-		BlockProperty width = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_WIDTH, Integer.valueOf(BlockConstants.ATTRIBUTE_DISPLAY_WIDTH), PropertyType.INTEGER,true);
-		setProperty(BlockConstants.ATTRIBUTE_PROPERTY_WIDTH, width);		
-		BlockProperty height = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_HEIGHT, Integer.valueOf(BlockConstants.ATTRIBUTE_DISPLAY_HEIGHT), PropertyType.INTEGER,true);
-		setProperty(BlockConstants.ATTRIBUTE_PROPERTY_HEIGHT, height);		
 		BlockProperty backgroundColor = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_BACKGROUND_COLOR, "TRANSPARENT", PropertyType.COLOR,true);
 		setProperty(BlockConstants.ATTRIBUTE_PROPERTY_BACKGROUND_COLOR, backgroundColor);
-		BlockProperty offsetx = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_OFFSET_X, Integer.valueOf(BlockConstants.ATTRIBUTE_DISPLAY_OFFSET_X), PropertyType.INTEGER,true);
-		setProperty(BlockConstants.ATTRIBUTE_PROPERTY_WIDTH, offsetx);		
-		BlockProperty offsety = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_OFFSET_Y, Integer.valueOf(BlockConstants.ATTRIBUTE_DISPLAY_OFFSET_Y), PropertyType.INTEGER,true);
-		setProperty(BlockConstants.ATTRIBUTE_PROPERTY_HEIGHT, offsety);
+		BlockProperty foregroundColor = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_FOREGROUND_COLOR, "BLACK", PropertyType.COLOR,true);
+		setProperty(BlockConstants.ATTRIBUTE_PROPERTY_FOREGROUND_COLOR, foregroundColor);
+		BlockProperty height = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_HEIGHT, BlockConstants.ATTRIBUTE_DISPLAY_HEIGHT, PropertyType.INTEGER,true);
+		setProperty(BlockConstants.ATTRIBUTE_PROPERTY_HEIGHT, height);		
+		BlockProperty formatProperty = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_FORMAT, "%s", PropertyType.STRING,true);
+		setProperty(BlockConstants.ATTRIBUTE_PROPERTY_FORMAT, formatProperty);
+		BlockProperty fontSizeProperty = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_FONT_SIZE, 10, PropertyType.INTEGER,true);
+		setProperty(BlockConstants.ATTRIBUTE_PROPERTY_FONT_SIZE, fontSizeProperty);
+		BlockProperty offsetx = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_OFFSET_X, 0, PropertyType.INTEGER,false);
+		setProperty(BlockConstants.ATTRIBUTE_PROPERTY_OFFSET_X, offsetx);		
+		BlockProperty offsety = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_OFFSET_Y, 0, PropertyType.INTEGER,false);
+		setProperty(BlockConstants.ATTRIBUTE_PROPERTY_OFFSET_Y, offsety);
+		BlockProperty width = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_WIDTH, BlockConstants.ATTRIBUTE_DISPLAY_WIDTH, PropertyType.INTEGER,true);
+		setProperty(BlockConstants.ATTRIBUTE_PROPERTY_WIDTH, width);
 	}
 	
 	/**

@@ -24,7 +24,7 @@ import com.ils.blt.designer.workspace.ProcessBlockView;
 
 /**
  * Create a rectangular display similar to a "readout", or a G2 attribute-display. The
- * subject AttributeView is listening on a specified property of a different block.
+ * subject BlockAttributeView is listening on a specified property of a different block.
  * The view has a large number of properties related to formatting of the output.
  * 
  * There are no anchor points.
@@ -33,16 +33,20 @@ public class AttributeUIView extends AbstractBlockUIView implements BlockViewUI 
 	private static final long serialVersionUID = 2160868310475735865L; 
 	private static final int DEFAULT_HEIGHT = 40;
 	private static final int DEFAULT_WIDTH = 80;
-	private BlockAttributeView attributeView = null;
+	private BlockAttributeView bav = null;
+	private ProcessBlockView reference = null;
+	
 	private final UtilityFunctions fncs;
 	private BlockProperty valueProperty = null;  /// This is the watched property on the reference block
 	
-	// 
+	// Once we have the view, get the block that is being viewed
 	public AttributeUIView(ProcessBlockView view) {
 		super(view,DEFAULT_WIDTH,DEFAULT_HEIGHT);
 		if( view instanceof BlockAttributeView ) {
-			attributeView = (BlockAttributeView)view;
+			bav = (BlockAttributeView)view;
+			reference = bav.getReferenceBlock();
 		}
+		
 		this.fncs = new UtilityFunctions();
 		setOpaque(false);
 	}
@@ -54,20 +58,19 @@ public class AttributeUIView extends AbstractBlockUIView implements BlockViewUI 
 		//log.infof("AttributeUIView.paintComponent %s ...(%d:%s)",getBlock().getName(),valueProperty.hashCode(),fncs.coerceToString(valueProperty.getValue()) );
 		// Preserve the original transform to roll back to at the end
 		AffineTransform originalTx = g.getTransform();
-		Color originalBackground = g.getBackground();
 
 		// Turn on anti-aliasing
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
-		g.setPaint(Color.BLACK);
+		g.setPaint(colorForString(bav.getForegroundColor()));
 		
 		// Calculate the inner area
 		Rectangle ifb = new Rectangle();   // Interior, frame and border
 		ifb = SwingUtilities.calculateInnerArea(this,ifb);
 		// Now translate so that 0,0 is is at the inner origin
-		if( attributeView==null ) return;
+		if( bav==null ) return;
 		ifb.x += 80;
 		ifb.y += 40;
-		//setLocation(referenceBlock.getLocation().x+50,referenceBlock.getLocation().y+30);
+		setLocation(reference.getLocation().x+bav.getOffsetX(),reference.getLocation().y+bav.getOffsetY());
 	
 		g.translate(ifb.x, ifb.y);
 
@@ -112,16 +115,15 @@ public class AttributeUIView extends AbstractBlockUIView implements BlockViewUI 
 
 		// Reverse any transforms we made
 		g.setTransform(originalTx);
-		g.setBackground(originalBackground);
-
+		g.setBackground(colorForString(bav.getBackgroundColor()));
 		
 		// NOTE* No longer assume 100px width.  TimeReadout is wider.  The old setting of 8 for small was unreadable
 		// Set the font size based on the string length.
 		// Assumes 100px block width
-		String value = attributeView.getValue();
-		int fontSize = 12;  // Small
-		if( value.length()<7 ) fontSize = 14;
-		else if( value.length()<13 ) fontSize = 12;
+		String value = bav.getValue();
+		int fontSize = bav.getFontSize();  // large
+		if( value.length()>7 ) fontSize = fontSize-2;
+		else if( value.length()>13 ) fontSize = fontSize-2;
 		
 		block.setEmbeddedFontSize(fontSize);
 		block.setEmbeddedLabel(value);
@@ -166,5 +168,22 @@ public class AttributeUIView extends AbstractBlockUIView implements BlockViewUI 
 		Shape textShape = vector.getOutline(xpos, ypos);
 		g.setColor(fill);
 		g.fill(textShape);
+	}
+	
+	private Color colorForString(String clr) {
+		Color color = new Color(255,255,255,0); // TRANSPARENT
+		if(clr.equalsIgnoreCase("RED")) 		color = Color.RED;
+		else if(clr.equalsIgnoreCase("GREEN")) 	color = Color.GREEN;
+		else if(clr.equalsIgnoreCase("BLUE"))	color = Color.BLUE;
+		else if(clr.equalsIgnoreCase("WHITE"))	color = Color.WHITE;
+		else if(clr.equalsIgnoreCase("YELLOW"))	color = Color.YELLOW;
+		else if(clr.equalsIgnoreCase("GRAY"))	color = Color.GRAY;
+		else if(clr.equalsIgnoreCase("LIGHT_GRAY"))	color = Color.LIGHT_GRAY;
+		else if(clr.equalsIgnoreCase("DARK_GRAY"))	color = Color.DARK_GRAY;
+		else if(clr.equalsIgnoreCase("ORANGE"))	color = Color.ORANGE;
+		else if(clr.equalsIgnoreCase("MAGENTA"))color = Color.MAGENTA;
+		else if(clr.equalsIgnoreCase("PINK"))	color = Color.PINK;
+		else if(clr.equalsIgnoreCase("CYAN"))	color = Color.CYAN;
+		return color;
 	}
 }

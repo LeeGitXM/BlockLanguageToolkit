@@ -69,6 +69,7 @@ public class AttributeDisplaySelector extends JDialog implements TableModelListe
 	private final ProcessBlockView block;
 	private JTable table = null;
 	JPanel internalPanel = null;
+	Point origin = null;
 
 	public AttributeDisplaySelector(Frame frame, ProcessDiagramView dia, ProcessBlockView view) {
 		super(frame);
@@ -129,13 +130,17 @@ public class AttributeDisplaySelector extends JDialog implements TableModelListe
 				TableModel model = (TableModel) e.getSource();
 				String propName = (String) model.getValueAt(row, 1);
 				boolean newValue = ((Boolean) model.getValueAt(row, column)).booleanValue();
-				
+				origin = findTopBlock(diagram,block);
+				// If there isn't any existing block, the origin is the bottom of the block
+				origin = new Point(block.getLocation().x+block.getPreferredWidth()/2+BlockConstants.ATTRIBUTE_DISPLAY_OFFSET_X,
+						           block.getLocation().y+block.getPreferredHeight()+BlockConstants.ATTRIBUTE_DISPLAY_OFFSET_Y);
 				BlockAttributeView bav = findDisplay(diagram,block,propName);
 				// CASE I - checked box, display does not exist. Create it.
 				// Add to diagram. Reposition after all the displays have been created.
 				if ( newValue && (bav==null) ) {
 					bav = new BlockAttributeView(new AttributeDisplayDescriptor());
 					bav.setBlockId(block.getId().toString());
+					bav.setReferenceBlock(block);
 					bav.setPropName(propName);
 					if(propName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_NAME)) {
 						bav.setValue(block.getName());
@@ -227,18 +232,18 @@ public class AttributeDisplaySelector extends JDialog implements TableModelListe
 
 	/**
 	 * Arrange the locations of the displays in a stack pattern.
-	 * The
+	 * We move the blocks here then save the offsets as properties.
 	 */
 	private void arrangeDisplays() {
-		Point ref = block.getLocation();
 		//log.infof("%s.arrangeDisplay: reference %s %d:%d", CLSS,block.getName(),block.getLocation().x,block.getLocation().y);
 		int count = 0;
 		for(BlockAttributeView bav:findDisplays(diagram,block)) {
-			Point loc = new Point(ref.x,ref.y);
-			loc.x += BlockConstants.ATTRIBUTE_DISPLAY_OFFSET_X;
-			loc.y += BlockConstants.ATTRIBUTE_DISPLAY_OFFSET_Y + count*SEPARATION;
+			Point loc = new Point(origin.x,origin.y);
+			loc.y += count*SEPARATION;
 			bav.setLocation(loc);
 			bav.fireBlockMoved();
+			bav.setOffsetX(loc.x-origin.x);
+			bav.setOffsetY(loc.y-origin.y);
 			//log.infof("%s.arrangeDisplay: -- %s %d:%d", CLSS,bav.getPropName(),bav.getLocation().x,bav.getLocation().y);
 			count++;
 		}
@@ -277,5 +282,26 @@ public class AttributeDisplaySelector extends JDialog implements TableModelListe
 			}
 		}
 		return displays;
+	}
+	/**.
+	 * @return coordinates of the uppermost attribute display for the given block
+	 */
+	private Point findTopBlock(ProcessDiagramView dia, ProcessBlockView refBlock) {
+		Point top = null;
+		for(Block block:dia.getBlocks()) {
+			if( block instanceof BlockAttributeView ) {
+				BlockAttributeView bav = (BlockAttributeView)block;
+				// Check for the specified block
+				if( bav.getBlockId().equalsIgnoreCase(refBlock.getId().toString())) {
+					if( top==null) {
+						top = bav.getLocation();
+					}
+					else if(top.y>bav.getLocation().y ) {
+						top = bav.getLocation();
+					}	
+				}
+			}
+		}
+		return top;
 	}
 }

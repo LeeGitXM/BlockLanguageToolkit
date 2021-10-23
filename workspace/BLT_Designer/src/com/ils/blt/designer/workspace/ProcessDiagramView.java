@@ -89,7 +89,10 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			for( SerializableBlock sb:diagram.getBlocks()) {
 				ProcessBlockView pbv = null;
 				if( sb.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_ATTRIBUTE)) {
-					pbv = new BlockAttributeView(sb);
+					BlockAttributeView bav = new BlockAttributeView(sb);
+					ProcessBlockView refBlock = (ProcessBlockView)this.getBlock(UUID.fromString(bav.getBlockId()));
+					bav.setReferenceBlock(refBlock);
+					pbv = bav;
 				}
 				else {
 					pbv = new ProcessBlockView(sb);

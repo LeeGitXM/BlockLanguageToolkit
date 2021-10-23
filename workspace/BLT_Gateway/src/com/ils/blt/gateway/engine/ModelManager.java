@@ -825,7 +825,6 @@ public class ModelManager implements ProjectListener  {
 				// New Diagrams are always disabled
 				bts.synchBlocks(sd);
 				diagram.createBlocks(sd.getBlocks());
-				diagram.createAttributeDisplays(sd.getAttributeDisplays());
 				diagram.updateConnections(sd.getConnections());
 				diagram.updateProperties(sd);                    // Fixes subscriptions, as necessary
 				diagram.setState(sd.getState());                 // Handle state change, if any
@@ -848,7 +847,6 @@ public class ModelManager implements ProjectListener  {
 				}
 				bts.synchBlocks(sd);
 				diagram.createBlocks(sd.getBlocks());            // Adds blocks that are new in update
-				diagram.createAttributeDisplays(sd.getAttributeDisplays());
 				diagram.updateConnections(sd.getConnections());  // Adds connections that are new in update
 				diagram.updateProperties(sd);                    // Fixes subscriptions, as necessary
 				diagram.setState(sd.getState());// Handle state change, if any

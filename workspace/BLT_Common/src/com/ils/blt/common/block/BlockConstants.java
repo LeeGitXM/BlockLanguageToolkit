@@ -26,15 +26,16 @@ public interface BlockConstants   {
 	public static final String SIGNAL_PORT_NAME    = "signal";   // Signal (every block has one)
 		
 	// These are block property names used specially for attribute displays
-	public static final String ATTRIBUTE_PROPERTY_BACKGROUND_COLOR   = "BackgroundColor";
+	public static final String ATTRIBUTE_PROPERTY_BACKGROUND_COLOR  = "BackgroundColor";
 	public static final String ATTRIBUTE_PROPERTY_BLOCK_ID    		= "BlockId";
-	public static final String ATTRIBUTE_PROPERTY_FONT        		= "Font";
 	public static final String ATTRIBUTE_PROPERTY_FONT_SIZE        	= "FontSize";
-	public static final String ATTRIBUTE_PROPERTY_HEIGHT        		= "Height";
+	public static final String ATTRIBUTE_PROPERTY_FOREGROUND_COLOR  = "ForegroundColor";
+	public static final String ATTRIBUTE_PROPERTY_HEIGHT        	= "Height";
+	public static final String ATTRIBUTE_PROPERTY_FORMAT        	= "Format";
 	public static final String ATTRIBUTE_PROPERTY_OFFSET_X        	= "OffsetX";
 	public static final String ATTRIBUTE_PROPERTY_OFFSET_Y        	= "OffsetY";
 	public static final String ATTRIBUTE_PROPERTY_PROPERTY    		= "Property";
-	public static final String ATTRIBUTE_PROPERTY_USE_PREFIX        	= "Prefix?";
+
 	public static final String ATTRIBUTE_PROPERTY_VALUE    			= "Value";
 	public static final String ATTRIBUTE_PROPERTY_WIDTH        		= "Width";
 	// These are block property names that used in multiple block definitions
@@ -123,7 +124,7 @@ public interface BlockConstants   {
 	public static final String PALETTE_TAB_MISC               = "Misc";
 	
 	// Attribute Display Dimensions and Positions
-	public static final int ATTRIBUTE_DISPLAY_OFFSET_X     = 10;
+	public static final int ATTRIBUTE_DISPLAY_OFFSET_X     = 10;  // From the bottom of the block
 	public static final int ATTRIBUTE_DISPLAY_OFFSET_Y     = 30;
 	public static final int ATTRIBUTE_DISPLAY_HEIGHT     = 25;
 	public static final int ATTRIBUTE_DISPLAY_WIDTH      = 180;

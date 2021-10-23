@@ -17,7 +17,6 @@ import com.ils.blt.common.ProcessBlock;
 import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
-import com.ils.blt.common.block.AttributeDisplay;
 import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
@@ -55,7 +54,6 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 	protected final Map<UUID,ProcessBlock> blockMap;
 	private final Map<ConnectionKey,ProcessConnection> connectionMap;            // Key by connection number
 	protected final Map<BlockPort,List<ProcessConnection>> incomingConnections; // Key by downstream block:port
-	protected final Map<String,AttributeDisplay> displays;                      // Key is a property notification key (UUID,property name)
 	protected final Map<BlockPort,List<ProcessConnection>> outgoingConnections;  // Key by upstream block:port
 	private DiagramState state = DiagramState.UNSET;                             // So that new state will be a change
 	private final BlockExecutionController controller = BlockExecutionController.getInstance();
@@ -73,15 +71,10 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 		this.projectId = projId;
 		blockMap = new HashMap<UUID,ProcessBlock>();
 		connectionMap = new HashMap<ConnectionKey,ProcessConnection>();
-		displays = new HashMap<>();
 		incomingConnections = new HashMap<BlockPort,List<ProcessConnection>>();
 		outgoingConnections = new HashMap<BlockPort,List<ProcessConnection>>();
 	}
 
-	public AttributeDisplay getAttributeDisplay(UUID id,String pname) { 
-		String key = NotificationKey.keyForProperty(id.toString(), pname);
-		return displays.get(key); 
-	}
 	public ProcessBlock getBlock(UUID id) { return blockMap.get(id); }
 	public Collection<ProcessBlock> getBlocks() { return blockMap.values(); }
 	
@@ -98,7 +91,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 		}
 		return result;
 	}
-	public Collection<AttributeDisplay> getAttributeDisplays()  { return displays.values(); }
+
 	public Collection<ProcessBlock> getProcessBlocks()          { return blockMap.values(); }
 
 	public String getProviderForState(DiagramState s) {
@@ -145,24 +138,6 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 		return blocksToRemove;
 	}
 	
-	/**
-	 * Clone attribute displays from the subject serializable diagram and add them to the current.
-	 * In order to make this applicable for updates, we skip any blocks that currently
-	 * exist. Newly created blocks are started.
-	 * 
-	 * Blocks with an updated version are updated and replaced in the serializablediagram
-	 *    A save is required after they are replaced.
-	 * 
-	 * @param displays an array of newly created attribute displays to be added to the diagram
-	 */
-	public void createAttributeDisplays(AttributeDisplay[] darray ) {
-		for( AttributeDisplay display:darray ) {
-			AttributeDisplay ad = display.clone();
-			displays.put(ad.getBlockId(),ad);
-			ad.start();
-		}
-		return;
-	}
 	/**
 	 * Clone blocks from the subject serializable diagram and add them to the current.
 	 * In order to make this applicable for updates, we skip any blocks that currently

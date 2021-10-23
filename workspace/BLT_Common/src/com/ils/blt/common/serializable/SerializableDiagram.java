@@ -4,9 +4,6 @@ import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.ils.blt.common.DiagramState;
-import com.ils.blt.common.block.AttributeDisplay;
-
-
 
 /**
  * Implement a plain-old-java-object representing a model diagram
@@ -16,7 +13,6 @@ import com.ils.blt.common.block.AttributeDisplay;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SerializableDiagram {
-	private AttributeDisplay[] attributeDisplays;
 	private SerializableBlock[] blocks;
 	private SerializableConnection[] connections;
 	private UUID id = null;
@@ -28,13 +24,11 @@ public class SerializableDiagram {
 	private boolean dirty = false;
 
 	public SerializableDiagram() {
-		attributeDisplays = new AttributeDisplay[0];
 		blocks = new SerializableBlock[0];
 		connections= new SerializableConnection[0];
 		name = "UNSET";
 		id = UUID.randomUUID();
 	}
-	public AttributeDisplay[] getAttributeDisplays() { return attributeDisplays; }
 	public SerializableBlock[] getBlocks() { return blocks; }
 	public SerializableConnection[] getConnections() { return connections; }
 	public UUID getEncapsulationBlockId() {return encapsulationBlockID;}
@@ -45,7 +39,6 @@ public class SerializableDiagram {
 	public String getWatermark() {return watermark;}
 	public boolean isDirty() {return dirty;}
 	
-	public void setAttributeDisplays(AttributeDisplay[] list) { attributeDisplays=list; }
 	public void setBlocks(SerializableBlock[] list) { blocks=list; }
 	public void setConnections(SerializableConnection[] list) { connections=list; }
 	public void setDirty(boolean dirty) {this.dirty = dirty;}
