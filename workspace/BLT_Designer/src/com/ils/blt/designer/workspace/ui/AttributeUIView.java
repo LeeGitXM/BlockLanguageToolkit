@@ -36,8 +36,6 @@ public class AttributeUIView extends AbstractBlockUIView implements BlockViewUI 
 	private BlockAttributeView bav = null;
 	private ProcessBlockView reference = null;
 	
-	private final UtilityFunctions fncs;
-	private BlockProperty valueProperty = null;  /// This is the watched property on the reference block
 	
 	// Once we have the view, get the block that is being viewed
 	public AttributeUIView(ProcessBlockView view) {
@@ -47,7 +45,6 @@ public class AttributeUIView extends AbstractBlockUIView implements BlockViewUI 
 			reference = bav.getReferenceBlock();
 		}
 		
-		this.fncs = new UtilityFunctions();
 		setOpaque(false);
 	}
 	
