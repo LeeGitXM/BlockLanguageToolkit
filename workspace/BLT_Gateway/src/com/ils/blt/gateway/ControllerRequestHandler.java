@@ -308,7 +308,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	public synchronized List<PalettePrototype> getBlockPrototypes() {
 		List<PalettePrototype> results = new ArrayList<>();
 		ClassList cl = new ClassList();
-		List<Class<?>> classes = cl.getAnnotatedClasses(BLTProperties.BLOCK_JAR_NAME, ExecutableBlock.class,"com/ils/block/");
+		List<Class<?>> classes = cl.getAnnotatedClasses(BLTProperties.BLOCK_JAR_NAME,ExecutableBlock.class,"com/ils/block/");
 		for( Class<?> cls:classes) {
 			log.infof("%s.getBlockPrototypes:   found block class: %s",CLSS,cls.getName());
 			Constructor[] ctors = cls.getDeclaredConstructors();

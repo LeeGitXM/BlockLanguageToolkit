@@ -12,8 +12,10 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import javax.swing.JButton;
@@ -47,11 +49,14 @@ import com.ils.blt.designer.workspace.ProcessAnchorDescriptor;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.inductiveautomation.ignition.client.tags.model.ClientTagManager;
+import com.inductiveautomation.ignition.common.browsing.BrowseFilter;
+import com.inductiveautomation.ignition.common.browsing.Results;
 import com.inductiveautomation.ignition.common.config.PropertySet;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.sqltags.model.TagProp;
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 import com.inductiveautomation.ignition.common.sqltags.model.types.ExpressionType;
+import com.inductiveautomation.ignition.common.tags.browsing.NodeDescription;
 import com.inductiveautomation.ignition.common.tags.config.TagConfigurationModel;
 import com.inductiveautomation.ignition.common.tags.config.properties.WellKnownTagProps;
 import com.inductiveautomation.ignition.common.tags.model.TagPath;
@@ -115,6 +120,11 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 		this.valueKey = NotificationKey.keyForProperty(block.getId().toString(), property.getName());
 
 
+		// Make tagpath read-only for Sources and Sinks regardless. This updates legacy diagrams.
+		if( (block.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK)||block.getClassName().equals(BlockConstants.BLOCK_CLASS_SOURCE)) && 
+				property.getName().equals(BlockConstants.BLOCK_PROPERTY_TAG_PATH) ) {
+			property.setEditable(false);
+		}
 		this.currentTimeUnit = TimeUnit.MINUTES;   // Force all to be in minutes, to avoid confusing behavior in UI
 		property.addChangeListener(this);
 	
@@ -245,6 +255,17 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 		try {
 			TagPath tp = TagPathParser.parse(path);
 			tmgr.subscribeAsync(tp, this);
+			CompletableFuture<Results<NodeDescription>> future = tmgr.browseAsync(tp, new BrowseFilter());
+			Results<NodeDescription> results = future.get();
+			Iterator<NodeDescription> iterator = results.getResults().iterator();
+			if(iterator.hasNext()) type = iterator.next().getDataType();
+
+		}
+		catch(ExecutionException ee) {
+			log.errorf("%s.subscribeToTagPath: Error getting datatype for %s (%s)",CLSS,path,ee.getMessage());
+		}
+		catch(InterruptedException ie) {
+			log.errorf("%s.subscribeToTagPath: Interruption getting datatype for %s (%s)",CLSS,path,ie.getMessage());
 		}
 		catch(IOException ioe) {
 			log.errorf("%s.subscribeToTagPath tag path parse error for %s (%s)",CLSS,path,ioe.getMessage());
@@ -363,9 +384,13 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 				valueDisplayField.setEnabled(false);
 				valueDisplayField.setEditable(false);
 			}
-			else {
+			else if(property.isEditable()) {
 				valueDisplayField.setEnabled(true);
 				valueDisplayField.setEditable(true);
+			}
+			else {
+				valueDisplayField.setEnabled(false);
+				valueDisplayField.setEditable(false);
 			}
 		}
 	}
@@ -373,17 +398,19 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 	
 	// =============================== Component Creation Methods ================================
 	/**
-	 * Create a text box for the binding field. This is editable.
+	 * Create a text box for the binding field. This is editable if the property is editable.
 	 */
 	private JTextField createBindingDisplayField(final BlockProperty prop) {	
 		Object val = prop.getBinding();
 		if(val==null) val = "";
 		EditableTextField field = new EditableTextField(prop,val.toString());
-		field.addFocusListener(this);
+		field.setEditable(prop.isEditable());
+		field.setEnabled(prop.isEditable());
+		if(prop.isEditable()) field.addFocusListener(this);
 		return field;
 	}
 	/**
-	 * Create a text box for the binding field. This is editable.
+	 * Create a text box for the binding field. This is editable if the property is editable.
 	 */
 	private JComboBox<String> createValueCombo(final BlockProperty prop) {	
 		final JComboBox<String> valueCombo = new JComboBox<String>();
@@ -404,19 +431,22 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 		if( prop.getValue()!=null ) {
 			final String selection = prop.getValue().toString().toUpperCase();
 			valueCombo.setSelectedItem(selection);
-			// Add the listener after we've initialized
-			valueCombo.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent event) {
-					String selxn = valueCombo.getSelectedItem().toString(); 
-					if( !prop.getValue().toString().equalsIgnoreCase(selxn)) {
-						prop.setValue(selxn);
-						parent.saveDiagramClean();   // Update property immediately
+			valueCombo.setEditable(prop.isEditable());
+			valueCombo.setEnabled(prop.isEditable());
+			if(prop.isEditable()) {
+				// Add the listener after we've initialized
+				valueCombo.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent event) {
+						String selxn = valueCombo.getSelectedItem().toString(); 
+						if( !prop.getValue().toString().equalsIgnoreCase(selxn)) {
+							prop.setValue(selxn);
+							parent.saveDiagramClean();   // Update property immediately
+						}
+						if(DEBUG) log.infof("%s.valueCombo: selected %s=%s",CLSS,prop.getName(),selxn);
 					}
-					if(DEBUG) log.infof("%s.valueCombo: selected %s=%s",CLSS,prop.getName(),selxn);
-				}
-			});
+				});
+			}
 		}
-
 		return valueCombo;
 	}
 	/**

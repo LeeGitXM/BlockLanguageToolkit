@@ -634,7 +634,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		String msg = null;
 
 		// ConType is the type of the proposed new connection.
-		ConnectionType conType = pblock.determineDataTypeFromTagType(type);
+		ConnectionType conType = pblock.determineConnectionTypeFromTagType(type);
 
 		Collection<Connection> cxns = getConnections();
 		for (Connection connection:cxns) {

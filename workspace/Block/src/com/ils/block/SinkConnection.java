@@ -44,8 +44,21 @@ public class SinkConnection extends Output implements ProcessBlock {
 		initialize();
 	}
 	
-	@Override  // why override this???
-	public String getClassName() {return BlockConstants.BLOCK_CLASS_SINK;}
+	/**
+	 * Make sure that the class name is the same as is used in the body of the application
+	 * to identify a sink.
+	 */
+	@Override
+	public String getClassName() {return BlockConstants.BLOCK_CLASS_SINK; }
+	/**
+	 * Modify the tag path property to make it read-only.
+	 */
+	@Override
+	protected void initialize() {
+		super.initialize();
+		setName("SinkConnection");
+		tagPathProperty.setEditable(false);
+	}
 	
 	/**
 	 * On reset, set the value of the backing tag to "UNSET". This prevents
@@ -54,18 +67,11 @@ public class SinkConnection extends Output implements ProcessBlock {
 	@Override
 	public void reset() {
 		super.reset();
-		if( pathProperty.getBindingType().equals(BindingType.TAG_WRITE)) {
-			controller.updateTag(getParentId(),pathProperty.getBinding().toString(), new BasicQualifiedValue("UNSET"));
+		if( tagPathProperty.getBindingType().equals(BindingType.TAG_WRITE)) {
+			controller.updateTag(getParentId(),tagPathProperty.getBinding().toString(), new BasicQualifiedValue("UNSET"));
 		}
 	}
-	/**
-	 * Add properties that are new for this class.
-	 * Populate them with default values.
-	 */
-	protected void initialize() {
-		super.initialize();
-		setName("SinkConnection");
-	}
+
 	
 	
 	/**

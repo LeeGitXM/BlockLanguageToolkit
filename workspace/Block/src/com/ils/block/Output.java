@@ -28,7 +28,7 @@ import com.inductiveautomation.ignition.common.project.resource.ProjectResourceI
  */
 @ExecutableBlock
 public class Output extends AbstractProcessBlock implements ProcessBlock {
-	protected BlockProperty pathProperty = null;
+	protected BlockProperty tagPathProperty = null;
 	protected BlockProperty valueProperty = null;
 	
 	/**
@@ -62,9 +62,9 @@ public class Output extends AbstractProcessBlock implements ProcessBlock {
 		lastValue = vcn.getValue();
 		if( !isLocked() ) {
 			log.debugf("%s.acceptValue: received %s",getName(),lastValue.toString());
-			if( pathProperty.getBindingType().equals(BindingType.TAG_WRITE)) {
-				log.tracef("%s.acceptValue: writing to path %s",getName(),pathProperty.getBinding().toString());
-				controller.updateTag(getParentId(),pathProperty.getBinding().toString(), lastValue);
+			if( tagPathProperty.getBindingType().equals(BindingType.TAG_WRITE)) {
+				log.tracef("%s.acceptValue: writing to path %s",getName(),tagPathProperty.getBinding().toString());
+				controller.updateTag(getParentId(),tagPathProperty.getBinding().toString(), lastValue);
 			}
 		}
 		valueProperty.setValue(lastValue.getValue());
@@ -90,9 +90,9 @@ public class Output extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void propagate() {
 		if( lastValue!=null ) {
-			if( pathProperty.getBindingType().equals(BindingType.TAG_WRITE)) {
-				log.tracef("%s.propagate: writing to path %s",getName(),pathProperty.getBinding().toString());
-				controller.updateTag(getParentId(),pathProperty.getBinding().toString(), lastValue);
+			if( tagPathProperty.getBindingType().equals(BindingType.TAG_WRITE)) {
+				log.tracef("%s.propagate: writing to path %s",getName(),tagPathProperty.getBinding().toString());
+				controller.updateTag(getParentId(),tagPathProperty.getBinding().toString(), lastValue);
 			}
 		}
 	}
@@ -107,10 +107,10 @@ public class Output extends AbstractProcessBlock implements ProcessBlock {
 	protected void initialize() {
 		setName("Output");
 	    // TAG_WRITE means that we won't create a subscription to it
-		pathProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH,"",PropertyType.STRING,true);
-		pathProperty.setBindingType(BindingType.TAG_WRITE);
-		pathProperty.setBinding("");
-		setProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH, pathProperty);
+		tagPathProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH,"",PropertyType.STRING,true);
+		tagPathProperty.setBindingType(BindingType.TAG_WRITE);
+		tagPathProperty.setBinding("");
+		setProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH, tagPathProperty);
 		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,"",PropertyType.OBJECT,false);
 		valueProperty.setBindingType(BindingType.ENGINE);
 		setProperty(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
@@ -129,9 +129,9 @@ public class Output extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public String validate() {
 		String summary = super.validate();
-		String tagPath = pathProperty.getBinding();
+		String tagPath = tagPathProperty.getBinding();
 		if( summary==null && (tagPath==null || tagPath.length()==0 || tagPath.endsWith("]") )) {
-			summary = String.format("%s: binding is not configured\t",pathProperty.getName());
+			summary = String.format("%s: binding is not configured\t",tagPathProperty.getName());
 		}
 		return summary;
 	}

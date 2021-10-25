@@ -577,14 +577,14 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 	public void modifyConnectionForTagChange(BlockProperty property, DataType type) {	
 		String binding = property.getBinding();
 		if (binding != null) {
-			ConnectionType conType= determineDataTypeFromTagType(type);
+			ConnectionType conType= determineConnectionTypeFromTagType(type);
 			if( !conType.equals(ConnectionType.TEXT)) {
 				changeConnectorType(conType);
 			}
 		}
 	}
 
-	public ConnectionType determineDataTypeFromTagType(DataType type) {
+	public ConnectionType determineConnectionTypeFromTagType(DataType type) {
 		ConnectionType conType = ConnectionType.ANY;
 		if (type == DataType.Int1 || 
 			type == DataType.Int2 ||

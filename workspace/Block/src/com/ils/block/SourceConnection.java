@@ -49,8 +49,23 @@ public class SourceConnection extends Input implements ProcessBlock {
 		super(ec,parent,block);
 	}
 	
+	/**
+	 * Make sure that the class name is the same as is used in the body of the application
+	 * to identify a source.
+	 */
 	@Override
-	public String getClassName() {return BlockConstants.BLOCK_CLASS_SOURCE;}
+	public String getClassName() {return BlockConstants.BLOCK_CLASS_SOURCE; }
+	
+	/**
+	 * Modify the tag path property to make it read-only.
+	 */
+	@Override
+	protected void initialize() {
+		super.initialize();
+		setName("SourceConnection");
+		tagPathProperty.setEditable(false);
+	}
+	
 	/**
 	 * A source block has has a special form of the explanation method in that
 	 * the explanation is derived from the most recent block to write to its
@@ -108,14 +123,6 @@ public class SourceConnection extends Input implements ProcessBlock {
 			}
 		}
 		return result;
-	}
-	/**
-	 * Add properties that are new for this class.
-	 * Populate them with default values.
-	 */
-	protected void initialize() {
-		super.initialize();
-		setName("SourceConnection");
 	}
 	
 	/**

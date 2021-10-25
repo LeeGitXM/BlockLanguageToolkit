@@ -1,5 +1,5 @@
 /**
- *   (c) 2013-2020  ILS Automation. All rights reserved.
+x *   (c) 2013-2020  ILS Automation. All rights reserved.
  */
 package com.ils.blt.common.block;
 
@@ -78,6 +78,7 @@ public interface BlockConstants   {
 	public static final String BLOCK_PROPERTY_VALUE 				= "Value";                       // Current value
 	public static final String BLOCK_PROPERTY_WIDTH 				= "Width";
 	
+	public static final String ABSTRACT_BLOCK_CLASS 	= "com.ils.block.AbstractProcessBlock";
 	// Use this for notifications for all properties in the block
 	public static final String BLOCK_PROPERTY_ALL 	= "*";
 	

@@ -25,9 +25,9 @@
 		<fileset dir="${basedir}/../../ignition-80/lib" includes="*.jar" />
 	</path>
 	
-	<!-- External jar classpath. This classpath includes all the jars needed to build a module against the SDK. -->
+	<!-- External jar classpath. Includes all the external jars needed to build this module. -->
 	<path id="ExternalJar.classpath">
-		 <fileset dir="${basedir}/../../external/lib" includes="ils-*.jar" />
+		<fileset dir="${ignition.py.lib}/../../lib/core/common" includes="ils-common.jar" />
 		 <fileset dir="${basedir}/../../external/lib" includes="commons-lang3*.jar" />
 		 <fileset dir="${basedir}/../../external/lib" includes="commons-math3*.jar" />
 		 <fileset dir="${basedir}/../../external/lib" includes="jackson-*.jar" />

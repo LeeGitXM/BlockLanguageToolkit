@@ -5,7 +5,6 @@
 package com.ils.blt.common;
 
 import java.awt.Color;
-import java.util.UUID;
 
 import com.inductiveautomation.ignition.common.project.resource.ResourceType;
 
@@ -20,6 +19,8 @@ public interface BLTProperties   {
 	
 	/** This is the name of the jar file containing block class definitions */
 	public final static String BLOCK_JAR_NAME = "block-definition";
+	/** This is the name of the package containing block class definitions */
+	public final static String BLOCK_PACKAGE_NAME = "com.ils.block";
 	
 	
 	public final static ResourceType APPLICATION_RESOURCE_TYPE   = new ResourceType(MODULE_ID,"blt.application");

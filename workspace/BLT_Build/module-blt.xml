@@ -13,13 +13,13 @@
 
 		<!-- Add the module dependencies for each scope -->
 		<!-- NOTE: Build fails here if we specify a Gateway dependency -->
-		<!--<depends scope="D">vision</depends> -->
+		<depends scope="D">com.inductiveautomation.vision</depends>
 		
 		<!-- Load in our jars for each scope -->
+		<jar scope="D">ils-common.jar</jar>
 		<jar scope="CD">blt-client.jar</jar>
-		<jar scope="CD">blt-designer.jar</jar>
+		<jar scope="D">blt-designer.jar</jar>
 		<jar scope="CD">blt-common.jar</jar>
-		<jar scope="CD">ils-common.jar</jar>
 		<jar scope="CD">prefuse-1.0.1.jar</jar>
 		
 		<jar scope="D">jackson-core-2.2.3.jar</jar>
@@ -32,7 +32,7 @@
 		<export scope="G">jackson-core-2.2.3.jar</export>
 		<export scope="G">jackson-databind-2.2.3.jar</export>
 		<export scope="G">jackson-annotations-2.2.3.jar</export>
-		<export scope="G">ils-common.jar</export>
+		<jar scope="G">ils-common.jar</jar>
 		<!-- Tell the Gateway and/or Designer where to find the hooks -->
 		<hook scope="G">com.ils.blt.gateway.BLTGatewayHook</hook>
 		<hook scope="D">com.ils.blt.designer.BLTDesignerHook</hook>

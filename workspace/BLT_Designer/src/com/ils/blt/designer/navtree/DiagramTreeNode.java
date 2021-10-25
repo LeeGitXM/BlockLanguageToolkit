@@ -83,7 +83,6 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	private final ApplicationRequestHandler requestHandler;
 	private final ExecutionManager executionEngine;
 	protected final DiagramWorkspace workspace;
-	private SaveDiagramAction saveAction = null;
 	protected final ExecutionManager executor;
 	protected final NodeStatusManager statusManager;
 	protected final ImageIcon alertBadge;
@@ -161,7 +160,6 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		
 		// States are: ACTIVE, DISABLED, ISOLATED
 		DiagramState state = statusManager.getResourceState(resourceId);
-		saveAction = new SaveDiagramAction(this);
 		copyDiagramAction = new CopyAction(this);
 //		cutDiagramAction = new CutAction(this);
 		SetStateAction ssaActive = new SetStateAction(DiagramState.ACTIVE);
@@ -176,7 +174,6 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		setStateMenu.add(ssaDisable);
 		setStateMenu.add(ssaIsolated);
 		menu.add(setStateMenu);
-		menu.add(saveAction);
 		menu.addSeparator();
 		menu.add(copyDiagramAction);
 //		menu.add(cutDiagramAction);
@@ -591,24 +588,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 			}
 		}
 	}
-	private class SaveDiagramAction extends BaseAction {
-    	private static final long serialVersionUID = 1L;
-    	private final DiagramTreeNode node;
-	    public SaveDiagramAction(DiagramTreeNode treeNode)  {
-	    	super(PREFIX+".SaveDiagram",IconUtil.getIcon("add2"));
-	    	this.node = treeNode;
-	    }
-	    
-		public void actionPerformed(ActionEvent e) {
-			Optional<ProjectResource> option = DiagramTreeNode.this.getProjectResource();
-			ProjectResource pr = option.get();
-			if( pr!=null ) {
-				executor.executeOnce(new DiagramUpdateManager(workspace,pr));
-				node.setItalic(false);
-			}
-		}
-		
-	}
+	
 	private class SetStateAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
 		private final DiagramState state;
@@ -737,7 +717,6 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	public void updateUI(boolean drty) {
 		log.debugf("%s.setDirty: dirty = %s",CLSS,(drty?"true":"false"));
 //		setItalic(drty);     // EREIAM JH - Disabled until italic system fixed
-		if( saveAction!=null ) saveAction.setEnabled(drty);
 		refresh();
 	}
 

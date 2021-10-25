@@ -41,7 +41,7 @@ import com.inductiveautomation.ignition.common.util.LogUtil;
 @ExecutableBlock
 public class Input extends AbstractProcessBlock implements ProcessBlock {
 	private final static boolean DEBUG = false;
-	private BlockProperty tagPathProperty = null;
+	protected BlockProperty tagPathProperty = null;
 	protected BlockProperty valueProperty = null;
 
 	/**
