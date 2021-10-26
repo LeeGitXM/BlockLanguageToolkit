@@ -1,5 +1,7 @@
 package com.ils.blt.designer.workspace;
 
+import java.awt.Point;
+
 import javax.swing.event.ChangeEvent;
 
 import com.ils.blt.common.UtilityFunctions;
@@ -12,12 +14,14 @@ import com.ils.blt.common.notification.NotificationKey;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.designer.NotificationHandler;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
+import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
+import com.inductiveautomation.ignition.designer.blockandconnector.model.BlockListener;
 
 /**
  * This is a special class that extends a ProcessBlockView to create a version that
  * displays a property value of a reference block.
  */
-public class BlockAttributeView extends ProcessBlockView implements NotificationChangeListener {
+public class BlockAttributeView extends ProcessBlockView implements BlockListener, NotificationChangeListener {
 	private static final String CLSS = "BlockAttributeView";
 	public static final int ATTRIBUTE_DISPLAY_SEPARATION  = 30; // Default y separation
 	public static final String DEFAULT_FONT = "SansSerif";      // Font family - Serif, Dialog,Monospaced
@@ -60,7 +64,7 @@ public class BlockAttributeView extends ProcessBlockView implements Notification
 		backgroundColor = getProperty(BlockConstants.ATTRIBUTE_PROPERTY_BACKGROUND_COLOR);
 		blockId = getProperty(BlockConstants.ATTRIBUTE_PROPERTY_BLOCK_ID);
 		fontSize = getProperty(BlockConstants.ATTRIBUTE_PROPERTY_FONT_SIZE);
-		backgroundColor = getProperty(BlockConstants.ATTRIBUTE_PROPERTY_FOREGROUND_COLOR);
+		foregroundColor = getProperty(BlockConstants.ATTRIBUTE_PROPERTY_FOREGROUND_COLOR);
 		height = getProperty(BlockConstants.ATTRIBUTE_PROPERTY_HEIGHT);
 		format = getProperty(BlockConstants.ATTRIBUTE_PROPERTY_FORMAT);
 		offsetX = getProperty(BlockConstants.ATTRIBUTE_PROPERTY_OFFSET_X);
@@ -95,7 +99,7 @@ public class BlockAttributeView extends ProcessBlockView implements Notification
 		setProperty(height);		
 		format = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_FORMAT, "%s", PropertyType.STRING,true);
 		setProperty(format);
-		fontSize = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_FONT_SIZE, 10, PropertyType.INTEGER,true);
+		fontSize = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_FONT_SIZE, 14, PropertyType.INTEGER,true);
 		setProperty(fontSize);
 		offsetX = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_OFFSET_X, 0, PropertyType.INTEGER,false);
 		setProperty(offsetX);		
@@ -172,5 +176,23 @@ public class BlockAttributeView extends ProcessBlockView implements Notification
 		log.infof("%s.valueChange: - %s new value (%s)",CLSS,getPropName(),qv.getValue().toString());
 		setValue(qv.getValue().toString());	
 	}
+	// ======================================= Block Listener ==================================
+	@Override
+	public void blockMoved(Block blk) {
+		// If this block has moved, change the offsets appropriately
+		if(blk.getId().equals(this.getId() ) ) {
+			int dx = reference.getLocation().x - getLocation().x;
+			setOffsetX(dx);
+			int dy = reference.getLocation().y - getLocation().y;
+			setOffsetY(dy);
+		}
+		// Reference block has moved
+		else {
+			setLocation(new Point(reference.getLocation().x+getOffsetX(),reference.getLocation().y+getOffsetY()));
+		}
+		
+	}
+	@Override
+	public void blockUIChanged(Block blk) {}
 }
 

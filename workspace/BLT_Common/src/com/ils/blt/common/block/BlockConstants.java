@@ -124,8 +124,8 @@ public interface BlockConstants   {
 	public static final String PALETTE_TAB_MISC               = "Misc";
 	
 	// Attribute Display Dimensions and Positions
-	public static final int ATTRIBUTE_DISPLAY_OFFSET_X     = 10;  // From the bottom of the block
-	public static final int ATTRIBUTE_DISPLAY_OFFSET_Y     = 30;
+	public static final int ATTRIBUTE_DISPLAY_OFFSET_X     = 4;  // From the bottom of the block
+	public static final int ATTRIBUTE_DISPLAY_OFFSET_Y     = 2;
 	public static final int ATTRIBUTE_DISPLAY_HEIGHT     = 25;
 	public static final int ATTRIBUTE_DISPLAY_WIDTH      = 180;
 	// Block filler colors

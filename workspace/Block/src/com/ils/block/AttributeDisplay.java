@@ -86,7 +86,7 @@ public class AttributeDisplay extends AbstractProcessBlock implements ProcessBlo
 		setProperty(BlockConstants.ATTRIBUTE_PROPERTY_HEIGHT, height);		
 		BlockProperty formatProperty = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_FORMAT, "%s", PropertyType.STRING,true);
 		setProperty(BlockConstants.ATTRIBUTE_PROPERTY_FORMAT, formatProperty);
-		BlockProperty fontSizeProperty = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_FONT_SIZE, 10, PropertyType.INTEGER,true);
+		BlockProperty fontSizeProperty = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_FONT_SIZE, 14, PropertyType.INTEGER,true);
 		setProperty(BlockConstants.ATTRIBUTE_PROPERTY_FONT_SIZE, fontSizeProperty);
 		BlockProperty offsetx = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_OFFSET_X, 0, PropertyType.INTEGER,false);
 		setProperty(BlockConstants.ATTRIBUTE_PROPERTY_OFFSET_X, offsetx);		

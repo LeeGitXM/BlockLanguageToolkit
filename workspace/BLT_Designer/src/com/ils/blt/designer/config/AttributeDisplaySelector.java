@@ -131,9 +131,10 @@ public class AttributeDisplaySelector extends JDialog implements TableModelListe
 				String propName = (String) model.getValueAt(row, 1);
 				boolean newValue = ((Boolean) model.getValueAt(row, column)).booleanValue();
 				origin = findTopBlock(diagram,block);
-				// If there isn't any existing block, the origin is the bottom of the block
-				origin = new Point(block.getLocation().x+block.getPreferredWidth()/2+BlockConstants.ATTRIBUTE_DISPLAY_OFFSET_X,
+				// If there isn't any existing block, set the origin to the bottom of the block
+				origin = new Point(block.getLocation().x+BlockConstants.ATTRIBUTE_DISPLAY_OFFSET_X,
 						           block.getLocation().y+block.getPreferredHeight()+BlockConstants.ATTRIBUTE_DISPLAY_OFFSET_Y);
+
 				BlockAttributeView bav = findDisplay(diagram,block,propName);
 				// CASE I - checked box, display does not exist. Create it.
 				// Add to diagram. Reposition after all the displays have been created.

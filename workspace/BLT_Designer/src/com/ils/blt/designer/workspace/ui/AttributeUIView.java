@@ -16,8 +16,6 @@ import java.awt.geom.Rectangle2D;
 
 import javax.swing.SwingUtilities;
 
-import com.ils.blt.common.UtilityFunctions;
-import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.designer.workspace.BlockAttributeView;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 
@@ -34,7 +32,6 @@ public class AttributeUIView extends AbstractBlockUIView implements BlockViewUI 
 	private static final int DEFAULT_HEIGHT = 40;
 	private static final int DEFAULT_WIDTH = 80;
 	private BlockAttributeView bav = null;
-	private ProcessBlockView reference = null;
 	
 	
 	// Once we have the view, get the block that is being viewed
@@ -42,7 +39,6 @@ public class AttributeUIView extends AbstractBlockUIView implements BlockViewUI 
 		super(view,DEFAULT_WIDTH,DEFAULT_HEIGHT);
 		if( view instanceof BlockAttributeView ) {
 			bav = (BlockAttributeView)view;
-			reference = bav.getReferenceBlock();
 		}
 		
 		setOpaque(false);
@@ -67,7 +63,6 @@ public class AttributeUIView extends AbstractBlockUIView implements BlockViewUI 
 		if( bav==null ) return;
 		ifb.x += 80;
 		ifb.y += 40;
-		//setLocation(reference.getLocation().x+bav.getOffsetX(),reference.getLocation().y+bav.getOffsetY());
 	
 		g.translate(ifb.x, ifb.y);
 
