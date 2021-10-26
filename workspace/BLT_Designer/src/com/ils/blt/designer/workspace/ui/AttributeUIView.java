@@ -169,7 +169,8 @@ public class AttributeUIView extends AbstractBlockUIView implements BlockViewUI 
 	
 	private Color colorForString(String clr) {
 		Color color = new Color(255,255,255,0); // TRANSPARENT
-		if(clr.equalsIgnoreCase("RED")) 		color = Color.RED;
+		if(clr.equalsIgnoreCase("BLACK")) 		color = Color.BLACK;
+		else if(clr.equalsIgnoreCase("RED")) 	color = Color.RED;
 		else if(clr.equalsIgnoreCase("GREEN")) 	color = Color.GREEN;
 		else if(clr.equalsIgnoreCase("BLUE"))	color = Color.BLUE;
 		else if(clr.equalsIgnoreCase("WHITE"))	color = Color.WHITE;
