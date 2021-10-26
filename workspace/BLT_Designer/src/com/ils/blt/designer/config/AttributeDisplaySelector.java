@@ -235,7 +235,7 @@ public class AttributeDisplaySelector extends JDialog implements TableModelListe
 	 * We move the blocks here then save the offsets as properties.
 	 */
 	private void arrangeDisplays() {
-		//log.infof("%s.arrangeDisplay: reference %s %d:%d", CLSS,block.getName(),block.getLocation().x,block.getLocation().y);
+		log.infof("%s.arrangeDisplay: reference %s %d:%d", CLSS,block.getName(),block.getLocation().x,block.getLocation().y);
 		int count = 0;
 		for(BlockAttributeView bav:findDisplays(diagram,block)) {
 			Point loc = new Point(origin.x,origin.y);
@@ -244,7 +244,7 @@ public class AttributeDisplaySelector extends JDialog implements TableModelListe
 			bav.fireBlockMoved();
 			bav.setOffsetX(loc.x-origin.x);
 			bav.setOffsetY(loc.y-origin.y);
-			//log.infof("%s.arrangeDisplay: -- %s %d:%d", CLSS,bav.getPropName(),bav.getLocation().x,bav.getLocation().y);
+			log.infof("%s.arrangeDisplay: -- %s %d:%d %dx%d", CLSS,bav.getPropName(),bav.getLocation().x,bav.getLocation().y,bav.getPreferredWidth(),bav.getPreferredHeight());
 			count++;
 		}
 	}

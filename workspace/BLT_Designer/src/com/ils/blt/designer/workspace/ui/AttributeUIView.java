@@ -67,7 +67,7 @@ public class AttributeUIView extends AbstractBlockUIView implements BlockViewUI 
 		if( bav==null ) return;
 		ifb.x += 80;
 		ifb.y += 40;
-		setLocation(reference.getLocation().x+bav.getOffsetX(),reference.getLocation().y+bav.getOffsetY());
+		//setLocation(reference.getLocation().x+bav.getOffsetX(),reference.getLocation().y+bav.getOffsetY());
 	
 		g.translate(ifb.x, ifb.y);
 
@@ -102,9 +102,8 @@ public class AttributeUIView extends AbstractBlockUIView implements BlockViewUI 
 		int[] xvertices = new int[] {ifb.x, ifb.x+ifb.width,ifb.x+ifb.width,ifb.x };
 		int[] yvertices = new int[] {ifb.y, ifb.y,ifb.y+ifb.height,ifb.y+ifb.height};
 		fi = new Polygon(xvertices,yvertices,4);
-		int rgb = block.getBackground();
-		Color background = new Color(rgb);
-		g.setColor(background); 
+		Color foreground = colorForString(bav.getForegroundColor());
+		g.setColor(foreground); 
 		g.fillPolygon(fi);
 		// Outline the inner square
 		g.setPaint(INSET_COLOR);
