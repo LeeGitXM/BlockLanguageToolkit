@@ -49,7 +49,6 @@ public class AttributeUIView extends AbstractBlockUIView implements BlockViewUI 
 		Graphics2D g = (Graphics2D) _g;
 		//log.infof("AttributeUIView.paintComponent %s ...(%d:%s)",getBlock().getName(),valueProperty.hashCode(),fncs.coerceToString(valueProperty.getValue()) );
 		// Preserve the original transform to roll back to at the end
-		AffineTransform originalTx = g.getTransform();
 		Color background = colorForString(bav.getBackgroundColor());
 		Color foreground = colorForString(bav.getForegroundColor());
 
@@ -65,7 +64,7 @@ public class AttributeUIView extends AbstractBlockUIView implements BlockViewUI 
 		ifb.x += 80;
 		ifb.y += 40;
 	
-		g.translate(ifb.x, ifb.y);
+		//g.translate(ifb.x, ifb.y);
 
 		ifb.x += BORDER_WIDTH;
 		ifb.y += BORDER_WIDTH;
@@ -75,15 +74,19 @@ public class AttributeUIView extends AbstractBlockUIView implements BlockViewUI 
 		int[] xvertices = new int[] {ifb.x, ifb.x+ifb.width,ifb.x+ifb.width,ifb.x };
 		int[] yvertices = new int[] {ifb.y, ifb.y,ifb.y+ifb.height,ifb.y+ifb.height};
 		Polygon fi = new Polygon(xvertices,yvertices,4);
-		g.setColor(foreground); 
+		g.setColor(background); 
+		g.setPaint(background);
 		g.fillPolygon(fi);
-		// Outline the inner square
-		//g.setPaint(INSET_COLOR);
 		g.draw(fi);
-
-		// Reverse any transforms we made
-		g.setTransform(originalTx);
-		g.setBackground(background);
+		
+		g.setColor(background); 
+		//g.setPaint(background);
+		//g.fillPolygon(fi);
+		//g.draw(fi);
+		//g.fillRect(ifb.x, ifb.y, ifb.width,ifb.height);
+		int height = bav.getPreferredHeight();
+		int width = bav.getPreferredWidth();
+		g.fillRect(0, 0, width,height);
 		
 		// NOTE* No longer assume 100px width.  TimeReadout is wider.  The old setting of 8 for small was unreadable
 		// Set the font size based on the string length.
