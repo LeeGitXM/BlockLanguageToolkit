@@ -139,7 +139,9 @@ public class BlockAttributeView extends ProcessBlockView implements BlockListene
 	public void setOffsetX(int offset) { this.offsetX.setValue(offset); }
 	public int getOffsetY () { return fncs.parseInteger(offsetY.getValue().toString()); }
 	public void setOffsetY(int offset) { this.offsetY.setValue(offset); }
+	@Override
 	public int getPreferredHeight ()  { return fncs.parseInteger(height.getValue().toString()); }
+	@Override
 	public int getPreferredWidth ()   { return fncs.parseInteger(width.getValue().toString()); }
 	public ProcessBlockView getReferenceBlock() { return this.reference; }
 	public void setReferenceBlock(ProcessBlockView ref) { this.reference=ref; }

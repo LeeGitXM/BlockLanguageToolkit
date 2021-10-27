@@ -408,6 +408,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 						String selxn = valueCombo.getSelectedItem().toString(); 
 						if( !prop.getValue().toString().equalsIgnoreCase(selxn)) {
 							prop.setValue(selxn);
+							notificationHandler.initializePropertyValueNotification(valueKey, selxn);
 							parent.saveDiagramClean();   // Update property immediately
 						}
 						if(DEBUG) log.infof("%s.valueCombo: selected %s=%s",CLSS,prop.getName(),selxn);
@@ -432,6 +433,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 	private void setColorCombo(JComboBox<String> box) {
 		box.removeAllItems();
 		box.addItem("TRANSPARENT");
+		box.addItem("BLACK");
 		box.addItem("RED");
 		box.addItem("GREEN");
 		box.addItem("BLUE");

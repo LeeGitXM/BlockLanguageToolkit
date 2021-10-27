@@ -360,7 +360,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 	public Point getLocation() {
 		return location;
 	}
-	// Simply do a linear search
+	// Simply do a linear search - this allows a case-insensitive name match
 	public BlockProperty getProperty(String nam) {
 		BlockProperty result = null;
 		for( BlockProperty prop:getProperties()) {

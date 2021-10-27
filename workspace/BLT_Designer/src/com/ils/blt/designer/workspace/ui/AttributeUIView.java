@@ -40,7 +40,6 @@ public class AttributeUIView extends AbstractBlockUIView implements BlockViewUI 
 		if( view instanceof BlockAttributeView ) {
 			bav = (BlockAttributeView)view;
 		}
-		
 		setOpaque(false);
 	}
 	
@@ -51,10 +50,12 @@ public class AttributeUIView extends AbstractBlockUIView implements BlockViewUI 
 		//log.infof("AttributeUIView.paintComponent %s ...(%d:%s)",getBlock().getName(),valueProperty.hashCode(),fncs.coerceToString(valueProperty.getValue()) );
 		// Preserve the original transform to roll back to at the end
 		AffineTransform originalTx = g.getTransform();
+		Color background = colorForString(bav.getBackgroundColor());
+		Color foreground = colorForString(bav.getForegroundColor());
 
 		// Turn on anti-aliasing
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
-		g.setPaint(colorForString(bav.getForegroundColor()));
+		g.setPaint(foreground);
 		
 		// Calculate the inner area
 		Rectangle ifb = new Rectangle();   // Interior, frame and border
@@ -66,29 +67,6 @@ public class AttributeUIView extends AbstractBlockUIView implements BlockViewUI 
 	
 		g.translate(ifb.x, ifb.y);
 
-		// Now leave space for stubs and border
-		int inset = INSET;
-		ifb.x += inset;
-		ifb.y += inset;
-		ifb.width  -= 2*(inset);
-		ifb.height -= 2*(inset);
-		// Create a rectangle for the border that is within the insets. 
-		// Use the upper left for light shading, the lower right for dark
-		int[] xulvertices = new int[] {ifb.x,            ifb.x,ifb.x+ifb.width,ifb.x };
-		int[] yulvertices = new int[] {ifb.y+ifb.height, ifb.y,ifb.y,ifb.y+ifb.height};
-		Polygon fi = new Polygon(xulvertices,yulvertices,4);
-		g.setColor(BORDER_LIGHT_COLOR);
-		g.fillPolygon(fi);
-		g.draw(fi);
-		
-		// This is a triangle (sort-of), the lower-right half. 
-		int[] xlrvertices = new int[] {ifb.x,  ifb.x+BORDER_WIDTH,ifb.x+ifb.width-BORDER_WIDTH,           ifb.x+ifb.width,  ifb.x+ifb.width,ifb.x };
-		int[] ylrvertices = new int[] {ifb.y+ifb.height,ifb.y+ifb.height-BORDER_WIDTH,ifb.y+BORDER_WIDTH, ifb.y,ifb.y+ifb.height,ifb.y+ifb.height};
-		fi = new Polygon(xlrvertices,ylrvertices,6);
-		g.setColor(BORDER_DARK_COLOR);
-		g.fillPolygon(fi);
-		g.draw(fi);
-
 		ifb.x += BORDER_WIDTH;
 		ifb.y += BORDER_WIDTH;
 		ifb.width  -= 2*(BORDER_WIDTH);
@@ -96,35 +74,31 @@ public class AttributeUIView extends AbstractBlockUIView implements BlockViewUI 
 		// Create a rectangle that is within the border boundaries
 		int[] xvertices = new int[] {ifb.x, ifb.x+ifb.width,ifb.x+ifb.width,ifb.x };
 		int[] yvertices = new int[] {ifb.y, ifb.y,ifb.y+ifb.height,ifb.y+ifb.height};
-		fi = new Polygon(xvertices,yvertices,4);
-		Color foreground = colorForString(bav.getForegroundColor());
+		Polygon fi = new Polygon(xvertices,yvertices,4);
 		g.setColor(foreground); 
 		g.fillPolygon(fi);
 		// Outline the inner square
-		g.setPaint(INSET_COLOR);
+		//g.setPaint(INSET_COLOR);
 		g.draw(fi);
 
 		// Reverse any transforms we made
 		g.setTransform(originalTx);
-		g.setBackground(colorForString(bav.getBackgroundColor()));
+		g.setBackground(background);
 		
 		// NOTE* No longer assume 100px width.  TimeReadout is wider.  The old setting of 8 for small was unreadable
 		// Set the font size based on the string length.
 		// Assumes 100px block width
 		String value = bav.getValue();
 		int fontSize = bav.getFontSize();  // large
-		if( value.length()>7 ) fontSize = fontSize-2;
-		else if( value.length()>13 ) fontSize = fontSize-2;
 		
 		block.setEmbeddedFontSize(fontSize);
 		block.setEmbeddedLabel(value);
-		drawEmbeddedText(g,0,0);
+		drawEmbeddedText(g,0,0,foreground);
 	}
 	
 	// Draw the text that is part of the rendered box. Recognize \n or \\n as newlines.
 	// Left adjust
-	@Override
-	protected void drawEmbeddedText(Graphics2D g,int offsetx,int offsety) {
+	protected void drawEmbeddedText(Graphics2D g,int offsetx,int offsety,Color fill) {
 		String text = block.getEmbeddedLabel();
 		if( text == null || text.length()==0 ) return;
 		Dimension sz = getPreferredSize();
@@ -134,7 +108,7 @@ public class AttributeUIView extends AbstractBlockUIView implements BlockViewUI 
 		int dy = 3*block.getEmbeddedFontSize()/4;
 		int y = sz.height/2 - (lineCount-1)*dy/2;
 		for( String line: lines) {
-			paintTextAt(g,line,offsetx,y+offsety,Color.BLACK,block.getEmbeddedFontSize());
+			paintTextAt(g,line,offsetx,y+offsety,fill,block.getEmbeddedFontSize());
 			y+=dy;
 		}
 	}
