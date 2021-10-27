@@ -41,7 +41,8 @@ public class BlockAttributeView extends ProcessBlockView implements BlockListene
 	public BlockAttributeView(BlockDescriptor descriptor) {
 		super(descriptor);
 		this.fncs = new UtilityFunctions();
-		initialize();  // Create properties.
+		setup();  // Create properties.
+		initialize();
 	}
 	/**
 	 * Constructor used when diagram is de-serialized. Create a listener on the subject property.
@@ -50,14 +51,15 @@ public class BlockAttributeView extends ProcessBlockView implements BlockListene
 	public BlockAttributeView(SerializableBlock sb) {
 		super(sb);
 		this.fncs = new UtilityFunctions();
-
+		initialize();
+		
 		startListener();
 	}
 	/**
 	 * Add properties that are required for this class.
 	 * Populate them with default values.
 	 */
-	private void initialize() {
+	private void setup() {
 		setName(CLSS);
 		// These properties define which block and property to display
 		BlockProperty blockId = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_BLOCK_ID,"", PropertyType.STRING, false);
@@ -86,6 +88,19 @@ public class BlockAttributeView extends ProcessBlockView implements BlockListene
 		setProperty(width);
 	}
 	
+	/**
+	 *  Initialize property listeners. These are steps necessary with either constructor.
+	 */
+	private void initialize() {
+		BlockProperty h = getProperty(BlockConstants.ATTRIBUTE_PROPERTY_HEIGHT);
+		String key = NotificationKey.keyForProperty(getBlockId(), h.getName());
+		notificationHandler.addNotificationChangeListener(key,CLSS,this);
+		setPreferredHeight(fncs.coerceToInteger(h.getValue().toString()));
+		BlockProperty w = getProperty(BlockConstants.ATTRIBUTE_PROPERTY_WIDTH);
+		key = NotificationKey.keyForProperty(getBlockId(), w.getName());
+		notificationHandler.addNotificationChangeListener(key,CLSS,this);;
+		setPreferredWidth(fncs.coerceToInteger(w.getValue().toString()));
+	}
 	public String getBlockId() { return getProperty(BlockConstants.ATTRIBUTE_PROPERTY_BLOCK_ID).getValue().toString(); }
 	public void setBlockId(String id) { 
 		BlockProperty blockId = getProperty(BlockConstants.ATTRIBUTE_PROPERTY_BLOCK_ID);
@@ -125,10 +140,6 @@ public class BlockAttributeView extends ProcessBlockView implements BlockListene
 	public void setOffsetX(int offset) { getProperty(BlockConstants.ATTRIBUTE_PROPERTY_OFFSET_X).setValue(offset); }
 	public int getOffsetY () { return fncs.parseInteger(getProperty(BlockConstants.ATTRIBUTE_PROPERTY_OFFSET_Y).getValue().toString()); }
 	public void setOffsetY(int offset) { getProperty(BlockConstants.ATTRIBUTE_PROPERTY_OFFSET_Y).setValue(offset); }
-	@Override
-	public int getPreferredHeight ()  { return fncs.parseInteger(getProperty(BlockConstants.ATTRIBUTE_PROPERTY_HEIGHT).getValue().toString()); }
-	@Override
-	public int getPreferredWidth ()   { return fncs.parseInteger(getProperty(BlockConstants.ATTRIBUTE_PROPERTY_WIDTH).getValue().toString()); }
 	public ProcessBlockView getReferenceBlock() { return this.reference; }
 	public void setReferenceBlock(ProcessBlockView ref) { this.reference=ref; }
 	/**
@@ -152,9 +163,19 @@ public class BlockAttributeView extends ProcessBlockView implements BlockListene
 		}
 	}
 	@Override
-	public void propertyChange(String pname,Object value) {}
+	public void propertyChange(String pname,Object value) {
+		log.infof("%s.propertyChange: - %s new value (%s)",CLSS,pname,value);
+		if( pname.equalsIgnoreCase(BlockConstants.ATTRIBUTE_PROPERTY_WIDTH)) {
+			setPreferredWidth(fncs.coerceToInteger(value.toString()));
+		}
+		else if( pname.equalsIgnoreCase(BlockConstants.ATTRIBUTE_PROPERTY_HEIGHT)) {
+			setPreferredHeight(fncs.coerceToInteger(value.toString()));
+		}
+	}
+	
 	@Override
-	public void stateChanged(ChangeEvent e) {}
+	public void stateChanged(ChangeEvent e) {
+	}
 
 	/**
 	 * We are listening on a particular property, so the value change must be the right one.

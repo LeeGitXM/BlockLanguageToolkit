@@ -50,10 +50,11 @@ public class AttributeUIView extends AbstractBlockUIView implements BlockViewUI 
 		//log.infof("AttributeUIView.paintComponent %s ...(%d:%s)",getBlock().getName(),valueProperty.hashCode(),fncs.coerceToString(valueProperty.getValue()) );
 		// Preserve the original transform to roll back to at the end
 		Color background = colorForString(bav.getBackgroundColor());
+		if( !bav.getBackgroundColor().equalsIgnoreCase("TRANSPARENT") ) {
+			float[] cc = background.getComponents(null);
+			background = new Color(cc[0],cc[1],cc[2],0.5f);
+		}
 		Color foreground = colorForString(bav.getForegroundColor());
-		float[] cc = background.getComponents(null);
-		background = new Color(cc[0],cc[1],cc[2],0.5f);
-
 
 		// Turn on anti-aliasing
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
@@ -65,11 +66,8 @@ public class AttributeUIView extends AbstractBlockUIView implements BlockViewUI 
 		g.setColor(background);
 		g.fillRect(0, 0, width,height);
 		
-		// NOTE* No longer assume 100px width.  TimeReadout is wider.  The old setting of 8 for small was unreadable
-		// Set the font size based on the string length.
-		// Assumes 100px block width
 		String value = bav.getValue();
-		int fontSize = bav.getFontSize();  // large
+		int fontSize = bav.getFontSize(); 
 		
 		block.setEmbeddedFontSize(fontSize);
 		block.setEmbeddedLabel(value);
