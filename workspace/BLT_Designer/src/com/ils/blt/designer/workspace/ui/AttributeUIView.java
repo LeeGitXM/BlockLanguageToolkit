@@ -51,41 +51,18 @@ public class AttributeUIView extends AbstractBlockUIView implements BlockViewUI 
 		// Preserve the original transform to roll back to at the end
 		Color background = colorForString(bav.getBackgroundColor());
 		Color foreground = colorForString(bav.getForegroundColor());
+		float[] cc = background.getComponents(null);
+		background = new Color(cc[0],cc[1],cc[2],0.5f);
+
 
 		// Turn on anti-aliasing
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
 		g.setPaint(foreground);
 		
-		// Calculate the inner area
-		Rectangle ifb = new Rectangle();   // Interior, frame and border
-		ifb = SwingUtilities.calculateInnerArea(this,ifb);
-		// Now translate so that 0,0 is is at the inner origin
-		if( bav==null ) return;
-		ifb.x += 80;
-		ifb.y += 40;
-	
-		//g.translate(ifb.x, ifb.y);
-
-		ifb.x += BORDER_WIDTH;
-		ifb.y += BORDER_WIDTH;
-		ifb.width  -= 2*(BORDER_WIDTH);
-		ifb.height -= 2*(BORDER_WIDTH);
-		// Create a rectangle that is within the border boundaries
-		int[] xvertices = new int[] {ifb.x, ifb.x+ifb.width,ifb.x+ifb.width,ifb.x };
-		int[] yvertices = new int[] {ifb.y, ifb.y,ifb.y+ifb.height,ifb.y+ifb.height};
-		Polygon fi = new Polygon(xvertices,yvertices,4);
-		g.setColor(background); 
-		g.setPaint(background);
-		g.fillPolygon(fi);
-		g.draw(fi);
-		
-		g.setColor(background); 
-		//g.setPaint(background);
-		//g.fillPolygon(fi);
-		//g.draw(fi);
-		//g.fillRect(ifb.x, ifb.y, ifb.width,ifb.height);
+ 
 		int height = bav.getPreferredHeight();
 		int width = bav.getPreferredWidth();
+		g.setColor(background);
 		g.fillRect(0, 0, width,height);
 		
 		// NOTE* No longer assume 100px width.  TimeReadout is wider.  The old setting of 8 for small was unreadable
