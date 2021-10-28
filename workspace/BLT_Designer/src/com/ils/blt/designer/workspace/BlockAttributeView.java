@@ -1,6 +1,7 @@
 package com.ils.blt.designer.workspace;
 
 import java.awt.Point;
+import java.util.Date;
 
 import javax.swing.event.ChangeEvent;
 
@@ -32,6 +33,7 @@ public class BlockAttributeView extends ProcessBlockView implements BlockListene
 	public static final int DEFAULT_WIDTH = 100;
 	private final NotificationHandler notificationHandler = NotificationHandler.getInstance();
 	private ProcessBlockView reference = null;
+	private PropertyType propertyType = PropertyType.STRING;
 	private final UtilityFunctions fncs;
 	/**
 	 * Constructor: Used when a new block is created from the selection dialog. 
@@ -52,6 +54,7 @@ public class BlockAttributeView extends ProcessBlockView implements BlockListene
 		super(sb);
 		this.fncs = new UtilityFunctions();
 		initialize();
+		propertyType = getPropertyType(getProperty(BlockConstants.ATTRIBUTE_PROPERTY_FORMAT).getValue().toString());
 		
 		startListener();
 	}
@@ -127,7 +130,42 @@ public class BlockAttributeView extends ProcessBlockView implements BlockListene
 				startListener();
 		}
 	}
-	public String getValue()  {return getProperty(BlockConstants.ATTRIBUTE_PROPERTY_VALUE).getValue().toString(); }
+	private PropertyType getPropertyType(String format) {
+		PropertyType type = PropertyType.OBJECT;  // Unknown format
+		if( format.matches(".*%[0-9]*[.]?[0-9]*s.*") ) {
+			type=PropertyType.STRING;
+		}
+		else if( format.matches(".*%[0-9]*d.*") ) {
+			type=PropertyType.INTEGER;
+		}
+		else if( format.matches(".*%[0-9]*[.]?[0-9]*f.*") ) {
+			type=PropertyType.DOUBLE;
+		}
+		return type;
+	}
+	// Return a string based on the value, property type and format
+	public String getValue() {
+		String format = getProperty(BlockConstants.ATTRIBUTE_PROPERTY_FORMAT).getValue().toString();
+		String value = getProperty(BlockConstants.ATTRIBUTE_PROPERTY_VALUE).getValue().toString(); 
+		if( !value.isEmpty() ) {
+			try {
+				if( propertyType==PropertyType.DOUBLE) {
+					value = String.format(format, fncs.coerceToDouble(value));
+				}
+				else if( propertyType==PropertyType.INTEGER) {
+					value = String.format(format, fncs.coerceToInteger(value));
+				}
+				else {
+					value = String.format(format,value);
+				}
+			}
+			catch(Exception ex) {
+				log.warnf("%s.getValue: error formatting %s with %s as %s (%s)",CLSS,
+						value,format,propertyType.name(),ex.getMessage());
+			}
+		}
+		return value;
+	}
 	// When we change the value, we need to change the label
 	public void setValue(String val) { getProperty(BlockConstants.ATTRIBUTE_PROPERTY_VALUE).setValue(val); }
 	@Override
@@ -135,7 +173,13 @@ public class BlockAttributeView extends ProcessBlockView implements BlockListene
 	public int getFontSize() { return fncs.parseInteger(getProperty(BlockConstants.ATTRIBUTE_PROPERTY_FONT_SIZE).getValue().toString()); }
 	public String getForegroundColor() { return getProperty(BlockConstants.ATTRIBUTE_PROPERTY_FOREGROUND_COLOR).getValue().toString(); }  
 	public String getFormat()    { return getProperty(BlockConstants.ATTRIBUTE_PROPERTY_FORMAT).getValue().toString(); } 
-	public void setFormat(String lbl) { getProperty(BlockConstants.ATTRIBUTE_PROPERTY_FORMAT).setValue(lbl); }
+	// Determine property type and check for validity
+	public void setFormat(String lbl) { 
+		propertyType = getPropertyType(lbl);
+		if(propertyType.equals(PropertyType.OBJECT)) {
+			getProperty(BlockConstants.ATTRIBUTE_PROPERTY_FORMAT).setValue("%s"); 
+		}
+	}
 	public int getOffsetX () { return fncs.parseInteger(getProperty(BlockConstants.ATTRIBUTE_PROPERTY_OFFSET_X).getValue().toString()); }
 	public void setOffsetX(int offset) { getProperty(BlockConstants.ATTRIBUTE_PROPERTY_OFFSET_X).setValue(offset); }
 	public int getOffsetY () { return fncs.parseInteger(getProperty(BlockConstants.ATTRIBUTE_PROPERTY_OFFSET_Y).getValue().toString()); }
@@ -165,11 +209,17 @@ public class BlockAttributeView extends ProcessBlockView implements BlockListene
 	@Override
 	public void propertyChange(String pname,Object value) {
 		log.infof("%s.propertyChange: - %s new value (%s)",CLSS,pname,value);
-		if( pname.equalsIgnoreCase(BlockConstants.ATTRIBUTE_PROPERTY_WIDTH)) {
-			setPreferredWidth(fncs.coerceToInteger(value.toString()));
+		if( pname.equalsIgnoreCase(getPropName())) {
+			setValue(value.toString());
+		}
+		else if( pname.equalsIgnoreCase(BlockConstants.ATTRIBUTE_PROPERTY_FORMAT)) {
+			setFormat(value.toString());
 		}
 		else if( pname.equalsIgnoreCase(BlockConstants.ATTRIBUTE_PROPERTY_HEIGHT)) {
 			setPreferredHeight(fncs.coerceToInteger(value.toString()));
+		}
+		else if( pname.equalsIgnoreCase(BlockConstants.ATTRIBUTE_PROPERTY_WIDTH)) {
+			setPreferredWidth(fncs.coerceToInteger(value.toString()));
 		}
 	}
 	
