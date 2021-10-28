@@ -187,11 +187,14 @@ public class BlockAttributeView extends ProcessBlockView implements BlockListene
 	public ProcessBlockView getReferenceBlock() { return this.reference; }
 	public void setReferenceBlock(ProcessBlockView ref) { this.reference=ref; }
 	/**
-	 * Start listening to the value of the indicated property block
+	 * Start listening to the value of the indicated property block.
+	 * Also listen for block movement on self and reference block
 	 */
 	public void startListener() {
 		String key = NotificationKey.keyForProperty(getBlockId(), getPropName());
 		notificationHandler.addNotificationChangeListener(key,CLSS,this);
+		addBlockListener(this);
+		if(reference!=null) reference.addBlockListener(this);
 	}
 	
 	// ======================================= Notification Change Listener ===================================
