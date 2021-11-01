@@ -37,6 +37,7 @@ import javax.swing.table.TableModel;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
+import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.designer.workspace.AttributeDisplayDescriptor;
 import com.ils.blt.designer.workspace.BlockAttributeView;
 import com.ils.blt.designer.workspace.ProcessBlockView;
@@ -145,10 +146,22 @@ public class AttributeDisplaySelector extends JDialog implements TableModelListe
 					bav.setPropName(propName);
 					if(propName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_NAME)) {
 						bav.setValue(block.getName());
+						bav.setFormat("Name: %s");
 					}
 					else {
-						bav.setValue(block.getProperty(propName).getValue().toString());
+						BlockProperty bprop = block.getProperty(propName);
+						if(bprop.getType().equals(PropertyType.DOUBLE)) {
+							bav.setFormat(bprop.getName()+": %.4f");
+						}
+						else if(bprop.getType().equals(PropertyType.INTEGER)) {
+							bav.setFormat(bprop.getName()+": %d");
+						}
+						else  {
+							bav.setFormat(bprop.getName()+": %s");
+						}
+						bav.setValue(bprop.getValue().toString());
 					}
+					
 					bav.startListener();
 					diagram.addBlock(bav);
 					bav.setDirty(true);

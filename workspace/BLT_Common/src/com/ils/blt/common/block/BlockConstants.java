@@ -126,8 +126,8 @@ public interface BlockConstants   {
 	// Attribute Display Dimensions and Positions
 	public static final int ATTRIBUTE_DISPLAY_OFFSET_X     = 4;  // From the bottom of the block
 	public static final int ATTRIBUTE_DISPLAY_OFFSET_Y     = 2;
-	public static final int ATTRIBUTE_DISPLAY_HEIGHT     = 25;
-	public static final int ATTRIBUTE_DISPLAY_WIDTH      = 180;
+	public static final int ATTRIBUTE_DISPLAY_HEIGHT     = 20;
+	public static final int ATTRIBUTE_DISPLAY_WIDTH      = 100;
 	// Block filler colors
 	public static final int BLOCK_BACKGROUND_BLUE_GRAY      = (new Color(143,172,183)).getRGB();
 	public static final int BLOCK_BACKGROUND_GRAYISH        = (new Color(208,215,220)).getRGB();
