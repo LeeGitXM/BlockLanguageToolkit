@@ -246,7 +246,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	 */
 	public PropertyEditorFrame getPropertyEditorFrame() { return this.propertyEditorFrame; }
 	/**
-	 * For popup menu
+	 * For popup menu. For an attribute display, the only reasonable choice is "delete"
 	 */
 	@Override
 	public JPopupMenu getSelectionPopupMenu(List<JComponent> selections) {
@@ -265,7 +265,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 //				menu.add(saveAction);
 				// NOTE: ctypeEditable gets turned off once a block has been serialized.
 				if( selection instanceof BlockComponent && pbv.isCtypeEditable() && 
-						!pbv.getClassName().equals(BlockConstants.BLOCK_CLASS_OUTPUT) ) {
+					!(pbv.getClassName().equals(BlockConstants.BLOCK_CLASS_OUTPUT) ||
+					  pbv.getClassName().equals(BlockConstants.BLOCK_CLASS_ATTRIBUTE)) ) {
 					
 					// Types are: ANY, DATA, TEXT, TRUTH-VALUE
 					// Assume the type from the terminus anchor
@@ -334,75 +335,78 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 					menu.add(linkSourceMenu);
 				}
 				if( DEBUG ) log.infof("%s.getSelectionPopupMenu: Selection editor class = %s",CLSS,pbv.getEditorClass());
-				// Do not allow editing when the diagram is disabled
-				if(pbv.getEditorClass() !=null && pbv.getEditorClass().length() > 0 &&
-						!getActiveDiagram().getState().equals(DiagramState.DISABLED)) {
-					CustomEditAction cea = new CustomEditAction(this,pbv);
-					menu.add(cea);
+				// None of the following apply to an attribute display
+				if(!pbv.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_ATTRIBUTE) ) {
+					// Do not allow editing when the diagram is disabled
+					if(pbv.getEditorClass() !=null && pbv.getEditorClass().length() > 0 &&
+							!getActiveDiagram().getState().equals(DiagramState.DISABLED)) {
+						CustomEditAction cea = new CustomEditAction(this,pbv);
+						menu.add(cea);
+					}
+					if( !getActiveDiagram().getState().equals(DiagramState.DISABLED)) {
+						PropertyDisplayAction cea = new PropertyDisplayAction(getActiveDiagram(),pbv, this);
+						menu.add(cea);
+					}
+					if(pbv.isSignalAnchorDisplayed()) {
+						HideSignalAction hsa = new HideSignalAction(this,getActiveDiagram(),pbv);
+						menu.add(hsa);
+					}
+					else {
+						ShowSignalAction ssa = new ShowSignalAction(this,getActiveDiagram(),pbv);
+						menu.add(ssa);
+					}
+					// Display an explanation if the block is currently TRUE or FALSE
+
+					String currentState = handler.getBlockState(getActiveDiagram().getId().toString(),pbv.getName());
+					if( currentState!=null && (currentState.equalsIgnoreCase("true")|| currentState.equalsIgnoreCase("false"))) {
+						ExplanationAction act = new ExplanationAction(getActiveDiagram(),pbv);
+						menu.add(act);
+					}
+					ViewInternalsAction via = new ViewInternalsAction(getActiveDiagram(),pbv);
+					menu.add(via);
+					menu.addSeparator();
+					PropagateAction ea = new PropagateAction(pbv);
+					menu.add(ea);
+					if( !pbv.getClassName().equals(BlockConstants.BLOCK_CLASS_INPUT)) {
+						TriggerUpstreamPropagationAction eaup = new TriggerUpstreamPropagationAction(pbv);
+						menu.add(eaup);
+					}
+					ForceAction fa = new ForceAction(getActiveDiagram(),pbv);
+					menu.add(fa);
+					HelpAction ha = new HelpAction(pbv);
+					menu.add(ha);
+					ResetAction ra = new ResetAction(pbv);
+					menu.add(ra);
+					if(pbv.isLocked()) {
+						UnlockAction ula = new UnlockAction(this,getActiveDiagram(),pbv);
+						menu.add(ula);
+					}
+					else {
+						LockAction la = new LockAction(this,getActiveDiagram(),pbv);
+						menu.add(la);
+					}
+					menu.addSeparator();
+					menu.add(context.getCutAction());
+					menu.add(context.getCopyAction());
+					menu.add(context.getPasteAction());
+
+					menu.add(new SelectAllBlocksAction(this,getActiveDiagram(),pbv));
+					if  (selections.size() > 1) {
+						AlignLeftAction al = new AlignLeftAction(this,getActiveDiagram(),pbv, selections);
+						menu.add(al);
+						AlignRightAction ar = new AlignRightAction(this,getActiveDiagram(),pbv, selections);
+						menu.add(ar);
+						AlignWidthCenterAction aw = new AlignWidthCenterAction(this,getActiveDiagram(),pbv, selections);
+						menu.add(aw);
+						AlignTopAction at = new AlignTopAction(this,getActiveDiagram(),pbv, selections);
+						menu.add(at);
+						AlignBottomAction ab = new AlignBottomAction(this,getActiveDiagram(),pbv, selections);
+						menu.add(ab);
+						AlignHeightCenterAction ah = new AlignHeightCenterAction(this,getActiveDiagram(),pbv, selections);
+						menu.add(ah);
+					}
 				}
-				if(!getActiveDiagram().getState().equals(DiagramState.DISABLED)) {
-					PropertyDisplayAction cea = new PropertyDisplayAction(getActiveDiagram(),pbv, this);
-					menu.add(cea);
-				}
-				if(pbv.isSignalAnchorDisplayed()) {
-					HideSignalAction hsa = new HideSignalAction(this,getActiveDiagram(),pbv);
-					menu.add(hsa);
-				}
-				else {
-					ShowSignalAction ssa = new ShowSignalAction(this,getActiveDiagram(),pbv);
-					menu.add(ssa);
-				}
-				// Display an explanation if the block is currently TRUE or FALSE
-				
-				String currentState = handler.getBlockState(getActiveDiagram().getId().toString(),pbv.getName());
-				if( currentState!=null && (currentState.equalsIgnoreCase("true")|| currentState.equalsIgnoreCase("false"))) {
-					ExplanationAction act = new ExplanationAction(getActiveDiagram(),pbv);
-					menu.add(act);
-				}
-				ViewInternalsAction via = new ViewInternalsAction(getActiveDiagram(),pbv);
-				menu.add(via);
-				menu.addSeparator();
-				PropagateAction ea = new PropagateAction(pbv);
-				menu.add(ea);
-				if( !pbv.getClassName().equals(BlockConstants.BLOCK_CLASS_INPUT)) {
-					TriggerUpstreamPropagationAction eaup = new TriggerUpstreamPropagationAction(pbv);
-					menu.add(eaup);
-				}
-				ForceAction fa = new ForceAction(getActiveDiagram(),pbv);
-				menu.add(fa);
-				HelpAction ha = new HelpAction(pbv);
-				menu.add(ha);
-				ResetAction ra = new ResetAction(pbv);
-				menu.add(ra);
-				if(pbv.isLocked()) {
-					UnlockAction ula = new UnlockAction(this,getActiveDiagram(),pbv);
-					menu.add(ula);
-				}
-				else {
-					LockAction la = new LockAction(this,getActiveDiagram(),pbv);
-					menu.add(la);
-				}
-				menu.addSeparator();
-				menu.add(context.getCutAction());
-				menu.add(context.getCopyAction());
-				menu.add(context.getPasteAction());
 				menu.add(context.getDeleteAction());
-				menu.add(new SelectAllBlocksAction(this,getActiveDiagram(),pbv));
-				if  (selections.size() > 1) {
-					AlignLeftAction al = new AlignLeftAction(this,getActiveDiagram(),pbv, selections);
-					menu.add(al);
-					AlignRightAction ar = new AlignRightAction(this,getActiveDiagram(),pbv, selections);
-					menu.add(ar);
-					AlignWidthCenterAction aw = new AlignWidthCenterAction(this,getActiveDiagram(),pbv, selections);
-					menu.add(aw);
-					AlignTopAction at = new AlignTopAction(this,getActiveDiagram(),pbv, selections);
-					menu.add(at);
-					AlignBottomAction ab = new AlignBottomAction(this,getActiveDiagram(),pbv, selections);
-					menu.add(ab);
-					AlignHeightCenterAction ah = new AlignHeightCenterAction(this,getActiveDiagram(),pbv, selections);
-					menu.add(ah);
-				}
-				
 				return menu;
 			}
 			else if( DiagramWorkspace.this.getSelectedContainer().getSelectedConnection()!=null ) {

@@ -133,8 +133,10 @@ public class AttributeDisplaySelector extends JDialog implements TableModelListe
 				boolean newValue = ((Boolean) model.getValueAt(row, column)).booleanValue();
 				origin = findTopBlock(diagram,block);
 				// If there isn't any existing block, set the origin to the bottom of the block
-				origin = new Point(block.getLocation().x+BlockConstants.ATTRIBUTE_DISPLAY_OFFSET_X,
-						           block.getLocation().y+block.getPreferredHeight()+BlockConstants.ATTRIBUTE_DISPLAY_OFFSET_Y);
+				if(origin==null) {
+					origin = new Point(block.getLocation().x+BlockConstants.ATTRIBUTE_DISPLAY_OFFSET_X,
+						               block.getLocation().y+block.getPreferredHeight()+BlockConstants.ATTRIBUTE_DISPLAY_OFFSET_Y);
+				}
 
 				BlockAttributeView bav = findDisplay(diagram,block,propName);
 				// CASE I - checked box, display does not exist. Create it.
@@ -247,6 +249,7 @@ public class AttributeDisplaySelector extends JDialog implements TableModelListe
 	/**
 	 * Arrange the locations of the displays in a stack pattern.
 	 * We move the blocks here then save the offsets as properties.
+	 * "origin" is the location of the top block
 	 */
 	private void arrangeDisplays() {
 		log.infof("%s.arrangeDisplay: reference %s %d:%d", CLSS,block.getName(),block.getLocation().x,block.getLocation().y);
@@ -256,8 +259,9 @@ public class AttributeDisplaySelector extends JDialog implements TableModelListe
 			loc.y += count*SEPARATION;
 			bav.setLocation(loc);
 			bav.fireBlockMoved();
-			bav.setOffsetX(loc.x-origin.x);
-			bav.setOffsetY(loc.y-origin.y);
+			// The offsets are the difference between the reference block and the display
+			bav.setOffsetX(loc.x-block.getLocation().x);
+			bav.setOffsetY(loc.y-block.getLocation().y);
 			log.infof("%s.arrangeDisplay: -- %s %d:%d %dx%d", CLSS,bav.getPropName(),bav.getLocation().x,bav.getLocation().y,bav.getPreferredWidth(),bav.getPreferredHeight());
 			count++;
 		}
@@ -307,10 +311,7 @@ public class AttributeDisplaySelector extends JDialog implements TableModelListe
 				BlockAttributeView bav = (BlockAttributeView)block;
 				// Check for the specified block
 				if( bav.getBlockId().equalsIgnoreCase(refBlock.getId().toString())) {
-					if( top==null) {
-						top = bav.getLocation();
-					}
-					else if(top.y>bav.getLocation().y ) {
+					if( top==null || top.y>bav.getLocation().y ) {
 						top = bav.getLocation();
 					}	
 				}

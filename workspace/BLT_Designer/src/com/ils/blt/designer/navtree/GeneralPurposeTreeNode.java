@@ -60,7 +60,6 @@ import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.ResourceCreateManager;
 import com.ils.blt.designer.ResourceDeleteManager;
-import com.ils.blt.designer.ResourceSaveManager;
 import com.ils.blt.designer.ResourceUpdateManager;
 import com.ils.blt.designer.editor.ApplicationPropertyEditor;
 import com.ils.blt.designer.editor.FamilyPropertyEditor;
@@ -507,7 +506,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		else if(getProjectResource().getResourceType().equalsIgnoreCase(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
 			ApplicationExportAction applicationExportAction = new ApplicationExportAction(menu.getRootPane(),this);
 			FamilyCreateAction familyAction = new FamilyCreateAction(this);
-
+			RefreshFromDatabaseAction refreshAction = new RefreshFromDatabaseAction(this);
 			menu.add(familyAction);
 			menu.add(folderCreateAction);
 			SetApplicationStateAction ssaActive = new SetApplicationStateAction(this,DiagramState.ACTIVE);
@@ -518,7 +517,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			setStateMenu.add(ssaDisable);
 			setStateMenu.add(ssaIsolated);
 			menu.add(setStateMenu);
-			//menu.add(refreshAction);
+			menu.add(refreshAction);
 			menu.addSeparator();
 			menu.add(copyBranchAction);
 			menu.add(pasteBranchAction);
@@ -1916,7 +1915,27 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			}
 		}
 	}
-	
+	/**
+	 *  Recurse through the application, querying the database and refreshing any auxilliary data
+	 */
+	private class RefreshFromDatabaseAction extends BaseAction {
+		private static final long serialVersionUID = 1L;
+		private final GeneralPurposeTreeNode root;
+		public RefreshFromDatabaseAction(GeneralPurposeTreeNode application)  {
+			super(PREFIX+".RefreshFromDatabase",IconUtil.getIcon("refresh"));  
+			this.root = application;
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			try{
+				
+			} 
+			catch (Exception ex) {
+				logger.warnf("%s: RefreshFromDatabaseAction: ERROR: %s",CLSS,ex.getMessage(),ex);
+				ErrorUtil.showError(CLSS+" Exception starting the controller",ex);
+			}
+		}
+	}
 	/**
 	 * Recursively set the state of every diagram under the application to the selected value.
 	 * If the selected value is ISOLATED, then we also update the external database from

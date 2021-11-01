@@ -181,6 +181,9 @@ public class BlockAttributeView extends ProcessBlockView implements BlockListene
 		if(propertyType.equals(PropertyType.OBJECT)) {
 			getProperty(BlockConstants.ATTRIBUTE_PROPERTY_FORMAT).setValue("%s"); 
 		}
+		else {
+			getProperty(BlockConstants.ATTRIBUTE_PROPERTY_FORMAT).setValue(lbl);
+		}
 	}
 	public int getOffsetX () { return fncs.parseInteger(getProperty(BlockConstants.ATTRIBUTE_PROPERTY_OFFSET_X).getValue().toString()); }
 	public void setOffsetX(int offset) { getProperty(BlockConstants.ATTRIBUTE_PROPERTY_OFFSET_X).setValue(offset); }
