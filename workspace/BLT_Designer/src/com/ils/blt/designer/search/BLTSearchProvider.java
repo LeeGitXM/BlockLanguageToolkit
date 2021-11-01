@@ -1,12 +1,9 @@
 package com.ils.blt.designer.search;
 
-import java.awt.Frame;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-
-import javax.swing.JComponent;
 
 import com.ils.blt.common.BLTProperties;
 import com.inductiveautomation.ignition.common.gui.progress.TaskProgressListener;

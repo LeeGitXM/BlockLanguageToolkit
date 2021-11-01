@@ -5,7 +5,6 @@
 package com.ils.blt.common.serializable;
 
 import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 import com.inductiveautomation.ignition.common.util.LogUtil;

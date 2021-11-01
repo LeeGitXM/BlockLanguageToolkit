@@ -90,8 +90,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 				ProcessBlockView pbv = null;
 				if( sb.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_ATTRIBUTE)) {
 					BlockAttributeView bav = new BlockAttributeView(sb);
-					ProcessBlockView refBlock = (ProcessBlockView)this.getBlock(UUID.fromString(bav.getBlockId()));
-					bav.setReferenceBlock(refBlock);
+					bav.setParentDiagram(this);
 					pbv = bav;
 				}
 				else {
@@ -395,7 +394,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			for(ProcessBlockView view:blockMap.values()) {
 				if(view.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_ATTRIBUTE)) {
 					BlockAttributeView bav = (BlockAttributeView)view;
-					if(bav.getBlockId().equals(blk.getId().toString()) )  {
+					if(bav.getReferenceBlock()!=null && bav.getReferenceBlock().getId().equals(blk.getId()) )  {
 						blockMap.remove(bav.getId());
 					}
 				}

@@ -29,10 +29,8 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
 import com.ils.blt.common.ApplicationRequestHandler;
-import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.PalettePrototype;
-import com.ils.blt.designer.BLTDesignerHook;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
