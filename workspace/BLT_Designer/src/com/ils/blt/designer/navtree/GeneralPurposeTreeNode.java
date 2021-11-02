@@ -1916,7 +1916,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 
 
 	/**
-	 * Recurse through the application, querying the database and refreshing any auxilliary data.
+	 * Recurse through the specified node, querying the database and refreshing any auxiliary data.
 	 * Call GetAux on the application and each family or block
 	 * serializing the resource then save the project. Always execute for production database
 	 * and tag provider. A similar exercise is performed by the Gateway hook on startup.
@@ -1927,13 +1927,10 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		private final AbstractResourceNavTreeNode root;
 		private String db;
 		private String provider;
-		private Project diff;
-
 
 		public RefreshFromDatabaseAction(AbstractResourceNavTreeNode tnode)  {
 			super(PREFIX+".RefreshFromDatabase",IconUtil.getIcon("refresh")); 
 			this.root = tnode;
-			this.diff = context.getProject().getEmptyCopy();
 		}
 
 		public void actionPerformed(ActionEvent e) {
@@ -1941,15 +1938,6 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			db       = requestHandler.getProductionDatabase();
 			provider = requestHandler.getProductionTagProvider();
 			synchronizeNode(root,projectId,provider,db);
-			// Update the project
-			try {
-				DTGatewayInterface.getInstance().saveProject(IgnitionDesigner.getFrame(), diff, false, "Committing ...");  // Don't publish
-			}
-			catch(GatewayException ge) {
-				logger.warnf("%s.run: Exception saving diff %d (%s)",CLSS,diff.getName(),ge.getMessage());
-			}
-			Project project = context.getProject();
-			project.applyDiff(diff,false);
 		}	
 
 		// This function is called recursively
@@ -1968,8 +1956,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 					sa.setAuxiliaryData(container);
 					String json = mapper.writeValueAsString(sa);
 					pr.setData(json.getBytes());
-					context.updateResource(pr);   // Force an update
-					diff.putResource(pr, true);
+					context.updateResource(pr);   // Force an update to the project resource
 				}
 				else if( pr.getResourceType().equalsIgnoreCase(BLTProperties.FAMILY_RESOURCE_TYPE)) {
 					SerializableFamily sf = deserializeFamily(pr);
@@ -1977,8 +1964,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 					sf.setAuxiliaryData(container);
 					String json = mapper.writeValueAsString(sf);
 					pr.setData(json.getBytes());
-					context.updateResource(pr);   // Force an update
-					diff.putResource(pr, true);
+					context.updateResource(pr); 
 				}
 				else if( pr.getResourceType().equalsIgnoreCase(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
 					SerializableDiagram dia = deserializeDiagram(pr);
@@ -1990,12 +1976,10 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 					String json = mapper.writeValueAsString(dia);
 					pr.setData(json.getBytes());
 					context.updateResource(pr);   // Force an update
-					diff.putResource(pr, true);    // Mark as dirty for our controller as resource listener
 				}
 				else if( pr.getResourceType().equalsIgnoreCase(BLTProperties.FOLDER_RESOURCE_TYPE) ) {
 					;
 				}
-				return;  // Non BLT type, not interested
 			}
 			catch(JsonProcessingException jpe) {
 				logger.warnf("%s.synchronizeNode: Exception parsing JSON for resource %s (%s)",CLSS,pr.getName(),jpe.getMessage());
