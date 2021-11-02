@@ -72,7 +72,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	public static String PREFIX = BLTProperties.BUNDLE_PREFIX; // Properties is accessed by this prefix
 
 	private GeneralPurposeTreeNode rootNode = null;
-	private DesignerContext context = null;
+	private static DesignerContext context = null;
 	private final LoggerEx log;
 	private DiagramWorkspace workspace = null;
 	private ApplicationRequestHandler appRequestHandler = null;
@@ -90,6 +90,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 	}
 	
+	public static DesignerContext getContext() { return context; }
 	
 	@Override
 	public void initializeScriptManager(ScriptManager mgr) {

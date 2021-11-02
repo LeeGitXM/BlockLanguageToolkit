@@ -147,6 +147,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 				BlockAttributeView bav = (BlockAttributeView)blk;
 				ProcessBlockView refBlock = (ProcessBlockView)getBlock(UUID.fromString(bav.getBlockId()));
 				bav.setReferenceBlock(refBlock);
+				bav.startListener();
 			}
 		}
 		
