@@ -262,7 +262,7 @@ public class AttributeDisplaySelector extends JDialog implements TableModelListe
 			// The offsets are the difference between the reference block and the display
 			bav.setOffsetX(loc.x-block.getLocation().x);
 			bav.setOffsetY(loc.y-block.getLocation().y);
-			log.infof("%s.arrangeDisplay: -- %s %d:%d %dx%d", CLSS,bav.getPropName(),bav.getLocation().x,bav.getLocation().y,bav.getPreferredWidth(),bav.getPreferredHeight());
+			log.infof("%s.arrangeDisplay: -- %s %d:%d %dx%d", CLSS,bav.getPropName(),bav.getOffsetX(),bav.getOffsetY(),bav.getPreferredWidth(),bav.getPreferredHeight());
 			count++;
 		}
 	}

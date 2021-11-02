@@ -1,7 +1,6 @@
 package com.ils.blt.designer.workspace;
 
 import java.awt.Point;
-import java.util.UUID;
 
 import javax.swing.event.ChangeEvent;
 
@@ -13,7 +12,6 @@ import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.notification.NotificationChangeListener;
 import com.ils.blt.common.notification.NotificationKey;
 import com.ils.blt.common.serializable.SerializableBlock;
-import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.designer.NotificationHandler;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
@@ -34,7 +32,6 @@ public class BlockAttributeView extends ProcessBlockView implements BlockListene
 	public static final int DEFAULT_WIDTH = 100;
 	private final NotificationHandler notificationHandler = NotificationHandler.getInstance();
 	private ProcessBlockView reference = null;
-	private ProcessDiagramView parentDiagram = null;
 	private PropertyType propertyType = PropertyType.STRING;
 	private final UtilityFunctions fncs;
 	/**
@@ -189,21 +186,14 @@ public class BlockAttributeView extends ProcessBlockView implements BlockListene
 	public void setOffsetX(int offset) { getProperty(BlockConstants.ATTRIBUTE_PROPERTY_OFFSET_X).setValue(offset); }
 	public int getOffsetY () { return fncs.parseInteger(getProperty(BlockConstants.ATTRIBUTE_PROPERTY_OFFSET_Y).getValue().toString()); }
 	public void setOffsetY(int offset) { getProperty(BlockConstants.ATTRIBUTE_PROPERTY_OFFSET_Y).setValue(offset); }
-	/**
-	 * If the block was created via deserializing, then the reference block will not have been initialized.
-	 * We do it lazily.
+	/**.
 	 * @return the block referenced by the display
 	 */
-	public ProcessBlockView getReferenceBlock() { 
-		if( reference==null && parentDiagram!=null ) {
-			ProcessBlockView refBlock = (ProcessBlockView)parentDiagram.getBlock(UUID.fromString(getBlockId()));
-			setReferenceBlock(refBlock);
-			reference = refBlock;
-		}
-		return this.reference; 
+	public ProcessBlockView getReferenceBlock() {  return this.reference; }
+	public void setReferenceBlock(ProcessBlockView ref) { 
+		this.reference=ref;
+		reference.addBlockListener(this);
 	}
-	public void setParentDiagram(ProcessDiagramView  diagram) { this.parentDiagram = diagram; }
-	public void setReferenceBlock(ProcessBlockView ref) { this.reference=ref; }
 	/**
 	 * Start listening to the value of the indicated property block.
 	 * Also listen for block movement on self and reference block
@@ -212,7 +202,6 @@ public class BlockAttributeView extends ProcessBlockView implements BlockListene
 		String key = NotificationKey.keyForProperty(getBlockId(), getPropName());
 		notificationHandler.addNotificationChangeListener(key,CLSS,this);
 		addBlockListener(this);
-		if(reference!=null) reference.addBlockListener(this);
 	}
 	
 	// ======================================= Notification Change Listener ===================================
@@ -262,10 +251,10 @@ public class BlockAttributeView extends ProcessBlockView implements BlockListene
 		// If this block has moved, change the offsets appropriately
 		if(blk.getId().equals(this.getId() ) ) {
 			if(reference!=null) {
-			int dx = reference.getLocation().x - getLocation().x;
-			setOffsetX(dx);
-			int dy = reference.getLocation().y - getLocation().y;
-			setOffsetY(dy);
+				int dx = getLocation().x - reference.getLocation().x ;
+				setOffsetX(dx);
+				int dy = getLocation().y - reference.getLocation().y ;
+				setOffsetY(dy);
 			}
 			else {
 				log.warnf("%s.blockMoved: - self move,reference block is null",CLSS);

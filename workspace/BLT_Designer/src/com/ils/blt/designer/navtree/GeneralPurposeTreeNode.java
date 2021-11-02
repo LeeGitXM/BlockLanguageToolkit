@@ -480,7 +480,6 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				ApplicationImportAction applicationImportAction = new ApplicationImportAction(context.getFrame(),this);
 				ClearAction clearAction = new ClearAction();
 				DebugAction debugAction = new DebugAction();
-				SynchronizeAction synchronizeAction = new SynchronizeAction(this);
 				if( requestHandler.isControllerRunning() ) {
 					startAction.setEnabled(false);
 					clearAction.setEnabled(false);
@@ -497,7 +496,6 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				menu.addSeparator();
 				menu.add(clearAction);
 				menu.add(debugAction);
-				menu.add(synchronizeAction);
 			}
 		}
 		else if( getProjectResource()==null ) {
@@ -1915,27 +1913,102 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			}
 		}
 	}
+
+
 	/**
-	 *  Recurse through the application, querying the database and refreshing any auxilliary data
+	 * Recurse through the application, querying the database and refreshing any auxilliary data.
+	 * Call GetAux on the application and each family or block
+	 * serializing the resource then save the project. Always execute for production database
+	 * and tag provider. A similar exercise is performed by the Gateway hook on startup.
+	 * The changes are local to the designer until the project is saved.
 	 */
 	private class RefreshFromDatabaseAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
-		private final GeneralPurposeTreeNode root;
-		public RefreshFromDatabaseAction(GeneralPurposeTreeNode application)  {
-			super(PREFIX+".RefreshFromDatabase",IconUtil.getIcon("refresh"));  
-			this.root = application;
+		private final AbstractResourceNavTreeNode root;
+		private String db;
+		private String provider;
+		private Project diff;
+
+
+		public RefreshFromDatabaseAction(AbstractResourceNavTreeNode tnode)  {
+			super(PREFIX+".RefreshFromDatabase",IconUtil.getIcon("refresh")); 
+			this.root = tnode;
+			this.diff = context.getProject().getEmptyCopy();
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			try{
-				
-			} 
-			catch (Exception ex) {
-				logger.warnf("%s: RefreshFromDatabaseAction: ERROR: %s",CLSS,ex.getMessage(),ex);
-				ErrorUtil.showError(CLSS+" Exception starting the controller",ex);
+			long projectId = context.getProject().getId();
+			db       = requestHandler.getProductionDatabase();
+			provider = requestHandler.getProductionTagProvider();
+			synchronizeNode(root,projectId,provider,db);
+			// Update the project
+			try {
+				DTGatewayInterface.getInstance().saveProject(IgnitionDesigner.getFrame(), diff, false, "Committing ...");  // Don't publish
+			}
+			catch(GatewayException ge) {
+				logger.warnf("%s.run: Exception saving diff %d (%s)",CLSS,diff.getName(),ge.getMessage());
+			}
+			Project project = context.getProject();
+			project.applyDiff(diff,false);
+		}	
+
+		// This function is called recursively
+		@SuppressWarnings("unchecked")
+		private void synchronizeNode(AbstractResourceNavTreeNode node,long projectId,String tagp,String dsource) {
+			//log.infof("%s.refreshNode: %s, (%s,%s)",CLSS,node.getName(),provider,dsource);
+			ProjectResource pr = node.getProjectResource();
+			if(pr==null || pr.getResourceType()==null) return;
+			GeneralPurposeDataContainer container = null;
+			ObjectMapper mapper = new ObjectMapper();
+			mapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL,true);
+			try {
+				if( pr.getResourceType().equalsIgnoreCase(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
+					SerializableApplication sa = deserializeApplication(pr);
+					container = ApplicationScriptFunctions.readAuxData(projectId,pr.getResourceId(),sa.getId().toString(),tagp, dsource);
+					sa.setAuxiliaryData(container);
+					String json = mapper.writeValueAsString(sa);
+					pr.setData(json.getBytes());
+					context.updateResource(pr);   // Force an update
+					diff.putResource(pr, true);
+				}
+				else if( pr.getResourceType().equalsIgnoreCase(BLTProperties.FAMILY_RESOURCE_TYPE)) {
+					SerializableFamily sf = deserializeFamily(pr);
+					container = ApplicationScriptFunctions.readAuxData(projectId,pr.getResourceId(),sf.getId().toString(),tagp, dsource);
+					sf.setAuxiliaryData(container);
+					String json = mapper.writeValueAsString(sf);
+					pr.setData(json.getBytes());
+					context.updateResource(pr);   // Force an update
+					diff.putResource(pr, true);
+				}
+				else if( pr.getResourceType().equalsIgnoreCase(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
+					SerializableDiagram dia = deserializeDiagram(pr);
+					dia.setDirty(true);    // Dirty because gateway doesn't know about it yet
+					for(SerializableBlock blk:dia.getBlocks()) {
+						container = ApplicationScriptFunctions.readAuxData(projectId,pr.getResourceId(),blk.getId().toString(),tagp, dsource);
+						blk.setAuxiliaryData(container);
+					}
+					String json = mapper.writeValueAsString(dia);
+					pr.setData(json.getBytes());
+					context.updateResource(pr);   // Force an update
+					diff.putResource(pr, true);    // Mark as dirty for our controller as resource listener
+				}
+				else if( pr.getResourceType().equalsIgnoreCase(BLTProperties.FOLDER_RESOURCE_TYPE) ) {
+					;
+				}
+				return;  // Non BLT type, not interested
+			}
+			catch(JsonProcessingException jpe) {
+				logger.warnf("%s.synchronizeNode: Exception parsing JSON for resource %s (%s)",CLSS,pr.getName(),jpe.getMessage());
+			}
+
+			Enumeration<AbstractResourceNavTreeNode> childWalker = node.children();
+			while(childWalker.hasMoreElements()) {
+				AbstractResourceNavTreeNode child = childWalker.nextElement();
+				synchronizeNode(child,projectId,tagp,dsource);
 			}
 		}
 	}
+	
 	/**
 	 * Recursively set the state of every diagram under the application to the selected value.
 	 * If the selected value is ISOLATED, then we also update the external database from
@@ -2013,95 +2086,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			}
 		}
 	}
-	// Navigate the NavTree from the top. Call GetAux on each application, family or block
-	// serializing the resource then save the project. Always execute for production database
-	// and tag provider. A similar exercise is performed by the Gateway hook on startup.
-	private class SynchronizeAction extends BaseAction {
-		private static final long serialVersionUID = 1L;
-		private final AbstractResourceNavTreeNode root;
-		private String db;
-		private String provider;
-		private Project diff;
-		
 
-		public SynchronizeAction(AbstractResourceNavTreeNode tnode)  {
-			super(PREFIX+".Synchronize",IconUtil.getIcon("refresh")); 
-			this.root = tnode;
-			this.diff = context.getProject().getEmptyCopy();
-		}
-
-		public void actionPerformed(ActionEvent e) {
-			long projectId = context.getProject().getId();
-			db       = requestHandler.getProductionDatabase();
-			provider = requestHandler.getProductionTagProvider();
-			synchronizeNode(root,projectId,provider,db);
-			// Update the project
-			try {
-				DTGatewayInterface.getInstance().saveProject(IgnitionDesigner.getFrame(), diff, false, "Committing ...");  // Don't publish
-			}
-			catch(GatewayException ge) {
-				logger.warnf("%s.run: Exception saving diff %d (%s)",CLSS,diff.getName(),ge.getMessage());
-			}
-			Project project = context.getProject();
-			project.applyDiff(diff,false);
-		}	
-		
-		// This function is called recursively
-		@SuppressWarnings("unchecked")
-		private void synchronizeNode(AbstractResourceNavTreeNode node,long projectId,String tagp,String dsource) {
-			//log.infof("%s.refreshNode: %s, (%s,%s)",CLSS,node.getName(),provider,dsource);
-			ProjectResource pr = node.getProjectResource();
-			if(pr==null || pr.getResourceType()==null) return;
-			GeneralPurposeDataContainer container = null;
-			ObjectMapper mapper = new ObjectMapper();
-			mapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL,true);
-			try {
-				if( pr.getResourceType().equalsIgnoreCase(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
-					SerializableApplication sa = deserializeApplication(pr);
-					container = ApplicationScriptFunctions.readAuxData(projectId,pr.getResourceId(),sa.getId().toString(),tagp, dsource);
-					sa.setAuxiliaryData(container);
-					String json = mapper.writeValueAsString(sa);
-					pr.setData(json.getBytes());
-					context.updateResource(pr);   // Force an update
-					diff.putResource(pr, true);
-				}
-				else if( pr.getResourceType().equalsIgnoreCase(BLTProperties.FAMILY_RESOURCE_TYPE)) {
-					SerializableFamily sf = deserializeFamily(pr);
-					container = ApplicationScriptFunctions.readAuxData(projectId,pr.getResourceId(),sf.getId().toString(),tagp, dsource);
-					sf.setAuxiliaryData(container);
-					String json = mapper.writeValueAsString(sf);
-					pr.setData(json.getBytes());
-					context.updateResource(pr);   // Force an update
-					diff.putResource(pr, true);
-				}
-				else if( pr.getResourceType().equalsIgnoreCase(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
-					SerializableDiagram dia = deserializeDiagram(pr);
-					dia.setDirty(true);    // Dirty because gateway doesn't know about it yet
-					for(SerializableBlock blk:dia.getBlocks()) {
-						container = ApplicationScriptFunctions.readAuxData(projectId,pr.getResourceId(),blk.getId().toString(),tagp, dsource);
-						blk.setAuxiliaryData(container);
-					}
-					String json = mapper.writeValueAsString(dia);
-					pr.setData(json.getBytes());
-					context.updateResource(pr);   // Force an update
-					diff.putResource(pr, true);    // Mark as dirty for our controller as resource listener
-				}
-				else if( pr.getResourceType().equalsIgnoreCase(BLTProperties.FOLDER_RESOURCE_TYPE) ) {
-					;
-				}
-				return;  // Non BLT type, not interested
-			}
-			catch(JsonProcessingException jpe) {
-				logger.warnf("%s.synchronizeNode: Exception parsing JSON for resource %s (%s)",CLSS,pr.getName(),jpe.getMessage());
-			}
-			
-			Enumeration<AbstractResourceNavTreeNode> childWalker = node.children();
-			while(childWalker.hasMoreElements()) {
-				AbstractResourceNavTreeNode child = childWalker.nextElement();
-				synchronizeNode(child,projectId,tagp,dsource);
-			}
-		}
-	}
 	
 	/**
 	 * FinalDiagnoses must have unique names within an application. If the current node is an application

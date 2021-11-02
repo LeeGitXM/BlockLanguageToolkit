@@ -59,7 +59,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	private List<Connection> connections = new ArrayList<>();
 	private static final int MIN_WIDTH = 200;
 	private static final int MIN_HEIGHT = 200;
-	private static final boolean DEBUG = true;
+	private static final boolean DEBUG = false;
 	private Dimension diagramSize = new Dimension(MIN_WIDTH,MIN_HEIGHT);
 	private final UUID id;
 	private String name = "UNSET";
@@ -90,7 +90,6 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 				ProcessBlockView pbv = null;
 				if( sb.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_ATTRIBUTE)) {
 					BlockAttributeView bav = new BlockAttributeView(sb);
-					bav.setParentDiagram(this);
 					pbv = bav;
 				}
 				else {
@@ -139,9 +138,16 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		// We do this initially. From then on it's whatever the user leaves it at.
 		double maxX = MIN_WIDTH;
 		double maxY = MIN_HEIGHT;
+		// By this time we've created all the blocks, configure any attribute displays
 		for(ProcessBlockView blk:blockMap.values()) {
 			if( blk.getLocation().getX()+blk.getPreferredWidth()>maxX ) maxX = blk.getLocation().getX()+blk.getPreferredWidth();
 			if( blk.getLocation().getY()+blk.getPreferredHeight()>maxY) maxY = blk.getLocation().getY()+blk.getPreferredHeight();
+			
+			if(blk.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_ATTRIBUTE)) {
+				BlockAttributeView bav = (BlockAttributeView)blk;
+				ProcessBlockView refBlock = (ProcessBlockView)getBlock(UUID.fromString(bav.getBlockId()));
+				bav.setReferenceBlock(refBlock);
+			}
 		}
 		
 		diagramSize =  new Dimension((int)(maxX*1.05),(int)(maxY*1.25));
