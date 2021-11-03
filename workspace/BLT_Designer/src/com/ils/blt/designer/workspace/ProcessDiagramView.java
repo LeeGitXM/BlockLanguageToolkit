@@ -379,7 +379,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	
 	@Override
 	public void deleteBlock(Block blk) {
-		
+		List<UUID> displaysToDelete = new ArrayList<>();
 		if( !(blk instanceof BlockAttributeView) ) {
 			// Delete every connection attached to the block
 			List<Connection> connectionsToBeDeleted = new ArrayList<Connection>();
@@ -397,12 +397,12 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			}
 			
 			// Delete any associated attribute views associated with the block
-			List<ProcessBlockView> views = new ArrayList<>();
+			
 			for(ProcessBlockView view:blockMap.values()) {
 				if(view.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_ATTRIBUTE)) {
 					BlockAttributeView bav = (BlockAttributeView)view;
 					if(bav.getReferenceBlock()!=null && bav.getReferenceBlock().getId().equals(blk.getId()) )  {
-						blockMap.remove(bav.getId());
+						displaysToDelete.add(bav.getId());
 					}
 				}
 			}
@@ -410,6 +410,9 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		log.infof("%s.deleteBlock: deleting a block (%s)",CLSS,blk.getClass().getCanonicalName());
 		// Delete the block by removing it from the map
 		blockMap.remove(blk.getId());
+		for(UUID uuid:displaysToDelete) {
+			blockMap.remove(uuid);
+		}
 		fireStateChanged();
 	}
 	

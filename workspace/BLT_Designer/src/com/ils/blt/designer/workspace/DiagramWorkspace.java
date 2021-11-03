@@ -653,7 +653,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		return ret;
 	}
 	
-	
+	// A block dropped from the palette
 	@Override
 	public boolean handleDrop(Object droppedOn,DropTargetDropEvent event) {
 		if (droppedOn instanceof BlockComponent) {
@@ -705,7 +705,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		if (event.isDataFlavorSupported(flava)) {
 			try {
 				Object node = event.getTransferable().getTransferData(flava);
-				if (node instanceof ArrayList && ((ArrayList) node).size() == 1) {
+				if (node instanceof ArrayList && ((ArrayList<?>) node).size() == 1) {
 					ArrayList<?> tagNodeArr = (ArrayList<?>)node;
 					// NOTE: This will fail (properly) if tag type is a dataset
 					if (tagNodeArr.get(0) instanceof TagTreeNode) {  // That's the thing we want!
@@ -713,6 +713,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 						ProcessDiagramView diagram = (ProcessDiagramView)container.getModel();
 						TagTreeNode tnode = (TagTreeNode) tagNodeArr.get(0);
 						int dropx = event.getLocation().x;
+						int dropy = event.getLocation().y;
 						int thewidth = getActiveDiagram().getDiagramSize().width;
 						nameFromTagTree(tnode);
 
@@ -732,6 +733,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 									desc.setCtypeEditable(true);
 									block = new ProcessBlockView(desc);
 									block.setName(nameFromTagTree(tnode));
+									addNameDisplay(block,dropx,dropy);
 								}
 								else {
 									desc.setBlockClass(BlockConstants.BLOCK_CLASS_INPUT);
@@ -742,6 +744,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 									desc.setCtypeEditable(true);
 									block = new ProcessBlockView(desc);
 									block.setName(enforceUniqueName(nameFromTagTree(tnode),diagram));
+									addNameDisplay(block,dropx,dropy);
+									
 								}
 								// Define a single output
 								AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.ANY);
@@ -770,6 +774,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 									// Define a single output
 									AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.ANY);
 									block.addAnchor(output);
+									addNameDisplay(block,dropx,dropy);
 								}
 								else {
 									desc.setBlockClass(BlockConstants.BLOCK_CLASS_OUTPUT);
@@ -780,7 +785,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 									desc.setCtypeEditable(true);
 									block = new ProcessBlockView(desc);
 									block.setName(enforceUniqueName(nameFromTagTree(tnode),diagram));
-
+									addNameDisplay(block,dropx,dropy);
 								}
 								// Define a single input
 								AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.ANY);
@@ -842,6 +847,24 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 
 	}
 
+	/**
+	 * Add an attribute display of the name to the specified block. We do not listen for name changes
+	 * @param diagram
+	 * @param block
+	 */
+	private void addNameDisplay(ProcessBlockView block,int x,int y) {
+		BlockAttributeView bav = new BlockAttributeView(new AttributeDisplayDescriptor());
+		bav.setBlockId(block.getId().toString());
+		bav.setReferenceBlock(block);
+		bav.setPropName(BlockConstants.BLOCK_PROPERTY_NAME);
+		bav.setValue(block.getName());
+		bav.setFormat("Name: %s");
+		Point loc = new Point(x+BlockConstants.ATTRIBUTE_DISPLAY_OFFSET_X,
+                y+block.getPreferredHeight()+BlockConstants.ATTRIBUTE_DISPLAY_OFFSET_Y);
+		bav.setLocation(loc);
+		bav.fireBlockMoved();
+		this.getActiveDiagram().addBlock(bav);
+	}
 
 	// Check to see if this is a tag dropped on a block.  Change the tag binding if applicable.
 	// Dropping the tag changes the block name and connection type if not "locked".

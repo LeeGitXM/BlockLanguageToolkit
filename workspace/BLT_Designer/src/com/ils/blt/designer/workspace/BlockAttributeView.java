@@ -199,7 +199,7 @@ public class BlockAttributeView extends ProcessBlockView implements BlockListene
 	}
 	/**
 	 * Start listening to the value of the indicated property block. Both reference block and
-	 * property name must be set prior to call.
+	 * property name must be set prior to call. 
 	 * Also listen for block movement on self and reference block
 	 */
 	public void startListener() {
@@ -207,7 +207,7 @@ public class BlockAttributeView extends ProcessBlockView implements BlockListene
 		notificationHandler.addNotificationChangeListener(key,CLSS,this);
 		// If the property is bound to a tag, listen on that tag
 		BlockProperty valueProp = reference.getProperty(getPropName());
-		if(valueProp.getBindingType().equals(BindingType.TAG_MONITOR)) {
+		if(valueProp!=null && valueProp.getBindingType().equals(BindingType.TAG_MONITOR)) {
 			String tagPath = fncs.coerceToString(valueProp.getBinding());
 			subscribeToTagPath(tagPath);
 		}
