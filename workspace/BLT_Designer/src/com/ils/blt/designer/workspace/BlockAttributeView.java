@@ -3,6 +3,7 @@ package com.ils.blt.designer.workspace;
 import java.awt.Point;
 import java.io.IOException;
 
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 
 import com.ils.blt.common.UtilityFunctions;
@@ -291,7 +292,8 @@ public class BlockAttributeView extends ProcessBlockView implements BlockListene
 	@Override
 	public void valueChange(final QualifiedValue qv) {
 		log.infof("%s.valueChange: - %s new value (%s)",CLSS,getPropName(),qv.getValue().toString());
-		setValue(qv.getValue().toString());	
+		setValue(qv.getValue().toString());
+		SwingUtilities.invokeLater(new WorkspaceRepainter());
 	}
 	// ======================================= Block Listener ==================================
 	@Override
@@ -328,7 +330,8 @@ public class BlockAttributeView extends ProcessBlockView implements BlockListene
 		if( tag!=null && tag.getValue()!=null ) {
 			String value = tag.getValue().getValue().toString();
 			log.infof("%s.tagChanged: - %s new value (%s)",CLSS,tag.getName(),tag.getValue().toString());
-			setValue(value);	
+			setValue(value);
+			SwingUtilities.invokeLater(new WorkspaceRepainter());
 		}
 		else {
 			// Tag or path is null
