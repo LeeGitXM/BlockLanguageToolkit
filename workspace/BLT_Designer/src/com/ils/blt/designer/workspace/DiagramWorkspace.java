@@ -675,9 +675,13 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 					if( isInBounds(dropPoint,bdc) ) {
 						block.setLocation(dropPoint);
 						this.getActiveDiagram().addBlock(block);
-						// Null doesn't work here ...
-						
 						log.infof("%s.handleDrop: dropped %s",CLSS,event.getTransferable().getTransferData(BlockDataFlavor).getClass().getName());
+						if( block.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK) ||
+							block.getClassName().equals(BlockConstants.BLOCK_CLASS_SOURCE)||
+							block.getClassName().equals(BlockConstants.BLOCK_CLASS_INPUT) ||
+							block.getClassName().equals(BlockConstants.BLOCK_CLASS_OUTPUT)) {
+							addNameDisplay(block,dropPoint.x,dropPoint.y);
+						}
 						return true;
 					}
 					else {
