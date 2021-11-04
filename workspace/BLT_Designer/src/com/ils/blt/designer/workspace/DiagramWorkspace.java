@@ -861,9 +861,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		bav.setFormat("Name: %s");
 		Point loc = new Point(x+BlockConstants.ATTRIBUTE_DISPLAY_OFFSET_X,
                 y+block.getPreferredHeight()+BlockConstants.ATTRIBUTE_DISPLAY_OFFSET_Y);
-		bav.setLocation(loc);
-		bav.fireBlockMoved();
 		this.getActiveDiagram().addBlock(bav);
+		SwingUtilities.invokeLater(new BlockPositioner(this,bav,loc));
 	}
 
 	// Check to see if this is a tag dropped on a block.  Change the tag binding if applicable.
@@ -1462,7 +1461,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	 */
 	@Override
 	public void stateChanged(ChangeEvent event) {
-		log.infof("%s.stateChanged: source = %s",CLSS,event.getSource().getClass().getCanonicalName());
+		//log.infof("%s.stateChanged: source = %s",CLSS,event.getSource().getClass().getCanonicalName());
 		updateBackgroundForDirty();
 	}
 	
@@ -2273,6 +2272,30 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
                 zoomPopup.show(c, e.getX(), e.getY());
             }
         }
+    }
+    /**
+     * Use this class to position a block (e.g. AttributeDisplay).
+     * Position the specified block, then repaint.
+     *
+     */
+    public class BlockPositioner implements Runnable {
+    	private final DiagramWorkspace workspace;
+    	private final BlockAttributeView block;
+    	private final Point location;
+    			
+    	public BlockPositioner(DiagramWorkspace wksp,BlockAttributeView blk,Point loc) {
+    		this.workspace = wksp;
+    		this.block = blk;
+    		this.location = loc;
+    	}
+    		
+    	@Override
+    	public void run() {
+    		block.setLocation(location);
+    		block.blockMoved(block);
+    		block.fireBlockMoved();
+    		workspace.repaint(200);  // Paint in 200 ms
+    	}
     }
    
 }

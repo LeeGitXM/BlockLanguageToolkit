@@ -24,7 +24,6 @@ import com.inductiveautomation.ignition.common.sqltags.model.TagPath;
 import com.inductiveautomation.ignition.common.sqltags.model.TagProp;
 import com.inductiveautomation.ignition.common.sqltags.model.event.TagChangeEvent;
 import com.inductiveautomation.ignition.common.sqltags.model.event.TagChangeListener;
-import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 import com.inductiveautomation.ignition.common.sqltags.parser.TagPathParser;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.BlockListener;
@@ -116,8 +115,7 @@ public class BlockAttributeView extends ProcessBlockView implements BlockListene
 	}
 	public String getBlockId() { return getProperty(BlockConstants.ATTRIBUTE_PROPERTY_BLOCK_ID).getValue().toString(); }
 	public void setBlockId(String id) { 
-		BlockProperty blockId = getProperty(BlockConstants.ATTRIBUTE_PROPERTY_BLOCK_ID);
-		BlockProperty propName = getProperty(BlockConstants.ATTRIBUTE_PROPERTY_PROPERTY);
+		BlockProperty blockId = getProperty(BlockConstants.ATTRIBUTE_PROPERTY_BLOCK_ID);;
 		blockId.setValue(id);
 	}
 	// For these properties, do not worry about case insensitivity.
@@ -128,7 +126,6 @@ public class BlockAttributeView extends ProcessBlockView implements BlockListene
 	
 	public String getPropName()  {return getProperty(BlockConstants.ATTRIBUTE_PROPERTY_PROPERTY).getValue().toString(); }
 	public void setPropName(String name) {
-		BlockProperty blockId = getProperty(BlockConstants.ATTRIBUTE_PROPERTY_BLOCK_ID);
 		BlockProperty propName = getProperty(BlockConstants.ATTRIBUTE_PROPERTY_PROPERTY);
 		propName.setValue(name);
 	}
