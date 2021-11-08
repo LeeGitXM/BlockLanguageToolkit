@@ -2133,7 +2133,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				for( Block blk:diagram.getBlocks()) {
 					ProcessBlockView pbv = (ProcessBlockView)blk;
 					// Re-instate name from property, if necessary
-					if(pbv.getName().equals(BlockConstants.DEFAULT_BLOCK_NAME) && pbv.getProperty(BlockConstants.BLOCK_PROPERTY_NAME)!=null) {
+					if( BlockConstants.DEFAULT_BLOCK_NAME.equals(pbv.getName())&& pbv.getProperty(BlockConstants.BLOCK_PROPERTY_NAME)!=null) {
 						pbv.setName(pbv.getProperty(BlockConstants.BLOCK_PROPERTY_NAME).getValue().toString());
 					}
 					// For now only check final diagnosis blocks

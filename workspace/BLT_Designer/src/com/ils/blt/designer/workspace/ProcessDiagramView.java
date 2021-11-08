@@ -146,8 +146,13 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			if(blk.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_ATTRIBUTE)) {
 				BlockAttributeView bav = (BlockAttributeView)blk;
 				ProcessBlockView refBlock = (ProcessBlockView)getBlock(UUID.fromString(bav.getBlockId()));
-				bav.setReferenceBlock(refBlock);
-				bav.startListener();
+				if( refBlock!=null ) {
+					bav.setReferenceBlock(refBlock);
+					bav.startListener();
+				}
+				else {
+					log.warnf("%s.init: WARNING: reference block for attribute display is null",CLSS);
+				}
 			}
 		}
 		
@@ -568,12 +573,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		// this as it evaluates. Update the value from the newly deserialized diagram.
 		// Also register self for any block name changes
 		for(ProcessBlockView block:blockMap.values() ) {
-			block.startup();
-			if( block.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SOURCE) ||
-				block.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SINK)) {
-				String key = NotificationKey.keyForBlockName(block.getId().toString());
-				handler.addNotificationChangeListener(key,CLSS, block);
-			}
+			block.startup();  // Registers listeners on all block properties, including name
 		}
 		// Register self for watermark changes
 		String key = NotificationKey.watermarkKeyForDiagram(getId().toString());
@@ -666,7 +666,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		// The tag cannot be a Boolean
 		if(pblock.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK) ) {
 			if(type.equals(DataType.Boolean)) {
-				msg = String.format("Sink %s icannot be bound to a Boolean tag, Use a Text tag instead.",pblock.getName());
+				msg = String.format("A sink (%s) cannot be bound to a Boolean tag, Use a Text tag instead.",pblock.getName());
 			}
 			else {
 				if(tagPath!=null && !tagPath.isEmpty() ) {
@@ -674,7 +674,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 					for(SerializableBlockStateDescriptor desc:blocks) {
 						if( desc.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK) &&
 								!desc.getIdString().equals(pblock.getId().toString())) {
-							msg = String.format("%s: cannot bind to same tag as sink %s", pblock.getName(),desc.getName());
+							msg = String.format("A sink(%s) cannot bind to same tag as another sink (%s)", pblock.getName(),desc.getName());
 							break;
 						}
 					}
@@ -692,7 +692,13 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 				pblock.getClassName().equals(BlockConstants.BLOCK_CLASS_OUTPUT))  &&
 				prop.getName().equals(BlockConstants.BLOCK_PROPERTY_TAG_PATH) &&
 				BusinessRules.isStandardConnectionsFolder(tagPath) ) {  
-			msg = "Input and outputs cannot be bound to tags in the connections folder";
+			msg = "Input or outputs cannot be bound to tags in the connections folder";
+		}
+		else if( (pblock.getClassName().equals(BlockConstants.BLOCK_CLASS_SOURCE)    ||
+				pblock.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK))  &&
+				prop.getName().equals(BlockConstants.BLOCK_PROPERTY_TAG_PATH) &&
+				!BusinessRules.isStandardConnectionsFolder(tagPath) ) {  
+			msg = "Sources or sinks cannot be bound to tags outside the connections folder";
 		}
 
 		return msg;  // this could return an error message

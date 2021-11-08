@@ -15,6 +15,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
 
+import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BlockConstants;
@@ -31,6 +32,7 @@ import com.ils.blt.designer.NotificationHandler;
 import com.ils.blt.designer.workspace.ui.AbstractBlockUIView;
 import com.ils.blt.designer.workspace.ui.UIFactory;
 import com.ils.common.GeneralPurposeDataContainer;
+import com.inductiveautomation.ignition.common.gateway.messages.PushNotification;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 import com.inductiveautomation.ignition.common.util.LogUtil;
@@ -173,7 +175,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 				}
 			} 
 		}
-		this.setName(sb.getName());
+		this.name = sb.getName();
 		this.location = new Point(sb.getX(),sb.getY());
 		if(DEBUG) log.infof("%s: %s created %s %s (%s) view from serializable block", CLSS, sb.getName(),className, sb.getId().toString(),style.toString());
 	}
@@ -423,9 +425,15 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 	public void setIconPath(String iconPath) {this.iconPath = iconPath;}
 	public void setLocked(boolean flag) {this.locked = flag;}
 	public void setName(String text) { 
-		this.name = text; 
-		fireStateChanged(); 
+		if( name==null ||  !name.equals(text) ) {
+			this.name = text;
+			String key = NotificationKey.keyForBlockName(getId().toString());
+			PushNotification pn = new PushNotification(BLTProperties.MODULE_ID,key,text);
+			handler.receiveNotification(pn);
+			fireStateChanged();
+		}
 	}
+
 	@Override
 	public void setLocation(Point loc) {
 		location = loc;
@@ -435,7 +443,12 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 	public void setPreferredWidth(int preferredWidth) {this.preferredWidth = preferredWidth;}
 	public void setProperty(BlockProperty prop) { 
 		if( prop!=null && prop.getName()!=null ) {
-			propertyMap.put(prop.getName(), prop);
+			if(prop.getName().equals(BlockConstants.BLOCK_PROPERTY_NAME)) {
+				setName(prop.getValue().toString());
+			}
+			else {
+				propertyMap.put(prop.getName(), prop);
+			}
 		}
 		else {
 			log.warnf("%s.setProperties: WARNING: attempt to set %s properties to null",CLSS,getName());
@@ -466,7 +479,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 		}
 	}
 	/**
-	 * Create a notification subscription for each property
+	 * Create a notification subscription for each property and the name
 	 */
 	public void startup () {
 		for(BlockProperty prop:getProperties()) {
@@ -475,17 +488,19 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 			if(DEBUG) log.infof("%s.startup: listening %s", CLSS, key);
 			handler.addNotificationChangeListener(key,CLSS, this);
 		}
+		String key = NotificationKey.keyForBlockName(getId().toString());
+		handler.addNotificationChangeListener(key,CLSS, this);
 	}
 	/**
 	 * Create a name that is highly likely to be unique within the diagram.
 	 * The name can be user-modified at any time. If we really need a uniqueness,
-	 * use the block's UUID.
+	 * use the block's UUID. Set the member directly to avoid excess notifications.
 	 */
 	public void createPseudoRandomName() {
 		String root = className;
 		int pos = className.lastIndexOf(".");
 		if( pos>=0 )  root = className.substring(pos+1);
-		setName(String.format("%s-%d", root.toUpperCase(),random.nextInt(1000)));
+		this.name = String.format("%s-%d", root.toUpperCase(),random.nextInt(1000));
 	}
 	
 	/**
@@ -494,7 +509,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 	 * use the block's UUID.
 	 */
 	public void createPseudoRandomNameExtension() {
-		setName(String.format("%s-%d",getName(),random.nextInt(1000)));
+		this.name = String.format("%s-%d",getName(),random.nextInt(1000));
 	}
 	
 	/**

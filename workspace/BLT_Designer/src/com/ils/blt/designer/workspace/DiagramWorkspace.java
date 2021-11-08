@@ -675,7 +675,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 					if( isInBounds(dropPoint,bdc) ) {
 						block.setLocation(dropPoint);
 						this.getActiveDiagram().addBlock(block);
-						log.infof("%s.handleDrop: dropped %s",CLSS,event.getTransferable().getTransferData(BlockDataFlavor).getClass().getName());
+						log.infof("%s.handleDrop: dropped %s",CLSS,block.getClassName());
 						if( block.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK) ||
 							block.getClassName().equals(BlockConstants.BLOCK_CLASS_SOURCE)||
 							block.getClassName().equals(BlockConstants.BLOCK_CLASS_INPUT) ||
@@ -879,7 +879,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			DataFlavor flava = NodeListTransferable.FLAVOR_NODELIST;
 			if (event.isDataFlavorSupported(flava)) {
 				Object node = event.getTransferable().getTransferData(flava);
-				if (node instanceof ArrayList && ((ArrayList) node).size() == 1) {
+				if (node instanceof ArrayList && ((ArrayList<?>) node).size() == 1) {
 					ArrayList<?> tagNodeArr = (ArrayList<?>)node;
 					if (tagNodeArr.get(0) instanceof TagTreeNode) {  // That's the thing we want!
 						BlockDesignableContainer container = getSelectedContainer();
@@ -910,10 +910,19 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 								pblock.modifyConnectionForTagChange(prop, tagType);
 								saveOpenDiagram(diagram.getResourceId());
 								diagram.fireStateChanged();
+								
+								// Extra work to do if block is a sink.
+								if(pblock.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK)) {
+									
+								}
+								else if(pblock.getClassName().equals(BlockConstants.BLOCK_CLASS_SOURCE)) {
+									
+								}
 							} 
 							else {
 								JOptionPane.showMessageDialog(null, connectionMessage, "Warning", JOptionPane.INFORMATION_MESSAGE);
 							}
+							
 						}
 					}
 				}
@@ -971,19 +980,19 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	}
 	
 	private String nameFromTagTree(TagTreeNode tnode) {
-		String name = tnode.getName();
+		String nodeName = tnode.getName();
 		while(tnode.inUDTInstance()) {
 			TagPathTreeNode tptn = tnode.getParent();
 			if( tptn instanceof TagTreeNode) {
 				tnode = (TagTreeNode)tptn;
-				name = tnode.getName();
+				nodeName = tnode.getName();
 			}
 			else {
-				name = tptn.getName();
+				nodeName = tptn.getName();
 				break;
 			}
 		}
-		return name;
+		return nodeName;
 	}
 
 	@Override

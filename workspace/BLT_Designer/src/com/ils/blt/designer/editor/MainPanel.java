@@ -133,6 +133,7 @@ public class MainPanel extends BasicEditPanel {
 			nameField = createTextField(blk.getName());
 			nameField.setEditable(true);
 			nameField.addFocusListener(this);
+			block.addChangeListener(this);
 			add(nameField,"growx,pushx");
 			add(createLabel("Class"),"newline,skip");
 			add(createTextField(blk.getClassName()),"span,growx");

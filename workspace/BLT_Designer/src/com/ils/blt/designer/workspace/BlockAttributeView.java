@@ -72,7 +72,7 @@ public class BlockAttributeView extends ProcessBlockView implements BlockListene
 	 * Populate them with default values.
 	 */
 	private void setup() {
-		setName(CLSS);
+		createPseudoRandomName();  // Sets name without triggering listeners
 		// These properties define which block and property to display
 		BlockProperty blockId = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_BLOCK_ID,"", PropertyType.STRING, false);
 		setProperty(blockId);
@@ -146,7 +146,7 @@ public class BlockAttributeView extends ProcessBlockView implements BlockListene
 	public String getValue() {
 		String format = getProperty(BlockConstants.ATTRIBUTE_PROPERTY_FORMAT).getValue().toString();
 		String value = getProperty(BlockConstants.ATTRIBUTE_PROPERTY_VALUE).getValue().toString(); 
-		if( !value.isEmpty() ) {
+		if( value!=null && !value.isEmpty() ) {
 			try {
 				if( propertyType==PropertyType.DOUBLE) {
 					value = String.format(format, fncs.coerceToDouble(value));
@@ -196,19 +196,25 @@ public class BlockAttributeView extends ProcessBlockView implements BlockListene
 	}
 	/**
 	 * Start listening to the value of the indicated property block. Both reference block and
-	 * property name must be set prior to call. 
+	 * property name must be set prior to call. Listening on the name is aspecial case. 
 	 * Also listen for block movement on self and reference block
 	 */
 	public void startListener() {
-		String key = NotificationKey.keyForProperty(getBlockId(), getPropName());
-		notificationHandler.addNotificationChangeListener(key,CLSS,this);
-		// If the property is bound to a tag, listen on that tag
-		BlockProperty valueProp = reference.getProperty(getPropName());
-		if(valueProp!=null && valueProp.getBindingType().equals(BindingType.TAG_MONITOR)) {
-			String tagPath = fncs.coerceToString(valueProp.getBinding());
-			subscribeToTagPath(tagPath);
+		String pname = getPropName();
+		if( pname.endsWith(BlockConstants.BLOCK_PROPERTY_NAME)) {
+			String key = NotificationKey.keyForBlockName(getBlockId());
+			notificationHandler.addNotificationChangeListener(key,CLSS,this);
 		}
-		
+		else {
+			String key = NotificationKey.keyForProperty(getBlockId(), pname);
+			notificationHandler.addNotificationChangeListener(key,CLSS,this);
+			// If the property is bound to a tag, listen on that tag
+			BlockProperty valueProp = reference.getProperty(getPropName());
+			if(valueProp!=null && valueProp.getBindingType().equals(BindingType.TAG_MONITOR)) {
+				String tagPath = fncs.coerceToString(valueProp.getBinding());
+				subscribeToTagPath(tagPath);
+			}
+		}
 		addBlockListener(this);
 	}
 	// Subscribe to a tag. This will fail if the tag path is unset or illegal.
@@ -244,7 +250,7 @@ public class BlockAttributeView extends ProcessBlockView implements BlockListene
 		removeBlockListener(this);
 		if( reference!=null ) {
 			BlockProperty valueProp = reference.getProperty(getPropName());
-			if(valueProp.getBindingType().equals(BindingType.TAG_MONITOR)) {
+			if(valueProp!=null && valueProp.getBindingType().equals(BindingType.TAG_MONITOR)) {
 				String tagPath = fncs.coerceToString(valueProp.getBinding());
 				unsubscribeToTagPath(tagPath);
 			}
@@ -257,9 +263,10 @@ public class BlockAttributeView extends ProcessBlockView implements BlockListene
 	public void diagramStateChange(long resId, String state) {}
 	// We get this when another entity changes a property. We just need to re-display.
 	@Override
-	public void nameChange(String name) {
+	public void nameChange(String bname) {
+		log.infof("%s.nameChange: - %s new name (%s)",CLSS,reference.getName(),bname);
 		if( getPropName().equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_NAME)) {
-			setValue(name); 
+			setValue(bname); 
 		}
 	}
 	@Override
@@ -281,6 +288,7 @@ public class BlockAttributeView extends ProcessBlockView implements BlockListene
 	
 	@Override
 	public void stateChanged(ChangeEvent e) {
+		log.infof("%s.stateChanged: - ",CLSS);
 	}
 
 	/**
