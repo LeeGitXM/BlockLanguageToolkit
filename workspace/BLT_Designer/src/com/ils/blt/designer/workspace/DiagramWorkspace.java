@@ -910,19 +910,10 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 								pblock.modifyConnectionForTagChange(prop, tagType);
 								saveOpenDiagram(diagram.getResourceId());
 								diagram.fireStateChanged();
-								
-								// Extra work to do if block is a sink.
-								if(pblock.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK)) {
-									
-								}
-								else if(pblock.getClassName().equals(BlockConstants.BLOCK_CLASS_SOURCE)) {
-									
-								}
 							} 
 							else {
 								JOptionPane.showMessageDialog(null, connectionMessage, "Warning", JOptionPane.INFORMATION_MESSAGE);
 							}
-							
 						}
 					}
 				}

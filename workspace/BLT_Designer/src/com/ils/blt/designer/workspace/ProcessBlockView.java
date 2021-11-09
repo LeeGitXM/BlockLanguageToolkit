@@ -574,7 +574,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 	// ====================================== Change Listener =====================================
 	 /**
 	  * We are about to take UI action, so execute on the event thread.
-	  * This is probably in response to a change in one of the block properties.
+	  * This is probably in response to a change in one of the block properties or name.
 	  */
 	@Override
 	public void stateChanged(ChangeEvent e) {

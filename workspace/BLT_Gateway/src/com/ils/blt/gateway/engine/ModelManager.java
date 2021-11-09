@@ -786,7 +786,7 @@ public class ModelManager implements ProjectListener  {
 				ProjectResourceKey key = new ProjectResourceKey(projectId,res.getResourceId());
 				nodesByKey.put(key,diagram);
 				addToHierarchy(projectId,diagram);
-				bts.synchBlocks(sd);
+				bts.synchBlocks(diagram);
 				diagram.createBlocks(sd.getBlocks());
 				
 				diagram.updateConnections(sd.getConnections());
@@ -823,7 +823,7 @@ public class ModelManager implements ProjectListener  {
 				nodesByKey.put(key,diagram);
 				addToHierarchy(projectId,diagram);
 				// New Diagrams are always disabled
-				bts.synchBlocks(sd);
+				bts.synchBlocks(diagram);
 				diagram.createBlocks(sd.getBlocks());
 				diagram.updateConnections(sd.getConnections());
 				diagram.updateProperties(sd);                    // Fixes subscriptions, as necessary
@@ -845,7 +845,7 @@ public class ModelManager implements ProjectListener  {
 					deletedBlock.onDelete();
 					bts.synchDeletedBlock(deletedBlock);
 				}
-				bts.synchBlocks(sd);
+				bts.synchBlocks(diagram);
 				diagram.createBlocks(sd.getBlocks());            // Adds blocks that are new in update
 				diagram.updateConnections(sd.getConnections());  // Adds connections that are new in update
 				diagram.updateProperties(sd);                    // Fixes subscriptions, as necessary

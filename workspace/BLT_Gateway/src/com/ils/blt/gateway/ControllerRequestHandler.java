@@ -211,12 +211,12 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		path = TagUtility.replaceProviderInPath(provider, path);
 		if(!tagValidator.exists(path)) {
 			
-			tagFactory.createTag(provider,type.toString(),path);
+			tagFactory.createTag(provider,path,type.toString());
 		}
 		provider = getIsolationTagProvider();
 		path = TagUtility.replaceProviderInPath(provider, path);
 		if(!tagValidator.exists(path)) {
-			tagFactory.createTag(provider,type.toString(),path);
+			tagFactory.createTag(provider,path,type.toString());
 		}
 	}
 	@Override
