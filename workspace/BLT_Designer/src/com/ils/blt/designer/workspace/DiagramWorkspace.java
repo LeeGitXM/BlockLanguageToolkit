@@ -862,7 +862,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		bav.setReferenceBlock(block);
 		bav.setPropName(BlockConstants.BLOCK_PROPERTY_NAME);
 		bav.setValue(block.getName());
-		bav.setFormat("Name: %s");
+		bav.setFormat("%s");
 		Point loc = new Point(x+BlockConstants.ATTRIBUTE_DISPLAY_OFFSET_X,
                 y+block.getPreferredHeight()+BlockConstants.ATTRIBUTE_DISPLAY_OFFSET_Y);
 		this.getActiveDiagram().addBlock(bav);
