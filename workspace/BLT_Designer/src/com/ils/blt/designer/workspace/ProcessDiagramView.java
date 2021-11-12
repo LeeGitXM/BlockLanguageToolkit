@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
@@ -43,6 +44,7 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorP
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorType;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.BlockDiagramModel;
+import com.inductiveautomation.ignition.designer.blockandconnector.model.BlockListener;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Connection;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.impl.LookupConnection;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
@@ -50,7 +52,7 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
 /**
  * This class represents a diagram in the designer.
  */
-public class ProcessDiagramView extends AbstractChangeable implements BlockDiagramModel,NotificationChangeListener {
+public class ProcessDiagramView extends AbstractChangeable implements BlockDiagramModel,BlockListener,NotificationChangeListener {
 	private static LoggerEx log = LogUtil.getLogger(ProcessDiagramView.class.getPackage().getName());
 	// Use TAG as the "source" identifier when registering for notifications from Gateway
 	private static final String CLSS = "ProcessDiagramView";
@@ -205,6 +207,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			if( ((ProcessBlockView) blk).getProperties().isEmpty() ) initBlockProperties(block);
 			log.tracef("%s.addBlock - %s",CLSS,block.getClassName());
 			blockMap.put(blk.getId(), block);
+			block.addBlockListener(this);
 			fireStateChanged();
 		}
 	}
@@ -450,7 +453,9 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	public Color getBackgroundColorForState() {
 		Color result = BLTProperties.DIAGRAM_ACTIVE_BACKGROUND;
 		if( getState().equals(DiagramState.ISOLATED)) result = BLTProperties.DIAGRAM_ISOLATED_BACKGROUND;
-		else if( getState().equals(DiagramState.DISABLED)) result = BLTProperties.DIAGRAM_DISABLED_BACKGROUND;
+		
+		// Dirty trumps active and isolated but not disabled
+		if( getState().equals(DiagramState.DISABLED)) result = BLTProperties.DIAGRAM_DISABLED_BACKGROUND;
 		else if( isDirty() ) result = BLTProperties.DIAGRAM_DIRTY_BACKGROUND;
 		return result;
 	}
@@ -730,6 +735,18 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	@Override
 	public void watermarkChange(String mark) {
 		setWatermark(mark);
+	}
+
+	// ------------------------------------------- BlockListener --------------------------------------
+	// Moving a block is a change to the diagram. Mark it dirty and repaint the background.
+	@Override
+	public void blockMoved(Block blk) {
+		this.setDirty(true);
+		SwingUtilities.invokeLater(new WorkspaceBackgroundRepainter());
+	}
+
+	@Override
+	public void blockUIChanged(Block arg0) {
 	}
 
 }

@@ -1,5 +1,5 @@
 /**
- *   (c) 2014-2020  ILS Automation. All rights reserved.
+ *   (c) 2014-2021  ILS Automation. All rights reserved.
  */
 package com.ils.blt.designer.workspace;
 
@@ -682,6 +682,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 							block.getClassName().equals(BlockConstants.BLOCK_CLASS_OUTPUT)) {
 							addNameDisplay(block,dropPoint.x,dropPoint.y);
 						}
+						this.getActiveDiagram().setDirty(true);
+						SwingUtilities.invokeLater(new WorkspaceBackgroundRepainter());
 						return true;
 					}
 					else {
@@ -838,6 +840,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 								log.infof("%s.handleDiagramDrop: drop of %s out-of-bounds",CLSS,block.getClassName());
 							}
 						}
+						diagram.setDirty(true);
+						SwingUtilities.invokeLater(new WorkspaceBackgroundRepainter());
 					}
 				}
 			} 
@@ -863,6 +867,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		bav.setPropName(BlockConstants.BLOCK_PROPERTY_NAME);
 		bav.setValue(block.getName());
 		bav.setFormat("%s");
+		bav.startListener();
 		Point loc = new Point(x+BlockConstants.ATTRIBUTE_DISPLAY_OFFSET_X,
                 y+block.getPreferredHeight()+BlockConstants.ATTRIBUTE_DISPLAY_OFFSET_Y);
 		this.getActiveDiagram().addBlock(bav);
@@ -908,7 +913,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 								pblock.setName(nameFromTagTree(tnode));
 								pblock.setCtypeEditable(true);
 								pblock.modifyConnectionForTagChange(prop, tagType);
-								saveOpenDiagram(diagram.getResourceId());
+								diagram.setDirty(true);
+								SwingUtilities.invokeLater(new WorkspaceBackgroundRepainter());
 								diagram.fireStateChanged();
 							} 
 							else {
@@ -1279,12 +1285,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			// running in the gateway, obtain any updates
 			diagram.registerChangeListeners();
 			diagram.refresh();
-			
-			
-			BlockDesignableContainer tab = (BlockDesignableContainer)findDesignableContainer(resourceId);
-			tab.setBackground(diagram.getBackgroundColorForState());
-			
-			SwingUtilities.invokeLater(new WorkspaceRepainter());
+			SwingUtilities.invokeLater(new WorkspaceBackgroundRepainter());
 		}
 	}
 	
@@ -1626,7 +1627,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			block.getBlock().setLocation(new Point(topLeft.x, loc.y));
 		}
 		UndoManager.getInstance().add(new UndoMoveBlocks(undoMap));
-		SwingUtilities.invokeLater(new WorkspaceRepainter());
+		getActiveDiagram().setDirty(true);
+		SwingUtilities.invokeLater(new WorkspaceBackgroundRepainter());
 
 	}
 
@@ -1652,7 +1654,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			block.getBlock().setLocation(new Point(bottomRight.x-block.getWidth(), loc.y));
 		}
 		UndoManager.getInstance().add(new UndoMoveBlocks(undoMap));
-		SwingUtilities.invokeLater(new WorkspaceRepainter());
+		getActiveDiagram().setDirty(true);
+		SwingUtilities.invokeLater(new WorkspaceBackgroundRepainter());
 	}
 
 	public void alignWidthCenter() {
@@ -1668,7 +1671,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			block.getBlock().setLocation(new Point(bottomRight.x-block.getWidth()-adjust, loc.y));
 		}
 		UndoManager.getInstance().add(new UndoMoveBlocks(undoMap));
-		SwingUtilities.invokeLater(new WorkspaceRepainter());
+		getActiveDiagram().setDirty(true);
+		SwingUtilities.invokeLater(new WorkspaceBackgroundRepainter());;
 	}
 
 	public void alignHeightCenter() {
@@ -1684,7 +1688,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			block.getBlock().setLocation(new Point(loc.x, topLeft.y + adjust));
 		}
 		UndoManager.getInstance().add(new UndoMoveBlocks(undoMap));
-		SwingUtilities.invokeLater(new WorkspaceRepainter());
+		getActiveDiagram().setDirty(true);
+		SwingUtilities.invokeLater(new WorkspaceBackgroundRepainter());
 	}
 
 	public void alignTop() {
@@ -1698,7 +1703,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			block.getBlock().setLocation(new Point(loc.x, topLeft.y));
 		}
 		UndoManager.getInstance().add(new UndoMoveBlocks(undoMap));
-		SwingUtilities.invokeLater(new WorkspaceRepainter());
+		getActiveDiagram().setDirty(true);
+		SwingUtilities.invokeLater(new WorkspaceBackgroundRepainter());
 	}
 
 	public void alignBottom() {
@@ -1712,7 +1718,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			block.getBlock().setLocation(new Point(loc.x, bottomRight.y-block.getHeight()));
 		}
 		UndoManager.getInstance().add(new UndoMoveBlocks(undoMap));
-		SwingUtilities.invokeLater(new WorkspaceRepainter());
+		getActiveDiagram().setDirty(true);
+		SwingUtilities.invokeLater(new WorkspaceBackgroundRepainter());
 	}
 	
 	

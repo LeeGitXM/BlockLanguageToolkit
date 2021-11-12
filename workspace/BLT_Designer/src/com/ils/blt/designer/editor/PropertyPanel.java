@@ -43,6 +43,7 @@ import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessAnchorDescriptor;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
+import com.ils.blt.designer.workspace.WorkspaceRepainter;
 import com.inductiveautomation.ignition.client.sqltags.ClientTagManager;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.sqltags.model.Tag;
@@ -409,7 +410,9 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 						if( !prop.getValue().toString().equalsIgnoreCase(selxn)) {
 							prop.setValue(selxn);
 							notificationHandler.initializePropertyValueNotification(valueKey, selxn);
-							parent.saveDiagramClean();   // Update property immediately
+							//parent.saveDiagramClean();   // Update property immediately
+							parent.setDiagramDirty();
+							SwingUtilities.invokeLater(new WorkspaceRepainter());
 						}
 						if(DEBUG) log.infof("%s.valueCombo: selected %s=%s",CLSS,prop.getName(),selxn);
 					}

@@ -101,13 +101,12 @@ public class BlockTagSynchronizer {
 		}
 	}
 	/**
-	 * For a source or sink, delete the associated tag. We have to delete
+	 * For a sink, but not a source, delete the associated tag. We have to delete
 	 * both production and isolation tags.
 	 * @param block
 	 */
 	public void synchDeletedBlock(ProcessBlock block) {
-		if( block.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK) ||
-			block.getClassName().equals(BlockConstants.BLOCK_CLASS_SOURCE)) {
+		if( block.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK)) {
 			BlockProperty prop = block.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
 			if(prop == null ) return;
 			String path = prop.getBinding();

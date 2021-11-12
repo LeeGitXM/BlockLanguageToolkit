@@ -33,6 +33,7 @@ import com.ils.blt.designer.search.BLTSearchProvider;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
+import com.ils.blt.designer.workspace.WorkspaceBackgroundRepainter;
 import com.ils.blt.designer.workspace.WorkspaceRepainter;
 import com.ils.common.component.DiagramViewer;
 import com.ils.common.component.recmap.RecommendationMap;
@@ -152,6 +153,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		ResourceDeleteManager.setContext(ctx);
 		ResourceUpdateManager.setContext(ctx);
 		ResourceSaveManager.setContext(ctx);
+		WorkspaceBackgroundRepainter.setContext(ctx);
 		WorkspaceRepainter.setContext(ctx);
 		context.addBeanInfoSearchPath("com.ils.blt.designer.component.beaninfos");
 		searchProvider = new BLTSearchProvider(context);
