@@ -65,7 +65,14 @@ public class BlockAttributeView extends ProcessBlockView implements BlockListene
 		super(sb);
 		this.fncs = new UtilityFunctions();
 		initialize();
-		propertyType = getPropertyType(getProperty(BlockConstants.ATTRIBUTE_PROPERTY_FORMAT).getValue().toString());
+		BlockProperty bp = getProperty(BlockConstants.ATTRIBUTE_PROPERTY_FORMAT);
+		if( bp!=null && bp.getValue()!=null ) {
+			propertyType = getPropertyType(bp.getValue().toString());
+		}
+		else {
+			propertyType = PropertyType.OBJECT;  // Unknown
+		}
+		
 	}
 	/**
 	 * Add properties that are required for this class.
