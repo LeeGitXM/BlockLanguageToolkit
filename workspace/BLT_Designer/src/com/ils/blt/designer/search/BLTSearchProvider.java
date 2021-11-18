@@ -16,7 +16,7 @@ import com.inductiveautomation.ignition.designer.findreplace.SearchProvider;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
 public class BLTSearchProvider implements SearchProvider {
-	private final String TAG = "SAISearchProvider";
+	private final String CLSS = "BLTSearchProvider";
 	public final static int SEARCH_APPLICATION = 1;
 	public final static int SEARCH_FAMILY = 2;
 	public final static int SEARCH_DIAGRAM = 4;
@@ -72,14 +72,14 @@ public class BLTSearchProvider implements SearchProvider {
 		if( selectedCategories.contains("Diagram") || selectedCategories.contains("Block") ) {
 			resources = context.getProject().getResourcesOfType(BLTProperties.MODULE_ID, BLTProperties.DIAGRAM_RESOURCE_TYPE);
 			for(ProjectResource res:resources) {
-				log.infof("%s.retrieveSearchableObjects resId = %d",TAG,res.getResourceId());
+				log.infof("%s.retrieveSearchableObjects: diagram res = %s",CLSS,res.getName());
 				agg.add(new DiagramSearchCursor(context,res.getResourceId(),searchKey));
 			}
 		}
 		if( selectedCategories.contains("Application") ) {
 			resources = context.getProject().getResourcesOfType(BLTProperties.MODULE_ID, BLTProperties.APPLICATION_RESOURCE_TYPE);
 			for(ProjectResource res:resources) {
-				log.infof("%s.retrieveSearchableObjects resId = %d",TAG,res.getResourceId());
+				log.infof("%s.retrieveSearchableObjects: application res = %s",CLSS,res.getName());
 				agg.add(new ApplicationSearchCursor(context,res.getResourceId()));
 			}
 		}
@@ -87,7 +87,7 @@ public class BLTSearchProvider implements SearchProvider {
 		if( selectedCategories.contains("Family") ) {
 			resources = context.getProject().getResourcesOfType(BLTProperties.MODULE_ID, BLTProperties.FAMILY_RESOURCE_TYPE);
 			for(ProjectResource res:resources) {
-				log.infof("%s.retrieveSearchableObjects resId = %d",TAG,res.getResourceId());
+				log.infof("%s.retrieveSearchableObjects: family res = %s",CLSS,res.getName());
 				agg.add(new FamilySearchCursor(context,res.getResourceId()));
 			}
 		}
@@ -96,13 +96,13 @@ public class BLTSearchProvider implements SearchProvider {
 
 	@Override
 	public void selectObjects(SelectedObjectsHandler arg0) {
-		log.infof("%s.selectObjects",TAG);
+		log.infof("%s.selectObjects",CLSS);
 		
 	}
 
 	@Override
 	public String selectedObjectsToString(List<Object> arg0) {
-		log.infof("%s.selectedObjectsToString",TAG);
+		log.infof("%s.selectedObjectsToString",CLSS);
 		return null;
 	}
 	

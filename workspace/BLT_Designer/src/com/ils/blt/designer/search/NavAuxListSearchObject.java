@@ -2,6 +2,7 @@ package com.ils.blt.designer.search;
 
 import java.awt.Dimension;
 import java.awt.Image;
+import java.util.List;
 import java.util.ResourceBundle;
 
 import javax.swing.Icon;
@@ -14,59 +15,72 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.findreplace.SearchObject;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 /**
- * Simply return the diagram name for editing.
+ * We treat the list ss a single comma-delimited string
  * @author chuckc
  *
  */
-public class ApplicationNameSearchObject implements SearchObject {
-	private final String CLSS = "ApplicationNameSearchObject";
+public class NavAuxListSearchObject implements SearchObject {
+	private final String CLSS = "NavAuxListSearchObject";
 	private final LoggerEx log;
 	private static final Dimension IMAGE_SIZE = new Dimension(18,18);
-	private final String applicationName;
-	private final String rootName;
+	private final List<String> list;
+	private final String parentName;
+	private final String nodeName;
+	private final String parentId;
 	private final DesignerContext context;
 	private final ResourceBundle rb;
 	
-	public ApplicationNameSearchObject(DesignerContext ctx,String root,String app) {
+	public NavAuxListSearchObject(DesignerContext ctx,List<String> data,String parent,String node,String parentUUID) {
 		this.context = ctx;
-		this.applicationName = app;
-		this.rootName = root;
-		this.log = LogUtil.getLogger(getClass().getPackage().getName());
+		this.list = data;
+		this.parentName = parent;
+		this.nodeName = node;
+		this.parentId = parentUUID;
 		this.rb = ResourceBundle.getBundle("com.ils.blt.designer.designer");  // designer.properties
+		this.log = LogUtil.getLogger(getClass().getPackage().getName());
 	}
 	@Override
 	public Icon getIcon() {
 		ImageIcon icon = null;
-		Image img = ImageLoader.getInstance().loadImage("Block/icons/navtree/application_folder_closed.png",IMAGE_SIZE);
+		Image img = ImageLoader.getInstance().loadImage("Block/icons/navtree/family_folder_closed.png",IMAGE_SIZE);
 		if( img !=null) icon = new ImageIcon(img);
 		return icon;
 	}
 
 	@Override
 	public String getName() {
-		return applicationName;
+		return nodeName;
 	}
 
 	@Override
 	public String getOwnerName() {
-		return rootName;
+		return parentName;
 	}
 
 	@Override
 	public String getText() {
-		return applicationName;
+		StringBuilder builder = new StringBuilder();
+		for(String text:list) {
+			if(builder.length()>0) builder.append(",");
+			builder.append(text);
+		}
+		return builder.toString();
 	}
 
 	@Override
 	public void locate() {
 		NavTreeLocator locator = new NavTreeLocator(context);
-		locator.locate(applicationName);
-		
+		if( parentId!=null) {
+		locator.locate(parentId,nodeName);
+		}
+		else {
+			locator.locate(nodeName);
+		}
 	}
 
 	@Override
 	public void setText(String arg0) throws IllegalArgumentException {
-		ErrorUtil.showWarning(rb.getString("Locator.ApplicationChangeWarning"),rb.getString("Locator.WarningTitle") ,false);
+		ErrorUtil.showWarning(rb.getString("Locator.AuxChangeWarning"),rb.getString("Locator.WarningTitle") ,false);
 	}
 
 }

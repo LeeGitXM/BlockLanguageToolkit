@@ -19,7 +19,7 @@ import com.inductiveautomation.ignition.designer.findreplace.SearchObjectCursor;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
 public class DiagramSearchCursor extends SearchObjectCursor {
-	private final String TAG = "DiagramSearchCursor";
+	private final String CLSS = "DiagramSearchCursor";
 	private final DesignerContext context;
 	private ProcessDiagramView diagram; 
 	private final LoggerEx log;
@@ -29,6 +29,7 @@ public class DiagramSearchCursor extends SearchObjectCursor {
 	private final int searchKey;
 	private String familyName;
 	private int index = 0;
+	private Iterator<? extends Block> blockWalker; 
 	
 	public DiagramSearchCursor(DesignerContext ctx,long res,int key) {
 		this.context = ctx;
@@ -38,6 +39,7 @@ public class DiagramSearchCursor extends SearchObjectCursor {
 		this.searchBlocks = (key & (BLTSearchProvider.SEARCH_BLOCK +BLTSearchProvider.SEARCH_PROPERTY) )!=0;
 		this.log = LogUtil.getLogger(getClass().getPackage().getName());
 		this.index = 0;
+		this.blockWalker = null;
 	}
 	@Override
 	public Object next() {
@@ -47,23 +49,17 @@ public class DiagramSearchCursor extends SearchObjectCursor {
 			diagram = deserializeResource(resId);
 			ApplicationRequestHandler appRequestHandler = new ApplicationRequestHandler();
 			familyName = appRequestHandler.getFamilyName(diagram.getId().toString());
+			blockWalker = diagram.getBlocks().iterator();
 		}
 		
 		if( index==0 && searchDiagrams ) {
-			
 			so = new DiagramNameSearchObject(context,familyName,diagram);
-			log.infof("%s.next %s",TAG,diagram.getDiagramName());
+			log.infof("%s.next %s",CLSS,diagram.getDiagramName());
 		}
 		else if( searchBlocks ) {
-			int jndex = (searchDiagrams?1:0);
-			Iterator<? extends Block> blockWalker = diagram.getBlocks().iterator();
-			while( blockWalker.hasNext() ) {
-				Object temp = new BlockSearchCursor(context,diagram,(ProcessBlockView)(blockWalker.next()),searchKey);
-				if( jndex==index ) {
-					so = temp;
-					break;
-				}
-				jndex++;
+			if( blockWalker.hasNext() ) {
+				ProcessBlockView view = (ProcessBlockView)blockWalker.next();
+				so = new BlockSearchCursor(context,diagram,view,searchKey);
 			}
 		}
 		index++;
@@ -73,7 +69,7 @@ public class DiagramSearchCursor extends SearchObjectCursor {
 	private ProcessDiagramView deserializeResource(long resourceId) {
 		ProjectResource res = context.getProject().getResource(resourceId);	
 		String json = new String(res.getData());
-		log.debugf("%s: open - diagram = %s",TAG,json);
+		log.debugf("%s: open - diagram = %s",CLSS,json);
 		SerializableDiagram sd = null;
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -84,13 +80,13 @@ public class DiagramSearchCursor extends SearchObjectCursor {
 			sd.setName(res.getName());
 		} 
 		catch (JsonParseException jpe) {
-			log.warnf("%s: open parse exception (%s)",TAG,jpe.getLocalizedMessage());
+			log.warnf("%s: open parse exception (%s)",CLSS,jpe.getLocalizedMessage());
 		} 
 		catch (JsonMappingException jme) {
-			log.warnf("%s: open mapping exception (%s)",TAG,jme.getLocalizedMessage());
+			log.warnf("%s: open mapping exception (%s)",CLSS,jme.getLocalizedMessage());
 		} 
 		catch (IOException ioe) {
-			log.warnf("%s: open io exception (%s)",TAG,ioe.getLocalizedMessage());
+			log.warnf("%s: open io exception (%s)",CLSS,ioe.getLocalizedMessage());
 		}
 		ProcessDiagramView dgm = new ProcessDiagramView(res.getResourceId(),sd, context);
 		return dgm;

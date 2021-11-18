@@ -21,12 +21,12 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.WindowConstants;
 
-import net.miginfocom.swing.MigLayout;
-
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.common.persistence.ToolkitProperties;
 import com.inductiveautomation.ignition.common.sqltags.model.TagProviderMeta;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
+
+import net.miginfocom.swing.MigLayout;
 
 /**
  * Allow the user to define database connections and tag providers. This

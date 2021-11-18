@@ -26,14 +26,14 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
  * @author chuckc
  *
  */
-public class BlockNameSearchObject implements SearchObject {
+public class BlockClassSearchObject implements SearchObject {
 	private final DesignerContext context;
 	private static final Dimension IMAGE_SIZE = new Dimension(18,18);
 	private final ProcessDiagramView diagram;
 	private final ProcessBlockView block;
 	private final ResourceBundle rb;
 	
-	public BlockNameSearchObject(DesignerContext ctx, ProcessDiagramView parent, ProcessBlockView blk) {
+	public BlockClassSearchObject(DesignerContext ctx, ProcessDiagramView parent, ProcessBlockView blk) {
 		this.context = ctx;
 		this.diagram = parent;
 		this.block = blk;
@@ -59,7 +59,7 @@ public class BlockNameSearchObject implements SearchObject {
 
 	@Override
 	public String getText() {
-		return block.getName();
+		return block.getClassName();
 	}
 
 	// We navigate to the diagram.

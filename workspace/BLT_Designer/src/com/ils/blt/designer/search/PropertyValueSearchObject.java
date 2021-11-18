@@ -50,7 +50,7 @@ public class PropertyValueSearchObject implements SearchObject {
 
 	@Override
 	public String getOwnerName() {
-		return block.getName();
+		return diagram.getDiagramName()+":"+block.getName();
 	}
 
 	@Override

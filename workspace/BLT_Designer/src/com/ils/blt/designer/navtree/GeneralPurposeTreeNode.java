@@ -67,7 +67,6 @@ import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.ils.common.GeneralPurposeDataContainer;
-import com.inductiveautomation.ignition.client.gateway_interface.GatewayException;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.client.util.action.BaseAction;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
@@ -80,10 +79,8 @@ import com.inductiveautomation.ignition.common.project.ProjectChangeListener;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
-import com.inductiveautomation.ignition.designer.IgnitionDesigner;
 import com.inductiveautomation.ignition.designer.UndoManager;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
-import com.inductiveautomation.ignition.designer.gateway.DTGatewayInterface;
 import com.inductiveautomation.ignition.designer.gui.IconUtil;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractNavTreeNode;
@@ -105,7 +102,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	public static final String BLT_COPY_OPERATION = "BLTCOPY";
 	private static final int OFFSET = 100;
 	private static final String PREFIX = BLTProperties.BUNDLE_PREFIX;  // Required for some defaults
-	private final LoggerEx logger = LogUtil.getLogger(getClass().getPackage().getName());
+	private static final LoggerEx logger = LogUtil.getLogger(GeneralPurposeTreeNode.class.getPackage().getName());
 	private boolean dirty = false;
 	private DiagramState state = DiagramState.ACTIVE;  // Used for Applications and Families
 	private final DeleteNodeAction deleteNodeAction;
@@ -603,7 +600,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	 * @return
 	 */
 	// This used to be private PH 06/30/2021
-	public SerializableApplication deserializeApplication(ProjectResource res) {
+	public static SerializableApplication deserializeApplication(ProjectResource res) {
 		SerializableApplication sa = null;
 		try{
 			byte[] bytes = res.getData();
@@ -643,7 +640,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	 * @param res
 	 * @return
 	 */
-	private SerializableFamily deserializeFamily(ProjectResource res) {
+	public static SerializableFamily deserializeFamily(ProjectResource res) {
 		SerializableFamily sf = null;
 		try{
 			byte[] bytes = res.getData();
