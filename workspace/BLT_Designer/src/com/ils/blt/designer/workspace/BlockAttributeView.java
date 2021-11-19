@@ -122,7 +122,7 @@ public class BlockAttributeView extends ProcessBlockView implements BlockListene
 	}
 	public String getBlockId() { return getProperty(BlockConstants.ATTRIBUTE_PROPERTY_BLOCK_ID).getValue().toString(); }
 	public void setBlockId(String id) { 
-		BlockProperty blockId = getProperty(BlockConstants.ATTRIBUTE_PROPERTY_BLOCK_ID);;
+		BlockProperty blockId = getProperty(BlockConstants.ATTRIBUTE_PROPERTY_BLOCK_ID);
 		blockId.setValue(id);
 	}
 	// For these properties, do not worry about case insensitivity.
@@ -268,12 +268,11 @@ public class BlockAttributeView extends ProcessBlockView implements BlockListene
 	public void bindingChange(String name,String binding) {}
 	@Override
 	public void diagramStateChange(long resId, String state) {}
-	// We get this when another entity changes a property. We just need to re-display.
+	// We never need to set our own name. We should be listening on the reference block.
 	@Override
 	public void nameChange(String bname) {
-		log.infof("%s.nameChange: - %s new name (%s)",CLSS,reference.getName(),bname);
-		if( getPropName().equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_NAME)) {
-			setValue(bname); 
+		if( getPropName().equals(BlockConstants.BLOCK_PROPERTY_NAME)) {
+			setValue(bname);
 		}
 	}
 	@Override

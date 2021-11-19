@@ -39,7 +39,7 @@ public class BlockTagSynchronizer {
 	
 	/**
 	 * The blocks in the diagram may have been newly created or modified. For any sources or sinks, 
-	 * create tags corresponding to the block name. Any tags that already exists should fail creation silently.
+	 * create tags corresponding to the block name. Any tags that already exist should fail creation silently.
 	 * 
 	 * @param diagram
 	 */
@@ -47,6 +47,7 @@ public class BlockTagSynchronizer {
 		BlockExecutionController controller = BlockExecutionController.getInstance();
 		for(ProcessBlock block:diagram.getBlocks()) {
 			// If the block is a source, remap its tag to what the corresponding sink will be.
+			// Do not create the tag. This is done by the sink
 			if( block.getClassName().equals(BlockConstants.BLOCK_CLASS_SOURCE)) {
 				BlockProperty prop = null;
 				for( BlockProperty property:block.getProperties() ) {
@@ -58,13 +59,11 @@ public class BlockTagSynchronizer {
 				if(prop != null ) {
 					List<SerializableBlockStateDescriptor> sinks = handler.listSinksForSource(diagram.getSelf().toString(), block.getBlockId().toString());
 					if(sinks.size()>0) {
-						SerializableBlockStateDescriptor sink = sinks.get(0);  // There aren't supposed to be more than one sink for a source
+						SerializableBlockStateDescriptor sink = sinks.get(0);  // There isn't supposed to be more than one sink for a source
 						String path = String.format("[%s]%s/%s",productionProvider,BlockConstants.SOURCE_SINK_TAG_FOLDER,sink.getName());
-						handler.createTag(DataType.String, path);
 						controller.removeSubscription(block,prop);
 						if(!diagram.getState().equals(DiagramState.ISOLATED)) prop.setBinding(path);
 						path = String.format("[%s]%s/%s",isolationProvider,BlockConstants.SOURCE_SINK_TAG_FOLDER,block.getName());
-						handler.createTag(DataType.String, path);
 						if(diagram.getState().equals(DiagramState.ISOLATED))  prop.setBinding(path);
 						controller.startSubscription(diagram.getState(),block,prop);
 					}
@@ -75,8 +74,8 @@ public class BlockTagSynchronizer {
 			}
 
 			// If the block is a sink, remap its tag path to correspond to its name.
-			// If the name corresponds to a generated name (embedded dashes, then ignore)
-			if( block.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK) ) {
+			// If the tag path is currently empty, do nothing. This is an unconfigured block.
+			else if( block.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK) ) {
 				BlockProperty prop = null;
 				for( BlockProperty property:block.getProperties() ) {
 					if(property.getName().equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_TAG_PATH)) {
@@ -85,14 +84,16 @@ public class BlockTagSynchronizer {
 					}
 				}
 				if(prop != null ) { 
-					controller.removeSubscription(block,prop);
-					String path = String.format("[%s]%s/%s",productionProvider,BlockConstants.SOURCE_SINK_TAG_FOLDER,block.getName());
-					handler.createTag(DataType.String, path);
-					if(!diagram.getState().equals(DiagramState.ISOLATED)) prop.setBinding(path);
-					path = String.format("[%s]%s/%s",isolationProvider,BlockConstants.SOURCE_SINK_TAG_FOLDER,block.getName());
-					handler.createTag(DataType.String, path);
-					if(diagram.getState().equals(DiagramState.ISOLATED)) prop.setBinding(path);
-					controller.startSubscription(diagram.getState(),block,prop);
+					if(prop.getBinding()!=null && !prop.getBinding().isEmpty() ) {
+						controller.removeSubscription(block,prop);
+						String path = String.format("[%s]%s/%s",productionProvider,BlockConstants.SOURCE_SINK_TAG_FOLDER,block.getName());
+						handler.createTag(DataType.String, path);
+						if(!diagram.getState().equals(DiagramState.ISOLATED)) prop.setBinding(path);
+						path = String.format("[%s]%s/%s",isolationProvider,BlockConstants.SOURCE_SINK_TAG_FOLDER,block.getName());
+						handler.createTag(DataType.String, path);
+						if(diagram.getState().equals(DiagramState.ISOLATED)) prop.setBinding(path);
+						controller.startSubscription(diagram.getState(),block,prop);
+					}
 				}
 				else {
 					log.warnf("%s.synchBlocks: Source %s does not have a tag path property",CLSS,block.getName());

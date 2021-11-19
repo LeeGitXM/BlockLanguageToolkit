@@ -142,7 +142,9 @@ public class BlockFactory  {
 			for( BlockProperty bp:properties) {
 				if( bp==null || bp.getName()==null) continue;
 				BlockProperty property = pb.getProperty(bp.getName());
-				if( property==null ) { property = pb.getProperty(bp.getName().toUpperCase()); }
+				if( property==null ) {
+					property = pb.getProperty(bp.getName().toUpperCase()); 
+				}
 				if( property!=null ) {
 					// Use the property change interface so as to properly trigger
 					// local handling within the block (if the new value is non-null)

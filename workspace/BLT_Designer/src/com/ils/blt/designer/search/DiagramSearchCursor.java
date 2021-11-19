@@ -54,7 +54,7 @@ public class DiagramSearchCursor extends SearchObjectCursor {
 		
 		if( index==0 && searchDiagrams ) {
 			so = new DiagramNameSearchObject(context,familyName,diagram);
-			log.infof("%s.next %s",CLSS,diagram.getDiagramName());
+			log.infof("%s.next: Searching %s",CLSS,diagram.getDiagramName());
 		}
 		else if( searchBlocks ) {
 			if( blockWalker.hasNext() ) {
@@ -69,7 +69,7 @@ public class DiagramSearchCursor extends SearchObjectCursor {
 	private ProcessDiagramView deserializeResource(long resourceId) {
 		ProjectResource res = context.getProject().getResource(resourceId);	
 		String json = new String(res.getData());
-		log.debugf("%s: open - diagram = %s",CLSS,json);
+		//log.debugf("%s: open - diagram = %s",CLSS,json);
 		SerializableDiagram sd = null;
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);

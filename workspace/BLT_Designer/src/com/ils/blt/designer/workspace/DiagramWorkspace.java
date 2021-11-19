@@ -72,6 +72,7 @@ import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.connection.ConnectionType;
+import com.ils.blt.common.notification.NotificationKey;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
@@ -79,6 +80,7 @@ import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.NodeStatusManager;
+import com.ils.blt.designer.NotificationHandler;
 import com.ils.blt.designer.ResourceUpdateManager;
 import com.ils.blt.designer.config.AttributeDisplaySelector;
 import com.ils.blt.designer.config.BlockExplanationViewer;
@@ -165,6 +167,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	private final DesignerContext context;
 	private final EditActionHandler editActionHandler;
 	private final ExecutionManager executionEngine;
+	private final NotificationHandler notificationHandler = NotificationHandler.getInstance();
 	private final NodeStatusManager statusManager;
 	private Collection<ResourceWorkspaceFrame> frames;
 	private LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
@@ -653,16 +656,18 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		return ret;
 	}
 	
-	// A block dropped from the palette
+	// This is the generic drop handling
 	@Override
 	public boolean handleDrop(Object droppedOn,DropTargetDropEvent event) {
 		if (droppedOn instanceof BlockComponent) {
-			handleBlockDrop(droppedOn, event);
+			log.infof("%s.handleDrop: dropped on block component",CLSS);
+			handleTagOnBlockDrop(droppedOn, event);
 		}
-		if (droppedOn instanceof DiagramWorkspace) {
-			handleDiagramDrop(droppedOn, event);
+		else if (droppedOn instanceof DiagramWorkspace) {
+			log.infof("%s.handleDrop: dropped on diagram, checking for tag",CLSS);    // This handles case of dropee being a tag
+			handleTagDrop(droppedOn, event);
 		}
-		if (event.isDataFlavorSupported(BlockDataFlavor)) {
+		if (event.isDataFlavorSupported(BlockDataFlavor)) {        // Handle block dropped from palette
 			try {
 				if( event.getTransferable().getTransferData(BlockDataFlavor) instanceof ProcessBlockView) {
 					ProcessBlockView block = (ProcessBlockView)event.getTransferable().getTransferData(BlockDataFlavor);
@@ -675,7 +680,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 					if( isInBounds(dropPoint,bdc) ) {
 						block.setLocation(dropPoint);
 						this.getActiveDiagram().addBlock(block);
-						log.infof("%s.handleDrop: dropped %s",CLSS,block.getClassName());
+						log.infof("%s.handleDrop: dropped block %s",CLSS,block.getClassName());
 						if( block.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK) ||
 							block.getClassName().equals(BlockConstants.BLOCK_CLASS_SOURCE)||
 							block.getClassName().equals(BlockConstants.BLOCK_CLASS_INPUT) ||
@@ -706,7 +711,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	// Check to see if this is a tag dropped on the workspace.  Make it an Input block if it's on the left, 
 	// Output on the right half -- unless the tagpath starts with "Connections". Then we make
 	// Sources/Sinks
-	private void handleDiagramDrop(Object droppedOn, DropTargetDropEvent event) {
+	private void handleTagDrop(Object droppedOn, DropTargetDropEvent event) {
 		DataFlavor flava = NodeListTransferable.FLAVOR_NODELIST;
 		if (event.isDataFlavorSupported(flava)) {
 			try {
@@ -739,6 +744,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 									desc.setCtypeEditable(true);
 									block = new ProcessBlockView(desc);
 									block.setName(nameFromTagTree(tnode));
+									updatePropertiesForTagPath(block,tnode.getTagPath().toStringFull());
 									addNameDisplay(block,dropx,dropy);
 								}
 								else {
@@ -750,6 +756,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 									desc.setCtypeEditable(true);
 									block = new ProcessBlockView(desc);
 									block.setName(enforceUniqueName(nameFromTagTree(tnode),diagram));
+									updatePropertiesForTagPath(block,tnode.getTagPath().toStringFull());
 									addNameDisplay(block,dropx,dropy);
 									
 								}
@@ -800,7 +807,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 								// Properties are the same for Outputs and Sinks
 								BlockProperty pathProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH,"",PropertyType.STRING,true);
 								pathProperty.setBindingType(BindingType.TAG_WRITE);
-								pathProperty.setBinding("");
+								pathProperty.setBinding(tnode.getTagPath().toStringFull());
 								block.setProperty( pathProperty);
 								BlockProperty valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,"",PropertyType.OBJECT,false);
 								valueProperty.setBindingType(BindingType.ENGINE);
@@ -834,10 +841,10 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 										property.setBinding(tnode.getTagPath().toStringFull());}
 										block.modifyConnectionForTagChange(property, type);
 								}
-								log.infof("%s.handleDiagramDrop: dropped %s",CLSS,block.getClassName());
+								log.infof("%s.handleTagDrop: dropped %s",CLSS,block.getClassName());
 							}
 							else {
-								log.infof("%s.handleDiagramDrop: drop of %s out-of-bounds",CLSS,block.getClassName());
+								log.infof("%s.handleTagDrop: drop of %s out-of-bounds",CLSS,block.getClassName());
 							}
 						}
 						diagram.setDirty(true);
@@ -855,31 +862,13 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 
 	}
 
-	/**
-	 * Add an attribute display of the name to the specified block. We do not listen for name changes
-	 * @param diagram
-	 * @param block
-	 */
-	private void addNameDisplay(ProcessBlockView block,int x,int y) {
-		BlockAttributeView bav = new BlockAttributeView(new AttributeDisplayDescriptor());
-		bav.setBlockId(block.getId().toString());
-		bav.setReferenceBlock(block);
-		bav.setPropName(BlockConstants.BLOCK_PROPERTY_NAME);
-		bav.setValue(block.getName());
-		bav.setFormat("%s");
-		bav.startListener();
-		Point loc = new Point(x+BlockConstants.ATTRIBUTE_DISPLAY_OFFSET_X,
-                y+block.getPreferredHeight()+BlockConstants.ATTRIBUTE_DISPLAY_OFFSET_Y);
-		this.getActiveDiagram().addBlock(bav);
-		SwingUtilities.invokeLater(new BlockPositioner(this,bav,loc));
-	}
 
 	// Check to see if this is a tag dropped on a block.  Change the tag binding if applicable.
 	// Dropping the tag changes the block name and connection type if not "locked".
 	// For a source/sink, tag must be in "Connections". For Input/Output it must not.
 	// Craig is correct in that there is an amount of ugliness that involves hard-coded block class names
-	// and properties
-	public void handleBlockDrop(Object droppedOn, DropTargetDropEvent event) {
+	// and properties. 
+	public void handleTagOnBlockDrop(Object droppedOn, DropTargetDropEvent event) {
 		try {
 			DataFlavor flava = NodeListTransferable.FLAVOR_NODELIST;
 			if (event.isDataFlavorSupported(flava)) {
@@ -890,12 +879,13 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 						BlockDesignableContainer container = getSelectedContainer();
 						ProcessDiagramView diagram = (ProcessDiagramView)container.getModel();
 						TagTreeNode tnode = (TagTreeNode) tagNodeArr.get(0);
-						log.infof("%s.handleDrop: tag data: %s",CLSS,tnode.getName());
+						log.infof("%s.handleTagOnBlockDrop: tag data: %s",CLSS,tnode.getName());
 						TagPath tp = tnode.getTagPath();
 
 						Block targetBlock = ((BlockComponent)droppedOn).getBlock();
 						if(targetBlock instanceof ProcessBlockView) {
 							ProcessBlockView pblock = (ProcessBlockView)targetBlock;
+							
 							BlockProperty prop = pblock.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
 							if( prop==null) return;  // Unless there's a tag path, do nothing
 							
@@ -930,6 +920,25 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		}
 	}
 
+	/**
+	 * Add an attribute display of the name to the specified block. We do not listen for name changes
+	 * @param diagram
+	 * @param block
+	 */
+	private void addNameDisplay(ProcessBlockView block,int x,int y) {
+		BlockAttributeView bav = new BlockAttributeView(new AttributeDisplayDescriptor());
+		bav.setBlockId(block.getId().toString());
+		bav.setReferenceBlock(block);
+		bav.setPropName(BlockConstants.BLOCK_PROPERTY_NAME);
+		bav.setValue(block.getName());
+		bav.setFormat("%s");
+		bav.startListener();
+		Point loc = new Point(x+BlockConstants.ATTRIBUTE_DISPLAY_OFFSET_X,
+                y+block.getPreferredHeight()+BlockConstants.ATTRIBUTE_DISPLAY_OFFSET_Y);
+		this.getActiveDiagram().addBlock(bav);
+		SwingUtilities.invokeLater(new BlockPositioner(this,bav,loc));
+	}
+	
 	@Override
 	public void onActivation() {
 		zoomCombo.setVisible(true);
@@ -1445,6 +1454,24 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			cp.setEnabled(enableAlign);
 		}
 	}
+	
+	/**
+	 * Update the tag path property for a new path. While we're at it we publicize the name
+	 * @param diagram
+	 * @param block
+	 */
+	private void updatePropertiesForTagPath(ProcessBlockView block,String path) {
+		String name = block.getName();
+		String nameKey = NotificationKey.keyForBlockName(block.getId().toString());
+		notificationHandler.initializeBlockNameNotification(nameKey,name);
+		BlockProperty prop = block.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
+		if( prop !=null ) {
+			prop.setBinding(path);
+			prop.setBindingType(BindingType.TAG_MONITOR);
+			String propKey = NotificationKey.keyForProperty(block.getId().toString(), prop.getName());
+			notificationHandler.initializePropertyValueNotification(propKey, path);
+		}
+	}
 
 	private boolean isInBounds(Point dropPoint,BlockDesignableContainer bdc) {
 		Rectangle bounds = bdc.getBounds();
@@ -1453,7 +1480,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			dropPoint.y<bounds.y	  ||
 			dropPoint.x>bounds.x+bounds.width ||
 			dropPoint.y>bounds.y+bounds.height   )  inBounds = false;
-		log.infof("%s.handlerDrop: drop x,y = (%d,%d), bounds %d,%d,%d,%d",CLSS,dropPoint.x,dropPoint.y,bounds.x,bounds.y,bounds.width,bounds.height );
+		//log.infof("%s.isInBounds: drop x,y = (%d,%d), bounds %d,%d,%d,%d",CLSS,dropPoint.x,dropPoint.y,bounds.x,bounds.y,bounds.width,bounds.height );
 		return inBounds;
 	}
 

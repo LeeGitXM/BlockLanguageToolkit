@@ -375,7 +375,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	public String getFamilyName(String uuid) {
 		String name = "NULL UUID";
 		if( uuid!=null ) {
-			log.infof("%s.getFamilyName... %s",CLSS,uuid);
+			//log.infof("%s.getFamilyName... %s",CLSS,uuid);
 			try {
 				name = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 						BLTProperties.MODULE_ID, "getFamilyName",uuid);
