@@ -6,6 +6,7 @@ import java.io.IOException;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 
+import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockConstants;
@@ -18,6 +19,7 @@ import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.NotificationHandler;
 import com.inductiveautomation.ignition.client.sqltags.ClientTagManager;
+import com.inductiveautomation.ignition.common.gateway.messages.PushNotification;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.sqltags.model.Tag;
 import com.inductiveautomation.ignition.common.sqltags.model.TagPath;
@@ -200,6 +202,21 @@ public class BlockAttributeView extends ProcessBlockView implements BlockListene
 	public void setReferenceBlock(ProcessBlockView ref) { 
 		this.reference=ref;
 		reference.addBlockListener(this);
+	}
+	@Override
+	public void setName(String text) { 
+		this.name = text;;
+	}
+	/**
+	 * Create property change listeners. Ignore name changes.
+	 */
+	@Override
+	public void startup () {
+		for(BlockProperty prop:getProperties()) {
+			String key = NotificationKey.keyForProperty(getId().toString(), prop.getName());
+			notificationHandler.initializePropertyValueNotification(key,prop.getValue());
+			notificationHandler.addNotificationChangeListener(key,CLSS, this);
+		}
 	}
 	/**
 	 * Start listening to the value of the indicated property block. Both reference block and

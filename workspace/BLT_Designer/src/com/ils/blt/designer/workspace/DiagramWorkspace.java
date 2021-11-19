@@ -1467,9 +1467,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		BlockProperty prop = block.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
 		if( prop !=null ) {
 			prop.setBinding(path);
-			prop.setBindingType(BindingType.TAG_MONITOR);
-			String propKey = NotificationKey.keyForProperty(block.getId().toString(), prop.getName());
-			notificationHandler.initializePropertyValueNotification(propKey, path);
+			String propKey = NotificationKey.keyForPropertyBinding(block.getId().toString(), prop.getName());
+			notificationHandler.initializePropertyBindingNotification(propKey, path);
 		}
 	}
 
