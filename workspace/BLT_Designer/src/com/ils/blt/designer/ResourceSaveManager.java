@@ -1,5 +1,5 @@
 /**
- *   (c) 2014-2016  ILS Automation. All rights reserved.
+ *   (c) 2014-2021  ILS Automation. All rights reserved.
  */
 package com.ils.blt.designer;
 
@@ -7,9 +7,12 @@ import java.util.Enumeration;
 
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.block.BlockProperty;
+import com.ils.blt.common.notification.NotificationKey;
 import com.ils.blt.designer.navtree.DiagramTreeNode;
 import com.ils.blt.designer.navtree.NavTreeNodeInterface;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
+import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayException;
 import com.inductiveautomation.ignition.common.project.Project;
@@ -18,6 +21,7 @@ import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.IgnitionDesigner;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignableContainer;
+import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
 import com.inductiveautomation.ignition.designer.gateway.DTGatewayInterface;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceNavTreeNode;
@@ -91,38 +95,32 @@ public class ResourceSaveManager implements Runnable {
 		this.counter.decrementCount();
 	}
 	
-	// Recursively descend the node tree, looking for diagram resources where
-	// the associated DiagramView is open. These are the only diagrams that
-	// can be out-of-sync with the gateway.
-	
-	// TODO Make this saveDirtyDiagrams PAH 7/16/21
+	// Recursively traverse the nav tree. Choose only diagrams and then only those that are open.
+	// These are the only diagrams that can be out-of-sync with the gateway. Save them. 
+	// Note: the notion of dirtiness is simply a UI indicator for the user.
+	// We simply save everything that is open.
 	private void saveOpenDiagrams(AbstractResourceNavTreeNode node) {
 		ProjectResource res = node.getProjectResource();
 		ProcessDiagramView view = null;  // PH 7/16/21
 		node.setItalic(false);
 		if( res!=null ) {
 			if(res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
-				
 				/*
 				 * We might be managing the dirty flag incorrectly!  The dirty check shown below is not consistent with the dirty check
 				 * on ProcessDiagramView.  The check below shows the resource as clean but the ProcessDiagramView as dirty.
 				 * PAH 07/18/21
 				 */
-				
 				if( DEBUG ) log.infof("%s.saveOpenDiagrams(), found: %s (%d) %s", CLSS, res.getName(), res.getResourceId(),
 						  (context.getProject().isResourceDirty(res.getResourceId())?"DIRTY":"CLEAN"));
-				
-				// If the resource is open, we need to save it
+
 				/*
-				 * Is there a way to get the view without it being open?
-				 * If we change what we do with a dirty view, i.e. keep the changes (somewhere / somehow) but not do a save of the whole project
-				 * when they close the view and say save. 
+				 * Is there a way to get the view without it being open? No because a ProcessDiagramView doesn't exist if it's not showing.
+				 * Also the only way for it to get dirty is for it to be open.
 				 */
-				
 				BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(res.getResourceId());
 				if( tab!=null ) {
 					view = (ProcessDiagramView)tab.getModel();
-					if( DEBUG ) log.infof("%s.run(), %s (%s)", CLSS, view.getName(), (view.isDirty()?"DIRTY":"CLEAN"));
+					if( DEBUG ) log.infof("%s.saveOpenDiagrams, %s (%s)", CLSS, view.getName(), (view.isDirty()?"DIRTY":"CLEAN"));
 					if (view.isDirty()){
 						if( DEBUG ) log.infof("%s.saveOpenDiagrams: Saving %s...", CLSS, res.getName());
 						new ResourceUpdateManager(workspace, res).run();

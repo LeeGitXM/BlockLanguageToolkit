@@ -157,7 +157,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 							  			ChangeListener                                  {
 	private static final String ALIGN_MENU_TEXT = "Align Blocks";
 	private static final String CLSS = "DiagramWorkspace";
-	private static final boolean DEBUG = false;
+	private static final boolean DEBUG = true;
 	private static final long serialVersionUID = 4627016159409031941L;
 	private static final DataFlavor BlockDataFlavor = LocalObjectTransferable.flavorForClass(ObservablePropertySet.class);
 	public static final String key = "BlockDiagramWorkspace";
@@ -1299,7 +1299,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	}
 	
 	public void close (long resourceId) {
-		log.infof("%s: close resource %d",CLSS,resourceId);
+		log.infof("%s.close: resource %d",CLSS,resourceId);
 		super.close(findDesignableContainer(resourceId));
 	}
 	
@@ -1353,7 +1353,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	 * is open, then save it.
 	 */
 	public void saveOpenDiagram(long resourceId) {
-		if( DEBUG ) log.infof("%s: saveOpenDiagram()",CLSS);
+		if( DEBUG ) log.infof("%s.saveOpenDiagram",CLSS);
 		for(DesignableContainer dc:openContainers.keySet()) {
 			BlockDesignableContainer bdc = (BlockDesignableContainer)dc;
 			if( bdc.getResourceId()==resourceId ) {
@@ -1399,6 +1399,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		BlockDesignableContainer container = (BlockDesignableContainer)c;
 		ProcessDiagramView view = (ProcessDiagramView)(container.getModel());
 		view.removeChangeListener(this);
+		container.removeAll();
 	}
 	/**
 	 * Container layout manager is:

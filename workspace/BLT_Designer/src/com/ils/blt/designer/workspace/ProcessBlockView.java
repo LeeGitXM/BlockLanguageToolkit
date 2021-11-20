@@ -428,8 +428,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 		if( name==null ||  !name.equals(text) ) {
 			this.name = text;
 			String key = NotificationKey.keyForBlockName(getId().toString());
-			PushNotification pn = new PushNotification(BLTProperties.MODULE_ID,key,text);
-			handler.receiveNotification(pn);
+			handler.initializeBlockNameNotification(key, name);
 			fireStateChanged();
 		}
 	}
@@ -441,6 +440,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 	}
 	public void setPreferredHeight(int preferredHeight) {this.preferredHeight = preferredHeight;}
 	public void setPreferredWidth(int preferredWidth) {this.preferredWidth = preferredWidth;}
+	// Do not allow a Name property. Use the class member instead.
 	public void setProperty(BlockProperty prop) { 
 		if( prop!=null && prop.getName()!=null ) {
 			if(prop.getName().equals(BlockConstants.BLOCK_PROPERTY_NAME)) {
@@ -448,6 +448,9 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 			}
 			else {
 				propertyMap.put(prop.getName(), prop);
+				String key = NotificationKey.keyForProperty(getId().toString(),prop.getName());
+				handler.initializePropertyValueNotification(key, prop.getValue());
+				fireStateChanged();
 			}
 		}
 		else {
@@ -535,7 +538,6 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 	 // notification on this event type.  The event instance
 	 // is lazily created using the parameters passed into
 	 // the fire method.
-
 	 protected void fireStateChanged() {
 		 // Guaranteed to return a non-null array
 		 Object[] listnrs = listenerList.getListenerList();

@@ -155,18 +155,9 @@ public class MainPanel extends BasicEditPanel {
 			
 			// Sources and Sinks are correlated simply by their names. In order to keep the correlation
 			// as synchronized as possible, when we change the name of a sink, we will change the block
-			// names of the corresponding source(s). Actual bindings and tags are not modified until the 
+			// names of the corresponding source(s). However, actual bindings and tags are not modified until the 
 			// project is saved.
-			if( block.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK) ) {
-				ApplicationRequestHandler handler = bpe.getRequestHandler();
-				ProcessDiagramView diagram = bpe.getDiagram();
-				for(SerializableBlockStateDescriptor desc:handler.listSourcesForSink(diagram.getId().toString(),block.getId().toString())) {
-					SerializableResourceDescriptor rd = handler.getDiagramForBlock(desc.getIdString());
-					if( rd==null ) continue;
-					log.infof("%s.actionPerformed: sink connected to %s",CLSS,desc.getName());
-					handler.renameBlock(rd.getId(), desc.getIdString(), nameField.getText());
-				}
-			}
+			
 			
 		}
 		

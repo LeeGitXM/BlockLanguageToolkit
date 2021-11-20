@@ -9,8 +9,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.block.BlockProperty;
+import com.ils.blt.common.notification.NotificationKey;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
+import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayException;
 import com.inductiveautomation.ignition.common.project.Project;
@@ -19,6 +22,7 @@ import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.IgnitionDesigner;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignableContainer;
+import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
 import com.inductiveautomation.ignition.designer.gateway.DTGatewayInterface;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
@@ -46,6 +50,7 @@ public class ResourceUpdateManager implements Runnable {
 	private final ThreadCounter counter = ThreadCounter.getInstance();
 	private final ApplicationRequestHandler requestHandler;
 	
+	// DiagramWorkspace.onClose of a tab.
 	public ResourceUpdateManager(DiagramWorkspace wksp,ProjectResource pr) {
 		if(DEBUG) log.infof("%s.run: Creating a new ResourceUpdateManager for DiagramWorkspace %s...", CLSS, wksp.getName());
 		this.workspace = wksp;
@@ -84,8 +89,9 @@ public class ResourceUpdateManager implements Runnable {
 			ProcessDiagramView view = null;
 
 			/*
-			 * This first phase iterates over every resource, not just open ones.  If it is a diagram and it is dirty then serialize it.
-			 * If it is a block that has a representation in the database, then save the resource there also.  TODO can I do this??
+			 * Serialize a diagram resource and save it into the project. It must be open on a tab to be considered.
+			 * We ignore dirtiness if called from the main menu. If called as a result of closing a tab, the diagram
+			 * will be a dirty one.
 			 */
 			if(res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
 				// If the resource is open and it is dirty then we need to save it
@@ -113,14 +119,12 @@ public class ResourceUpdateManager implements Runnable {
 						log.warnf("%s.run: Exception serializing diagram, resource %d (%s)",CLSS,resourceId,jpe.getMessage());
 					}
 					view.setDirty(false);
-					// This is the culprit PH 06/08/2021
-					// Move this down.
-					//view.registerChangeListeners();
+					updateNotificationHandlerForSave(view);
 				}
 			}
 			
 			/*
-			 * I'm not sure what this phase does??? PH 7/22/21
+			 * Now save the resource back into the project.
 			 */
 			try {
 				
@@ -171,5 +175,25 @@ public class ResourceUpdateManager implements Runnable {
 			if(DEBUG) log.infof("%s.run(): complete",CLSS);
 		}
 		this.counter.decrementCount();
+	}
+	
+	/**
+	 * We are saving a diagram. Update the notification handler to reflect new values,
+	 * in particular block name and property changes. Now if we open a new diagram view in the designer,
+	 * it will reflect the saved updates.
+	 * @param diagram
+	 */
+	private void updateNotificationHandlerForSave(ProcessDiagramView diagram) {
+		NotificationHandler handler = NotificationHandler.getInstance();
+		for(Block blk:diagram.getBlocks()) {
+			ProcessBlockView block = (ProcessBlockView)blk;
+			String nkey = NotificationKey.keyForBlockName(block.getId().toString());
+			handler.initializeBlockNameNotification(nkey, block.getName());
+			for(BlockProperty prop:block.getProperties()) {
+				String pkey = NotificationKey.keyForProperty(block.getId().toString(),prop.getName());
+				handler.initializePropertyValueNotification(pkey, prop.getValue());
+			}
+			//block.fireStateChanged();
+		}
 	}
 }
