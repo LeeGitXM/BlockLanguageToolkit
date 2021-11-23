@@ -49,12 +49,12 @@ public class BlockClassSearchObject implements SearchObject {
 
 	@Override
 	public String getName() {
-		return block.getName();
+		return "Class";
 	}
 
 	@Override
 	public String getOwnerName() {
-		return diagram.getName();
+		return diagram.getName()+":"+block.getName();
 	}
 
 	@Override

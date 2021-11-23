@@ -42,20 +42,21 @@ public class NavAuxPropertySearchObject implements SearchObject {
 	@Override
 	public Icon getIcon() {
 		ImageIcon icon = null;
-		Image img = ImageLoader.getInstance().loadImage("Block/icons/navtree/family_folder_closed.png",IMAGE_SIZE);
+		Image img = ImageLoader.getInstance().loadImage("Block/icons/palette/blank.png",IMAGE_SIZE);
 		if( img !=null) icon = new ImageIcon(img);
 		return icon;
 	}
 
 	@Override
 	public String getName() {
-		return nodeName;
+		return "AuxData: "+name;
 	}
 
 	@Override
 	public String getOwnerName() {
-		return parentName;
+		return parentName+":"+nodeName;
 	}
+
 
 	@Override
 	public String getText() {

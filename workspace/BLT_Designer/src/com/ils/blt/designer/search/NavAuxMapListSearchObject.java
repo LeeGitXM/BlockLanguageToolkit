@@ -24,6 +24,7 @@ public class NavAuxMapListSearchObject implements SearchObject {
 	private final String CLSS = "NavAuxMapListSearchObject";
 	private final LoggerEx log;
 	private static final Dimension IMAGE_SIZE = new Dimension(18,18);
+	private final String key;
 	private final List<Map<String,String>> list;
 	private final String parentName;
 	private final String nodeName;
@@ -31,8 +32,9 @@ public class NavAuxMapListSearchObject implements SearchObject {
 	private final DesignerContext context;
 	private final ResourceBundle rb;
 	
-	public NavAuxMapListSearchObject(DesignerContext ctx,List<Map<String,String>> data,String parent,String node,String parentUUID) {
+	public NavAuxMapListSearchObject(DesignerContext ctx,String k,List<Map<String,String>> data,String parent,String node,String parentUUID) {
 		this.context = ctx;
+		this.key = k;
 		this.list = data;
 		this.parentName = parent;
 		this.nodeName = node;
@@ -43,19 +45,19 @@ public class NavAuxMapListSearchObject implements SearchObject {
 	@Override
 	public Icon getIcon() {
 		ImageIcon icon = null;
-		Image img = ImageLoader.getInstance().loadImage("Block/icons/navtree/family_folder_closed.png",IMAGE_SIZE);
+		Image img = ImageLoader.getInstance().loadImage("Block/icons/palette/blank_analysis.png",IMAGE_SIZE);
 		if( img !=null) icon = new ImageIcon(img);
 		return icon;
 	}
 
 	@Override
 	public String getName() {
-		return nodeName;
+		return "AuxData: "+key;
 	}
 
 	@Override
 	public String getOwnerName() {
-		return parentName;
+		return parentName+":"+nodeName;
 	}
 
 	@Override

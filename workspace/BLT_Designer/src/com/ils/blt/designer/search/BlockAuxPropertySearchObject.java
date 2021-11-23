@@ -50,19 +50,19 @@ public class BlockAuxPropertySearchObject implements SearchObject {
 	@Override
 	public Icon getIcon() {
 		ImageIcon icon = null;
-		Image img = ImageLoader.getInstance().loadImage("Block/icons/navtree/family_folder_closed.png",IMAGE_SIZE);
+		Image img = ImageLoader.getInstance().loadImage("Block/icons/palette/blank.png",IMAGE_SIZE);
 		if( img !=null) icon = new ImageIcon(img);
 		return icon;
 	}
 
 	@Override
 	public String getName() {
-		return block.getName();
+		return "AuxData: "+name;
 	}
 
 	@Override
 	public String getOwnerName() {
-		return diagram.getName();
+		return diagram.getName()+":"+block.getName();
 	}
 
 	@Override

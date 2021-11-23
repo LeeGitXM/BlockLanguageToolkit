@@ -14,7 +14,7 @@ public class NavAuxMapListSearchCursor extends SearchObjectCursor {
 	private final String CLSS = "NavAuxMapListSearchCursor";
 	private final DesignerContext context;
 	private Map<String,List<Map<String,String>>> maplists;
-	private Iterator<List<Map<String,String>>> iterator;
+	private Iterator<String> iterator;
 	private final String parentName;
 	private final String parentId;
 	private final String nodeName;
@@ -26,7 +26,7 @@ public class NavAuxMapListSearchCursor extends SearchObjectCursor {
 		this.maplists = stringMapLists;
 		this.iterator = null;
 		if( maplists!=null ) {
-			iterator = maplists.values().iterator();
+			iterator = maplists.keySet().iterator();
 		}
 		this.parentName = parent;
 		this.nodeName = node;
@@ -37,8 +37,9 @@ public class NavAuxMapListSearchCursor extends SearchObjectCursor {
 		Object so = null;   // Search Object
 		if(maplists!=null && maplists.size()>0 ) {
 			if( iterator.hasNext() ) {
-				List<Map<String,String>> list = iterator.next();
-				so = new NavAuxMapListSearchObject(context,list,parentName,nodeName,parentId);
+				 String key = iterator.next();
+				 List<Map<String,String>> list = maplists.get(key);
+				so = new NavAuxMapListSearchObject(context,key,list,parentName,nodeName,parentId);
 				log.infof("%s.next %s",CLSS,parentName,nodeName);
 			}
 		}

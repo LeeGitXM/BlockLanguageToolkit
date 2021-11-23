@@ -33,14 +33,16 @@ public class BlockAuxListSearchObject implements SearchObject {
 	private final String CLSS = "BlockAuxListSearchObject";
 	private final LoggerEx log;
 	private static final Dimension IMAGE_SIZE = new Dimension(18,18);
+	private final String key;
 	private final List<String> list;
 	private final ProcessDiagramView diagram;
 	private final ProcessBlockView block;
 	private final DesignerContext context;
 	private final ResourceBundle rb;
 	
-	public BlockAuxListSearchObject(DesignerContext ctx,List<String> data,ProcessDiagramView parent, ProcessBlockView blk) {
+	public BlockAuxListSearchObject(DesignerContext ctx,String k,List<String> data,ProcessDiagramView parent, ProcessBlockView blk) {
 		this.context = ctx;
+		this.key = k;
 		this.list = data;
 		this.diagram = parent;
 		this.block = blk;
@@ -50,14 +52,14 @@ public class BlockAuxListSearchObject implements SearchObject {
 	@Override
 	public Icon getIcon() {
 		ImageIcon icon = null;
-		Image img = ImageLoader.getInstance().loadImage("Block/icons/navtree/family_folder_closed.png",IMAGE_SIZE);
+		Image img = ImageLoader.getInstance().loadImage("Block/icons/palette/blank_analysis.png",IMAGE_SIZE);
 		if( img !=null) icon = new ImageIcon(img);
 		return icon;
 	}
 
 	@Override
 	public String getName() {
-		return "Name";
+		return "AuxData: "+key;
 	}
 
 	@Override

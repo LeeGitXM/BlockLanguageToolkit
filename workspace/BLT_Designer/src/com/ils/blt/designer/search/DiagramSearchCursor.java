@@ -53,7 +53,7 @@ public class DiagramSearchCursor extends SearchObjectCursor {
 		}
 		
 		if( index==0 && searchDiagrams ) {
-			so = new DiagramNameSearchObject(context,familyName,diagram);
+			so = new DiagramNameSearchObject(context,diagram);
 			log.infof("%s.next: Searching %s",CLSS,diagram.getDiagramName());
 		}
 		else if( searchBlocks ) {

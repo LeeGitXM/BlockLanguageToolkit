@@ -16,7 +16,7 @@ public class BlockAuxMapListSearchCursor extends SearchObjectCursor {
 	private final String CLSS = "BlockAuxMapListSearchCursor";
 	private final DesignerContext context;
 	private Map<String,List<Map<String,String>>> maplists;
-	private Iterator<List<Map<String,String>>> iterator;
+	private Iterator<String> iterator;
 	private final ProcessDiagramView diagram;
 	private final ProcessBlockView block;
 	private final LoggerEx log;
@@ -27,7 +27,7 @@ public class BlockAuxMapListSearchCursor extends SearchObjectCursor {
 		this.maplists = stringMapLists;
 		this.iterator = null;
 		if( maplists!=null ) {
-			iterator = maplists.values().iterator();
+			iterator = maplists.keySet().iterator();
 		}
 		this.diagram = dia;
 		this.block = blk;
@@ -37,8 +37,9 @@ public class BlockAuxMapListSearchCursor extends SearchObjectCursor {
 		Object so = null;   // Search Object
 		if(maplists!=null && maplists.size()>0 ) {
 			if( iterator.hasNext() ) {
-				List<Map<String,String>> list = iterator.next();
-				so = new BlockAuxMapListSearchObject(context,list,diagram,block);
+				 String key = iterator.next();
+				 List<Map<String,String>> list = maplists.get(key);
+				so = new BlockAuxMapListSearchObject(context,key,list,diagram,block);
 				log.infof("%s.next %s",CLSS,diagram.getName(),block.getName());
 			}
 		}
