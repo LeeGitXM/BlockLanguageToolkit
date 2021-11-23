@@ -44,12 +44,12 @@ public class ApplicationNameSearchObject implements SearchObject {
 
 	@Override
 	public String getName() {
-		return applicationName;
+		return "Name";
 	}
 
 	@Override
 	public String getOwnerName() {
-		return rootName;
+		return applicationName;
 	}
 
 	@Override
