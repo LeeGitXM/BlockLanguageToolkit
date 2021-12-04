@@ -768,7 +768,7 @@ public class ModelManager implements ProjectListener  {
 	 * @param startup
 	 */
 	private void addModifyDiagramResource(long projectId,ProjectResource res,boolean startup) {
-		if(DEBUG) log.infof("%s.addModifyDiagramResource: adding diagram: %s (%d)", CLSS, res.getName(), res.getResourceId());
+		if(DEBUG) log.infof("%s.addModifyDiagramResource: analyzing diagram: %s (%d)", CLSS, res.getName(), res.getResourceId());
 		SerializableDiagram sd = deserializeDiagramResource(projectId,res);
 
 		if( sd!=null ) {

@@ -220,7 +220,11 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 						outgoingConnections.put(key, connections);
 						if( DEBUG ) log.infof("%s.updateConnections: mapping connection from %s:%s",CLSS,upstreamBlock.getBlockId().toString(),pc.getUpstreamPortName());
 					}
-					if( !connections.contains(pc) ) connections.add(pc);
+					// This may be a new connection, so push its value.
+					if( !connections.contains(pc) ) {
+						connections.add(pc);
+						controller.sendConnectionNotification(upstreamBlock.getBlockId().toString(), key.getPort(), upstreamBlock.getLastValue());
+					}
 				}
 				else {
 					log.warnf("%s.updateConnections: Source block (%s) not found for connection",CLSS,pc.getSource().toString());

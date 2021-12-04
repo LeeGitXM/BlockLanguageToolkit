@@ -294,7 +294,7 @@ public class BlockAttributeView extends ProcessBlockView implements BlockListene
 	}
 	@Override
 	public void propertyChange(String pname,Object value) {
-		log.infof("%s.propertyChange: - %s new value (%s)",CLSS,pname,value);
+		log.debugf("%s.propertyChange: - %s new value (%s)",CLSS,pname,value);
 		if( pname.equalsIgnoreCase(getPropName())) {
 			setValue(value.toString());
 		}
@@ -311,7 +311,7 @@ public class BlockAttributeView extends ProcessBlockView implements BlockListene
 	
 	@Override
 	public void stateChanged(ChangeEvent e) {
-		log.infof("%s.stateChanged: - ",CLSS);
+		log.debugf("%s.stateChanged: - ",CLSS);
 	}
 
 	/**
@@ -319,7 +319,7 @@ public class BlockAttributeView extends ProcessBlockView implements BlockListene
 	 */
 	@Override
 	public void valueChange(final QualifiedValue qv) {
-		log.infof("%s.valueChange: - %s new value (%s)",CLSS,getPropName(),qv.getValue().toString());
+		log.debugf("%s.valueChange: - %s new value (%s)",CLSS,getPropName(),qv.getValue().toString());
 		setValue(qv.getValue().toString());
 		SwingUtilities.invokeLater(new WorkspaceRepainter());
 	}
@@ -357,7 +357,7 @@ public class BlockAttributeView extends ProcessBlockView implements BlockListene
 		final Tag tag = event.getTag();
 		if( tag!=null && tag.getValue()!=null ) {
 			String value = tag.getValue().getValue().toString();
-			log.infof("%s.tagChanged: - %s new value (%s)",CLSS,tag.getName(),tag.getValue().toString());
+			log.debugf("%s.tagChanged: - %s new value (%s)",CLSS,tag.getName(),tag.getValue().toString());
 			setValue(value);
 			SwingUtilities.invokeLater(new WorkspaceRepainter());
 		}

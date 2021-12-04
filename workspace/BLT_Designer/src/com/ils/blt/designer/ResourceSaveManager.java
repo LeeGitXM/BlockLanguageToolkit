@@ -7,12 +7,9 @@ import java.util.Enumeration;
 
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
-import com.ils.blt.common.block.BlockProperty;
-import com.ils.blt.common.notification.NotificationKey;
 import com.ils.blt.designer.navtree.DiagramTreeNode;
 import com.ils.blt.designer.navtree.NavTreeNodeInterface;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
-import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayException;
 import com.inductiveautomation.ignition.common.project.Project;
@@ -21,7 +18,6 @@ import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.IgnitionDesigner;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignableContainer;
-import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
 import com.inductiveautomation.ignition.designer.gateway.DTGatewayInterface;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceNavTreeNode;
@@ -122,6 +118,7 @@ public class ResourceSaveManager implements Runnable {
 					view = (ProcessDiagramView)tab.getModel();
 					if( DEBUG ) log.infof("%s.saveOpenDiagrams, %s (%s)", CLSS, view.getName(), (view.isDirty()?"DIRTY":"CLEAN"));
 					if (view.isDirty()){
+						view.registerChangeListeners();     // The diagram may include new components
 						if( DEBUG ) log.infof("%s.saveOpenDiagrams: Saving %s...", CLSS, res.getName());
 						new ResourceUpdateManager(workspace, res).run();
 						view.setDirty(false);
