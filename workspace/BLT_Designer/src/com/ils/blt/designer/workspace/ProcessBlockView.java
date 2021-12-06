@@ -613,7 +613,8 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 			type == DataType.Float4 ||
 			type == DataType.Float8 ) {
 			conType = ConnectionType.DATA; 
-		} else  if (type == DataType.String || 
+		} 
+		else  if (type == DataType.String || 
 			type == DataType.Text ) {
 			conType = ConnectionType.TEXT; 
 		} else  if (type == DataType.Boolean) { 

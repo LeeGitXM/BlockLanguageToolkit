@@ -53,6 +53,7 @@ import com.inductiveautomation.ignition.common.sqltags.model.event.TagChangeEven
 import com.inductiveautomation.ignition.common.sqltags.model.event.TagChangeListener;
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 import com.inductiveautomation.ignition.common.sqltags.model.types.ExpressionType;
+import com.inductiveautomation.ignition.common.sqltags.model.types.TagType;
 import com.inductiveautomation.ignition.common.sqltags.parser.TagPathParser;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -305,10 +306,12 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 					TagPath tp = TagPathParser.parse(tagPath);
 					tag = tmgr.getTag(tp);
 					tagProp = (Integer)tag.getAttribute(TagProp.ExpressionType).getValue();
-					typ = tag.getDataType();
+					String name = tag.getName();
+					if( !name.equalsIgnoreCase("Tag Not Found")) {
+						typ = tag.getDataType();
+					}
 				} 
 				catch (IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 				// block binding to expressions for output
