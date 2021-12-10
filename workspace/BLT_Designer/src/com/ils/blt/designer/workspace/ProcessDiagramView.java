@@ -670,7 +670,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		// If block is a Sink, there cannot be another Sink that references the same tag.
 		// The tag cannot be a Boolean
 		if(pblock.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK) ) {
-			if(type.equals(DataType.Boolean)) {
+			if(type!=null && type.equals(DataType.Boolean)) {
 				msg = String.format("A sink (%s) cannot be bound to a Boolean tag, Use a Text tag instead.",pblock.getName());
 			}
 			else {
@@ -686,8 +686,11 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 				}
 			}
 		}
+		
+		if( msg!=null ) return msg;
+		
 		// block binding to expressions for output
-		else if( pblock.getClassName().equals(BlockConstants.BLOCK_CLASS_OUTPUT)    &&
+		if( pblock.getClassName().equals(BlockConstants.BLOCK_CLASS_OUTPUT)    &&
 				prop.getName().equals(BlockConstants.BLOCK_PROPERTY_TAG_PATH) &&
 				tagProp != ExpressionType.None.getIntValue() ) {  // only update the tagpath property
 			msg = "Unable to bind expression tag to output";
