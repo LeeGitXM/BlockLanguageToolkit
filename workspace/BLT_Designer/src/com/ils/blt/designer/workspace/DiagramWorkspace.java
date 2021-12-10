@@ -1375,6 +1375,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		executionEngine.executeOnce(new ResourceUpdateManager(this,context.getProject().getResource(resid)));
 		
 		diagram.setDirty(false);
+		diagram.updateNotificationHandlerForSave();
 		c.setBackground(diagram.getBackgroundColorForState());
 		SwingUtilities.invokeLater(new WorkspaceRepainter());
 	}

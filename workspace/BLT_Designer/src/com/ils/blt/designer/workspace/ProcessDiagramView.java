@@ -668,7 +668,8 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		}
 		
 		// If block is a Sink, there cannot be another Sink that references the same tag.
-		// The tag cannot be a Boolean
+		// We use the name as an approximation of tag path- the descriptor properties aren't populated. 
+		// The tag cannot be a Boolean.
 		if(pblock.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK) ) {
 			if(type!=null && type.equals(DataType.Boolean)) {
 				msg = String.format("A sink (%s) cannot be bound to a Boolean tag, Use a Text tag instead.",pblock.getName());
@@ -678,8 +679,8 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 					List<SerializableBlockStateDescriptor> blocks = appRequestHandler.listBlocksForTag(tagPath);
 					for(SerializableBlockStateDescriptor desc:blocks) {
 						if( desc.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK) &&
-								!desc.getIdString().equals(pblock.getId().toString())) {
-							msg = String.format("A sink(%s) cannot bind to same tag as another sink (%s)", pblock.getName(),desc.getName());
+								!desc.getIdString().equals(pblock.getId().toString())   ) {
+							msg = String.format("A sink (%s) cannot bind to same tag (%s) as another sink (%s)", pblock.getName(),tagPath,desc.getName());
 							break;
 						}
 					}
@@ -710,6 +711,25 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		}
 
 		return msg;  // this could return an error message
+	}
+	
+	/**
+	 * We are about to saving the diagram. Update the notification handler to reflect new values,
+	 * in particular block name and property changes. After this, if we open the diagram view in the designer,
+	 * it will reflect the saved updates.
+	 * @param diagram
+	 */
+	public void updateNotificationHandlerForSave() {
+		NotificationHandler handler = NotificationHandler.getInstance();
+		for(Block blk:getBlocks()) {
+			ProcessBlockView block = (ProcessBlockView)blk;
+			String nkey = NotificationKey.keyForBlockName(block.getId().toString());
+			handler.initializeBlockNameNotification(nkey, block.getName());
+			for(BlockProperty prop:block.getProperties()) {
+				String pkey = NotificationKey.keyForProperty(block.getId().toString(),prop.getName());
+				handler.initializePropertyValueNotification(pkey, prop.getValue());
+			}
+		}
 	}
 	
 	// ------------------------------------------- NotificationChangeListener --------------------------------------

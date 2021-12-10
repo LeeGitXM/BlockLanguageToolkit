@@ -119,7 +119,7 @@ public class ResourceUpdateManager implements Runnable {
 						log.warnf("%s.run: Exception serializing diagram, resource %d (%s)",CLSS,resourceId,jpe.getMessage());
 					}
 					view.setDirty(false);
-					updateNotificationHandlerForSave(view);
+					view.updateNotificationHandlerForSave();
 				}
 			}
 			
@@ -175,25 +175,5 @@ public class ResourceUpdateManager implements Runnable {
 			if(DEBUG) log.infof("%s.run(): complete",CLSS);
 		}
 		this.counter.decrementCount();
-	}
-	
-	/**
-	 * We are saving a diagram. Update the notification handler to reflect new values,
-	 * in particular block name and property changes. Now if we open a new diagram view in the designer,
-	 * it will reflect the saved updates.
-	 * @param diagram
-	 */
-	private void updateNotificationHandlerForSave(ProcessDiagramView diagram) {
-		NotificationHandler handler = NotificationHandler.getInstance();
-		for(Block blk:diagram.getBlocks()) {
-			ProcessBlockView block = (ProcessBlockView)blk;
-			String nkey = NotificationKey.keyForBlockName(block.getId().toString());
-			handler.initializeBlockNameNotification(nkey, block.getName());
-			for(BlockProperty prop:block.getProperties()) {
-				String pkey = NotificationKey.keyForProperty(block.getId().toString(),prop.getName());
-				handler.initializePropertyValueNotification(pkey, prop.getValue());
-			}
-			//block.fireStateChanged();
-		}
 	}
 }

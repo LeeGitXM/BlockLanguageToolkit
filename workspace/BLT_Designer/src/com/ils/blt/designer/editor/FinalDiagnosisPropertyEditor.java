@@ -12,6 +12,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -83,7 +84,6 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 	private final GeneralPurposeDataContainer appModel;           // Data container operated on by panels PH 06/30/2021
 	protected DualListBox dual;
 	
-	protected JTextField finalDiagnosisNameField;
 	protected JTextField finalDiagnosisClassField;
 	protected JTextField finalDiagnosisUUIDField;
 	
@@ -224,11 +224,11 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		panel.setLayout(new MigLayout("ins 2", "[para]0[]0[]", "[para]0[]0[]"));
 		
 		panel.add(new JLabel("Name"),"skip");
-		finalDiagnosisNameField = new JTextField(blk.getName());
-		finalDiagnosisNameField.setEditable(false);
-		panel.add(finalDiagnosisNameField,"growx,pushx");
-		finalDiagnosisNameField.setEditable(true);
-		finalDiagnosisNameField.addFocusListener(this);
+		nameField = new JTextField(blk.getName());
+		nameField.setEditable(false);
+		panel.add(nameField,"growx,pushx");
+		nameField.setEditable(true);
+		nameField.addFocusListener(this);
 		
 		panel.add(new JLabel("Class"),"newline,skip");
 		finalDiagnosisClassField = new JTextField(blk.getClassName());
@@ -335,10 +335,12 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		
 		// Convert the list of output maps to a list of strings (output names)
 		List<String> q0 = new ArrayList<>();
-		for(Map<String,String> outmap:outputMapList) {
-			q0.add(outmap.get("QuantOutput"));
+		if(outputMapList!=null ) {
+			for(Map<String,String> outmap:outputMapList) {
+				q0.add(outmap.get("QuantOutput"));
+			}
+			log.tracef("Total list of outputs: %s", q0);
 		}
-		log.tracef("Total list of outputs: %s", q0);
 		
 		// Remove the outputs that are already in use
 		for( String inUse:q1) {
@@ -412,9 +414,9 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 	}
 
 	/*
-	 * Copy the FinalDiagnosis auxiliary data back into the block's aux data.
-	 * This saves the edits made in the editor to the Designer's copy of the block.
-	 * It does NOT do a permanent change of the resource in the gateway.
+	 * Copy values from the UI back into the block's aux data.
+	 * The block is a view valid only while the diagram is displayed. Once the diagram is saved 
+	 * these values are written to the database.
 	 * If this is working correctly, you should be able to select a FD, edit something, select a different block, select the FD again and you 
 	 * will see the edit, quit the designer (without a File->Save), open designer, select the same block, and you will not see the change. 
 	 */
@@ -426,7 +428,6 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		model.getProperties().put("FinalDiagnosisLabel",finalDiagnosisLabelField.getText());
 		model.getProperties().put("TextRecommendation", textRecommendationArea.getText());
 		model.getProperties().put("Comment", commentArea.getText());
-		log.tracef("Comment: %s", commentArea.getText());
 		model.getProperties().put("Explanation", explanationArea.getText());
 		model.getProperties().put("PostTextRecommendation", (postTextRecommendationCheckBox.isSelected()?"1":"0"));
 		model.getProperties().put("ShowExplanationWithRecommendation", (showExplanationWithRecommendationCheckBox.isSelected()?"1":"0"));
@@ -437,15 +438,8 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		
 		List<String> inUseList = dual.getDestinations();
 		model.getLists().put("OutputsInUse",inUseList);
-		
-		/*
-		 * This sends the block model, which we just updated to the gateway where the data is written to the database.  This does NOT save the updated model 
-		 * as a serialized internal resource, i.e., the project is not saved.  So if the user closed designer, while the workspace is dirty after editing a final diagnosis,
-		 * then the internal Ignition resource and the data in the database will be out of sync.  However, if I comment this out here then it needs to be called 
-		 * somewhere else when they actually do the save. 
-		 */
-		log.tracef("%s.save: writing aux data",CLSS);
-		requestHandler.writeAuxData(context.getProject().getId(), diagram.getResourceId(), block.getId().toString(), model, provider, database);
+		block.setAuxiliaryData(model);
+
 	}
 	
 	/*
@@ -616,85 +610,108 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 
 	@Override
 	public void focusLost(FocusEvent event) {
-		log.tracef("%s: focusLost() for a %s...", CLSS, event.getSource().getClass().getName());
+		log.infof("%s: focusLost() for a %s...", CLSS, event.getSource().getClass().getName());
 		
 		Map<String,String> properties = model.getProperties();
-		
+		Object source = event.getSource();
 		/*
 		 * If the value was changed then set the diagram dirty
 		 */
-		
-		if(event.getSource() instanceof JTextField){
-			JTextField textField = (JTextField)event.getSource();
-			log.tracef("%s.focusLost() *** JTextField ***", CLSS);
-			if (textField == finalDiagnosisLabelField && !textField.getText().equals(properties.get("FinalDiagnosisLabel"))){
-					log.tracef("--------  THE LABEL HAS BEEN CHANGED -------------");
-					setDiagramDirty();
-					save();
-			}
-			else if (textField == calculationMethodField && !textField.getText().equals(properties.get("CalculationMethod"))){
-				log.tracef("--------  THE CALCULATION METHOD HAS BEEN CHANGED -------------");
-				setDiagramDirty();
-				save();
-			}
-			else if (textField == postProcessingCallbackField && !textField.getText().equals(properties.get("PostProcessingCallback"))){
-				log.tracef("--------  THE POST PROCESSING CALLBACK HAS BEEN CHANGED -------------");
-				setDiagramDirty();
-				save();
-			}
-			else if (textField == finalDiagnosisNameField && !textField.getText().equals(block.getName())){
-				log.tracef("--------  THE FINAL DIAGNOSIS NAME HAS BEEN CHANGED -------------");
-				log.tracef("Old name: %s", block.getName());
-				log.tracef("New name: %s", textField.getText());
+		if(source.equals(finalDiagnosisLabelField) ) {
+			if( !finalDiagnosisLabelField.getText().equals(properties.get("FinalDiagnosisLabel")) ){
+				log.tracef("--------  THE LABEL HAS BEEN CHANGED -------------");
 				setDiagramDirty();
 				save();
 			}
 		}
-		
-		else if( event.getSource() instanceof JTextArea ) {
-			JTextArea textArea = (JTextArea)event.getSource();
-			log.tracef("%s.focusLost() *** JTextArea ***", CLSS);
-			if (textArea == textRecommendationArea && !textArea.getText().equals(properties.get("TextRecommendation"))){
+		else if(source.equals(calculationMethodField) ) {
+			if( !calculationMethodField.getText().equals(properties.get("CalculationMethod")) ){
+				log.tracef("--------  THE CALCULATION METHOD HAS BEEN CHANGED -------------");
+				setDiagramDirty();
+				save();
+			}
+		}
+		else if (source.equals(postProcessingCallbackField) ) {
+			if( !postProcessingCallbackField.getText().equals(properties.get("PostProcessingCallback")) ){
+				log.tracef("--------  THE POST PROCESSING CALLBACK HAS BEEN CHANGED -------------");
+				setDiagramDirty();
+				save();
+			}
+		}
+		else if (source.equals(priorityField) ) {
+			if( !priorityField.getText().equals(properties.get("Priority")) ){
+				log.tracef("--------  THE PRIORITY HAS BEEN CHANGED -------------");
+				setDiagramDirty();
+				save();
+			}
+		}
+		else if (source.equals(refreshRateField) ) {
+			if( !refreshRateField.getText().equals(properties.get("RefreshRate")) ){
+				log.tracef("--------  THE REFRESH RATE HAS BEEN CHANGED -------------");
+				setDiagramDirty();
+				save();
+			}
+		}
+		else if( source.equals(nameField) ) {
+			if( !nameField.getText().equals(block.getName())){
+				log.tracef("--------  THE FINAL DIAGNOSIS NAME HAS BEEN CHANGED -------------");
+				log.tracef("Old name: %s", block.getName());
+				log.tracef("New name: %s", nameField.getText());
+				setDiagramDirty();
+				saveName();
+			}
+		}
+		else if( source.equals(textRecommendationArea) ) {
+			if( !textRecommendationArea.getText().equals(properties.get("TextRecommendation")) ){
 				log.tracef("--------  THE TEXT RECOMMENDATION HAS BEEN CHANGED -------------");
 				setDiagramDirty();
 				save();
 			}
-			else if (textArea == explanationArea && !textArea.getText().equals(properties.get("Explanation"))){
+		}
+		else if (source.equals(explanationArea) ) {
+			if( !explanationArea.getText().equals(properties.get("Explanation"))){
 				log.tracef("--------  THE EXPLANATION HAS BEEN CHANGED -------------");
 				setDiagramDirty();
 				save();
 			}
-			else if (textArea == commentArea && !textArea.getText().equals(properties.get("Comment"))){
+		}
+		else if( source.equals(commentArea) ) {
+			if( !commentArea.getText().equals(properties.get("Comment"))) {
 				log.tracef("--------  THE COMMENT HAS BEEN CHANGED -------------");
 				setDiagramDirty();
 				save();
 			}
 		}
-		
-		else if( event.getSource() instanceof JCheckBox ) {
-			JCheckBox checkBox = (JCheckBox)event.getSource();
-			log.tracef("%s.focusLost() *** JCheckBox ***", CLSS);
-			if (checkBox == constantCheckBox && !(checkBox.isSelected()?"1":"0").equals(properties.get("Constant"))){
+		else if( source.equals(constantCheckBox) ) {
+			if( !(constantCheckBox.isSelected()?"1":"0").equals(properties.get("Constant"))){
 				log.tracef("--------  THE CONSTANT CHECK BOX HAS BEEN CHANGED -------------");				
 				setDiagramDirty();
 				save();
 			}
-			else 	if (checkBox == postTextRecommendationCheckBox && !(checkBox.isSelected()?"1":"0").equals(properties.get("PostTextRecommendation"))){
+		}
+		else if (source.equals(postTextRecommendationCheckBox) ) {
+			if( !(postTextRecommendationCheckBox.isSelected()?"1":"0").equals(properties.get("PostTextRecommendation"))){
 				log.tracef("--------  THE POST TEXT RECOMMENDATION CHECK BOX HAS BEEN CHANGED -------------");				
 				setDiagramDirty();
 				save();
 			}
-			else 	if (checkBox == showExplanationWithRecommendationCheckBox && !(checkBox.isSelected()?"1":"0").equals(properties.get("ShowExplanationWithRecommendation"))){
+		}
+		else if( source.equals(showExplanationWithRecommendationCheckBox) ) {
+			if( !(showExplanationWithRecommendationCheckBox.isSelected()?"1":"0").equals(properties.get("ShowExplanationWithRecommendation"))){
 				log.tracef("--------  THE SHOW EXPLANATION CHECK BOX HAS BEEN CHANGED -------------");				
 				setDiagramDirty();
 				save();
 			}
-			else 	if (checkBox == manualMoveAllowedCheckBox && !(checkBox.isSelected()?"1":"0").equals(properties.get("ManualMoveAllowed"))){
+		}
+		else if( source.equals(manualMoveAllowedCheckBox) ) {
+			if( !(manualMoveAllowedCheckBox.isSelected()?"1":"0").equals(properties.get("ManualMoveAllowed"))){
 				log.tracef("--------  THE MANUAL MOVE ALLOWED CHECK BOX HAS BEEN CHANGED -------------");				
 				setDiagramDirty();
 				save();
 			}
-			else 	if (checkBox == trapBox && !(checkBox.isSelected()?"1":"0").equals(properties.get("TrapInsignificantRecommendations"))){
+		}
+		else if( source.equals(trapBox) ) {
+			if( !(trapBox.isSelected()?"1":"0").equals(properties.get("TrapInsignificantRecommendations"))){
 				log.tracef("--------  THE TRAP INSIGNIFICANT RECOMMENDATIONS CHECK BOX HAS BEEN CHANGED -------------");				
 				setDiagramDirty();
 				save();
