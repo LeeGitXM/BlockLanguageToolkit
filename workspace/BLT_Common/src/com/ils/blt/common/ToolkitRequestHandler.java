@@ -46,15 +46,15 @@ public interface ToolkitRequestHandler  {
 	 */
 	public ProjectResourceId createResourceId(String projectName,String path, String type);
 	/**
-	 * Create a SQLTag memory tag given its path and data type. The path must contain the
-	 * provider name in brackets.
+	 * Create a SQLTag memory tag given its path and data type.
+	 * Create in both production and isolation
 	 */
-	public void createTag(DataType type,String path);
+	public void createTag(String projectName,DataType type,String path);
 	/**
 	 * Delete a SQLTag given its path. The path must contain the
-	 * provider name in brackets.
+	 * provider name in brackets. Delete from both production and isolation
 	 */
-	public void deleteTag(String path);
+	public void deleteTag(String projectName,String path);
 	/**
 	 * Determine whether or not the indicated diagram is known to the controller.
 	 * @param diagramId string representation of the diagram's unique id
@@ -164,22 +164,22 @@ public interface ToolkitRequestHandler  {
 	 * Find the name of the isolation datasource from the internal SQLite database. 
 	 * @return isolation database name
 	 */
-	public String getIsolationDatabase();
+	public String getProjectIsolationDatabase(String projectName);
 	/**
 	 * Find the name of the isolation tag provider from the internal SQLite database. 
 	 * @return isolation tag provider name
 	 */
-	public String getIsolationTagProvider();
+	public String getProjectIsolationTagProvider(String projectName);
 	/**
 	 * Find the name of the production datasource from the internal SQLite database. 
 	 * @return production database name
 	 */
-	public String getProductionDatabase();
+	public String getProjectProductionDatabase(String projectName);
 	/**
 	 * Find the name of the isolation tag provider from the internal SQLite database. 
 	 * @return production tag provider name
 	 */
-	public String getProductionTagProvider();
+	public String getProjectProductionTagProvider(String projectName);
 	/**
 	 * @param diagramId identifier of the diagram owning the block, a String
 	 * @param blockId identifier of the block within the diagram, a String
@@ -215,7 +215,7 @@ public interface ToolkitRequestHandler  {
 	 * @param propertyName name of the property for which a value is to be returned
 	 * @return the value of the specified property.
 	 */
-	public String getToolkitProperty(String propertyName) ;
+	public String getProjectToolkitProperty(String projectName,String propertyName) ;
 	/**
 	 * Retrieve the configured browser path from the ORM database HelpRecord. This is used for 
 	 * context-sensitive help.
@@ -245,7 +245,7 @@ public interface ToolkitRequestHandler  {
 	 * @param tagpath the path for the tag of interest.
 	 * @return a list of blocks associated with the tag.
 	 */
-	public List<SerializableBlockStateDescriptor> listBlocksForTag(String tagpath) ;
+	public List<SerializableBlockStateDescriptor> listBlocksForTag(String projectName,String tagpath) ;
 
 	/**
 	 * Query a block in the gateway for list of the blocks connected to the named port. 
@@ -283,7 +283,7 @@ public interface ToolkitRequestHandler  {
 	 * @param className fully qualified class name of blocks to be listed
 	 * @return a list of state descriptors for blocks that are of the specified class.
 	 */
-	public List<SerializableBlockStateDescriptor> listBlocksOfClass(String className);
+	public List<SerializableBlockStateDescriptor> listBlocksOfClass(String projectName,String className);
 	/**
 	 * Query a diagram in the gateway for list of its blocks that are upstream
 	 * of the specified block. 
@@ -409,7 +409,7 @@ public interface ToolkitRequestHandler  {
 	 * Rename a SQLTag given its path and new name. The path must contain the
 	 * provider name in brackets.
 	 */
-	public void renameTag(String name,String path);
+	public void renameTag(String projectName,String name,String path);
 	/**
 	 * Execute reset() on a specified block
 	 * @param diagramId of the parent diagram
@@ -477,7 +477,7 @@ public interface ToolkitRequestHandler  {
 	 * @param appname name of the application
 	 * @param state new state for all diagrams in application
 	 */
-	public void setApplicationState(String appname, String state);
+	public void setApplicationState(String projectName,String appname, String state);
 
 	/** Update all changed properties for a block 
 	 * @param duuid diagram unique Id
@@ -528,7 +528,7 @@ public interface ToolkitRequestHandler  {
 	 * @param propertyName name of the property for which a value is to be set
 	 * @param value the new value of the property.
 	 */
-	public void setToolkitProperty(String propertyName,String value) ;
+	public void setProjectToolkitProperty(String projectName,String propertyName,String value) ;
 	/**
 	 * Define a watermark for a diagram. This is shown only in the designer. 
 	 * @param diagramId identifier of diagram to get the watermark
@@ -544,10 +544,10 @@ public interface ToolkitRequestHandler  {
 	 */
 	public void stopController() ;
 	/**
-	 * Direct the blocks in a specified diagram to report their
+	 * Direct the blocks in diagrams in a specified project to report their
 	 * status values. This is in order to update the UI. 
 	 */
-	public void triggerStatusNotifications() ;
+	public void triggerStatusNotifications(String projectName) ;
 	
 	/** Update connections for a block. New connections will be added, old connections
 	 * may undergo a type conversion.  

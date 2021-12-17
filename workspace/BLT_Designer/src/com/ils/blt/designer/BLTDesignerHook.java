@@ -208,7 +208,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		// ready when diagrams are displayed. The constructor is sufficient.
 		NotificationHandler.getInstance().setHook(this);
 		// Query the gateway for latest notifications from all blocks
-		appRequestHandler.triggerStatusNotifications();
+		appRequestHandler.triggerStatusNotifications(context.getProjectName());
 		LogUtil.getLogger(Logger.getRootLogger().getName());  // Cause the logger to be created
 	}
 	

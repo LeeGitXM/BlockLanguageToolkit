@@ -68,8 +68,8 @@ public class FamilyPropertyEditor extends AbstractPropertyEditor implements Noti
 		this.executionEngine = new BasicExecutionEngine(1,CLSS);
 		this.requestHandler = new ApplicationRequestHandler();
 		this.log = LogUtil.getLogger(getClass().getPackageName());
-		this.database = requestHandler.getProductionDatabase();
-		this.provider = requestHandler.getProductionTagProvider();
+		this.database = requestHandler.getProjectProductionDatabase(context.getProjectName());
+		this.provider = requestHandler.getProjectProductionTagProvider(context.getProjectName());
         initialize();
         setUI();
 		// Register for notifications

@@ -32,12 +32,15 @@ public class BasicExecutionController implements ExecutionController  {
 
 	protected static final LoggerEx log = LogUtil.getLogger(BasicExecutionController.class.getPackage().getName());
 
+	@Override
 	public void acceptBroadcastNotification(BroadcastNotification note){
 		log.warnf("%s.acceptBroadcastNotification: WARNING: Executed from stub class",CLSS);
 	}
+	@Override
 	public void acceptCompletionNotification(OutgoingNotification note){
 		log.warnf("%s.acceptCompletionNotification: WARNING: Executed from stub class",CLSS);
 	}
+	@Override
 	public void acceptConnectionPostNotification(ConnectionPostNotification note){
 		log.warnf("%s.acceptConnectionPostNotification: WARNING: Executed from stub class",CLSS);
 	}
@@ -45,30 +48,37 @@ public class BasicExecutionController implements ExecutionController  {
 	public void clearCache() {
 		log.warnf("%s.clearCache: WARNING: Executed from stub class",CLSS);
 	}
+	@Override
 	public DiagnosticDiagram getDiagram(ProjectResourceId diagramId) {
 		log.warnf("%s.getDiagram: WARNING: Executed from stub class",CLSS);
 		return null;
 	}
-	public void clearSubscriptions(){
+	@Override
+	public void clearSubscriptions(String projectName){
 		log.warnf("%s.clearSubscriptions: WARNING: Executed from stub class",CLSS);
 	}
-	public String getIsolationDatabase() {
+	@Override
+	public String getProjectIsolationDatabase(String projectName) {
 		log.warnf("%s.getIsolationDatabase: WARNING: Executed from stub class",CLSS);
 		return null;
 	}
-	public String getIsolationProvider() {
+	@Override
+	public String getProjectIsolationProvider(String projectName) {
 		log.warnf("%s.getIsolationProvider: WARNING: Executed from stub class",CLSS);
 		return null;
 	}
-	public String getProductionDatabase() {
+	@Override
+	public String getProjectProductionDatabase(String projectName) {
 		log.warnf("%s.getProductionDatabase: WARNING: Executed from stub class",CLSS);
 		return null;
 	}
-	public String getProductionProvider() {
+	@Override
+	public String getProjectProductionProvider(String projectName) {
 		log.warnf("%s.getProductionProvider: WARNING: Executed from stub class",CLSS);
 		return null;
 	}
-	public double getIsolationTimeFactor() {
+	@Override
+	public double getProjectIsolationTimeFactor(String projectName) {
 		log.warnf("%s.getIsolationTimeFactor: WARNING: Executed from stub class",CLSS);
 		return 0;
 	}
@@ -77,65 +87,83 @@ public class BasicExecutionController implements ExecutionController  {
 		log.warnf("%s.getProcessBlock: WARNING: Executed from stub class",CLSS);
 		return null;
 	}
+	@Override
 	public String getSubscribedPath(ProcessBlock block,BlockProperty property) {
 		log.warnf("%s.getSubscribedPath: WARNING: Executed from stub class",CLSS);
 		return null;
 	}
+	@Override	
 	public QualifiedValue getTagValue(ProjectResourceId diagramId,String path) {
 		log.warnf("%s.getTagValue: WARNING: Executed from stub class",CLSS);
 		return null;
 	}
+	@Override
 	public boolean hasActiveSubscription(ProcessBlock block,BlockProperty property,String tagPath) {
 		log.warnf("%s.hasActiveSubscription: WARNING: Executed from stub class",CLSS);
 		return false;
 	}
+	@Override
 	public List<SerializableBlockStateDescriptor> listBlocksConnectedAtPort(ProjectResourceId diagramId,String blockId,String portName) {
 		log.warnf("%s.listBlocksConnectedAtPort: WARNING: Executed from stub class",CLSS);
 		return new ArrayList<>();
 	}
+	@Override
 	public List<SerializableBlockStateDescriptor> listBlocksDownstreamOf(ProjectResourceId diagramId,UUID blockId,boolean spanDiagrams) {
 		log.warnf("%s.listBlocksDownstreamOf: WARNING: Executed from stub class",CLSS);
 		return new ArrayList<>();
 	}
+	@Override
 	public List<SerializableBlockStateDescriptor> listBlocksUpstreamOf(ProjectResourceId diagramId,UUID blockId,boolean spanDiagrams) {
 		log.warnf("%s.listBlocksUpstreamOf: WARNING: Executed from stub class",CLSS);
 		return new ArrayList<>();
 	}
+	@Override
 	public List<SerializableBlockStateDescriptor> listSinksForSource(ProjectResourceId diagramId,String blockName) {
 		log.warnf("%s.listSinksForSource: WARNING: Executed from stub class",CLSS);
 		return new ArrayList<>();
 	}
+	@Override
 	public List<SerializableBlockStateDescriptor> listSourcesForSink(ProjectResourceId diagramId,String blockName) {
 		log.warnf("%s.listSourcesForSink: WARNING: Executed from stub class",CLSS);
 		return new ArrayList<>();
 	}
+	@Override
 	public void sendAlertNotification(ProjectResourceId resid, String val) {
 		log.warnf("%s.sendAlertNotification: WARNING: Executed from stub class",CLSS);
 	}
+	@Override
 	public void sendAuxDataNotification(String id,QualifiedValue val) {
 		log.warnf("%s.sendAuxDataNotification: WARNING: Executed from stub class",CLSS);
 	}
+	@Override
 	public void sendConnectionNotification(String blockid, String port, QualifiedValue val) {
 		log.warnf("%s.sendConnectionNotification: WARNING: Executed from stub class",CLSS);
 	}
+	@Override
 	public void sendNameChangeNotification(String blockid, String name) {
 		log.warnf("%s.sendNameChangeNotification: WARNING: Executed from stub class",CLSS);
 	}
+	@Override
 	public void sendPropertyBindingNotification(String id, String propertyName, String val){
 		log.warnf("%s.sendPropertyBindingNotification: WARNING: Executed from stub class",CLSS);
 	}
+	@Override
 	public void sendPropertyNotification(String id, String propertyName, QualifiedValue val){
 		log.warnf("%s.sendPropertyNotification: WARNING: Executed from stub class",CLSS);
 	}
+	@Override
 	public void sendStateNotification(ProjectResourceId resourceid, String val){
 		log.warnf("%s.sendStateNotification: WARNING: Executed from stub class",CLSS);
 	}
+	@Override
 	public void sendWatermarkNotification(ProjectResourceId diagramid, String val) {
 		log.warnf("%s.sendWatermarkNotification: WARNING: Executed from stub class",CLSS);
 	}
+	@Override
 	public void updateTag(ProjectResourceId diagramId,String path,QualifiedValue val) {
 		log.warnf("%s.updateTag: WARNING: Executed from stub class",CLSS);
 	}
+	@Override
 	public String validateTag(ProjectResourceId diagramId,String tagPath) {
 		log.warnf("%s.validateTag: WARNING: Executed from stub class",CLSS);
 		return null;

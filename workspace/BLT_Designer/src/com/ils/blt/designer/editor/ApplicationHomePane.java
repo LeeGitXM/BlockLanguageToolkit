@@ -72,7 +72,7 @@ public class ApplicationHomePane extends JPanel implements  NotificationChangeLi
 		this.requestHandler = new ApplicationRequestHandler();
 		this.model = editor.getModel();
 		this.log = LogUtil.getLogger(getClass().getPackageName());
-		this.provider = requestHandler.getProductionTagProvider();
+		this.provider = requestHandler.getProjectProductionTagProvider(editor.getContext().getProjectName());
 		this.key = NotificationKey.keyForAuxData(editor.getApplication().getResourcePath().getPath().toString());
 		this.setPreferredSize(ApplicationPropertyEditor.PANEL_SIZE);
 		
@@ -105,11 +105,12 @@ public class ApplicationHomePane extends JPanel implements  NotificationChangeLi
 		// Combo boxes are populated from a database query. The database used is a function
 		// of the application state
 		SerializableApplication app = ((ApplicationPropertyEditor)editor).getApplication();
-		String db = requestHandler.getProductionDatabase();
-		String tag = requestHandler.getProductionTagProvider();
+		String projectName = editor.getContext().getProjectName();
+		String db = requestHandler.getProjectProductionDatabase(projectName);
+		String tag = requestHandler.getProjectProductionTagProvider(projectName);
 		if( app.getState().equals(DiagramState.ISOLATED)) {
-			db = requestHandler.getIsolationDatabase();
-			tag = requestHandler.getIsolationTagProvider();
+			db = requestHandler.getProjectIsolationDatabase(projectName);
+			tag = requestHandler.getProjectIsolationTagProvider(projectName);
 		}
 		Script script = extensionManager.createExtensionScript(ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.GET_LIST_OPERATION, tag);
 	

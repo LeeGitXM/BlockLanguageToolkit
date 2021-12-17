@@ -120,8 +120,8 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
         this.diagram = wrkspc.getActiveDiagram();
 		this.corePanel = new CorePropertyPanel(this,block);
 		this.log = LogUtil.getLogger(getClass().getPackageName());
-		this.database = requestHandler.getProductionDatabase();
-		this.provider = requestHandler.getProductionTagProvider();
+		this.database = requestHandler.getProjectProductionDatabase(context.getProjectName());
+		this.provider = requestHandler.getProjectProductionTagProvider(context.getProjectName());
 		this.setPreferredSize(new Dimension(DIALOG_WIDTH,DIALOG_HEIGHT));
 		
 		/*

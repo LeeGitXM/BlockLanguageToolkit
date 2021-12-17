@@ -200,8 +200,8 @@ public class MainPanel extends BasicEditPanel {
 		private String getProvider() {
 			DiagramState state = bpe.getDiagram().getState();
 			String provider = (state.equals(DiagramState.ISOLATED)?
-					bpe.getRequestHandler().getIsolationTagProvider():
-					bpe.getRequestHandler().getProductionTagProvider());
+					bpe.getRequestHandler().getProjectIsolationTagProvider(context.getProjectName()):
+					bpe.getRequestHandler().getProjectProductionTagProvider(context.getProjectName()));
 			return provider;
 		}
 		// Replace the last element of path with name

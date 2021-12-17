@@ -110,7 +110,7 @@ public class ResourceSaveManager implements Runnable {
 	public void run() {
 		if( DEBUG ) log.infof("%s.run()", CLSS);
 		accumulateNodeResources(root);
-		if( ops.size() > 0 ) requestHandler.triggerStatusNotifications();
+		if( ops.size() > 0 ) requestHandler.triggerStatusNotifications(context.getProjectName());
 		this.counter.decrementCount();
 	}
 	

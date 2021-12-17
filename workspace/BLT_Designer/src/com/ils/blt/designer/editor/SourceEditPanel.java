@@ -44,7 +44,7 @@ public class SourceEditPanel extends BasicEditPanel {
 
 	public SourceEditPanel(final BlockPropertyEditor editor) {
 		super(editor);
-		sinks = editor.getRequestHandler().listBlocksOfClass(BlockConstants.BLOCK_CLASS_SINK);
+		sinks = editor.getRequestHandler().listBlocksOfClass(editor.getContext().getProjectName(),BlockConstants.BLOCK_CLASS_SINK);
 		if( sinks==null) sinks = new ArrayList<>();
 		Collections.sort(sinks);
 		setLayout(new BorderLayout());

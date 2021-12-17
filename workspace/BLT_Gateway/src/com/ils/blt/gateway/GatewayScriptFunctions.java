@@ -46,11 +46,11 @@ public class GatewayScriptFunctions   {
 	 * Create a SQLTag memory tag given its path and data type. The path must contain the
 	 * provider name in brackets.
 	 */
-	public static void createTag(DataType type,String path) {
-		handler.createTag(type, path);
+	public static void createTag(String projectName,DataType type,String path) {
+		handler.createTag(projectName,type, path);
 	}
 	/**
-	 * Remove all running diagrams from the controller. 
+	 * Remove all running diagrams from the controller for the specified project 
 	 * Cancel all tag subscriptions. 
 	 */
 	public static void clearController() {
@@ -61,8 +61,8 @@ public class GatewayScriptFunctions   {
 	 * Delete a SQLTag given its path. The path must contain the
 	 * provider name in brackets.
 	 */
-	public static void deleteTag(String path) {
-		handler.deleteTag(path);
+	public static void deleteTag(String projectName,String path) {
+		handler.deleteTag(projectName,path);
 	}
 	/**
 	 * @param uuid string value of application's UUID
@@ -200,29 +200,29 @@ public class GatewayScriptFunctions   {
 	 * Find the name of the isolation datasource from the internal SQLite database. 
 	 * @return isolation database name
 	 */
-	public static String getIsolationDatabase() {
-		return handler.getIsolationDatabase();
+	public static String getProjectIsolationDatabase(String projectName) {
+		return handler.getProjectIsolationDatabase(projectName);
 	}
 	/**
 	 * Find the name of the isolation tag provider from the internal SQLite database. 
 	 * @return isolation tag provider name
 	 */
-	public static String getIsolationTagProvider() {
-		return handler.getIsolationTagProvider();
+	public static String getProjectIsolationTagProvider(String projectName) {
+		return handler.getProjectIsolationTagProvider(projectName);
 	}
 	/**
 	 * Find the name of the production datasource from the internal SQLite database. 
 	 * @return production database name
 	 */
-	public static String getProductionDatabase() {
-		return handler.getProductionDatabase();
+	public static String getProjectProductionDatabase(String projectName) {
+		return handler.getProjectProductionDatabase(projectName);
 	}
 	/**
 	 * Find the name of the production tag provider from the internal SQLite database. 
 	 * @return production tag provider name
 	 */
-	public static String getProductionTagProvider() {
-		return handler.getProductionTagProvider();
+	public static String getProjectProductionTagProvider(String projectName) {
+		return handler.getProjectProductionTagProvider(projectName);
 	}
 	/**
 	 * @param diagramId identifier of the diagram owning the block, a String
@@ -265,8 +265,8 @@ public class GatewayScriptFunctions   {
 	 * @param propertyName name of the property for which a value is to be returned
 	 * @return the value of the specified property.
 	 */
-	public static String getToolkitProperty(String propertyName) {
-		return handler.getToolkitProperty(propertyName);
+	public static String getProjectToolkitProperty(String projectName,String propertyName) {
+		return handler.getProjectToolkitProperty(projectName,propertyName);
 	}
 	/**
 	 * Query a block in the gateway for list of the blocks connected to the named port. 
@@ -292,8 +292,8 @@ public class GatewayScriptFunctions   {
 	 * @param tagpath the path for the tag of interest.
 	 * @return a list of blocks associated with the tag.
 	 */
-	public static List<SerializableBlockStateDescriptor> listBlocksForTag(String tagpath) {
-		return handler.listBlocksForTag(tagpath);
+	public static List<SerializableBlockStateDescriptor> listBlocksForTag(String projectName,String tagpath) {
+		return handler.listBlocksForTag(projectName,tagpath);
 	}
 	public static List<SerializableBlockStateDescriptor> listBlocksGloballyDownstreamOf(ProjectResourceId diagramId, String blockName) {
 		return handler.listBlocksGloballyDownstreamOf(diagramId, blockName);
@@ -313,8 +313,8 @@ public class GatewayScriptFunctions   {
 	 * @param className fully qualified class name of blocks to be listed
 	 * @return a list of state descriptors for blocks that are of the specified class.
 	 */
-	public static List<SerializableBlockStateDescriptor> listBlocksOfClass(String className) {
-		return handler.listBlocksOfClass(className);
+	public static List<SerializableBlockStateDescriptor> listBlocksOfClass(String projectName,String className) {
+		return handler.listBlocksOfClass(projectName,className);
 	}
 	/**
 	 * Query a diagram in the gateway for list of its blocks that are upstream
@@ -480,8 +480,8 @@ public class GatewayScriptFunctions   {
 	 * Rename a SQLTag given its path and new name. The path must contain the
 	 * provider name in brackets.
 	 */
-	public static void renameTag(String name,String path) {
-		handler.renameTag(name,path);
+	public static void renameTag(String projectName,String name,String path) {
+		handler.renameTag(projectName,name,path);
 	}
 	/**
 	 * Execute reset() on the specified block
@@ -553,8 +553,8 @@ public class GatewayScriptFunctions   {
 	 * @param app name of the application
 	 * @param state new state of the diagrams
 	 */
-	public static void setApplicationState(String app,String state) {
-		handler.setApplicationState(app,state);
+	public static void setApplicationState(String projectName,String app,String state) {
+		handler.setApplicationState(projectName,app,state);
 	}
 	/** Change the binding on a block property in such a way that the block and UI
 	 * are notified of the change.
@@ -603,16 +603,16 @@ public class GatewayScriptFunctions   {
 	 *        ~ msecs. A positive number implies that the test time is
 	 *        in the past.
 	 */
-	public static void setTestTimeOffset(long offset) {
-		handler.setTestTimeOffset(offset);
+	public static void setTestTimeOffset(String projectName,long offset) {
+		handler.setTestTimeOffset(projectName,offset);
 	}
 	/**
 	 * Set a clock rate factor. This must NOT be exercised in a production environment.
 	 * This is a hook for testing only.
 	 * @param factor the amount to speed up or slow down the clock.
 	 */
-	public static void setTimeFactor(Double factor) {
-		handler.setTimeFactor(factor);
+	public static void setTimeFactor(String projectName,Double factor) {
+		handler.setTimeFactor(projectName,factor);
 	}
 	/**
 	 * Save a value into the HSQL database table associated with the toolkit. The 
@@ -620,8 +620,8 @@ public class GatewayScriptFunctions   {
 	 * @param propertyName name of the property for which a value is to be set
 	 * @param value the new value of the property.
 	 */
-	public static void setToolkitProperty(String propertyName,String value) {
-		handler.setToolkitProperty(propertyName,value);
+	public static void setProjectToolkitProperty(String projectName,String propertyName,String value) {
+		handler.setProjectToolkitProperty(projectName,propertyName,value);
 	}
 	/**
 	 * Define a watermark for a diagram. Setting an empty string is equivalent to
@@ -650,7 +650,7 @@ public class GatewayScriptFunctions   {
 	 * Direct the blocks in a specified diagram to report their
 	 * status values. This is in order to update the UI. 
 	 */
-	public static void triggerStatusNotifications() {
-		handler.triggerStatusNotifications();
+	public static void triggerStatusNotifications(String projectName) {
+		handler.triggerStatusNotifications(projectName);
 	}
 }

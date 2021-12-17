@@ -1037,8 +1037,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		auxData.setLists(new HashMap<>());
 		auxData.setMapLists(new HashMap<>());
 		auxData.getProperties().put("Name", sap.getName());   // Use as a key when fetching
-		String db       = (sap.getState().equals(DiagramState.ISOLATED)?requestHandler.getIsolationDatabase():requestHandler.getProductionDatabase());
-		String provider = (sap.getState().equals(DiagramState.ISOLATED)?requestHandler.getIsolationTagProvider():requestHandler.getProductionTagProvider());
+		String db       = (sap.getState().equals(DiagramState.ISOLATED)?requestHandler.getProjectIsolationDatabase(context.getProjectName()):requestHandler.getProjectProductionDatabase(context.getProjectName()));
+		String provider = (sap.getState().equals(DiagramState.ISOLATED)?requestHandler.getProjectIsolationTagProvider(context.getProjectName()):requestHandler.getProjectProductionTagProvider(context.getProjectName()));
 		ScriptExtensionManager extensionManager = ScriptExtensionManager.getInstance();
 		Script script = extensionManager.createExtensionScript(ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.GET_AUX_OPERATION, provider);
 		extensionManager.runScript(context.getScriptManager(), script, sap.getPath().toString(),auxData,db);
@@ -1057,8 +1057,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		auxData.setMapLists(new HashMap<>());
 		auxData.getProperties().put("Name", sf.getName());   // Use as a key when fetching
 	
-		String db       = (sf.getState().equals(DiagramState.ISOLATED)?requestHandler.getIsolationDatabase():requestHandler.getProductionDatabase());
-		String provider = (sf.getState().equals(DiagramState.ISOLATED)?requestHandler.getIsolationTagProvider():requestHandler.getProductionTagProvider());
+		String db       = (sf.getState().equals(DiagramState.ISOLATED)?requestHandler.getProjectIsolationDatabase(context.getProjectName()):requestHandler.getProjectProductionDatabase(context.getProjectName()));
+		String provider = (sf.getState().equals(DiagramState.ISOLATED)?requestHandler.getProjectIsolationTagProvider(context.getProjectName()):requestHandler.getProjectProductionTagProvider(context.getProjectName()));
 		ScriptExtensionManager extensionManager = ScriptExtensionManager.getInstance();
 		Script script = extensionManager.createExtensionScript(ScriptConstants.FAMILY_CLASS_NAME, ScriptConstants.GET_AUX_OPERATION, provider);
 		extensionManager.runScript(context.getScriptManager(), script, sf.getPath().toString(),auxData,db);
@@ -1175,8 +1175,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		
 		public void saveApplicationAuxData(SerializableApplication sa) {
 			ScriptExtensionManager extensionManager = ScriptExtensionManager.getInstance();
-			String db       = (sa.getState().equals(DiagramState.ISOLATED)?requestHandler.getIsolationDatabase():requestHandler.getProductionDatabase());
-			String provider = (sa.getState().equals(DiagramState.ISOLATED)?requestHandler.getIsolationTagProvider():requestHandler.getProductionTagProvider());
+			String db       = (sa.getState().equals(DiagramState.ISOLATED)?requestHandler.getProjectIsolationDatabase(context.getProjectName()):requestHandler.getProjectProductionDatabase(context.getProjectName()));
+			String provider = (sa.getState().equals(DiagramState.ISOLATED)?requestHandler.getProjectIsolationTagProvider(context.getProjectName()):requestHandler.getProjectProductionTagProvider(context.getProjectName()));
 			Script script = extensionManager.createExtensionScript(ScriptConstants.FAMILY_CLASS_NAME, ScriptConstants.GET_AUX_OPERATION, provider);
 			extensionManager.runScript(context.getScriptManager(), script, sa.getPath().toString(),sa.getAuxiliaryData(),db);
 
@@ -1909,7 +1909,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		public void actionPerformed(ActionEvent e) {
 			// We don't know which state we're coming from for the various diagrams.
 			// Tell the gateway to set the state of all diagrams under the application
-			requestHandler.setApplicationState(app.getName(), treeState.name());
+			requestHandler.setApplicationState(context.getProjectName(),app.getName(), treeState.name());
 			
 			// Set the nodes in the navtree.
 			recursivelyUpdateNodeState(app,treeState);
@@ -1987,8 +1987,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		 * Update resources within the project in memory. Do not do a final project save.
 		 */
 		public void actionPerformed(ActionEvent e) {
-			db       = requestHandler.getProductionDatabase();
-			provider = requestHandler.getProductionTagProvider();
+			db       = requestHandler.getProjectProductionDatabase(context.getProjectName());
+			provider = requestHandler.getProjectProductionTagProvider(context.getProjectName());
 			synchronizeNode(root,provider,db);
 		}	
 		

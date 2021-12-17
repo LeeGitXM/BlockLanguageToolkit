@@ -56,6 +56,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 
 	/**
 	 * Remove all current diagrams from the controller.
+	 * @param projectName project to which this applies
 	 */
 	@Override
 	public void clearController() {
@@ -92,11 +93,15 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		ProjectResourceId resourceId = new ProjectResourceId(projectName,rtype,path);
 		return resourceId;
 	}
+	/**
+	 * Create a SQLTag memory tag given its path and data type.
+	 * Create in both production and isolation
+	 */
 	@Override
-	public void createTag(DataType type,String path) {
+	public void createTag(String projectName,DataType type,String path) {
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-									BLTProperties.MODULE_ID, "createTag",type,path);
+									BLTProperties.MODULE_ID, "createTag",projectName,type,path);
 		}
 		catch(Exception ge) {
 			log.infof("%s.createTag: GatewayException (%s)",CLSS,ge.getMessage());
@@ -104,13 +109,13 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	}
 	/**
 	 * Delete a SQLTag given its path. The path must contain the
-	 * provider name in brackets.
+	 * provider name in brackets. Delete from both production and isolation
 	 */
 	@Override
-	public void deleteTag(String path) {
+	public void deleteTag(String projectName,String path) {
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-									BLTProperties.MODULE_ID, "deleteTag",path);
+									BLTProperties.MODULE_ID, "deleteTag",projectName,path);
 		}
 		catch(Exception ge) {
 			log.infof("%s.deleteTag: GatewayException (%s)",CLSS,ge.getMessage());
@@ -317,7 +322,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 					BLTProperties.MODULE_ID, "getDatasourceNames");
 		}
 		catch(Exception ge) {
-			log.infof("%s.getControllerState: GatewayException (%s)",CLSS,ge.getMessage());
+			log.infof("%s.getDatasourceNames: GatewayException (%s)",CLSS,ge.getMessage());
 		}
 		return names;
 	}
@@ -442,8 +447,8 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * @return isolation database name
 	 */
 	@Override
-	public String getIsolationDatabase() {
-		return getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_DATABASE);
+	public String getProjectIsolationDatabase(String projectName) {
+		return getProjectToolkitProperty(projectName,ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_DATABASE);
 	}
 
 	/**
@@ -451,24 +456,24 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * @return isolation tag provider name
 	 */
 	@Override
-	public String getIsolationTagProvider() {
-		return getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER);
+	public String getProjectIsolationTagProvider(String projectName) {
+		return getProjectToolkitProperty(projectName,ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER);
 	}
 	/**
 	 * Find the name of the production datasource from the internal SQLite database. 
 	 * @return production database name
 	 */
 	@Override
-	public String getProductionDatabase() {
-		return getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_DATABASE);
+	public String getProjectProductionDatabase(String projectName) {
+		return getProjectToolkitProperty(projectName,ToolkitProperties.TOOLKIT_PROPERTY_DATABASE);
 	}
 	/**
 	 * Find the name of the isolation tag provider from the internal SQLite database. 
 	 * @return production tag provider name
 	 */
 	@Override
-	public String getProductionTagProvider() {
-		return getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER);
+	public String getProjectProductionTagProvider(String projectName) {
+		return getProjectToolkitProperty(projectName,ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER);
 	}
 	
 	/**
@@ -567,16 +572,16 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * @param propertyName name of the property for which a value is to be returned
 	 * @return the value of the specified property.
 	 */
-	public String getToolkitProperty(String propertyName) {
+	public String getProjectToolkitProperty(String projectName,String propertyName) {
 		String result = null;
 		//log.infof("%s.getToolkitProperty ... %s",TAG,propertyName);
 		try {
 			result = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "getToolkitProperty",propertyName);
-			log.tracef("%s.getToolkitProperty ... %s = %s",CLSS,propertyName,result);
+					BLTProperties.MODULE_ID, "getProjectToolkitProperty",projectName,propertyName);
+			log.tracef("%s.getProjectToolkitProperty ... %s:%s = %s",CLSS,projectName,propertyName,result);
 		}
 		catch(Exception ge) {
-			log.infof("%s.getToolkitProperty: GatewayException (%s:%s)",CLSS,ge.getClass().getName(),ge.getMessage());
+			log.infof("%s.getProjectToolkitProperty: GatewayException (%s:%s)",CLSS,ge.getClass().getName(),ge.getMessage());
 		}
 		return result;
 	}
@@ -644,11 +649,11 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	}
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<SerializableBlockStateDescriptor> listBlocksForTag(String tagpath) {
+	public List<SerializableBlockStateDescriptor> listBlocksForTag(String projectName,String tagpath) {
 		List<SerializableBlockStateDescriptor> result = null;
 		try {
 			result = (List<SerializableBlockStateDescriptor> )GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "listBlocksForTag",tagpath);
+					BLTProperties.MODULE_ID, "listBlocksForTag",projectName,tagpath);
 		}
 		catch(Exception ge) {
 			log.infof("%s.queryDiagram: GatewayException (%s)",CLSS,ge.getMessage());
@@ -680,11 +685,11 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<SerializableBlockStateDescriptor> listBlocksOfClass(String className) {
+	public List<SerializableBlockStateDescriptor> listBlocksOfClass(String projectName,String className) {
 		List<SerializableBlockStateDescriptor> result = null;
 		try {
 			result = (List<SerializableBlockStateDescriptor>)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "listBlocksOfClass",className);
+					BLTProperties.MODULE_ID, "listBlocksOfClass",projectName,className);
 		}
 		catch(Exception ge) {
 			log.infof("%s.listBlocksOfClass: GatewayException (%s)",CLSS,ge.getMessage());
@@ -961,10 +966,10 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * Rename a SQLTag given its path and new name. The path must contain the
 	 * provider name in brackets.
 	 */
-	public void renameTag(String name,String path) {
+	public void renameTag(String projectName,String name,String path) {
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-				BLTProperties.MODULE_ID, "renameTag",name,path);
+				BLTProperties.MODULE_ID, "renameTag",projectName,name,path);
 		}
 		catch(Exception ge) {
 			log.infof("%s.renameTag: GatewayException (%s)",CLSS,ge.getMessage());
@@ -1114,11 +1119,11 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * @param state new diagram state
 	 */
 	@Override
-	public void setApplicationState(String appname, String state) {
-		log.infof("%s.setApplicationState for %s to %s...",CLSS,appname,state);
+	public void setApplicationState(String projectName,String appname, String state) {
+		log.infof("%s.setApplicationState for %s:%s to %s...",CLSS,projectName,appname,state);
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "setApplicationState",appname,state);
+					BLTProperties.MODULE_ID, "setApplicationState",projectName,appname,state);
 		}
 		catch(Exception ex) {
 			log.infof("%s.setApplicationState: Exception (%s)",CLSS,ex.getMessage());
@@ -1271,18 +1276,18 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * @param factor the amount to speed up or slow down the clock. A value greater
 	 *        than one implies an accelerated clock.
 	 */
-	public void setTimeFactor(double factor) {
-		log.infof("%s.setTimeFactor ... %s",CLSS,String.valueOf(factor));
+	public void setProjectTimeFactor(String projectName,double factor) {
+		log.infof("%s.setProjectTimeFactor ... %s",CLSS,String.valueOf(factor));
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "setTimeFactor",factor);
+					BLTProperties.MODULE_ID, "setProjectTimeFactor",projectName,factor);
 		}
 		catch(Exception ge) {
-			log.infof("%s.setTimeFactor: GatewayException (%s:%s)",CLSS,ge.getClass().getName(),ge.getMessage());
+			log.infof("%s.setProjectTimeFactor: GatewayException (%s:%s)",CLSS,ge.getClass().getName(),ge.getMessage());
 		}
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.SFC_MODULE_ID, "setTimeFactor",factor);
+					BLTProperties.SFC_MODULE_ID, "setProjectTimeFactor",factor);
 		}
 		catch(Exception ignore) {}
 	}
@@ -1296,18 +1301,18 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * @param value the new value of the property.
 	 */
 	@Override
-	public void setToolkitProperty(String propertyName,String value) {
-		log.tracef("%s.setToolkitProperty ... %s=%s",CLSS,propertyName,value);
+	public void setProjectToolkitProperty(String projectName,String propertyName,String value) {
+		log.tracef("%s.setToolkitProperty ... %s:%s=%s",CLSS,projectName,propertyName,value);
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "setToolkitProperty",propertyName,value);
+					BLTProperties.MODULE_ID, "setProjectToolkitProperty",projectName,propertyName,value);
 		}
 		catch(Exception ge) {
-			log.infof("%s.setToolkitProperty: GatewayException (%s:%s)",CLSS,ge.getClass().getName(),ge.getMessage());
+			log.infof("%s.setProjectToolkitProperty: GatewayException (%s:%s)",CLSS,ge.getClass().getName(),ge.getMessage());
 		}
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.SFC_MODULE_ID, "setToolkitProperty",propertyName,value);
+					BLTProperties.SFC_MODULE_ID, "setProjectToolkitProperty",projectName,propertyName,value);
 		}
 		catch(Exception ignore) {}
 	}
@@ -1360,15 +1365,15 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	}
 
 	/**
-	 * Direct the blocks in a specified diagram to report their
+	 * Direct the blocks in diagrams in a specified project to report their
 	 * status values. This is in order to update the UI. 
 	 */
 	@Override
-	public void triggerStatusNotifications() {
+	public void triggerStatusNotifications(String projectName) {
 		//log.infof("%s.triggerStatusNotifications...",TAG);
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "triggerStatusNotifications");
+					BLTProperties.MODULE_ID, "triggerStatusNotifications",projectName);
 		}
 		catch(Exception ex) {
 			log.infof("%s.triggerStatusNotifications: Exception (%s:%s)",CLSS,ex.getClass().getName(),ex.getMessage());

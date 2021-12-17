@@ -133,7 +133,7 @@ public class ExternalInterfaceConfigurationDialog extends JDialog {
 			if(name.length()>0) box.addItem(name);
 		}
 		box.setToolTipText(rb.getString(bundle));
-		String currentValue = requestHandler.getToolkitProperty(key);
+		String currentValue = requestHandler.getProjectToolkitProperty(context.getProjectName(),key);
 		if( (currentValue==null || currentValue.length()==0) && !isIsolation) currentValue = context.getDefaultDatasourceName();
 		if( currentValue!=null ) box.setSelectedItem(currentValue);
 		else {
@@ -159,7 +159,7 @@ public class ExternalInterfaceConfigurationDialog extends JDialog {
 		for(TagProviderProps meta:providers) {
 			if( meta.getName().length()>0 ) box.addItem(meta.getName());
 		}
-		String currentValue = requestHandler.getToolkitProperty(key);
+		String currentValue = requestHandler.getProjectToolkitProperty(context.getProjectName(),key);
 		if( currentValue.length()==0 && !isIsolation ) currentValue = context.getDefaultTagProviderName();
 		box.setSelectedItem(currentValue);
 		// If the current value wasn't in the list, then add it.
@@ -178,7 +178,7 @@ public class ExternalInterfaceConfigurationDialog extends JDialog {
 		field.setText("1.0");  // Default
 		field.setForeground(Color.BLACK);
 		if( key.length()>0 ) {
-			String currentValue = requestHandler.getToolkitProperty(key);
+			String currentValue = requestHandler.getProjectToolkitProperty(context.getProjectName(),key);
 			if( currentValue!=null && currentValue.length()>0 ) {
 				field.setText(currentValue);
 			}
@@ -280,20 +280,20 @@ public class ExternalInterfaceConfigurationDialog extends JDialog {
 	private void saveEntries() {
 		// For these we set new values for the next time queried
 		if(mainDatabaseBox.getSelectedIndex()>=0 ) { 
-			requestHandler.setToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_DATABASE,mainDatabaseBox.getSelectedItem().toString() );
+			requestHandler.setProjectToolkitProperty(context.getProjectName(),ToolkitProperties.TOOLKIT_PROPERTY_DATABASE,mainDatabaseBox.getSelectedItem().toString() );
 		}
 		if(secondaryDatabaseBox.getSelectedIndex()>=0 ) { 
-			requestHandler.setToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_DATABASE,secondaryDatabaseBox.getSelectedItem().toString() );
+			requestHandler.setProjectToolkitProperty(context.getProjectName(),ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_DATABASE,secondaryDatabaseBox.getSelectedItem().toString() );
 		}
 		if(mainProviderBox.getSelectedIndex()>=0 ) {
-			requestHandler.setToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER,mainProviderBox.getSelectedItem().toString() );
+			requestHandler.setProjectToolkitProperty(context.getProjectName(),ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER,mainProviderBox.getSelectedItem().toString() );
 		}
 		if(secondaryProviderBox.getSelectedIndex()>=0 ) {
-			requestHandler.setToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER,secondaryProviderBox.getSelectedItem().toString() );
+			requestHandler.setProjectToolkitProperty(context.getProjectName(),ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER,secondaryProviderBox.getSelectedItem().toString() );
 		}
-		requestHandler.setToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_TIME,secondaryTimeFactorField.getText());
+		requestHandler.setProjectToolkitProperty(context.getProjectName(),ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_TIME,secondaryTimeFactorField.getText());
 		// This causes an immediate active update.
 		double speedup = Double.parseDouble(secondaryTimeFactorField.getText());  // We've already validated the field ...
-		requestHandler.setTimeFactor(speedup);
+		requestHandler.setProjectTimeFactor(context.getProjectName(),speedup);
 	}
 }

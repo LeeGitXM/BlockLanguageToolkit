@@ -388,7 +388,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 				List<SerializableBlockStateDescriptor> sources = appRequestHandler.listSourcesForSink(getResourceId(),
 						view.getId().toString());
 				String tp = prop.getBinding();
-				appRequestHandler.deleteTag(tp);
+				appRequestHandler.deleteTag(resourceId.getProjectName(),tp);
 				if( sources.size()>0 ) {
 					StringBuffer msg = new StringBuffer("The following SourceConnections are no longer connected:\n");
 					for(SerializableBlockStateDescriptor source:sources) {
@@ -574,7 +574,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		
 		// Finally tell the Gateway to report status - on everything
 		// Theoretically this is overkill because the notification handler should know about all of this.
-		if( appRequestHandler!=null) appRequestHandler.triggerStatusNotifications();
+		if( appRequestHandler!=null) appRequestHandler.triggerStatusNotifications(context.getProjectName());
 	}
 	
 	/**
@@ -659,7 +659,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			}
 			else {
 				if(tagPath!=null && !tagPath.isEmpty() ) {
-					List<SerializableBlockStateDescriptor> blocks = appRequestHandler.listBlocksForTag(tagPath);
+					List<SerializableBlockStateDescriptor> blocks = appRequestHandler.listBlocksForTag(context.getProjectName(),tagPath);
 					for(SerializableBlockStateDescriptor desc:blocks) {
 						if( desc.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK) &&
 								!desc.getIdString().equals(pblock.getId().toString())) {

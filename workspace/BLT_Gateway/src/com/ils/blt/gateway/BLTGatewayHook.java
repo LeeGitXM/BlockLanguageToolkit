@@ -17,7 +17,7 @@ import com.ils.blt.gateway.engine.ModelManager;
 import com.ils.blt.gateway.persistence.ToolkitRecordListener;
 import com.ils.blt.gateway.proxy.ProxyHandler;
 import com.ils.blt.gateway.wicket.ToolkitStatusPanel;
-import com.ils.common.persistence.ToolkitRecord;
+import com.ils.common.persistence.ToolkitProjectRecord;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.licensing.LicenseState;
 import com.inductiveautomation.ignition.common.project.Project;
@@ -47,16 +47,16 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	private transient GatewayRpcDispatcher dispatcher = null;
 	private transient ModelManager mmgr = null;
 	private final LoggerEx log;
-	private ToolkitRecord record = null;
+	private ToolkitProjectRecord record = null;
 	private final ControllerRequestHandler requestHandler;
-	private ToolkitRecordListener recordListener;
+	private ToolkitRecordListener recordListener = null;
 	
 	public static BLTGatewayHook get(GatewayContext ctx) { 
 		return (BLTGatewayHook)ctx.getModule(BLTProperties.MODULE_ID);
 	}
 	
 	public BLTGatewayHook() {
-		log = LogUtil.getLogger(getClass().getPackageName());
+		log = LogUtil.getLogger(getClass().getPackage().getName());
 		log.info(CLSS+".Initializing BLT Gateway hook FOO");
 		BundleUtil.get().addBundle(prefix, getClass(), BUNDLE_NAME);
 		requestHandler = ControllerRequestHandler.getInstance();
@@ -83,10 +83,10 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 		log.info(CLSS+".setup - done setting up scriptExtensionManager.");
 		// Register the ToolkitRecord making sure that the table exists
 		try {
-			context.getSchemaUpdater().updatePersistentRecords(ToolkitRecord.META);
+			context.getSchemaUpdater().updatePersistentRecords(ToolkitProjectRecord.META);
 		}
 		catch(SQLException sqle) {
-			log.error("BLTGatewayHook.setup: Error registering ToolkitRecord",sqle);
+			log.error("BLTGatewayHook.setup: Error registering ToolkitProjectRecord",sqle);
 		}
 		log.info(CLSS+".setup() complete");
 	}
@@ -109,7 +109,7 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 		}
 
 		// Register for changes to our permanent settings
-		ToolkitRecord.META.addRecordListener(recordListener);
+		ToolkitProjectRecord.META.addRecordListener(recordListener);
 		controller.start(context);     // Start the controller once the project has been analyzed
 		
 		context.getProjectManager().addProjectListener(mmgr);  
@@ -118,9 +118,9 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 
 	@Override
 	public void shutdown() {
-		ToolkitRecord.META.removeRecordListener(recordListener);
+		ToolkitProjectRecord.META.removeRecordListener(recordListener);
 		context.getProjectManager().removeProjectListener(mmgr);
-		BlockExecutionController.getInstance().stop();
+		BlockExecutionController.getInstance().stop(context);
 	}
 
 	@Override
@@ -154,6 +154,6 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 		}
 	}
 	
-	public ToolkitRecord getPersistentRecord() { return record; }
+	public ToolkitProjectRecord getPersistentRecord() { return record; }
 
 }

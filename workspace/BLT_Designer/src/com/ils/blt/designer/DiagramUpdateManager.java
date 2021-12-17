@@ -103,7 +103,7 @@ public void run() {
 					List<ChangeOperation> ops = new ArrayList<>();
 					ops.add(co);
 					gw.pushProject(ops);
-					requestHandler.triggerStatusNotifications();
+					requestHandler.triggerStatusNotifications(context.getProjectName());
 				}
 				catch(ResourceNotFoundException rnf) {
 					log.warnf("%s.run: Project resource not found %s:%s (%s)",CLSS,res.getResourceId().getProjectName(),

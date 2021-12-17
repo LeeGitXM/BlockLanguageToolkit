@@ -134,11 +134,11 @@ public class BlockPropertyEditor extends AbstractPropertyEditor   {
 		String tagPath = path;
 		if( path!=null && !path.isEmpty() ) {
 			if( diagram.getState().equals(DiagramState.ISOLATED)) {
-				String provider = requestHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER);
+				String provider = requestHandler.getProjectToolkitProperty(context.getProjectName(),ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER);
 				tagPath = TagUtility.replaceProviderInPath(provider,path);
 			}
 			else {
-				String provider = requestHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER);
+				String provider = requestHandler.getProjectToolkitProperty(context.getProjectName(),ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER);
 				tagPath = TagUtility.replaceProviderInPath(provider,path);
 			}
 		}

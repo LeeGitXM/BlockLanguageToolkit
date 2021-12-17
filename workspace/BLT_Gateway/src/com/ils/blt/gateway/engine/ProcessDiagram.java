@@ -108,10 +108,10 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 	public String getProviderForState(DiagramState s) {
 		String provider = "";
 		if( s.equals(DiagramState.ISOLATED)) {
-			provider = ControllerRequestHandler.getInstance().getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER);
+			provider = requestHandler.getProjectToolkitProperty(getProjectName(),ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER);
 		}
 		else {
-			provider = ControllerRequestHandler.getInstance().getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER);	
+			provider = requestHandler.getProjectToolkitProperty(getProjectName(),ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER);	
 		}
 		return provider;
 	}
@@ -189,8 +189,8 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 				pb = blockFactory.blockFromSerializable(getResourceId(),sb,getProjectName());
 				if( pb!=null ) {
 					// Set the proper timer
-					if(DiagramState.ACTIVE.equals(state)) pb.setTimer(controller.getTimer());
-					else if(DiagramState.ISOLATED.equals(state)) pb.setTimer(controller.getSecondaryTimer());
+					if(DiagramState.ACTIVE.equals(state)) pb.setTimer(controller.getTimer(pb.getProjectName()));
+					else if(DiagramState.ISOLATED.equals(state)) pb.setTimer(controller.getSecondaryTimer(pb.getProjectName()));
 					pb.setProjectName(resourceId.getProjectName());
 					blocks.put(pb.getBlockId(), pb);
 					if( DEBUG ) log.infof("%s.createBlocks: New block %s(%d)", CLSS, pb.getName(), pb.hashCode());
@@ -665,8 +665,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 	 */
 	public void updateBlockTimers(DiagramState s) {
 		// Set the proper timer
-		WatchdogTimer timer = controller.getTimer();
-		if( DiagramState.ISOLATED.equals(s) )  timer = controller.getSecondaryTimer();
+		WatchdogTimer timer = controller.getTimer(getProjectName());
 		for(ProcessBlock blk:blocks.values()) {
 			blk.setTimer(timer);
 		}
@@ -778,10 +777,10 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 		if(DiagramState.DISABLED.equals(getState())) return;
 		String provider = null;
 		if( DiagramState.ISOLATED.equals(getState())) {
-			provider = ControllerRequestHandler.getInstance().getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER);
+			provider = ControllerRequestHandler.getInstance().getProjectToolkitProperty(getProjectName(),ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER);
 		}
 		else {
-			provider = ControllerRequestHandler.getInstance().getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER);
+			provider = ControllerRequestHandler.getInstance().getProjectToolkitProperty(getProjectName(),ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER);
 		}
 		
 		for( ProcessBlock pb:getProcessBlocks()) {

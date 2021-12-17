@@ -51,6 +51,7 @@ import com.ils.blt.gateway.proxy.ProxyHandler;
 import com.ils.common.ClassList;
 import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.help.HelpRecordProxy;
+import com.ils.common.persistence.ToolkitProjectRecordHandler;
 import com.ils.common.persistence.ToolkitProperties;
 import com.ils.common.persistence.ToolkitRecordHandler;
 import com.ils.common.tag.TagFactory;
@@ -91,7 +92,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	private final BlockExecutionController controller = BlockExecutionController.getInstance();
 	private final ScriptExtensionManager extensionManager = ScriptExtensionManager.getInstance();
 	private final PythonRequestHandler pyHandler;
-	private ToolkitRecordHandler toolkitRecordHandler;
+	private ToolkitProjectRecordHandler toolkitRecordHandler;
 	private final UtilityFunctions fcns;
 	private TagFactory tagHandler; 
     
@@ -143,6 +144,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * Clear any watermark on a diagram. 
 	 * @param diagramId UUID of the diagram as a string
 	 */
+	@Override
 	public void clearWatermark(ProjectResourceId diagramId) {
 		controller.sendWatermarkNotification(diagramId,"");
 	}
@@ -202,20 +204,20 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * Create the tag in both production and isolation
 	 */
 	@Override
-	public void createTag(DataType type,String path) {
-		String provider = getProductionTagProvider();
+	public void createTag(String projectName,DataType type,String path) {
+		String provider = getProjectProductionTagProvider(projectName);
 		tagHandler.createTag(provider,path,type.name());
-		provider = getIsolationTagProvider();
+		provider = getProjectIsolationTagProvider(projectName);
 		tagHandler.createTag(provider,path,type.name());
 	}
 	/**
 	 * Delete the tag for both production and isolation
 	 */
 	@Override
-	public void deleteTag(String path) {
-		String provider = getProductionTagProvider();
+	public void deleteTag(String projectName,String path) {
+		String provider = getProjectProductionTagProvider(projectName);
 		tagHandler.deleteTag(provider,path);
-		provider = getIsolationTagProvider();
+		provider = getProjectIsolationTagProvider(projectName);
 		tagHandler.deleteTag(provider,path);
 	}
 	@Override
@@ -303,6 +305,9 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		}
 		return property;
 	}
+	/**
+	 * The list of prototypes depends on the module, not the project.
+	 */
 	@SuppressWarnings("rawtypes")
 	@Override
 	public synchronized List<PalettePrototype> getBlockPrototypes() {
@@ -374,43 +379,27 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		}
 		return state;
 	}
-	/**
-	 * Query DiagramModel for classes connected at the beginning and end of the connection to obtain a list
-	 * of permissible port names. If the connection instance already exists in the Gateway model,
-	 * then return the actual port connections.
-	 * 
-	 * @param projectId id of the project containing the diagram
-	 * @param resourceId id of the diagram expressed as a project resource
-	 * @param connectionId identifier of the connection of interest
-	 * @param attributes the table to fill and return
-	 * @return a table of attributes for the connection
-	 */
-	public Hashtable<String,Hashtable<String,String>> getConnectionAttributes(ProjectResourceId resourceId,String connectionId,Hashtable<String,Hashtable<String,String>> attributes) {
-		// Find the connection object
-		Connection cxn  = controller.getConnection(resourceId, connectionId);
-		return attributes;
-	}
+
 	@Override
 	public String getControllerState() {
 		return getExecutionState();
 	}
-	
 
 	/**
 	 * Find the parent application or diagram of the entity referenced by
 	 * the supplied id. Test the state and return the name of the appropriate
 	 * database.  
-	 * @param nodeId identifier for node
+	 * @param resid identifier for node
 	 * @return database name
 	 */
 	@Override
-	public String getDatabaseForId(ProjectResourceId nodeId) {
+	public String getDatabaseForId(ProjectResourceId resid) {
 		// Search up the tree for a parent diagram or application. Determine the
 		// state. Unless we find a diagram, we don't return any connection name.
 		String db = "NONE";
 		DiagramState ds = DiagramState.DISABLED;
 		try {
-			ProcessNode node = controller.getProcessNode(nodeId);
+			ProcessNode node = controller.getProcessNode(resid);
 			while( node!=null ) {
 				if( node instanceof ProcessDiagram ) {
 					ds = ((ProcessDiagram)node).getState();
@@ -428,14 +417,14 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 				node = controller.getProcessNode(parent);
 			}
 			if(ds.equals(DiagramState.ACTIVE)) {
-				db = getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_DATABASE);
+				db = getProjectToolkitProperty(resid.getProjectName(),ToolkitProperties.TOOLKIT_PROPERTY_DATABASE);
 			}
 			else if(ds.equals(DiagramState.ISOLATED)) {
-				db = getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_DATABASE);
+				db = getProjectToolkitProperty(resid.getProjectName(),ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_DATABASE);
 			}
 		}
 		catch(IllegalArgumentException iae) {
-			log.warnf("%s.getDatabaseForId: %s is an unknown ID (%s)",CLSS,nodeId,iae.getMessage());
+			log.warnf("%s.getDatabaseForId: %s is an unknown ID (%s)",CLSS,resid,iae.getMessage());
 		}
 		return db;
 	}
@@ -548,8 +537,8 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * @return isolation database name
 	 */
 	@Override
-	public String getIsolationDatabase() {
-		return getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_DATABASE);
+	public String getProjectIsolationDatabase(String projectName) {
+		return getProjectToolkitProperty(projectName,ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_DATABASE);
 	}
 
 	/**
@@ -557,24 +546,24 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * @return isolation tag provider name
 	 */
 	@Override
-	public String getIsolationTagProvider() {
-		return getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER);
+	public String getProjectIsolationTagProvider(String projectName) {
+		return getProjectToolkitProperty(projectName,ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER);
 	}
 	/**
 	 * Find the name of the production datasource from the internal SQLite database. 
 	 * @return production database name
 	 */
 	@Override
-	public String getProductionDatabase() {
-		return getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_DATABASE);
+	public String getProjectProductionDatabase(String projectName) {
+		return getProjectToolkitProperty(projectName,ToolkitProperties.TOOLKIT_PROPERTY_DATABASE);
 	}
 	/**
 	 * Find the name of the isolation tag provider from the internal SQLite database. 
 	 * @return production tag provider name
 	 */
 	@Override
-	public String getProductionTagProvider() {
-		return getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER);
+	public String getProjectProductionTagProvider(String projectName) {
+		return getProjectToolkitProperty(projectName,ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER);
 	}
 	@Override
 	public Object getPropertyBinding(ProjectResourceId diagramId, String blockId,String propertyName) {
@@ -623,17 +612,17 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * Find the parent application or diagram of the entity referenced by
 	 * the supplied id. Test the state and return the name of the appropriate
 	 * provider.  
-	 * @param nodeId identifier for node
+	 * @param resid identifier for node
 	 * @return database name
 	 */
 	@Override
-	public String getProviderForId(ProjectResourceId nodeId) {
+	public String getProviderForId(ProjectResourceId resid) {
 		// Search up the tree for a parent diagram or application. Determine the
 		// state. Unless we find a diagram, we don't return any connection name.
 		String provider = "NONE";
 		DiagramState ds = DiagramState.DISABLED;
 		try {
-			ProcessNode node = controller.getProcessNode(nodeId);
+			ProcessNode node = controller.getProcessNode(resid);
 			while( node!=null ) {
 				if( node instanceof ProcessDiagram ) {
 					ds = ((ProcessDiagram)node).getState();
@@ -648,14 +637,14 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 				node = controller.getParentNode(node);
 			}
 			if(ds.equals(DiagramState.ACTIVE)) {
-				provider = getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER);
+				provider = getProjectToolkitProperty(resid.getProjectName(),ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER);
 			}
 			else if(ds.equals(DiagramState.ISOLATED)) {
-				provider = getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER);
+				provider = getProjectToolkitProperty(resid.getProjectName(),ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER);
 			}
 		}
 		catch(IllegalArgumentException iae) {
-			log.warnf("%s.getProviderForId: %s is an illegal UUID (%s)",CLSS,nodeId.getResourcePath().getPath().toString(),iae.getMessage());
+			log.warnf("%s.getProviderForId: %s is an illegal UUID (%s)",CLSS,resid.getResourcePath().getPath().toString(),iae.getMessage());
 		}
 		return provider;
 	}
@@ -685,8 +674,8 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * On a failure to find the property, an empty string is returned.
 	 */
 	@Override
-	public String getToolkitProperty(String propertyName) {
-		return toolkitRecordHandler.getToolkitProperty(propertyName);
+	public String getProjectToolkitProperty(String projectName,String propertyName) {
+		return toolkitRecordHandler.getToolkitProjectProperty(projectName,propertyName);
 	}
 	
 	/**
@@ -755,17 +744,19 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	}
 	
 	@Override
-	public synchronized List<SerializableBlockStateDescriptor> listBlocksForTag(String tagpath) {
+	public synchronized List<SerializableBlockStateDescriptor> listBlocksForTag(String projectName,String tagpath) {
 		List<SerializableBlockStateDescriptor> results = new ArrayList<>();
 		if( tagpath!=null && !tagpath.isEmpty() ) {
 			List<SerializableResourceDescriptor> descriptors = controller.getDiagramDescriptors();
 			for(SerializableResourceDescriptor descriptor:descriptors) {
 				ProcessDiagram diagram = controller.getDiagram(descriptor.getResourceId());
 				if( diagram!=null) {
-					Collection<ProcessBlock> blocks = diagram.getProcessBlocks();
-					for(ProcessBlock block:blocks) {
-						if( block.usesTag(tagpath)) {
-							results.add(block.toDescriptor());
+					if( diagram.getProjectName().equals(projectName)) {
+						Collection<ProcessBlock> blocks = diagram.getProcessBlocks();
+						for(ProcessBlock block:blocks) {
+							if( block.usesTag(tagpath)) {
+								results.add(block.toDescriptor());
+							}
 						}
 					}
 				}
@@ -842,14 +833,16 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * @param className fully qualified class name of blocks to be listed
 	 * @return a list of state descriptors for blocks that are of the specified class.
 	 */
-	public List<SerializableBlockStateDescriptor> listBlocksOfClass(String className) {
-		log.debugf("%s.listBlocksOfClass: %s",CLSS,className);
+	public List<SerializableBlockStateDescriptor> listBlocksOfClass(String projectName,String className) {
+		log.debugf("%s.listBlocksOfClass: %s:%s",CLSS,projectName,className);
 		List<SerializableBlockStateDescriptor> descriptors = new ArrayList<>();
 		List<SerializableResourceDescriptor> diagrams = controller.getDiagramDescriptors();
 		for(SerializableResourceDescriptor diag:diagrams) {
-			List<SerializableBlockStateDescriptor> blocks = listBlocksInDiagram(diag.getResourceId());
-			for(SerializableBlockStateDescriptor desc:blocks) {
-				if( desc.getClassName().equals(className)) descriptors.add(desc);
+			if(diag.getProjectName().equals(projectName)) {
+				List<SerializableBlockStateDescriptor> blocks = listBlocksInDiagram(diag.getResourceId());
+				for(SerializableBlockStateDescriptor desc:blocks) {
+					if( desc.getClassName().equals(className)) descriptors.add(desc);
+				}
 			}
 		}
 		log.debugf("%s.listBlocksOfClass: %s returning %d descriptors",CLSS,className,descriptors.size());
@@ -1299,10 +1292,10 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * Rename the tag in both production and isolation
 	 */
 	@Override
-	public void renameTag(String name,String path) {
-		String provider = getProductionTagProvider();
+	public void renameTag(String projectName,String name,String path) {
+		String provider = getProjectProductionTagProvider(projectName);
 		tagHandler.renameTag(provider,name,path);
-		provider = getIsolationTagProvider();
+		provider = getProjectIsolationTagProvider(projectName);
 		tagHandler.renameTag(provider,name,path);
 	}
 	@Override
@@ -1396,7 +1389,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * @param state to which the application and all its descendants will be set
 	 */
 	@Override
-	public void setApplicationState(String appname, String state) {
+	public void setApplicationState(String projectName,String appname, String state) {
 		try {
 			DiagramState ds = DiagramState.valueOf(state.toUpperCase());
 			for(SerializableResourceDescriptor srd:getDiagramDescriptors()) {
@@ -1404,7 +1397,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 				if( app==null) continue;
 				if( app.getName().equals(appname)) {
 					ProcessDiagram pd = controller.getDiagram(srd.getResourceId());
-					if( pd!=null) {
+					if( pd!=null && pd.getProjectName().equals(projectName)) {
 						pd.setState(ds);    // Must notify designer
 					}
 				}
@@ -1542,7 +1535,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 */
 	public void setContext(GatewayContext cntx) {
 		this.context = cntx;
-		toolkitRecordHandler = new ToolkitRecordHandler(context); 
+		toolkitRecordHandler = new ToolkitProjectRecordHandler(context); 
 		tagHandler = new TagFactory(context);
 	}
 
@@ -1572,13 +1565,13 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 *        ~ msecs. A positive number implies that the test time is
 	 *        in the past.
 	 */
-	public void setTestTimeOffset(long offset) {
-		AcceleratedWatchdogTimer timer = controller.getSecondaryTimer();
+	public void setTestTimeOffset(String projectName,long offset) {
+		AcceleratedWatchdogTimer timer = controller.getSecondaryTimer(projectName);
 		timer.setTestTimeOffset(offset);
 	}
 	
-	public void setTimeFactor(Double factor) {
-		AcceleratedWatchdogTimer timer = controller.getSecondaryTimer();
+	public void setTimeFactor(String projectName,Double factor) {
+		AcceleratedWatchdogTimer timer = controller.getSecondaryTimer(projectName);
 		timer.setFactor(factor.doubleValue());
 	}
 
@@ -1587,8 +1580,8 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * Set properties in the ORM database.
 	 */
 	@Override
-	public void setToolkitProperty(String propertyName, String value) {
-		toolkitRecordHandler.setToolkitProperty(propertyName, value);
+	public void setProjectToolkitProperty(String projectName,String propertyName, String value) {
+		toolkitRecordHandler.setToolkitProjectProperty(projectName,propertyName, value);
 		controller.clearCache();                 // Force retrieval production/isolation constants from HSQLdb on next access.
 	}
 
@@ -1602,16 +1595,17 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	public void startController() {
 		BlockExecutionController.getInstance().start(context);
 	}
-
+	@Override
 	public void stopController() {
-		BlockExecutionController.getInstance().stop();
+		BlockExecutionController.getInstance().stop(context);
 	}
 
 	/**
 	 * Direct blocks in all diagrams to report their status for a UI update.
 	 */
-	public void triggerStatusNotifications() {
-		BlockExecutionController.getInstance().triggerStatusNotifications();
+	@Override
+	public void triggerStatusNotifications(String projectName) {
+		BlockExecutionController.getInstance().triggerStatusNotifications(projectName);
 		log.debugf("%s.triggerStatusNotifications: Complete.",CLSS);
 	}
 

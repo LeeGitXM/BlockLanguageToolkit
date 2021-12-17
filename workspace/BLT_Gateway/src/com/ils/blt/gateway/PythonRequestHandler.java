@@ -115,8 +115,8 @@ public class PythonRequestHandler   {
 		while( node!=null) {
 			if(node instanceof ProcessDiagram ) {
 				ProcessDiagram diagram = (ProcessDiagram)node;
-				if( diagram.getState().equals(DiagramState.ISOLATED)) dbName = controller.getIsolationDatabase();
-				else dbName = controller.getProductionDatabase();
+				if( diagram.getState().equals(DiagramState.ISOLATED)) dbName = controller.getProjectIsolationDatabase(resourceId.getProjectName());
+				else dbName = controller.getProjectProductionDatabase(resourceId.getProjectName());
 				break;
 			}
 			node = controller.getParentNode(node);
@@ -130,14 +130,14 @@ public class PythonRequestHandler   {
 	/**
 	 * @return the name of the isolation datasource
 	 */
-	public String getIsolationDatabase() {
-		return controller.getIsolationDatabase();
+	public String getProjectIsolationDatabase(String projectName) {
+		return controller.getProjectIsolationDatabase(projectName);
 	}
 	/**
 	 * @return the name of the production datasource
 	 */
-	public String getProductionDatabase() {
-		return controller.getProductionDatabase();
+	public String getProjectProductionDatabase(String projectName) {
+		return controller.getProjectProductionDatabase(projectName);
 	}
 	/**
 	 * @param uuidString identifier for the diagram, a string version of a UUID
@@ -152,8 +152,8 @@ public class PythonRequestHandler   {
 			while(  node!=null) {
 				if(node instanceof ProcessDiagram ) {
 					ProcessDiagram diagram = (ProcessDiagram)node;
-					if( diagram.getState().equals(DiagramState.ISOLATED)) provider = controller.getIsolationProvider();
-					else provider = controller.getProductionProvider();
+					if( diagram.getState().equals(DiagramState.ISOLATED)) provider = controller.getProjectIsolationProvider(resid.getProjectName());
+					else provider = controller.getProjectProductionProvider(resid.getProjectName());
 					break;
 				}
 				node = controller.getParentNode(node);

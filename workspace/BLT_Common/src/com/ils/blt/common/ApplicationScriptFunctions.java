@@ -52,18 +52,18 @@ public class ApplicationScriptFunctions   {
 		return handler.createResourceId(projectName, path, type);
 	}
 	/**
-	 * Create a SQLTag memory tag given its path and data type. The path must contain the
-	 * provider name in brackets.
+	 * Create a SQLTag memory tag given its path and data type.
+	 * Create in both production and isolation
 	 */
-	public static void createTag(DataType type,String path) {
-		handler.createTag(type, path);
+	public static void createTag(String projectName,DataType type,String path) {
+		handler.createTag(projectName,type, path);
 	}
 	/**
 	 * Delete a SQLTag given its path. The path must contain the
-	 * provider name in brackets.
+	 * provider name in brackets. Delete from both production and isolation
 	 */
-	public static void deleteTag(String path) {
-		handler.deleteTag(path);
+	public static void deleteTag(String projectName,String path) {
+		handler.deleteTag(projectName,path);
 	}
 	/**
 	 * Determine whether or not the indicated diagram is known to the controller.
@@ -169,29 +169,29 @@ public class ApplicationScriptFunctions   {
 	 * Find the name of the isolation datasource from the internal SQLite database. 
 	 * @return isolation database name
 	 */
-	public static String getIsolationDatabase() {
-		return handler.getIsolationDatabase();
+	public static String getProjectIsolationDatabase(String projectName) {
+		return handler.getProjectIsolationDatabase(projectName);
 	}
 	/**
 	 * Find the name of the isolation tag provider from the internal SQLite database. 
 	 * @return isolation tag provider name
 	 */
-	public static String getIsolationTagProvider() {
-		return handler.getIsolationTagProvider();
+	public static String getProjectIsolationTagProvider(String projectName) {
+		return handler.getProjectIsolationTagProvider(projectName);
 	}
 	/**
 	 * Find the name of the production datasource from the internal SQLite database. 
 	 * @return production database name
 	 */
-	public static String getProductionDatabase() {
-		return handler.getProductionDatabase();
+	public static String getProjectProductionDatabase(String projectName) {
+		return handler.getProjectProductionDatabase(projectName);
 	}
 	/**
 	 * Find the name of the isolation tag provider from the internal SQLite database. 
 	 * @return production tag provider name
 	 */
-	public static String getProductionTagProvider() {
-		return handler.getProductionTagProvider();
+	public static String getProjectProductionTagProvider(String projectName) {
+		return handler.getProjectProductionTagProvider(projectName);
 	}
 	/**
 	 * @param diagramId identifier of the diagram owning the block, a String
@@ -225,8 +225,8 @@ public class ApplicationScriptFunctions   {
 	 * @param propertyName name of the property for which a value is to be returned
 	 * @return the value of the specified property.
 	 */
-	public static String getToolkitProperty(String propertyName) {
-		return handler.getToolkitProperty(propertyName);
+	public static String getProjectToolkitProperty(String projectName,String propertyName) {
+		return handler.getProjectToolkitProperty(projectName,propertyName);
 	}
 	/**
 	 * Retrieve the configured browser path from the ORM database HelpRecord. This is used for 
@@ -266,8 +266,8 @@ public class ApplicationScriptFunctions   {
 	 * @param tagpath the path for the tag of interest.
 	 * @return a list of blocks associated with the tag.
 	 */
-	public static List<SerializableBlockStateDescriptor> listBlocksForTag(String tagpath) {
-		return handler.listBlocksForTag(tagpath);
+	public static List<SerializableBlockStateDescriptor> listBlocksForTag(String projectName,String tagpath) {
+		return handler.listBlocksForTag(projectName,tagpath);
 	}
 	/**
 	 * Query a diagram in the gateway for list of its blocks that are downstream
@@ -303,8 +303,8 @@ public class ApplicationScriptFunctions   {
 	 * @param className fully qualified class name of blocks to be listed
 	 * @return a list of state descriptors for blocks that are of the specified class.
 	 */
-	public static List<SerializableBlockStateDescriptor> listBlocksOfClass(String className) {
-		return handler.listBlocksOfClass(className);
+	public static List<SerializableBlockStateDescriptor> listBlocksOfClass(String projectName,String className) {
+		return handler.listBlocksOfClass(projectName,className);
 	}
 	/**
 	 * Query a diagram in the gateway for list of its blocks that are upstream
@@ -467,8 +467,8 @@ public class ApplicationScriptFunctions   {
 	 * Rename a SQLTag given its path and new name. The path must contain the
 	 * provider name in brackets.
 	 */
-	public static void renameTag(String name,String path) {
-		handler.renameTag(name,path);
+	public static void renameTag(String projectName,String name,String path) {
+		handler.renameTag(projectName,name,path);
 	}
 	/**
 	 * Execute reset() on the specified block
@@ -539,8 +539,8 @@ public class ApplicationScriptFunctions   {
 	 * @param appname name of the application
 	 * @param state new diagram state
 	 */
-	public static void setApplicationState(String appname, String state) {
-		handler.setApplicationState(appname, state);
+	public static void setApplicationState(String projectName,String appname, String state) {
+		handler.setApplicationState(projectName,appname, state);
 	}
 	/** 
 	 * Drive a block to the specified state. Other than the state change, there are normally
@@ -600,8 +600,8 @@ public class ApplicationScriptFunctions   {
 	 * This method is provided as a hook for test frameworks.
 	 * @param factor the amount to speed up or slow down the clock.
 	 */
-	public static void setTimeFactor(double factor) {
-		handler.setTimeFactor(factor);
+	public static void setProjectTimeFactor(String projectName,double factor) {
+		handler.setProjectTimeFactor(projectName,factor);
 	}
 	/**
 	 * Save a value into the HSQL database table associated with the toolkit. The 
@@ -609,8 +609,8 @@ public class ApplicationScriptFunctions   {
 	 * @param propertyName name of the property for which a value is to be set
 	 * @param value the new value of the property.
 	 */
-	public static void setToolkitProperty(String propertyName,String value) {
-		handler.setToolkitProperty(propertyName,value);
+	public static void setProjectToolkitProperty(String projectName,String propertyName,String value) {
+		handler.setProjectToolkitProperty(projectName,propertyName,value);
 	}
 	/**
 	 * Define a watermark for a diagram. 
@@ -635,8 +635,8 @@ public class ApplicationScriptFunctions   {
 	 * Direct the blocks in a specified diagram to report their
 	 * status values. This is in order to update the UI. 
 	 */
-	public static void triggerStatusNotifications() {
-		handler.triggerStatusNotifications();
+	public static void triggerStatusNotifications(String projectName) {
+		handler.triggerStatusNotifications(projectName);
 	}
 	/**
 	 * Execute the setAux extension function in Gateway scope for the specified resource

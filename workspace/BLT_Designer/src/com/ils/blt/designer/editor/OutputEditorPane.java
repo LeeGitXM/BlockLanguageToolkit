@@ -122,12 +122,13 @@ public class OutputEditorPane extends JPanel implements ActionListener  {
 			}
 		}
 		ApplicationRequestHandler requestHandler = new ApplicationRequestHandler();
-		String db = requestHandler.getProductionDatabase();
-		String tag = requestHandler.getProductionTagProvider();
+		String projectName = editor.getContext().getProjectName();
+		String db = requestHandler.getProjectProductionDatabase(projectName);
+		String tag = requestHandler.getProjectProductionTagProvider(projectName);
 		SerializableApplication app = ((ApplicationPropertyEditor)editor).getApplication();
 		if( app.getState().equals(DiagramState.ISOLATED)) {
-			db = requestHandler.getIsolationDatabase();
-			tag = requestHandler.getIsolationTagProvider();
+			db = requestHandler.getProjectIsolationDatabase(projectName);
+			tag = requestHandler.getProjectIsolationTagProvider(projectName);
 		}
 		feedbackMethodComboBox.setToolTipText("The technique used to combine multiple recommendations for the this output!");
 		feedbackMethodComboBox.setPreferredSize(ApplicationPropertyEditor.COMBO_SIZE);

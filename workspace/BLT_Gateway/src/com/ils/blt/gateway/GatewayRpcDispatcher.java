@@ -9,7 +9,6 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.UUID;
 
@@ -71,11 +70,11 @@ public class GatewayRpcDispatcher   {
 	public void clearController() {
 		requestHandler.clearController();
 	}
-	public void createTag(DataType type,String path) {
-		requestHandler.createTag(type, path);
+	public void createTag(String projectName,DataType type,String path) {
+		requestHandler.createTag(projectName,type, path);
 	}
-	public void deleteTag(String path) {
-		requestHandler.deleteTag(path);
+	public void deleteTag(String projectName,String path) {
+		requestHandler.deleteTag(projectName,path);
 	}
 	/**
 	 * This should always succeed because we create a block in the gateway whenever we 
@@ -155,39 +154,7 @@ public class GatewayRpcDispatcher   {
 	public String getBlockState(ProjectResourceId diagramId, String blockName) {
 		return requestHandler.getBlockState(diagramId, blockName);
 	}
-	/**
-	 * Deserialize the incoming defaults, add/update from model, re-serialize.
-	 * @param proj project identifier
-	 * @param res resource identifier
-	 * @param connectionId id of the connection
-	 * @param json connection attributes as JSON
-	 * @return the JSON string
-	 */
-	public String getConnectionAttributes(ProjectResourceId resourceId,String connectionId,String json) {
-		log.debugf("%s.getConnectionAttributes: %s:%s =\n%s",CLSS,resourceId.getResourcePath().getPath().toString(),connectionId,json);
-		
-		ObjectMapper mapper = new ObjectMapper();
-		Hashtable<String, Hashtable<String, String>> propertiesTable;
-		try {
-			propertiesTable = mapper.readValue(json, new TypeReference<Hashtable<String,Hashtable<String,String>>>(){});
-			Hashtable<String,Hashtable<String,String>> results = requestHandler.getConnectionAttributes(resourceId,connectionId,propertiesTable);
-			log.debugf("%s: created table = %s",CLSS,results);
-			json =  mapper.writeValueAsString(results);
-			log.debugf("%s: JSON=%s",CLSS,json);
-		} 
-		catch (JsonParseException jpe) {
-			log.warnf("%s: getConnectionAttributes: parsing exception (%s)",CLSS,jpe.getLocalizedMessage());
-		} 
-		catch (JsonMappingException jme) {
-			log.warnf("%s: getConnectionAttributes: mapping exception(%s)",CLSS,jme.getLocalizedMessage());
-		} 
-		catch (IOException ioe) {
-			log.warnf("%s: getConnectionAttributes: io exception(%s)",CLSS,ioe.getLocalizedMessage());
-		}
-		return json;
-	}
-	
-	
+
 	public String getControllerState() {
 		return requestHandler.getExecutionState();
 	}
@@ -313,8 +280,8 @@ public class GatewayRpcDispatcher   {
 	public Date getTimeOfLastBlockStateChange(ProjectResourceId diagramId, String blockName) {
 		return requestHandler.getTimeOfLastBlockStateChange(diagramId,blockName);
 	}
-	public String getToolkitProperty(String propertyName) {
-		return requestHandler.getToolkitProperty(propertyName);
+	public String getProjectToolkitProperty(String projectName,String propertyName) {
+		return requestHandler.getProjectToolkitProperty(projectName,propertyName);
 	}
 	/**
 	 * @return the configured browser path (for Windows) from the ORM database HelpRecord 
@@ -335,8 +302,8 @@ public class GatewayRpcDispatcher   {
 		return requestHandler.listBlocksDownstreamOf(diagramId, blockName);
 	}
 	
-	public List<SerializableBlockStateDescriptor> listBlocksForTag(String tagpath) {
-		return requestHandler.listBlocksForTag(tagpath);
+	public List<SerializableBlockStateDescriptor> listBlocksForTag(String projectName,String tagpath) {
+		return requestHandler.listBlocksForTag(projectName,tagpath);
 	}
 	public List<SerializableBlockStateDescriptor> listBlocksGloballyDownstreamOf(ProjectResourceId diagramId, String blockName) {
 		return requestHandler.listBlocksGloballyDownstreamOf(diagramId, blockName);
@@ -347,8 +314,8 @@ public class GatewayRpcDispatcher   {
 	public List<SerializableBlockStateDescriptor> listBlocksInDiagram(ProjectResourceId diagramId) {
 		return requestHandler.listBlocksInDiagram(diagramId);
 	}
-	public List<SerializableBlockStateDescriptor> listBlocksOfClass(String className) {
-		return requestHandler.listBlocksOfClass(className);
+	public List<SerializableBlockStateDescriptor> listBlocksOfClass(String projectName,String className) {
+		return requestHandler.listBlocksOfClass(projectName,className);
 	}
 	public List<SerializableBlockStateDescriptor> listBlocksUpstreamOf(ProjectResourceId diagramId, String blockName) {
 		return requestHandler.listBlocksUpstreamOf(diagramId, blockName);
@@ -443,8 +410,8 @@ public class GatewayRpcDispatcher   {
 	 * Rename a SQLTag given its path and new name. The path must contain the
 	 * provider name in brackets.
 	 */
-	public void renameTag(String name,String path) {
-		requestHandler.renameTag(name,path);
+	public void renameTag(String projectName,String name,String path) {
+		requestHandler.renameTag(projectName,name,path);
 	}
 	/**
 	 * Reset a block in a diagram given string forms of their UUID
@@ -504,8 +471,8 @@ public class GatewayRpcDispatcher   {
 	 * @param appname
 	 * @param state new state as a String
 	 */
-	public void setApplicationState(String appname, String state) {
-		requestHandler.setApplicationState(appname,state);
+	public void setApplicationState(String projectName,String appname, String state) {
+		requestHandler.setApplicationState(projectName,appname,state);
 	}
 
 	/** Set all changed properties for a block. 
@@ -601,16 +568,16 @@ public class GatewayRpcDispatcher   {
 	 *        ~ msecs. A positive number implies that the test time is
 	 *        in the past.
 	 */
-	public void setTestTimeOffset(Long offset) {
-		requestHandler.setTestTimeOffset(offset.longValue());
+	public void setTestTimeOffset(String projectName,Long offset) {
+		requestHandler.setTestTimeOffset(projectName,offset.longValue());
 	}
 
-	public void setTimeFactor(Double factor) {
-		requestHandler.setTimeFactor(factor);
+	public void setTimeFactor(String projectName,Double factor) {
+		requestHandler.setTimeFactor(projectName,factor);
 	}
 
-	public void setToolkitProperty(String propertyName,String value) {
-		requestHandler.setToolkitProperty(propertyName,value);
+	public void setProjectToolkitProperty(String projectName,String propertyName,String value) {
+		requestHandler.setProjectToolkitProperty(projectName,propertyName,value);
 	}
 	
 	/**
@@ -633,9 +600,9 @@ public class GatewayRpcDispatcher   {
 	/**
 	 * Trigger status notifications for all current diagrams and their blocks.
 	 */
-	public void triggerStatusNotifications() {
+	public void triggerStatusNotifications(String projectName) {
 		try {
-			requestHandler.triggerStatusNotifications();
+			requestHandler.triggerStatusNotifications(projectName);
 		}
 		catch( Exception ex) {
 			log.errorf(CLSS+".triggerStatusNotification: EXCEPTION", ex);

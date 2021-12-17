@@ -101,7 +101,7 @@ public class BlockFactory  {
 		}
 
 		if( block!=null ) {
-			block.setTimer(controller.getTimer());  // Initial value
+			block.setTimer(controller.getTimer(block.getProjectName()));  // Initial value
 			updateBlockFromSerializable(block,sb);
 		}
 		return block;

@@ -80,7 +80,7 @@ public class TagListener implements TagChangeListener   {
 	/**
 	 * Clear the subscription maps so that subscriptions will not be re-established
 	 * when the listener is re-started. This method is only valid when the listener
-	 * is stopped.
+	 * is stopped. We clear only the subscriptions in the specified project.
 	 */
 	public synchronized void clearSubscriptions() {
 		if( stopped ) {
@@ -99,7 +99,6 @@ public class TagListener implements TagChangeListener   {
 	 *     b) We are sharing the tag, then update the property by reading the tag.
 	 */
 	public synchronized void defineSubscription(ProcessBlock block,BlockProperty property,String tagPath) {
-		
 		if( log.isTraceEnabled() || DEBUG  ) log.infof("%s.defineSubscription: %s:%s=%s",CLSS,block.getName(),property.getName(),tagPath);
 		if( tagPath!=null && tagPath.length() >0  ) {
 			boolean needToStartSubscription = false;
