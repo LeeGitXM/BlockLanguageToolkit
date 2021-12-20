@@ -13,7 +13,7 @@
 	<property name="BLTModule.release" value="0.5" />
 	<property name="BLTModule.description" value="Block Language Toolkit" />
 	<property name="root.dir" value="${basedir}/../.." />
-	<property name="jar.dir" value="${root.dir}/external/lib" />
+	<property name="jar.dir" value="${ignition.py.lib}/../../lib/core/common" />
 	<property name="sdk.dir" value="${root.dir}/ignition-79/lib" />
 	<property name="common.jar.name" value="ils-common.jar" />
 	<property name="common.bin.dir" value="${root.dir}/ils-common/ILS_Common/bin" />

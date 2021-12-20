@@ -151,6 +151,7 @@ public class MainPanel extends BasicEditPanel {
 				block.setName(nameField.getText());
 				// Make the diagram dirty (mustard) since we aren't saving automatically - PAH 07/15/2021
 				bpe.setDiagramDirty();
+				bpe.getDiagram().updateNotificationHandlerForSave();
 			}
 			
 			// Sources and Sinks are correlated simply by their names. In order to keep the correlation
