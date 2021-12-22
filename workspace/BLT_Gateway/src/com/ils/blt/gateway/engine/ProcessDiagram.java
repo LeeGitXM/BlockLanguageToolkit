@@ -569,6 +569,9 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 	}
 	
 	public DiagramState getState() {return state;}
+	public void setState(DiagramState s) {
+		setState(s,false);
+	}
 	/**
 	 * Set the state of the diagram. Note that the state does not affect the activity 
 	 * of blocks within the diagram. It only affects the way that block results are 
@@ -580,11 +583,12 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 	 * Likewise if the state was ISOLATED, perform the same sequence.
 	 * 
 	 * @param s the new state
+	 * @param force if true execute even if there is no state change. This stops and starts the tag subscriptions.
 	 */
-	public void setState(DiagramState s) {
+	public void setState(DiagramState s,boolean force) {
 		if( DEBUG ) log.infof("%s.setState: %s->%s", CLSS,getState().name(),s.name());
 		// Only restart subscriptions on a change.
-		if( !s.equals(getState())) {
+		if( force || !s.equals(getState())) {
 			// Check if we need to stop current subscriptions
 			if( !DiagramState.DISABLED.equals(getState()) ) {
 				stopSubscriptions();
