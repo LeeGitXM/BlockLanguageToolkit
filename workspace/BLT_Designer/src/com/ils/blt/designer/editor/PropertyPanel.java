@@ -53,7 +53,6 @@ import com.inductiveautomation.ignition.common.sqltags.model.event.TagChangeEven
 import com.inductiveautomation.ignition.common.sqltags.model.event.TagChangeListener;
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 import com.inductiveautomation.ignition.common.sqltags.model.types.ExpressionType;
-import com.inductiveautomation.ignition.common.sqltags.model.types.TagType;
 import com.inductiveautomation.ignition.common.sqltags.parser.TagPathParser;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -337,6 +336,12 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 				// we should only do  this check if it affects the connection type.
 				if (property.getBinding()!=null ) {
 					block.modifyConnectionForTagChange(property, type);
+				}
+				// If there has been a change, update the editor and view
+				if( !oldPath.equalsIgnoreCase(tagPath)) {
+					BlockPropertyEditor editor = (BlockPropertyEditor)parent.getEditor();
+					editor.setDiagramDirty();
+					editor.getDiagram().updateNotificationHandlerForSave();editor.getDiagram().setDirty(true);
 				}
 			} 
 			else {
