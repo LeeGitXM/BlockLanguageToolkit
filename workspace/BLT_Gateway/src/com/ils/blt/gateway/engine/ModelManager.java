@@ -827,7 +827,7 @@ public class ModelManager implements ProjectListener  {
 				bts.synchBlocks(diagram);
 				diagram.updateConnections(sd.getConnections());
 				diagram.updateProperties(sd);                    // Fixes subscriptions, as necessary
-				diagram.setState(sd.getState());                 // Handle state change, if any
+				diagram.setState(sd.getState(),true);            // Handle state change, if any
 
 			}
 			// Carefully update the diagram with new features/properties.
@@ -849,7 +849,7 @@ public class ModelManager implements ProjectListener  {
 				bts.synchBlocks(diagram);
 				diagram.updateConnections(sd.getConnections());  // Adds connections that are new in update
 				diagram.updateProperties(sd);                    // Fixes subscriptions, as necessary
-				diagram.setState(sd.getState());// Handle state change, if any
+				diagram.setState(sd.getState(),true);            // Handle state change, if no change update tag subscriptions anyway. 
 			}
 
 			if( diagram!=null )  {
