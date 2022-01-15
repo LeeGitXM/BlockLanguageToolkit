@@ -125,35 +125,42 @@ public class DiscreteRateOfChange extends AbstractProcessBlock implements Proces
 		super.acceptValue(vcn);
 		QualifiedValue qv = vcn.getValue();
 		log.tracef("%s.acceptValue: Received %s",getName(),qv.getValue().toString());
-			if( qv.getQuality().isGood() ) {
-				queue.add(qv);
-				if( queue.size() >= sampleSize) {
-					double result = computeRateOfChange();
-					// Give it a new timestamp
-					lastValue = new BasicQualifiedValue(result,qv.getQuality(),qv.getTimestamp());
-					if( !isLocked() ) {
-						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
-						controller.acceptCompletionNotification(nvn);
-						notifyOfStatus(lastValue);
-					}
-					else {
-						// Even if locked, we update the current state
-						valueProperty.setValue(result);
-						controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,qv);
-					}	
-				}
-			}
-			else {
-				lastValue = new BasicQualifiedValue(new Double(Double.NaN),qv.getQuality(),qv.getTimestamp());
-				// Post bad value on output, clear queue
+		double val = Double.NaN;
+		try {
+			val = Double.parseDouble(qv.getValue().toString());
+		}
+		catch(NumberFormatException nfe) {
+			log.warnf("%s.acceptValue: Unable to convert incoming value to a double (%s)",getName(),nfe.getLocalizedMessage());
+		}
+		if( qv.getQuality().isGood() && !Double.isNaN(val) ) {
+			queue.add(qv);
+			if( queue.size() >= sampleSize) {
+				double result = computeRateOfChange();
+				// Give it a new timestamp
+				lastValue = new BasicQualifiedValue(result,qv.getQuality(),qv.getTimestamp());
 				if( !isLocked() ) {
 					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 					controller.acceptCompletionNotification(nvn);
 					notifyOfStatus(lastValue);
 				}
-				queue.clear();
+				else {
+					// Even if locked, we update the current state
+					valueProperty.setValue(result);
+					controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,qv);
+				}	
 			}
-		
+		}
+		else {
+			lastValue = new BasicQualifiedValue(new Double(Double.NaN),qv.getQuality(),qv.getTimestamp());
+			// Post bad value on output, clear queue
+			if( !isLocked() ) {
+				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
+				controller.acceptCompletionNotification(nvn);
+				notifyOfStatus(lastValue);
+			}
+			queue.clear();
+		}
+
 	}
 	
 	/**
