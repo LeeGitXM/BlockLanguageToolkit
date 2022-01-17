@@ -69,7 +69,6 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	private GatewaySessionManager sessionManager = null;
 	private ModelManager modelManager = null;
 	private final Map<String,ControlElement> controlMap;
-	private final ControllerRequestHandler requestHandler;
 	private final ExecutorService threadPool;
 	private GatewayContext context = null;
 
@@ -90,7 +89,6 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 		this.threadPool = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
 		this.controlMap = new HashMap<>();
-		this.requestHandler = ControllerRequestHandler.getInstance();
 		this.buffer = new BoundedBuffer(BUFFER_SIZE);
 		this.clearCache();
 	}
@@ -121,7 +119,6 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 			}
 			catch( InterruptedException ie ) {
 				log.error("ERROR INJECTING SIGNAL MESSAGE ", ie);
-				
 			}
 		}
 	}
@@ -173,19 +170,19 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	}
 	@Override
 	public String getProjectIsolationDatabase(String projectName) {
-		return requestHandler.getProjectToolkitProperty(projectName,ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_DATABASE);
+		return ControllerRequestHandler.getInstance().getProjectToolkitProperty(projectName,ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_DATABASE);
 	}
 	@Override
 	public String getProjectProductionDatabase(String projectName) {
-		return requestHandler.getProjectToolkitProperty(projectName,ToolkitProperties.TOOLKIT_PROPERTY_DATABASE);
+		return ControllerRequestHandler.getInstance().getProjectToolkitProperty(projectName,ToolkitProperties.TOOLKIT_PROPERTY_DATABASE);
 	}
 	@Override
 	public String getProjectIsolationProvider(String projectName) {
-		return requestHandler.getProjectToolkitProperty(projectName,ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER);
+		return ControllerRequestHandler.getInstance().getProjectToolkitProperty(projectName,ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER);
 	}
 	@Override
 	public String getProjectProductionProvider(String projectName) {
-		return requestHandler.getProjectToolkitProperty(projectName,ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER);
+		return ControllerRequestHandler.getInstance().getProjectToolkitProperty(projectName,ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER);
 	}
 	/**
 	 * NOTE: This value is a "speed-up" factor. .
@@ -194,7 +191,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	@Override
 	public double getProjectIsolationTimeFactor(String projectName) {
 		double isolationTimeFactor = Double.NaN;
-		String factor = requestHandler.getProjectToolkitProperty(projectName,ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_TIME);
+		String factor = ControllerRequestHandler.getInstance().getProjectToolkitProperty(projectName,ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_TIME);
 		if( factor.isEmpty() ) factor = "1.0";
 		try {
 			isolationTimeFactor = Double.parseDouble(factor);
@@ -217,8 +214,16 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		else          return CONTROLLER_RUNNING_STATE;
 	}
 	
-	public WatchdogTimer getTimer(String projectName) {return controlMap.get(projectName).getTimer();}
-	public AcceleratedWatchdogTimer getSecondaryTimer(String projectName) {return controlMap.get(projectName).getSecondaryTimer();}
+	public WatchdogTimer getTimer(String projectName) {
+		ControlElement ce = controlMap.get(projectName);
+		if( ce!=null ) return ce.getTimer();
+		else return null; 
+	}
+	public AcceleratedWatchdogTimer getSecondaryTimer(String projectName) {
+		ControlElement ce = controlMap.get(projectName);
+		if( ce!=null ) return ce.getSecondaryTimer();
+		else return null;
+	}
 
 	/**
 	 * Start the controller, watchdogTimer, tagListener and TagWriter. We assume that projects are
@@ -801,10 +806,10 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 			// Add a provider
 			String provider = null;
 			if( DiagramState.ISOLATED.equals(ds)) {
-				provider = requestHandler.getProjectToolkitProperty(projectName,ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER);
+				provider = ControllerRequestHandler.getInstance().getProjectToolkitProperty(projectName,ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER);
 			}
 			else {
-				provider = requestHandler.getProjectToolkitProperty(projectName,ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER);
+				provider = ControllerRequestHandler.getInstance().getProjectToolkitProperty(projectName,ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER);
 			}
 			bp.setBinding(String.format("[%s]%s", provider,binding));
 		}		

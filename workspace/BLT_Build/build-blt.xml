@@ -284,7 +284,7 @@
 	<!-- Installs BLT module in local Ignition gateway. Note that the gateway must be running for this to succeed. -->
 	<target name="deploy" depends="build,python.jars" >
 		<echo message="Installing ${BLTModule.name} on Ignition Gateway." />
-		<!-- <postmodule posturl="${local.gateway.url}" modulefile="${basedir}/BLT_Build/modules/${BLTModule.name}-module-signed.modl" /> -->
+		<postmodule posturl="${local.gateway.url}" modulefile="${basedir}/BLT_Build/modules/${BLTModule.name}-module-signed.modl" />
 	</target>	
 
 </project>

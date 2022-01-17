@@ -9,9 +9,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
+import com.ils.blt.gateway.ControllerRequestHandler;
 import com.ils.common.GeneralPurposeDataContainer;
 import com.inductiveautomation.ignition.common.StringPath;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
@@ -30,7 +30,7 @@ public class ProcessNode implements Serializable {
 	private final Map<ProjectResourceId,ProcessNode> children;   // Key by resourceId
 	protected final LoggerEx log;
 	private String name;
-	protected final ApplicationRequestHandler requestHandler;
+	protected final ControllerRequestHandler requestHandler;
 	protected ResourcePath parent;
 	protected ProjectResourceId resourceId;   // Resource set when serialized.
 	private final String CLSS = "ProcessNode";
@@ -45,7 +45,7 @@ public class ProcessNode implements Serializable {
 	 * @param type resource type as a string 
 	 */
 	public ProcessNode(String nam, ResourcePath parent, String projectName,String type) { 
-		requestHandler = new ApplicationRequestHandler();
+		requestHandler = ControllerRequestHandler.getInstance();
 		this.name = nam;
 		this.parent = parent;
 		StringPath path = StringPath.extend(parent.getPath(), nam);
@@ -62,7 +62,7 @@ public class ProcessNode implements Serializable {
 	 * @param me UUID of this node 
 	 */
 	public ProcessNode(String nam, ResourcePath parent, ProjectResourceId me) { 
-		requestHandler = new ApplicationRequestHandler();
+		requestHandler = ControllerRequestHandler.getInstance();
 		this.resourceId = me;
 		this.parent = parent;
 		this.name = nam;
