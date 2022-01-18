@@ -85,7 +85,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	protected Date stateChangeTimestamp = null;
 	protected WatchdogTimer timer = null;
 
-	protected LoggerEx log = LogUtil.getLogger(getClass().getPackageName());
+	protected LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
 	/** Properties are a dictionary of attributes keyed by property name */
 	protected final Map<String,BlockProperty> propertyMap;
 	/** Describe ports/stubs where connections join the block */

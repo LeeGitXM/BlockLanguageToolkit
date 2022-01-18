@@ -518,9 +518,9 @@ public class ModelManager implements ProjectListener  {
 	 * Start all blocks in diagrams known to this manager. Note that, even if a diagram is
 	 * DISABLED, its blocks are started. It's just that their results are not propagated.
 	 */
-	public void startBlocks(String projectName) {
+	public void startBlocks() {
 		for( ProcessNode node:nodesByResourceId.values() ) {
-			if( node instanceof ProcessDiagram && node.getProjectName().equals(projectName) ) {
+			if( node instanceof ProcessDiagram ) {
 				ProcessDiagram diagram = (ProcessDiagram)node;
 				// Start in two passes - input blocks come last
 				for( ProcessBlock pb:diagram.getProcessBlocks()) {
@@ -537,9 +537,9 @@ public class ModelManager implements ProjectListener  {
 	 * Stop all blocks in diagrams known to this manager. Presumably the controller has 
 	 * been stopped.
 	 */
-	public void stopBlocks(String projectName) {
+	public void stopBlocks() {
 		for( ProcessNode node:nodesByResourceId.values() ) {
-			if( node instanceof ProcessDiagram && node.getProjectName().equals(projectName)) {
+			if( node instanceof ProcessDiagram) {
 				ProcessDiagram diagram = (ProcessDiagram)node;
 				for( ProcessBlock pb:diagram.getProcessBlocks()) {
 					pb.stop();
@@ -601,7 +601,6 @@ public class ModelManager implements ProjectListener  {
 					if(DEBUG) log.infof("%s.projectUpdated: add/update resource %s.%s %s (%s) %s", CLSS,projectName,res.getResourceName(),
 							res.getResourcePath().getPath().toString(),
 							res.getResourceType().toString(),(res.isLocked()?"locked":"unlocked"));
-
 					analyzeResource(res,false);  // Not startup
 					countOfInteresting++;
 				}

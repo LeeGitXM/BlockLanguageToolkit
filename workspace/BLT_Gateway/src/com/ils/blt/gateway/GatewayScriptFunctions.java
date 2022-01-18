@@ -603,16 +603,16 @@ public class GatewayScriptFunctions   {
 	 *        ~ msecs. A positive number implies that the test time is
 	 *        in the past.
 	 */
-	public static void setTestTimeOffset(String projectName,long offset) {
-		handler.setTestTimeOffset(projectName,offset);
+	public static void setTestTimeOffset(long offset) {
+		handler.setTestTimeOffset(offset);
 	}
 	/**
 	 * Set a clock rate factor. This must NOT be exercised in a production environment.
 	 * This is a hook for testing only.
 	 * @param factor the amount to speed up or slow down the clock.
 	 */
-	public static void setTimeFactor(String projectName,Double factor) {
-		handler.setTimeFactor(projectName,factor);
+	public static void setTimeFactor(Double factor) {
+		handler.setTimeFactor(factor);
 	}
 	/**
 	 * Save a value into the HSQL database table associated with the toolkit. The 

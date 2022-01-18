@@ -189,8 +189,8 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 				pb = blockFactory.blockFromSerializable(getResourceId(),sb,getProjectName());
 				if( pb!=null ) {
 					// Set the proper timer
-					if(DiagramState.ACTIVE.equals(state)) pb.setTimer(controller.getTimer(pb.getProjectName()));
-					else if(DiagramState.ISOLATED.equals(state)) pb.setTimer(controller.getSecondaryTimer(pb.getProjectName()));
+					if(DiagramState.ACTIVE.equals(state)) pb.setTimer(controller.getTimer());
+					else if(DiagramState.ISOLATED.equals(state)) pb.setTimer(controller.getSecondaryTimer());
 					pb.setProjectName(resourceId.getProjectName());
 					blocks.put(pb.getBlockId(), pb);
 					if( DEBUG ) log.infof("%s.createBlocks: New block %s(%d)", CLSS, pb.getName(), pb.hashCode());
@@ -665,7 +665,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 	 */
 	public void updateBlockTimers(DiagramState s) {
 		// Set the proper timer
-		WatchdogTimer timer = controller.getTimer(getProjectName());
+		WatchdogTimer timer = controller.getTimer();
 		for(ProcessBlock blk:blocks.values()) {
 			blk.setTimer(timer);
 		}

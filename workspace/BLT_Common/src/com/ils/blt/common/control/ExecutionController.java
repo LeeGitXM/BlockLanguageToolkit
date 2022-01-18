@@ -1,5 +1,5 @@
 /*
- *   (c) 2014-2015  ILS Automation. All rights reserved.
+ *   (c) 2014-2022  ILS Automation. All rights reserved.
  *  
  *   The block controller is designed to be called from the client
  *   via RPC. All methods must be thread safe,
@@ -30,7 +30,6 @@ public interface ExecutionController  {
 	public void acceptBroadcastNotification(BroadcastNotification note);
 	public void acceptCompletionNotification(OutgoingNotification note);
 	public void acceptConnectionPostNotification(ConnectionPostNotification note);
-	public void clearCache();
 	public void clearSubscriptions(String projectName);
 	public DiagnosticDiagram getDiagram(ProjectResourceId diagramId);
 	public String getProjectIsolationDatabase(String projectName);
@@ -38,7 +37,7 @@ public interface ExecutionController  {
 	public String getProjectProductionDatabase(String projectName);
 	public ProcessBlock getProcessBlock(ProjectResourceId diagramId,String blockId);
 	public String getProjectProductionProvider(String projectName);
-	public double getProjectIsolationTimeFactor(String projectName);
+	public double getIsolationTimeFactor();
 	public String getSubscribedPath(ProcessBlock block,BlockProperty property);
 	public boolean hasActiveSubscription(ProcessBlock block,BlockProperty property,String tagPath);
 	public List<SerializableBlockStateDescriptor> listBlocksConnectedAtPort(ProjectResourceId diagramId,String blockId,String portName);

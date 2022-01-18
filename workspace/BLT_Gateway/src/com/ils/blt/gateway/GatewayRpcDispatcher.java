@@ -283,6 +283,9 @@ public class GatewayRpcDispatcher   {
 	public String getProjectToolkitProperty(String projectName,String propertyName) {
 		return requestHandler.getProjectToolkitProperty(projectName,propertyName);
 	}
+	public String getToolkitProperty(String propertyName) {
+		return requestHandler.getToolkitProperty(propertyName);
+	}
 	/**
 	 * @return the configured browser path (for Windows) from the ORM database HelpRecord 
 	 */
@@ -568,16 +571,19 @@ public class GatewayRpcDispatcher   {
 	 *        ~ msecs. A positive number implies that the test time is
 	 *        in the past.
 	 */
-	public void setTestTimeOffset(String projectName,Long offset) {
-		requestHandler.setTestTimeOffset(projectName,offset.longValue());
+	public void setTestTimeOffset(Long offset) {
+		requestHandler.setTestTimeOffset(offset.longValue());
 	}
 
-	public void setTimeFactor(String projectName,Double factor) {
-		requestHandler.setTimeFactor(projectName,factor);
+	public void setTimeFactor(Double factor) {
+		requestHandler.setTimeFactor(factor);
 	}
 
 	public void setProjectToolkitProperty(String projectName,String propertyName,String value) {
 		requestHandler.setProjectToolkitProperty(projectName,propertyName,value);
+	}
+	public void setToolkitProperty(String propertyName,String value) {
+		requestHandler.setToolkitProperty(propertyName,value);
 	}
 	
 	/**

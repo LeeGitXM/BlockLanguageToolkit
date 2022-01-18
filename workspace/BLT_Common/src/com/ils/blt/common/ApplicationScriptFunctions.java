@@ -1,5 +1,5 @@
 /**
- *   (c) 2014-2021  ILS Automation. All rights reserved.
+ *   (c) 2014-2022  ILS Automation. All rights reserved.
  *  
  */
 package com.ils.blt.common;
@@ -222,11 +222,21 @@ public class ApplicationScriptFunctions   {
 	/**
 	 * Acquire a value from the HSQL database table associated with the toolkit. A
 	 * null is returned if the string is not found.
+	 * @param projectName name of the project for which the property is associated
 	 * @param propertyName name of the property for which a value is to be returned
 	 * @return the value of the specified property.
 	 */
 	public static String getProjectToolkitProperty(String projectName,String propertyName) {
 		return handler.getProjectToolkitProperty(projectName,propertyName);
+	}
+	/**
+	 * Acquire a value from the HSQL database table associated with the toolkit. A
+	 * null is returned if the string is not found.
+	 * @param propertyName name of the property for which a value is to be returned
+	 * @return the value of the specified property.
+	 */
+	public static String getToolkitProperty(String propertyName) {
+		return handler.getToolkitProperty(propertyName);
 	}
 	/**
 	 * Retrieve the configured browser path from the ORM database HelpRecord. This is used for 
@@ -611,6 +621,9 @@ public class ApplicationScriptFunctions   {
 	 */
 	public static void setProjectToolkitProperty(String projectName,String propertyName,String value) {
 		handler.setProjectToolkitProperty(projectName,propertyName,value);
+	}
+	public static void setToolkitProperty(String propertyName,String value) {
+		handler.setToolkitProperty(propertyName,value);
 	}
 	/**
 	 * Define a watermark for a diagram. 

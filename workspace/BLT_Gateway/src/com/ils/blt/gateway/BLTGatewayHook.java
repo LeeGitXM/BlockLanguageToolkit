@@ -70,7 +70,7 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	@Override
 	public void setup(GatewayContext ctxt) {
 		context = ctxt;
-
+		log.info(CLSS+".setup()");
 		// NOTE: Get serialization exception if ModelResourceManager is saved as a class member
 		//       Exception is thrown when we try to incorporate a StatusPanel
 		ProxyHandler.getInstance().setContext(context);

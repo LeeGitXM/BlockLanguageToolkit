@@ -210,12 +210,20 @@ public interface ToolkitRequestHandler  {
 	 */
 	public Date getTimeOfLastBlockStateChange(ProjectResourceId diagramId, String blockName) ;
 	/**
+	 * Acquire a value from the HSQL database for a property associated with a project. A
+	 * null is returned if the string is not found.
+	 * @param projectName name of the project
+	 * @param propertyName name of the property for which a value is to be returned
+	 * @return the value of the specified property.
+	 */
+	public String getProjectToolkitProperty(String projectName,String propertyName) ;
+	/**
 	 * Acquire a value from the HSQL database table associated with the toolkit. A
 	 * null is returned if the string is not found.
 	 * @param propertyName name of the property for which a value is to be returned
 	 * @return the value of the specified property.
 	 */
-	public String getProjectToolkitProperty(String projectName,String propertyName) ;
+	public String getToolkitProperty(String propertyName) ;
 	/**
 	 * Retrieve the configured browser path from the ORM database HelpRecord. This is used for 
 	 * context-sensitive help.
@@ -523,12 +531,20 @@ public interface ToolkitRequestHandler  {
 	public void setDiagramState(ProjectResourceId resid, String state) ;
 	
 	/**
+	 * Save a project-specific value into the HSQL database table associated with the toolkit. The 
+	 * table contains name-value pairs, so any name is allowable.
+	 * @param projectName name of the project with which the parameter is associated
+	 * @param propertyName name of the property for which a value is to be set
+	 * @param value the new value of the property.
+	 */
+	public void setProjectToolkitProperty(String projectName,String propertyName,String value) ;
+	/**
 	 * Save a value into the HSQL database table associated with the toolkit. The 
 	 * table contains name-value pairs, so any name is allowable.
 	 * @param propertyName name of the property for which a value is to be set
 	 * @param value the new value of the property.
 	 */
-	public void setProjectToolkitProperty(String projectName,String propertyName,String value) ;
+	public void setToolkitProperty(String propertyName,String value) ;
 	/**
 	 * Define a watermark for a diagram. This is shown only in the designer. 
 	 * @param diagramId identifier of diagram to get the watermark

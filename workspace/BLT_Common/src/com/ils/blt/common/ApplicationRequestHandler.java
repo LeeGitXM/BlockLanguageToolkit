@@ -569,6 +569,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	/**
 	 * Acquire a value from the SQLite database table associated with the toolkit. A
 	 * empty string is returned if the string is not found, null if an exception is thrown.
+	 * @param projectName name of the project to which the property is associated
 	 * @param propertyName name of the property for which a value is to be returned
 	 * @return the value of the specified property.
 	 */
@@ -582,6 +583,25 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		}
 		catch(Exception ge) {
 			log.infof("%s.getProjectToolkitProperty: GatewayException (%s:%s)",CLSS,ge.getClass().getName(),ge.getMessage());
+		}
+		return result;
+	}
+	/**
+	 * Acquire a value from the SQLite database table associated with the toolkit. A
+	 * empty string is returned if the string is not found, null if an exception is thrown.
+	 * @param propertyName name of the property for which a value is to be returned
+	 * @return the value of the specified property.
+	 */
+	public String getToolkitProperty(String propertyName) {
+		String result = null;
+		//log.infof("%s.getToolkitProperty ... %s",TAG,propertyName);
+		try {
+			result = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "getToolkitProperty",propertyName);
+			log.tracef("%s.getToolkitProperty ... %s:%s = %s",CLSS,propertyName,result);
+		}
+		catch(Exception ge) {
+			log.infof("%s.getToolkitProperty: GatewayException (%s:%s)",CLSS,ge.getClass().getName(),ge.getMessage());
 		}
 		return result;
 	}
@@ -1293,16 +1313,17 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	}
 
 	/**
-	 * Save a value into the HSQL database table associated with the toolkit. The 
+	 * Save a project-dependent value into the HSQL database table associated with the toolkit. The 
 	 * table contains name-value pairs, so any name is allowable. We also execute
 	 * this method on behalf of the SFC-module in case there are any side-effects
 	 * of saving particular parameters.
+	 * @param projectName name of project with which property is associated
 	 * @param propertyName name of the property for which a value is to be set
 	 * @param value the new value of the property.
 	 */
 	@Override
 	public void setProjectToolkitProperty(String projectName,String propertyName,String value) {
-		log.tracef("%s.setToolkitProperty ... %s:%s=%s",CLSS,projectName,propertyName,value);
+		log.tracef("%s.setProjectToolkitProperty ... %s:%s=%s",CLSS,projectName,propertyName,value);
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 					BLTProperties.MODULE_ID, "setProjectToolkitProperty",projectName,propertyName,value);
@@ -1316,7 +1337,31 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		}
 		catch(Exception ignore) {}
 	}
-
+	/**
+	 * Save a value into the HSQL database table associated with the toolkit. The 
+	 * table contains name-value pairs, so any name is allowable. We also execute
+	 * this method on behalf of the SFC-module in case there are any side-effects
+	 * of saving particular parameters.
+	 * @param projectName name of project with which property is associated
+	 * @param propertyName name of the property for which a value is to be set
+	 * @param value the new value of the property.
+	 */
+	@Override
+	public void setToolkitProperty(String propertyName,String value) {
+		log.tracef("%s.setToolkitProperty ... %s:%s=%s",CLSS,propertyName,value);
+		try {
+			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "setToolkitProperty",propertyName,value);
+		}
+		catch(Exception ge) {
+			log.infof("%s.setToolkitProperty: GatewayException (%s:%s)",CLSS,ge.getClass().getName(),ge.getMessage());
+		}
+		try {
+			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.SFC_MODULE_ID, "setToolkitProperty",propertyName,value);
+		}
+		catch(Exception ignore) {}
+	}
 	/**
 	 * Define a watermark for a diagram. This is shown only in the designer. 
 	 * @param diagramId identifier of diagram to get the watermark

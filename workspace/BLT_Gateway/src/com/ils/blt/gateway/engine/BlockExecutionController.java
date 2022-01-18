@@ -68,11 +68,15 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	private final LoggerEx log;
 	private GatewaySessionManager sessionManager = null;
 	private ModelManager modelManager = null;
-	private final Map<String,ControlElement> controlMap;
+	// This is the single map of project-specific control elements
 	private final ExecutorService threadPool;
 	private GatewayContext context = null;
 
 	private final BoundedBuffer buffer;
+	private final WatchdogTimer watchdogTimer;
+	private final AcceleratedWatchdogTimer secondaryWatchdogTimer;
+	private final TagListener tagListener;
+	
 	private TagValidator tagValidator = null;
 	private TagReader tagReader = null;
 	private TagWriter tagWriter = null;
@@ -88,9 +92,10 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	private BlockExecutionController() {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 		this.threadPool = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
-		this.controlMap = new HashMap<>();
 		this.buffer = new BoundedBuffer(BUFFER_SIZE);
-		this.clearCache();
+		this.tagListener = new TagListener(this);
+		this.watchdogTimer = new WatchdogTimer("MainTimer");
+		this.secondaryWatchdogTimer = new AcceleratedWatchdogTimer("SecondaryTimer");
 	}
 
 	/**
@@ -160,14 +165,6 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 			catch( InterruptedException ie ) {}
 		}
 	}
-
-	/**
-	 * Clear cached values to guarantee that next access forces a read from persistent storage.
-	 */
-	@Override
-	public void clearCache() {
-		controlMap.clear();
-	}
 	@Override
 	public String getProjectIsolationDatabase(String projectName) {
 		return ControllerRequestHandler.getInstance().getProjectToolkitProperty(projectName,ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_DATABASE);
@@ -189,9 +186,9 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	 * @return
 	 */
 	@Override
-	public double getProjectIsolationTimeFactor(String projectName) {
+	public double getIsolationTimeFactor() {
 		double isolationTimeFactor = Double.NaN;
-		String factor = ControllerRequestHandler.getInstance().getProjectToolkitProperty(projectName,ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_TIME);
+		String factor = ControllerRequestHandler.getInstance().getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_TIME);
 		if( factor.isEmpty() ) factor = "1.0";
 		try {
 			isolationTimeFactor = Double.parseDouble(factor);
@@ -214,16 +211,13 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		else          return CONTROLLER_RUNNING_STATE;
 	}
 	
-	public WatchdogTimer getTimer(String projectName) {
-		ControlElement ce = controlMap.get(projectName);
-		if( ce!=null ) return ce.getTimer();
-		else return null; 
-	}
-	public AcceleratedWatchdogTimer getSecondaryTimer(String projectName) {
-		ControlElement ce = controlMap.get(projectName);
-		if( ce!=null ) return ce.getSecondaryTimer();
-		else return null;
-	}
+	/**
+	 * The project should exist and be in the map.
+	 * @param projectName
+	 * @return
+	 */
+	public WatchdogTimer getTimer() 					{ return this.watchdogTimer; }
+	public AcceleratedWatchdogTimer getSecondaryTimer() { return this.secondaryWatchdogTimer; }
 
 	/**
 	 * Start the controller, watchdogTimer, tagListener and TagWriter. We assume that projects are
@@ -234,38 +228,31 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		this.context = ctx;
 		log.infof("%s: ============================ STARTED ===================================",CLSS);
 		if(!stopped) return; 
-		
+
 		sessionManager = context.getGatewaySessionManager();
 		stopped = false;
 		this.notificationThread = new Thread(this, "BlockExecutionController");
 		notificationThread.setDaemon(true);
 		notificationThread.start();
+		watchdogTimer.start();
+		// NOTE: The watchdog uses the reciprocal of this ...
+		secondaryWatchdogTimer.setFactor(getIsolationTimeFactor());
+		secondaryWatchdogTimer.start();
+
+		sessionManager = context.getGatewaySessionManager();
+
 		// Prepare tag readers/writers
-		tagReader = new TagReader(context);
-		tagValidator = new TagValidator(context);
-		tagWriter = new TagWriter(context);
-		for(String name:context.getProjectManager().getProjectNames()) {
-			ControlElement e = new ControlElement();
-			controlMap.put(name, e);
-			
-			WatchdogTimer watchdogTimer = new WatchdogTimer("MainTimer:"+name);
-			e.setTimer(watchdogTimer);
-			watchdogTimer.start();
-			
-			// NOTE: The watchdog uses the reciprocal of this ...
-			AcceleratedWatchdogTimer secondaryWatchdogTimer = new AcceleratedWatchdogTimer("SecondaryTimer:"+name);
-			secondaryWatchdogTimer.setFactor(getProjectIsolationTimeFactor(name));
-			secondaryWatchdogTimer.start();
-			
-			// Activate all of the blocks in the diagram.
-			modelManager.startBlocks(name);
-			// Once blocks are started, start tag subscriptions
-			TagListener listener = new TagListener(this);
-			listener.setTagReader(tagReader);
-			listener.restartSubscriptions(context);
-			e.setTagListener(listener);
-		}
+		this.tagReader = new TagReader(context);
+		this.tagValidator = new TagValidator(context);
+		this.tagWriter = new TagWriter(context);
+
+		// Activate all of the blocks in the diagram.
+		modelManager.startBlocks();
+		// Once blocks are started, start tag subscriptions
+		tagListener.setTagReader(tagReader);
+		tagListener.restartSubscriptions(context);
 	}
+	
 	
 	/**
 	 * Stop the controller, watchdogTimer, tagListener and TagWriter. Set all
@@ -278,14 +265,12 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		if(notificationThread!=null) {
 			notificationThread.interrupt();
 		}
-		for(String name:context.getProjectManager().getProjectNames()) {
-			ControlElement e = controlMap.get(name);
-			e.getTagListener().stop();
-			e.getSecondaryTimer().stop();
-			e.getTimer().stop();
-			// Shutdown all of the blocks in the project.
-			modelManager.stopBlocks(name);
-		}
+		tagListener.stop();
+		secondaryWatchdogTimer.stop();
+		watchdogTimer.stop();
+			
+		modelManager.stopBlocks();  // Shutdown all of the blocks defined in the gateway.
+		
 		log.infof("%s: STOPPED",CLSS);
 	}
 	public  void setDelegate(ModelManager resmgr) { this.modelManager = resmgr; }
@@ -470,13 +455,11 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	 */
 	@Override
 	public void clearSubscriptions(String projectName) {
-		TagListener listener = controlMap.get(projectName).getTagListener();
-		listener.clearSubscriptions();
+		tagListener.clearSubscriptions();
 	}
 	@Override
 	public String getSubscribedPath(ProcessBlock block,BlockProperty property) {
-		String projectName = block.getProjectName();
-		return controlMap.get(projectName).getTagListener().getSubscribedPath(block,property);
+		return tagListener.getSubscribedPath(block,property);
 	}
 	@Override
 	public QualifiedValue getTagValue(ProjectResourceId diagramId,String path) {
@@ -490,10 +473,9 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	public boolean hasActiveSubscription(ProcessBlock block,BlockProperty property,String tagPath) {
 		// If the block is disabled, report true (meaning not a problem)
 		ProcessDiagram diagram = getDiagram(block.getParentId());
-		String projectName = diagram.getProjectName();
 		boolean result = true;
 		if( diagram !=null && !diagram.getState().equals(DiagramState.DISABLED)) {
-			result = controlMap.get(projectName).getTagListener().hasActiveSubscription(block, property,tagPath);
+			result = tagListener.hasActiveSubscription(block, property,tagPath);
 		}
 		return result;
 	}
@@ -509,7 +491,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 			String tagPath = property.getBinding().toString();
 			String projectName = block.getProjectName();
 			if( tagPath!=null && tagPath.length()>0) {
-				controlMap.get(projectName).getTagListener().removeSubscription(block,property,tagPath);
+				tagListener.removeSubscription(block,property,tagPath);
 			}
 		}
 	}
@@ -525,7 +507,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		String projectName = block.getProjectName();
 		guaranteeBindingHasProvider(projectName,ds,property);
 		String tagPath = property.getBinding();
-		controlMap.get(projectName).getTagListener().defineSubscription(block,property,tagPath);
+		tagListener.defineSubscription(block,property,tagPath);
 	}
 	
 	// ======================= Delegated to TagWriter ======================
@@ -813,21 +795,5 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 			}
 			bp.setBinding(String.format("[%s]%s", provider,binding));
 		}		
-	}
-	
-	/**
-	 * Class for keyed storage by ProjectName. These are the tags and timers associated with a controller.
-	 */
-	private class ControlElement {
-		private TagListener tagListener;    // Tag subscriber
-		private WatchdogTimer timer = null;
-		private AcceleratedWatchdogTimer secondaryTimer;
-
-		public TagListener  getTagListener()      { return tagListener; }
-		public WatchdogTimer  getTimer()      { return timer; }
-		public AcceleratedWatchdogTimer  getSecondaryTimer()      { return secondaryTimer; }
-		public void setTagListener(TagListener listener) { this.tagListener = listener; }
-		public void setTimer(WatchdogTimer t) { this.timer = t; }
-		public void setSecondaryTimer(AcceleratedWatchdogTimer t) { this.secondaryTimer = t; }
 	}
 }

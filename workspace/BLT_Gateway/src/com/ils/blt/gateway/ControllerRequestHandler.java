@@ -51,6 +51,7 @@ import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.help.HelpRecordProxy;
 import com.ils.common.persistence.ToolkitProjectRecordHandler;
 import com.ils.common.persistence.ToolkitProperties;
+import com.ils.common.persistence.ToolkitRecordHandler;
 import com.ils.common.tag.TagFactory;
 import com.ils.common.watchdog.AcceleratedWatchdogTimer;
 import com.inductiveautomation.ignition.common.datasource.DatasourceStatus;
@@ -89,7 +90,8 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	private final BlockExecutionController controller = BlockExecutionController.getInstance();
 	private final ScriptExtensionManager extensionManager = ScriptExtensionManager.getInstance();
 	private final PythonRequestHandler pyHandler;
-	private ToolkitProjectRecordHandler toolkitRecordHandler;
+	private ToolkitProjectRecordHandler toolkitProjectRecordHandler;
+	private ToolkitRecordHandler toolkitRecordHandler;
 	private final UtilityFunctions fcns;
 	private TagFactory tagHandler; 
     
@@ -672,7 +674,15 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 */
 	@Override
 	public String getProjectToolkitProperty(String projectName,String propertyName) {
-		return toolkitRecordHandler.getToolkitProjectProperty(projectName,propertyName);
+		return toolkitProjectRecordHandler.getToolkitProjectProperty(projectName,propertyName);
+	}
+	
+	/**
+	 * On a failure to find the property, an empty string is returned.
+	 */
+	@Override
+	public String getToolkitProperty(String propertyName) {
+		return toolkitRecordHandler.getToolkitProperty(propertyName);
 	}
 	
 	/**
@@ -1532,7 +1542,8 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 */
 	public void setContext(GatewayContext cntx) {
 		this.context = cntx;
-		toolkitRecordHandler = new ToolkitProjectRecordHandler(context); 
+		toolkitProjectRecordHandler = new ToolkitProjectRecordHandler(context);
+		toolkitRecordHandler = new ToolkitRecordHandler(context);
 		tagHandler = new TagFactory(context);
 	}
 
@@ -1562,26 +1573,31 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 *        ~ msecs. A positive number implies that the test time is
 	 *        in the past.
 	 */
-	public void setTestTimeOffset(String projectName,long offset) {
-		AcceleratedWatchdogTimer timer = controller.getSecondaryTimer(projectName);
+	public void setTestTimeOffset(long offset) {
+		AcceleratedWatchdogTimer timer = controller.getSecondaryTimer();
 		timer.setTestTimeOffset(offset);
 	}
 	
-	public void setTimeFactor(String projectName,Double factor) {
-		AcceleratedWatchdogTimer timer = controller.getSecondaryTimer(projectName);
+	public void setTimeFactor(Double factor) {
+		AcceleratedWatchdogTimer timer = controller.getSecondaryTimer();
 		timer.setFactor(factor.doubleValue());
 	}
 
 
 	/**
-	 * Set properties in the ORM database.
+	 * Set a project property in the ORM database.
 	 */
 	@Override
 	public void setProjectToolkitProperty(String projectName,String propertyName, String value) {
-		toolkitRecordHandler.setToolkitProjectProperty(projectName,propertyName, value);
-		controller.clearCache();                 // Force retrieval production/isolation constants from HSQLdb on next access.
+		toolkitProjectRecordHandler.setToolkitProjectProperty(projectName,propertyName, value);
 	}
-
+	/**
+	 * Set a property in the ORM database.
+	 */
+	@Override
+	public void setToolkitProperty(String propertyName, String value) {
+		toolkitRecordHandler.setToolkitProperty(propertyName, value);
+	}
 	/**
 	 * Define a watermark for a diagram. 
 	 */

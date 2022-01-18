@@ -1,5 +1,5 @@
 /**
- *   (c) 2014-2021  ILS Automation. All rights reserved.
+ *   (c) 2014-2022  ILS Automation. All rights reserved.
  *  
  *   The block controller is designed to be called from the client
  *   via RPC. All methods must be thread safe,
@@ -45,10 +45,6 @@ public class BasicExecutionController implements ExecutionController  {
 		log.warnf("%s.acceptConnectionPostNotification: WARNING: Executed from stub class",CLSS);
 	}
 	@Override
-	public void clearCache() {
-		log.warnf("%s.clearCache: WARNING: Executed from stub class",CLSS);
-	}
-	@Override
 	public DiagnosticDiagram getDiagram(ProjectResourceId diagramId) {
 		log.warnf("%s.getDiagram: WARNING: Executed from stub class",CLSS);
 		return null;
@@ -78,7 +74,7 @@ public class BasicExecutionController implements ExecutionController  {
 		return null;
 	}
 	@Override
-	public double getProjectIsolationTimeFactor(String projectName) {
+	public double getIsolationTimeFactor() {
 		log.warnf("%s.getIsolationTimeFactor: WARNING: Executed from stub class",CLSS);
 		return 0;
 	}
