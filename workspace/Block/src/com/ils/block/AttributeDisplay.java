@@ -90,7 +90,7 @@ public class AttributeDisplay extends AbstractProcessBlock implements ProcessBlo
 	 */
 	private void initializePrototype() {
 		prototype.setPaletteIconPath("");
-		prototype.setPaletteLabel("");
+		prototype.setPaletteLabel("AttributeDisplay");
 		prototype.setTooltipText("");
 		prototype.setTabName(BlockConstants.PALETTE_TAB_NONE);
 

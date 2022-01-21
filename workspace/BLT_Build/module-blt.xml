@@ -31,7 +31,7 @@
 		<export scope="G">block-definition.jar</export>
 		<export scope="G">jackson-core-2.2.3.jar</export>
 		<export scope="G">jackson-databind-2.2.3.jar</export>
-		<export scope="G">jackson-annotations-2.2.3.jar</export>
+		<export scope="G">jackson-annotations-2.2.3.jar</export>\>
 		<jar scope="G">ils-common.jar</jar>
 		<!-- Tell the Gateway and/or Designer where to find the hooks -->
 		<hook scope="G">com.ils.blt.gateway.BLTGatewayHook</hook>

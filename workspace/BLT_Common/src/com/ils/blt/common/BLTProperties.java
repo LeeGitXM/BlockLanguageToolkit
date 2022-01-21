@@ -22,7 +22,6 @@ public interface BLTProperties   {
 	/** This is the name of the package containing block class definitions */
 	public final static String BLOCK_PACKAGE_NAME = "com.ils.block";
 	
-	
 	public final static ResourceType APPLICATION_RESOURCE_TYPE   = new ResourceType(MODULE_ID,"blt.application");
 	public final static ResourceType DIAGRAM_RESOURCE_TYPE       = new ResourceType(MODULE_ID,"blt.diagram");
 	public final static ResourceType FAMILY_RESOURCE_TYPE        = new ResourceType(MODULE_ID,"blt.family");

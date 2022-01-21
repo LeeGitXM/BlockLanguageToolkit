@@ -4,18 +4,27 @@
  */
 package com.ils.blt.gateway;
 
+import java.io.File;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.net.JarURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ils.block.AbstractProcessBlock;
 import com.ils.block.annotation.ExecutableBlock;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagramState;
@@ -46,7 +55,6 @@ import com.ils.blt.gateway.engine.ProcessDiagram;
 import com.ils.blt.gateway.engine.ProcessFamily;
 import com.ils.blt.gateway.engine.ProcessNode;
 import com.ils.blt.gateway.proxy.ProxyHandler;
-import com.ils.common.ClassList;
 import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.help.HelpRecordProxy;
 import com.ils.common.persistence.ToolkitProjectRecordHandler;
@@ -68,6 +76,7 @@ import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.project.DesignableProject;
+import com.inductiveautomation.ignition.gateway.IgnitionGateway;
 import com.inductiveautomation.ignition.gateway.datasource.Datasource;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 
@@ -176,7 +185,6 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			ProxyHandler ph = ProxyHandler.getInstance();
 			ProcessDiagram diagram = controller.getDiagram(parentId);
 			if( diagram!=null ) {
-				String projectName = diagram.getProjectName();
 				block = ph.createBlockInstance(className,parentId,blockId,"");
 			}
 		}
@@ -311,10 +319,32 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	@Override
 	public synchronized List<PalettePrototype> getBlockPrototypes() {
 		List<PalettePrototype> results = new ArrayList<>();
-		ClassList cl = new ClassList();
-		List<Class<?>> classes = cl.getAnnotatedClasses(BLTProperties.BLOCK_JAR_NAME,ExecutableBlock.class,"com/ils/block/");
+		// List all classes in "com.ils.block" package
+		List<Class<?>> classes = new ArrayList<>();
+		try {
+			// Find the jar with the block classes - the jar URLs are colon-separated
+			String classPath = System.getProperty("java.class.path");
+			log.infof("%s.getBlockPrototypes: ClassPath = %s",CLSS,classPath);
+			String[] pathElements = classPath.split(File.pathSeparator);
+			for(String pathElement:pathElements) {
+				if(pathElement.contains(BLTProperties.BLOCK_JAR_NAME)) {
+					File libdir = context.getSystemManager().getLibDir();
+					pathElement = pathElement.substring(4);  // Remove /lib
+					String path= libdir.getAbsolutePath()+File.separator+pathElement;
+					log.infof("%s.getBlockPrototypes: Block jar = %s",CLSS,path);
+					URL url = new URL(String.format("jar:file:%s!/",path));
+					JarURLConnection jarConnection = (JarURLConnection)url.openConnection();
+					JarFile jar = jarConnection.getJarFile();
+					classes = findAnnotatedClassesInJar(jar,ExecutableBlock.class);
+					break;
+				}
+			}
+		}
+		catch (Throwable ex) {
+			log.warnf("%s.getBlockPrototypes: Exception getting block class jsr (%s)",CLSS,ex.getMessage(),ex);
+		}
 		for( Class<?> cls:classes) {
-			log.infof("%s.getBlockPrototypes:   found block class: %s",CLSS,cls.getName());
+			//log.infof("%s.getBlockPrototypes:   found block class: %s",CLSS,cls.getName());
 			Constructor[] ctors = cls.getDeclaredConstructors();
 			Constructor ctor = null;
 			for (int i = 0; i < ctors.length; i++) {
@@ -327,7 +357,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		 	    Object obj = ctor.newInstance();
 				if( obj instanceof ProcessBlock ) {
 					PalettePrototype bp = ((ProcessBlock)obj).getBlockPrototype();
-					log.infof("%s.getBlockPrototypes: Adding %s on %s",CLSS,bp.getPaletteLabel(),bp.getTabName());
+					log.infof("%s.getBlockPrototypes: Add %s on %s",CLSS,bp.getPaletteLabel(),bp.getTabName());
 					results.add(bp);
 				}
 				else {
@@ -339,7 +369,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			} 
 			catch (IllegalAccessException iae) {
 				log.warnf("%s.getBlockPrototypes: Access exception (%s)",CLSS,iae.getMessage());
-			}
+			}		
 			catch (Exception ex) {
 				log.warnf("%s.getBlockPrototypes: Runtime exception (%s)",CLSS,ex.getMessage(),ex);
 			}
@@ -360,7 +390,51 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		}
 		return results;
 	}
-	
+	/** 
+	 * Loop through all classes in the jar file. Return the subset
+	 * with the indicated annotation. 
+	 * The search involves instantiating classes that match. Since
+	 * instantiating random classes can have unexpected side effects
+	 * we limit the search to classes that belong to some parent package.
+	 * Specify the package with '/', as in "com/ils/block/".
+	 *
+	 * @param jar the jar file containing the classes to search
+	 * @param annotation the constructor annotation to test for
+	 * @param pattern first part of package to be considered. 
+	 * @return the classes (loaded) 
+	 */
+	private List<Class<?>> findAnnotatedClassesInJar(JarFile jar,Class<? extends Annotation> annotation)  { 
+		List<Class<?>> classes = new ArrayList<Class<?>>();
+		Enumeration<JarEntry> jarWalker = jar.entries();
+		while( jarWalker.hasMoreElements()) {
+			JarEntry entry = jarWalker.nextElement();
+			if( entry.getName()!=null && entry.getName().endsWith(".class") && !entry.isDirectory()) {
+				// Reject anonymous internal classes
+				if( entry.getName().contains("$")) continue;
+				// Convert the path to a classname
+				StringBuilder className = new StringBuilder();
+				for( String pak:entry.getName().split("/")) {
+					if( className.length()!=0) className.append(".");
+					className.append(pak);
+					if( pak.endsWith(".class")) className.setLength(className .length()-".class".length());
+				}
+				Class<?> clss = null;
+				try {
+					clss = Class.forName(className.toString());
+					if( clss!=null ) {
+						if( clss.getAnnotation(annotation) !=null ) {
+							log.debugf("%s: %s is annotated",CLSS,className.toString());
+							classes.add(clss);
+						}
+					}
+				}
+				catch(Exception cnf) {
+					log.warnf("%s: findAnnotatedClassesInJar - error instantiating %s (%s) ",CLSS,entry.getName(),cnf.getLocalizedMessage());
+				}
+			}
+		} 
+		return classes; 
+	} 
 	@Override
 	public synchronized String getBlockState(ProjectResourceId diagramId, String blockName) {
 		String state = "UNKNOWN";

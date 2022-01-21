@@ -90,9 +90,9 @@ public class BlockPropertyDisplay extends AbstractProcessBlock implements Proces
 	private void initializePrototype() {
 		/* Leaving these two uninitialized will cause it to be left off of the palette, but we must still specify a palette!
 		prototype.setPaletteIconPath("Block/icons/palette/note.png");
-		prototype.setPaletteLabel("PropertyDisplay");
 		*/
 		prototype.setTooltipText("Single property of a block");
+		prototype.setPaletteLabel("BlockPropertyDisplay");
 		prototype.setTabName(BlockConstants.PALETTE_TAB_NONE);
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
