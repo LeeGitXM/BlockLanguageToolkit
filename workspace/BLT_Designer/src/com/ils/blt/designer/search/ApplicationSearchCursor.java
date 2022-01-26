@@ -2,6 +2,8 @@ package com.ils.blt.designer.search;
 
 import java.util.Enumeration;
 
+import com.ils.blt.designer.navtree.GeneralPurposeTreeNode;
+import com.ils.common.GeneralPurposeDataContainer;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -11,7 +13,7 @@ import com.inductiveautomation.ignition.designer.navtree.model.AbstractNavTreeNo
 import com.inductiveautomation.ignition.designer.navtree.model.ProjectBrowserRoot;
 
 public class ApplicationSearchCursor extends SearchObjectCursor {
-	private final String CLSS = "DiagramSearchCursor";
+	private final String CLSS = "ApplicationSearchCursor";
 	private final DesignerContext context;
 	private ProjectResource application; 
 	private final LoggerEx log;
@@ -26,10 +28,19 @@ public class ApplicationSearchCursor extends SearchObjectCursor {
 	@Override
 	public Object next() {
 		Object so = null;   // Search Object
+		
 		if( index==0 ) {
 			String rootName = getRootName();
 			so = new ApplicationNameSearchObject(context,rootName,application.getResourceName());
 			log.infof("%s.next %s",CLSS,application.getResourceName());
+		}
+		else if( index==1 ) {
+			GeneralPurposeDataContainer aux = GeneralPurposeTreeNode.deserializeApplication(application).getAuxiliaryData();
+			if( aux!=null && aux.containsData() ) {
+				String rootName = getRootName();
+				so = new NavAuxSearchCursor(context,aux,rootName,application.getResourceName(),application.getResourcePath().toString());
+				log.infof("%s.next %s",CLSS,application.getResourceName());
+			}
 		}
 		index++;
 		return so;

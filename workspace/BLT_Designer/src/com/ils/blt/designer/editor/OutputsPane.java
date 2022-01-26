@@ -27,12 +27,17 @@ import com.ils.common.SortedListModel;
 
 /**
  * Select which output to edit, or make a new one.
+ * 
+ * A note about QuantOutputId - Initially this attribute was used to record the output id assigned by the database.
+ * Now that management of application data, which include Quant Outputs, is a one way street from Ignition to the database
+ * we will never get the quantOutputId from the database back into Ignition.  Therefore, this attribute was repurposed to
+ * help determine if we are editing a new or existing output.  It is used when the user presses "Cancel" and we use it to determine
+ * if we should delete the output (if they mistakenly created a new one and pressed "Cancel")  
  */
 public class OutputsPane extends JPanel {
 	private final ApplicationPropertyEditor editor;
 	private final GeneralPurposeDataContainer model;
 	private SortedListModel<String> outputKeys;
-	private Integer newOutputId = -1;
 	private static final long serialVersionUID = 2882399376824334428L;
 	private static Icon addIcon = new ImageIcon(OutputsPane.class.getResource("/images/add.png"));
 	private static Icon deleteIcon = new ImageIcon(OutputsPane.class.getResource("/images/delete.png"));
@@ -45,7 +50,7 @@ public class OutputsPane extends JPanel {
 	final JPanel buttonPanel;
 	private final JList<String> jlist;
 	private final OutputEditorPane detailEditor;  // Handles a single output
-	final JScrollPane outputsScrollPane = new JScrollPane();
+	//final JScrollPane outputsScrollPane = new JScrollPane(); TODO Remove this is it still works PH 9/17/21
 
 	public OutputsPane(ApplicationPropertyEditor edit,OutputEditorPane detailEdit) {
 		//super(new BorderLayout(20, 30));
@@ -61,6 +66,7 @@ public class OutputsPane extends JPanel {
 		add(label, BorderLayout.NORTH);
 		
 		jlist = new JList<String>(outputKeys);
+		jlist.setFixedCellHeight(25);
 		JScrollPane scrollPane = new JScrollPane(jlist);
 		scrollPane.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(10,10,10,0),
 								BorderFactory.createEtchedBorder(EtchedBorder.RAISED)));
@@ -113,7 +119,7 @@ public class OutputsPane extends JPanel {
 		// Get the name of the output that is selected, if nothing is selected then return
 		String outputName= (String) jlist.getSelectedValue();
 		if( outputName==null ) {	
-			JOptionPane.showMessageDialog(OutputsPane.this, "Please selecte an output to edit.");					
+			JOptionPane.showMessageDialog(OutputsPane.this, "Please select an output to edit.");					
 			return;
 		}
 		System.out.println("OutputsPane.doEdit: " + outputName);
@@ -134,6 +140,10 @@ public class OutputsPane extends JPanel {
 		
 		if (outputMap != null){
 			System.out.println("Looking at an Output" + outputMap);
+			/* 
+			outputMap.put("QuantOutputId", "Existing"); // This will be used in the cancel logic and determines if the output will be deleted
+			*/
+			
 			// Get the output editor and call method that puts the output into the fields
 			detailEditor.updateFields(outputMap);
 			editor.setSelectedPane(ApplicationPropertyEditor.EDITOR);
@@ -163,7 +173,7 @@ public class OutputsPane extends JPanel {
 	}
 
 	protected void doAdd() {	
-		// Get the Map that corresponds to the name that is selected
+		// Create a new output map
 		Map<String,String> outputMap=newOutput();
 		if (outputMap != null){
 			System.out.println("Adding at an Output" + outputMap);
@@ -182,8 +192,7 @@ public class OutputsPane extends JPanel {
 		System.out.println("Creating a new output... ");
 
 		Map<String,String> outputMap = new HashMap<String,String>();
-		outputMap.put("QuantOutputId",String.valueOf(newOutputId));
-		newOutputId = newOutputId - 1;
+		outputMap.put("QuantOutputId", "-1"); // This will signal the cancel logic to delete the output from the map
 		outputMap.put("QuantOutput", "");
 		outputMap.put("TagPath", "");
 		outputMap.put("MostNegativeIncrement",String.valueOf(-10.0));

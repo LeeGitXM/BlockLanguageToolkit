@@ -3,7 +3,9 @@
  */
 package com.ils.blt.designer.editor;
 
+import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.beans.PropertyChangeEvent;
@@ -21,6 +23,7 @@ import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
@@ -35,11 +38,13 @@ import com.ils.blt.common.serializable.SerializableApplication;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.NotificationHandler;
+import com.ils.blt.designer.editor.MainPanel.CorePropertyPanel;
 import com.ils.blt.designer.navtree.DiagramTreeNode;
 import com.ils.blt.designer.navtree.GeneralPurposeTreeNode;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
+import com.ils.blt.designer.workspace.WorkspaceRepainter;
 import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.ui.DualListBox;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
@@ -58,9 +63,9 @@ import net.miginfocom.swing.MigLayout;
  * This dialog allows for the display and editing of auxiliary data in the proxy block. There is no extension
  * function interaction until the block is saved as part of a diagram-save.
  */
-public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor implements NotificationChangeListener, PropertyChangeListener {
+public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor implements NotificationChangeListener, PropertyChangeListener, FocusListener {
 	private static final long serialVersionUID = 7211480530910862375L;
-	private static final String CLSS = "FinalDiagnosisPanel";
+	private static final String CLSS = "FinalDiagnosisPropertyEditor";
 	private static final boolean DEBUG = false;
 	private final NotificationHandler notificationHandler = NotificationHandler.getInstance();
 	private final NodeStatusManager nodeStatusMgr;			// PH 06/30/2021
@@ -72,10 +77,18 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 	private final int DIALOG_WIDTH = 300;
 	private final ProcessDiagramView diagram;
 	private final ProcessBlockView block;
+	
 	private BasicEditPanel mainPanel = null;
+	
+	private JPanel propertiesPanel = null;
+	
 	private final GeneralPurposeDataContainer model;           // Data container operated on by panels
 	private final GeneralPurposeDataContainer appModel;           // Data container operated on by panels PH 06/30/2021
 	protected DualListBox dual;
+	
+	protected JTextField finalDiagnosisClassField;
+	protected JTextField finalDiagnosisUUIDField;
+	
 	protected JTextField finalDiagnosisLabelField;
 	protected JTextField calculationMethodField;
 	protected JTextArea textRecommendationArea;
@@ -93,17 +106,17 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 	private final String database;
 	private final String key;
 	protected final LoggerEx log;
-	protected static final Dimension EXPLANATIION_AREA_SIZE  = new Dimension(250,300);
+	protected static final Dimension DUAL_SCROLL_AREA_SIZE  = new Dimension(250,600);
+	protected static final Dimension EXPLANATION_AREA_SIZE  = new Dimension(250,300);
 	protected static final Dimension TEXT_RECOMMENDATION_AREA_SIZE  = new Dimension(250,300);
 	protected static final Dimension COMMENT_AREA_SIZE  = new Dimension(250,300);
-	private final CorePropertyPanel corePanel;
+	private CorePropertyPanel corePanel;
 	
 	// from configuration dialog
 	protected final DesignerContext context;
 	protected final ResourceBundle rb;
 	protected static final Dimension BUTTON_SIZE  = new Dimension(90,28);
 	protected static final Dimension COMBO_SIZE  = new Dimension(120,24);
-	protected static final Dimension DESCRIPTION_AREA_SIZE  = new Dimension(250,160);
 	protected static final Dimension NAME_BOX_SIZE  = new Dimension(280,24);
 	protected static final Dimension NUMBER_BOX_SIZE  = new Dimension(50,24);
 	private final UtilityFunctions fcns = new UtilityFunctions();
@@ -152,11 +165,11 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		SerializableApplication sap = this.appNode.deserializeApplication(this.applicationResource);
 		this.appModel = sap.getAuxiliaryData();
 		
-        initialize();
+        initialize(block);
         setUI();
 		// Register for notifications
-		if (DEBUG) log.infof("%s: adding notification listener %s",CLSS,key);
-		notificationHandler.addNotificationChangeListener(key,CLSS,this);
+		log.tracef("%s: adding notification listener %s", CLSS, key);
+		notificationHandler.addNotificationChangeListener(key, CLSS, this);
 	}
 
 	/**
@@ -165,23 +178,33 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 	 * Here we add the tabs ... there are no buttons
 	 * 1) Core attributes
 	 * 2) Python hook definitions.
+	 * 
+	 * Previously, if the diagram was disabled, then it would build a panel without data even though 
+	 * every other block on the diagram could be configured.   I think there was some confusion about
+	 * which database to use if the diagram is disabled.  There are 3 states: ACTIVE, ISOLATED, and DISABLED.
+	 * Use the production database if the diagram is DISABLED.  Configuring a FD really has nothing to 
+	 * do with the state of the diagram.  (Pete - 4/28/2021) 
 	 */
-	private void initialize() {
-		setLayout(new MigLayout("top,flowy,ins 2,gapy 0:10:15", "", "[top]0[]"));
-		//setLayout(new MigLayout("fillx", "[right]rel[grow, fill]"));
-		//mainPanel.setLayout(new MigLayout("fillx", "[right]rel[grow, fill]"));
-		add(corePanel,"grow,push");
+	private void initialize(ProcessBlockView blk) {
+		//Fix the size for the dual scroll widget
+		setLayout(new MigLayout("", "", "[] [] [] [150!] [] []"));
 		
-		/*
-		 * Previously, if the diagram was disabled, then it would build a panel without data even though 
-		 * every other block on the diagram could be configured.   I think there was some confusion about
-		 * which database to use if the diagram is disabled.  There are 3 states: ACTIVE, ISOLATED, and DISABLED.
-		 * Use the production database if the diagram is DISABLED.  Configuring a FD really has nothing to 
-		 * do with the state of the diagram.  (Pete - 4/28/2021) 
-		 */
+		addSeparator(this, "Core");
 		
-		mainPanel = createMainPanel();
-		add(mainPanel,"grow, spanx, push");;
+		corePanel = createCorePanel(blk);
+		add(corePanel,"grow, spanx, wrap");
+		
+		addSeparator(this,"QuantOutputs");
+		
+		dual = new DualListBox();
+		dual.setPreferredSize(DUAL_SCROLL_AREA_SIZE);
+		dual.addPropertyChangeListener(this);
+		add(dual, "gapx 5 5, grow, spanx, wrap");
+		
+		addSeparator(this,"Properties");
+		
+		propertiesPanel = createPropertiesPanel();
+		add(propertiesPanel,"grow, spanx, push");;
 	}
 	
 	public void shutdown() {
@@ -191,29 +214,37 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		if (DEBUG) log.infof("%s.shutdown: writing aux data",CLSS);
 	}
 	
-	private BasicEditPanel createMainPanel() {	
-		// The internal panel has two panes
-		// - one for the dual list box, the other for the remaining attributes
-		//setLayout(new BorderLayout());
-		mainPanel = new BasicEditPanel(this);
-		mainPanel.setLayout(new MigLayout("ins 2,fill","[][]","[][growprio 60,150:150:2000][]"));
-		//mainPanel.setLayout(new MigLayout("fillx", "[right]rel[grow, fill]"));
-		//panel.setLayout(new MigLayout("fillx", "[right]rel[grow, fill]"));
-		
-		mainPanel.addSeparator(mainPanel,"QuantOutputs");
-		dual = new DualListBox();
-
-		dual.addPropertyChangeListener(this);
-		mainPanel.add(dual, "gapx 5 5,grow,wrap");
-		mainPanel.add(createPropertiesPanel(),"grow,wrap");
-		return mainPanel;
-	}
 	
 	/**
-	 * This panel holds the "simple" attributes of the block
-	 * @return
+	 * Create the main data pane as a grid 2 columns wide:
+	 *     label | value
 	 */
+	private JPanel createCorePanel(ProcessBlockView blk) {
+		JPanel panel = new JPanel();
+		panel.setLayout(new MigLayout("ins 2", "[para]0[]0[]", "[para]0[]0[]"));
+		
+		panel.add(new JLabel("Name"),"skip");
+		nameField = new JTextField(blk.getName());
+		nameField.setEditable(false);
+		panel.add(nameField,"growx,pushx");
+		nameField.setEditable(true);
+		nameField.addFocusListener(this);
+		
+		panel.add(new JLabel("Class"),"newline,skip");
+		finalDiagnosisClassField = new JTextField(blk.getClassName());
+		finalDiagnosisClassField.setEditable(false);
+		panel.add(finalDiagnosisClassField, "growx,pushx");
+		
+		panel.add(new JLabel("UUID"),"newline, skip");
+		finalDiagnosisUUIDField = new JTextField(blk.getId().toString());
+		finalDiagnosisUUIDField.setEditable(false);
+		panel.add(finalDiagnosisUUIDField, "growx,pushx");
+		return panel;
+	}
+
+
 	/**
+	 * This panel holds the "simple" attributes of the block
 	 * Create the main data pane as a grid 2 columns wide:
 	 *     label | value
 	 */
@@ -223,20 +254,18 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 
 		panel.add(createLabel("FinalDiagnosis.Label"),"gaptop 2,aligny top, align right");
 		finalDiagnosisLabelField = createTextField("FinalDiagnosis.Label.Desc","");
-		
 		panel.add(finalDiagnosisLabelField,"span, growx, wrap");
 		
 		panel.add(createLabel("FinalDiagnosis.Comment"),"gaptop 2,aligny top, align right");
 		commentArea = createTextArea("FinalDiagnosis.Comment.Desc","");
 		JScrollPane commentScrollPane = new JScrollPane(commentArea);
 		commentScrollPane.setPreferredSize(COMMENT_AREA_SIZE);
-		//panel.add(commentScrollPane,"growx,growy,wrap");
 		panel.add(commentScrollPane,"spanx, wrap");
 		
 		panel.add(createLabel("FinalDiagnosis.Explanation"),"gaptop 2, aligny top, align right");
 		explanationArea = createTextArea("FinalDiagnosis.Explanation.Desc","");
 		JScrollPane explanationScrollPane = new JScrollPane(explanationArea);
-		explanationScrollPane.setPreferredSize(EXPLANATIION_AREA_SIZE);
+		explanationScrollPane.setPreferredSize(EXPLANATION_AREA_SIZE);
 		panel.add(explanationScrollPane,"growx,growy,wrap");
 		
 		panel.add(createLabel("FinalDiagnosis.TextRecommendation"),"gaptop 2, aligny top, align right");
@@ -293,7 +322,7 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		 * The list of all available outs comes from the application superior to the final diagnosis.
 		 * The Final Diagnosis has a list of outputs already configured as being used by the Final diagnosis, this list
 		 * is known as q1 and goes into the list on the right.  The list on the left, known as q0, is the list of all
-		 * output sminus the inputs that are already in use.
+		 * outputs minus the inputs that are already in use.
 		 */
 		
 		List<String> q1 = model.getLists().get("OutputsInUse");
@@ -302,49 +331,59 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		
 		// Get the list of quant outputs that have been defined for the application
 		List< Map<String,String> > outputMapList = appModel.getMapLists().get("QuantOutputs");
-		if (DEBUG) log.infof("Application Output Map List: %s", outputMapList);
+		log.tracef("Application Output Map List: %s", outputMapList);
 		
 		// Convert the list of output maps to a list of strings (output names)
 		List<String> q0 = new ArrayList<>();
-		for(Map<String,String> outmap:outputMapList) {
-			q0.add(outmap.get("QuantOutput"));
+		if(outputMapList!=null ) {
+			for(Map<String,String> outmap:outputMapList) {
+				q0.add(outmap.get("QuantOutput"));
+			}
+			log.tracef("Total list of outputs: %s", q0);
 		}
-		if (DEBUG) log.infof("Total list of outputs: %s", q0);
 		
 		// Remove the outputs that are already in use
 		for( String inUse:q1) {
 			q0.remove(inUse);
 		}
 		
-		if (DEBUG) log.infof("Left list: %s", q0);
-		if (DEBUG) log.infof("Right list: %s", q1);
+		log.tracef("Left list: %s", q0);
+		log.tracef("Right list: %s", q1);
 
 		dual.setSourceElements(q0);
 
-		String method = properties.get("FinalDiagnosisLabel");
-		if( method==null) method="";
-		finalDiagnosisLabelField.setText(method);
+		String label = properties.get("FinalDiagnosisLabel");
+		if( label==null) label="";
+		finalDiagnosisLabelField.setText(label);
+		
 		String comment = (String)properties.get("Comment");
 		if( comment==null) comment="";
 		commentArea .setText(comment);
+		
 		String explanation = (String)properties.get("Explanation");
 		if( explanation==null) explanation="";
 		explanationArea.setText(explanation);
+		
 		String recommendation = (String)properties.get("TextRecommendation");
 		if( recommendation==null) recommendation="";
 		textRecommendationArea.setText(recommendation);
+		
 		String calculationMethod = properties.get("CalculationMethod");
 		if( calculationMethod==null) calculationMethod="";
 		calculationMethodField.setText(calculationMethod);
+		
 		String priority = (String)properties.get("Priority");
 		if( priority==null) priority="";
 		priorityField.setText(priority);
+		
 		String rate = (String)properties.get("RefreshRate");
 		if( rate==null) rate="";
 		refreshRateField.setText(rate);
-		method = (String)properties.get("PostProcessingCallback");
+		
+		String method = (String)properties.get("PostProcessingCallback");
 		if( method==null) method="";
 		postProcessingCallbackField.setText(method);
+		
 		String constantValue = properties.get("Constant");
 		if( constantValue==null) constantValue="0";
 		constantCheckBox.setSelected(constantValue.equalsIgnoreCase("1"));
@@ -356,70 +395,33 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		String showExplanation = (String)properties.get("ShowExplanationWithRecommendation");
 		if( showExplanation==null) showExplanation="0";
 		showExplanationWithRecommendationCheckBox.setSelected(showExplanation.equals("0")?false:true);
+		
 		String manualMoveAllowed = properties.get("ManualMoveAllowed");
 		if( manualMoveAllowed==null) manualMoveAllowed="0";
 		manualMoveAllowedCheckBox.setSelected(manualMoveAllowed.equalsIgnoreCase("1"));
+		
 		String tf = (String)properties.get("TrapInsignificantRecommendations");
 		if( tf==null) tf="0";
 		trapBox.setSelected(tf.equals("0")?false:true);
 	}
 	
-	/**
-	 * These properties are present in every block.
-	 * class, label, state, statusText
+	/*
+	 * Call this whenever anything is edited
 	 */
-	public class CorePropertyPanel extends BasicEditPanel implements FocusListener {
-		private static final long serialVersionUID = -7849105885687872683L;
-		private static final String columnConstraints = "[para]0[]0[]";
-		private static final String layoutConstraints = "ins 2";
-		private static final String rowConstraints = "[para]0[]0[]";
-
-		public CorePropertyPanel(AbstractPropertyEditor edtr,ProcessBlockView blk) {
-			super(edtr);
-			setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));
-			addSeparator(this,"Core");
-			add(new JLabel("Name"),"skip");
-			nameField = createTextField(blk.getName());
-			add(nameField,"growx,pushx");
-			nameField.setEditable(true);
-			nameField.addFocusListener(this);
-			add(new JLabel("Class"),"newline,skip");
-			add(createTextField(blk.getClassName()),"span,growx");
-			add(new JLabel("UUID"),"skip");
-			add(createTextField(blk.getId().toString()),"span,growx");
-		}
-		
-		// FinalDiagnoses must have unique names.
-		public void saveName() {
-			if( !nameField.getText().equalsIgnoreCase(block.getName()) ) {
-				BLTDesignerHook hook = (BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID);
-				String msg = hook.scanForDiagnosisNameConflicts(diagram, nameField.getText());// send name and block
-				if (msg != null && msg.length() > 1) {
-					log.errorf("Naming error: " + msg);
-					ErrorUtil.showError("Naming error, duplicate diagnosis name: " + msg);
-					return;  // abort save
-					
-				}
-				block.setName(nameField.getText());
-			}
-		}
-		
-		public void updateCorePanel(int tab,ProcessBlockView blk) {
-			
-		}
-		// ============================================== Focus listener ==========================================
-		@Override
-		public void focusGained(FocusEvent event) {
-		}
-		@Override
-		public void focusLost(FocusEvent event) {
-			saveName();
-		}
+	public void setDiagramDirty() {
+		diagram.setDirty(true);
+		SwingUtilities.invokeLater(new WorkspaceRepainter());
 	}
-	
 
-	// Copy the FinalDiagnosis auxiliary data back into the block's aux data
+	/*
+	 * Copy values from the UI back into the block's aux data.
+	 * The block is a view valid only while the diagram is displayed. Once the diagram is saved 
+	 * these values are written to the database.
+	 * If this is working correctly, you should be able to select a FD, edit something, select a different block, select the FD again and you 
+	 * will see the edit, quit the designer (without a File->Save), open designer, select the same block, and you will not see the change. 
+	 */
 	private void save(){
+		log.tracef("%s:save() copying the AUX data back into the block's aux data...",CLSS);
 		model.getProperties().put("Constant", (constantCheckBox.isSelected()?"1":"0"));
 		model.getProperties().put("ManualMoveAllowed", (manualMoveAllowedCheckBox.isSelected()?"1":"0"));
 		model.getProperties().put("CalculationMethod",calculationMethodField.getText());
@@ -436,6 +438,8 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		
 		List<String> inUseList = dual.getDestinations();
 		model.getLists().put("OutputsInUse",inUseList);
+		block.setAuxiliaryData(model);
+
 	}
 	
 	/*
@@ -448,7 +452,21 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		area.setLineWrap(true);
 		area.setWrapStyleWord(true);
 		area.setToolTipText(rb.getString(bundle));
+		area.addFocusListener(this);
 		return area;
+	}
+	
+	/**
+	 * Add a separator to a panel using Mig layout
+	 */
+	protected JLabel addSeparator(JPanel panel, String text) {
+		JSeparator separator = new JSeparator();
+		JLabel label = new JLabel(text);
+		label.setFont(new Font("Tahoma", Font.PLAIN, 11));
+		label.setForeground(Color.BLUE);
+		panel.add(label, "split 2,span");
+		panel.add(separator, "growx,wrap");
+		return label;
 	}
 	/**
 	 * Create a text field for editing strings
@@ -458,6 +476,7 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		field.setPreferredSize(NAME_BOX_SIZE);
 		field.setEditable(true);
 		field.setToolTipText(rb.getString(bundle));
+		field.addFocusListener(this);
 		return field;
 	}
 	/**
@@ -470,6 +489,7 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		field.setPreferredSize(NAME_BOX_SIZE);
 		field.setEditable(true);
 		field.setToolTipText(rb.getString(bundle));
+		field.addFocusListener(this);
 		return field;
 	}
 	/**
@@ -482,6 +502,7 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		field.setPreferredSize(NAME_BOX_SIZE);
 		field.setEditable(true);
 		field.setToolTipText(rb.getString(bundle));
+		field.addFocusListener(this);
 		return field;
 	}
 
@@ -496,6 +517,7 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		box.setToolTipText(rb.getString(bundle));
 		box.setSelectedItem(state.name());
 		box.setPreferredSize(COMBO_SIZE);
+		box.addFocusListener(this);
 		return box;
 	}
 	/**
@@ -506,6 +528,7 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		box.setToolTipText(rb.getString(bundle)+": ");
 		box.setSelected(initialValue);
 		box.setText("");     // Don't use the standard label, it's on the wrong side.
+		box.addFocusListener(this);
 		return box;
 	}
 	
@@ -517,14 +540,27 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		return label;
 	}
 	
-
+	
+	// FinalDiagnoses must have unique names.
+	public void saveName() {
+		if( !nameField.getText().equalsIgnoreCase(block.getName()) ) {
+			BLTDesignerHook hook = (BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID);
+			String msg = hook.scanForDiagnosisNameConflicts(diagram, nameField.getText());// send name and block
+			if (msg != null && msg.length() > 1) {
+				log.errorf("Naming error: " + msg);
+				ErrorUtil.showError("Naming error, duplicate diagnosis name: " + msg);
+				return;  // abort save
+			}
+			block.setName(nameField.getText());
+		}
+	}
+	
 	// ============================================== PropertyChange listener ==========================================
 	@Override
 	public void propertyChange(PropertyChangeEvent event) {
 		if (event.getPropertyName().equalsIgnoreCase("PROPERTY_CHANGE_UPDATE")) {   // What is this?
 			save();
 		}
-
 	}	
 	// ======================================= Notification Change Listener ===================================
 	@Override
@@ -532,15 +568,19 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 	@Override
 	public void diagramStateChange(String path, String state) {}
 	@Override
-	public void nameChange(String name) {}
+	public void nameChange(String name) {
+		log.tracef("%s.nameChange()", CLSS);
+	}
 	@Override
-	public void propertyChange(String pname,Object value) {}
+	public void propertyChange(String pname,Object value) {
+		log.tracef("%s.propertyChange()", CLSS);
+	}
 
 	// The value is the aux data of the application. Note that the method is not
 	// called on the Swing thread
 	@Override
 	public void valueChange(final QualifiedValue value) {
-		log.infof("%s.valueChange: new aux data for %s",CLSS,block.getName());
+		log.tracef("%s.valueChange: new aux data for %s",CLSS,block.getName());
 		if( value==null ) return;
 		GeneralPurposeDataContainer container = (GeneralPurposeDataContainer)value.getValue();
 		if( container==null) return;
@@ -556,4 +596,120 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 	@Override
 	public void watermarkChange(String mark) {}
 
+	// ======================================= Focus Change Listener ===================================
+	@Override
+	public void focusGained(FocusEvent e) {
+		log.tracef("%s: focusGained()...",CLSS);
+	}
+
+	@Override
+	public void focusLost(FocusEvent event) {
+		log.infof("%s: focusLost() for a %s...", CLSS, event.getSource().getClass().getName());
+		
+		Map<String,String> properties = model.getProperties();
+		Object source = event.getSource();
+		/*
+		 * If the value was changed then set the diagram dirty
+		 */
+		if(source.equals(finalDiagnosisLabelField) ) {
+			if( !finalDiagnosisLabelField.getText().equals(properties.get("FinalDiagnosisLabel")) ){
+				log.tracef("--------  THE LABEL HAS BEEN CHANGED -------------");
+				setDiagramDirty();
+				save();
+			}
+		}
+		else if(source.equals(calculationMethodField) ) {
+			if( !calculationMethodField.getText().equals(properties.get("CalculationMethod")) ){
+				log.tracef("--------  THE CALCULATION METHOD HAS BEEN CHANGED -------------");
+				setDiagramDirty();
+				save();
+			}
+		}
+		else if (source.equals(postProcessingCallbackField) ) {
+			if( !postProcessingCallbackField.getText().equals(properties.get("PostProcessingCallback")) ){
+				log.tracef("--------  THE POST PROCESSING CALLBACK HAS BEEN CHANGED -------------");
+				setDiagramDirty();
+				save();
+			}
+		}
+		else if (source.equals(priorityField) ) {
+			if( !priorityField.getText().equals(properties.get("Priority")) ){
+				log.tracef("--------  THE PRIORITY HAS BEEN CHANGED -------------");
+				setDiagramDirty();
+				save();
+			}
+		}
+		else if (source.equals(refreshRateField) ) {
+			if( !refreshRateField.getText().equals(properties.get("RefreshRate")) ){
+				log.tracef("--------  THE REFRESH RATE HAS BEEN CHANGED -------------");
+				setDiagramDirty();
+				save();
+			}
+		}
+		else if( source.equals(nameField) ) {
+			if( !nameField.getText().equals(block.getName())){
+				log.tracef("--------  THE FINAL DIAGNOSIS NAME HAS BEEN CHANGED -------------");
+				log.tracef("Old name: %s", block.getName());
+				log.tracef("New name: %s", nameField.getText());
+				setDiagramDirty();
+				saveName();
+			}
+		}
+		else if( source.equals(textRecommendationArea) ) {
+			if( !textRecommendationArea.getText().equals(properties.get("TextRecommendation")) ){
+				log.tracef("--------  THE TEXT RECOMMENDATION HAS BEEN CHANGED -------------");
+				setDiagramDirty();
+				save();
+			}
+		}
+		else if (source.equals(explanationArea) ) {
+			if( !explanationArea.getText().equals(properties.get("Explanation"))){
+				log.tracef("--------  THE EXPLANATION HAS BEEN CHANGED -------------");
+				setDiagramDirty();
+				save();
+			}
+		}
+		else if( source.equals(commentArea) ) {
+			if( !commentArea.getText().equals(properties.get("Comment"))) {
+				log.tracef("--------  THE COMMENT HAS BEEN CHANGED -------------");
+				setDiagramDirty();
+				save();
+			}
+		}
+		else if( source.equals(constantCheckBox) ) {
+			if( !(constantCheckBox.isSelected()?"1":"0").equals(properties.get("Constant"))){
+				log.tracef("--------  THE CONSTANT CHECK BOX HAS BEEN CHANGED -------------");				
+				setDiagramDirty();
+				save();
+			}
+		}
+		else if (source.equals(postTextRecommendationCheckBox) ) {
+			if( !(postTextRecommendationCheckBox.isSelected()?"1":"0").equals(properties.get("PostTextRecommendation"))){
+				log.tracef("--------  THE POST TEXT RECOMMENDATION CHECK BOX HAS BEEN CHANGED -------------");				
+				setDiagramDirty();
+				save();
+			}
+		}
+		else if( source.equals(showExplanationWithRecommendationCheckBox) ) {
+			if( !(showExplanationWithRecommendationCheckBox.isSelected()?"1":"0").equals(properties.get("ShowExplanationWithRecommendation"))){
+				log.tracef("--------  THE SHOW EXPLANATION CHECK BOX HAS BEEN CHANGED -------------");				
+				setDiagramDirty();
+				save();
+			}
+		}
+		else if( source.equals(manualMoveAllowedCheckBox) ) {
+			if( !(manualMoveAllowedCheckBox.isSelected()?"1":"0").equals(properties.get("ManualMoveAllowed"))){
+				log.tracef("--------  THE MANUAL MOVE ALLOWED CHECK BOX HAS BEEN CHANGED -------------");				
+				setDiagramDirty();
+				save();
+			}
+		}
+		else if( source.equals(trapBox) ) {
+			if( !(trapBox.isSelected()?"1":"0").equals(properties.get("TrapInsignificantRecommendations"))){
+				log.tracef("--------  THE TRAP INSIGNIFICANT RECOMMENDATIONS CHECK BOX HAS BEEN CHANGED -------------");				
+				setDiagramDirty();
+				save();
+			}			
+		}
+	}
 }

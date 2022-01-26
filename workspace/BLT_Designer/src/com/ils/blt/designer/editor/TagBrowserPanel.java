@@ -104,7 +104,6 @@ public class TagBrowserPanel extends BasicEditPanel {
 							else {
 								property.setBinding(selectedPath);
 								editor.updatePanelForProperty(BlockEditConstants.HOME_PANEL,property);
-								editor.saveDiagramClean();      // Immediate update in gateway
 								setSelectedPane(BlockEditConstants.HOME_PANEL);
 							}
 						}

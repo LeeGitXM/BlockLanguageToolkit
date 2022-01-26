@@ -1,10 +1,8 @@
 package com.ils.blt.common.serializable;
 
-import java.util.UUID;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.ils.blt.common.BLTProperties;
-import com.ils.blt.common.block.AttributeDisplay;
+import com.ils.blt.common.ProcessBlock;
 import com.inductiveautomation.ignition.common.project.resource.ResourceType;
 
 
@@ -17,15 +15,13 @@ import com.inductiveautomation.ignition.common.project.resource.ResourceType;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SerializableDiagram extends SerializableNode {
-	private AttributeDisplay[] attributeDisplays;
+	private ProcessBlock[] attributeDisplays;
 	private SerializableBlock[] blocks;
 	private SerializableConnection[] connections;
-	private UUID encapsulationBlockID = null;   // Only for diagrams that are sub-workspaces of an encapsulation
 	private String watermark = "";
 	private boolean dirty = false;
 
 	public SerializableDiagram() {
-		attributeDisplays = new AttributeDisplay[0];
 		blocks = new SerializableBlock[0];
 		connections= new SerializableConnection[0];
 	}
@@ -34,18 +30,16 @@ public class SerializableDiagram extends SerializableNode {
 		return BLTProperties.DIAGRAM_RESOURCE_TYPE;
 	}
 	
-	public AttributeDisplay[] getAttributeDisplays() { return attributeDisplays; }
+	// These are actually of class AttributeDisplay
+	public ProcessBlock[] getAttributeDisplays() { return attributeDisplays; }
 	public SerializableBlock[] getBlocks() { return blocks; }
 	public SerializableConnection[] getConnections() { return connections; }
-	public UUID getEncapsulationBlockId() {return encapsulationBlockID;}
 	public String getWatermark() {return watermark;}
 	public boolean isDirty() {return dirty;}
 	
-	public void setAttributeDisplays(AttributeDisplay[] list) { attributeDisplays=list; }
 	public void setBlocks(SerializableBlock[] list) { blocks=list; }
 	public void setConnections(SerializableConnection[] list) { connections=list; }
 	public void setDirty(boolean dirty) {this.dirty = dirty;}
-	public void setEncapsulationBlockId(UUID parentId) {this.encapsulationBlockID = parentId;}
 	public void setWatermark(String mark) { this.watermark = mark; }
 	
 	/**

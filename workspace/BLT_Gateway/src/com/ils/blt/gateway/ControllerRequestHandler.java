@@ -1,5 +1,5 @@
 /**
- *   (c) 2014-2021 ILS Automation. All rights reserved.
+ *   (c) 2014-2022 ILS Automation. All rights reserved.
  *  
  */
 package com.ils.blt.gateway;
@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -24,7 +23,6 @@ import java.util.jar.JarFile;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ils.block.AbstractProcessBlock;
 import com.ils.block.annotation.ExecutableBlock;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagramState;
@@ -76,7 +74,6 @@ import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.project.DesignableProject;
-import com.inductiveautomation.ignition.gateway.IgnitionGateway;
 import com.inductiveautomation.ignition.gateway.datasource.Datasource;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 
@@ -112,8 +109,6 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		pyHandler = new PythonRequestHandler();
 		fcns = new UtilityFunctions();
 	}
-	
-
 	/**
 	 * Static method to create and/or fetch the single instance.
 	 * @return the static instance of the handler
@@ -138,7 +133,6 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		}
 		return result;
 	}
-	
 	/**
 	 * Remove all diagrams from the controller.
 	 * Cancel all tag subscriptions.
@@ -291,7 +285,6 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		}
 		return results;
 	}
-
 	/**
 	 * Query the execution controller for a specified block property. 
 	 * 
@@ -1619,6 +1612,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		toolkitProjectRecordHandler = new ToolkitProjectRecordHandler(context);
 		toolkitRecordHandler = new ToolkitRecordHandler(context);
 		tagHandler = new TagFactory(context);
+		toolkitRecordHandler = new ToolkitRecordHandler(context); 
 	}
 
 	/**

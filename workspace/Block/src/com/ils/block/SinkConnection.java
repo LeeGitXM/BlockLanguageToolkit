@@ -1,5 +1,5 @@
 /**
- *   (c) 2014-2021  ILS Automation. All rights reserved. 
+ *   (c) 2014-2022  ILS Automation. All rights reserved. 
  */
 package com.ils.block;
 
@@ -45,12 +45,6 @@ public class SinkConnection extends Output implements ProcessBlock {
 	}
 	
 	/**
-	 * Make sure that the class name is the same as is used in the body of the application
-	 * to identify a sink.
-	 */
-	@Override
-	public String getClassName() {return BlockConstants.BLOCK_CLASS_SINK; }
-	/**
 	 * Modify the tag path property to make it read-only.
 	 */
 	@Override
@@ -71,8 +65,6 @@ public class SinkConnection extends Output implements ProcessBlock {
 			controller.updateTag(getParentId(),tagPathProperty.getBinding().toString(), new BasicQualifiedValue("UNSET"));
 		}
 	}
-
-	
 	
 	/**
 	 * Augment the palette prototype for this block class.
@@ -91,6 +83,13 @@ public class SinkConnection extends Output implements ProcessBlock {
 		desc.setStyle(BlockStyle.ARROW);
 		desc.setCtypeEditable(true);
 	}
+	
+	/**
+	 * Guarantee that the class name matches the constant used throughout
+	 * the application to identify a sink.
+	 */
+	@Override
+	public String getClassName() { return BlockConstants.BLOCK_CLASS_SINK; }
 	
 	/**
 	 * In addition to the standard validation, make sure that there

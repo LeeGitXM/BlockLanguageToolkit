@@ -93,17 +93,22 @@ public class ApplicationPropertyEditor extends AbstractPropertyEditor {
 	 */
 	private void buildOutputListModel(){
 		List< Map<String,String> > outputMapList = model.getMapLists().get("QuantOutputs");
-		log.tracef("OutputList: " + outputKeys);
+		log.infof("%s: OutputList: %s", CLSS, outputKeys.toString());
 		if( outputMapList==null ) {
 			outputMapList = new ArrayList<>();
 			model.getMapLists().put("QuantOutputs", outputMapList);
 		}
 		else {
-			for(Map<String,String> outmap:outputMapList) {
-				outputKeys.add(outmap.get("QuantOutput"));
+			Integer i = 0;
+			for(Map<String,String> outputMap:outputMapList) {
+				outputMap.put("QuantOutputId", i.toString());
+				log.infof("%s: Output Name: %s (%s) - %s", CLSS, outputMap.get("QuantOutput"), outputMap.get("QuantOutputId"), outputMap.toString());
+				outputKeys.add(outputMap.get("QuantOutput"));
+				i = i + 1;
 			}
 		}
 	}
+	
 	private void clearOutputKeyList(){
 		outputKeys.clear();
 	}
@@ -118,6 +123,7 @@ public class ApplicationPropertyEditor extends AbstractPropertyEditor {
 	// updating the entire project. Trigger a notification.
 	@Override
 	public void saveResource() {
+		log.infof("%s: Saving...", CLSS);
 		application.setAuxiliaryData(model);
 		ObjectMapper mapper = new ObjectMapper();
 		try {

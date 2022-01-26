@@ -1,5 +1,5 @@
 /**
- *   (c) 2014-2021  ILS Automation. All rights reserved. 
+ *   (c) 2014-2022  ILS Automation. All rights reserved. 
  */
 package com.ils.blt.gateway.engine;
 
@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import com.ils.block.AttributeDisplay;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagnosticDiagram;
 import com.ils.blt.common.DiagramState;
@@ -17,7 +18,6 @@ import com.ils.blt.common.ProcessBlock;
 import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
-import com.ils.blt.common.block.AttributeDisplay;
 import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
@@ -55,8 +55,8 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 	private boolean valid = false;
 	protected final Map<UUID,ProcessBlock> blocks;
 	private final Map<ConnectionKey,ProcessConnection> connectionMap;            // Key by connection number
+	protected final Map<String,AttributeDisplay> displays;						// Key is a property notification key (UUID,property name)
 	protected final Map<BlockPort,List<ProcessConnection>> incomingConnections; // Key by downstream block:port
-	protected final Map<String,AttributeDisplay> displays;                      // Key is a property notification key (UUID,property name)
 	protected final Map<BlockPort,List<ProcessConnection>> outgoingConnections;  // Key by upstream block:port
 	private DiagramState state = DiagramState.UNSET;                             // So that new state will be a change
 	private final BlockExecutionController controller = BlockExecutionController.getInstance();
@@ -102,8 +102,9 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 		}
 		return result;
 	}
-	public Collection<AttributeDisplay> getAttributeDisplays()  { return displays.values(); }
-	public Collection<ProcessBlock> getProcessBlocks()          { return blocks.values(); }
+
+	public Collection<AttributeDisplay> getAttributeDisplays()    { return displays.values(); }
+	public Collection<ProcessBlock> getProcessBlocks()            { return blocks.values(); }
 
 	public String getProviderForState(DiagramState s) {
 		String provider = "";
@@ -148,24 +149,22 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 		}
 		return blocksToRemove;
 	}
-	
 	/**
 	 * Clone attribute displays from the subject serializable diagram and add them to the current.
 	 * In order to make this applicable for updates, we skip any blocks that currently
 	 * exist. Newly created blocks are started.
 	 * 
 	 * Blocks with an updated version are updated and replaced in the serializablediagram
-	 *    A save is required after they are replaced.
+	 * A save is required after they are replaced.
 	 * 
-	 * @param displays an array of newly created attribute displays to be added to the diagram
+	 * @param displays, an array of newly created attribute displays to be added to the diagram.
 	 */
 	public void createAttributeDisplays(AttributeDisplay[] darray ) {
 		for( AttributeDisplay display:darray ) {
 			AttributeDisplay ad = display.clone();
-			displays.put(ad.getBlockId(),ad);
+			displays.put(ad.getBlockId().toString(),ad);
 			ad.start();
 		}
-		return;
 	}
 	/**
 	 * Clone blocks from the subject serializable diagram and add them to the current.
@@ -193,6 +192,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 					else if(DiagramState.ISOLATED.equals(state)) pb.setTimer(controller.getSecondaryTimer());
 					pb.setProjectName(resourceId.getProjectName());
 					blocks.put(pb.getBlockId(), pb);
+
 					if( DEBUG ) log.infof("%s.createBlocks: New block %s(%d)", CLSS, pb.getName(), pb.hashCode());
 
 					if( BlockExecutionController.CONTROLLER_RUNNING_STATE.equalsIgnoreCase(BlockExecutionController.getExecutionState()) ) {
@@ -201,6 +201,12 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 						// After we start the new block, then start any appropriate subscriptions
 						for(BlockProperty bp:pb.getProperties()) {
 							controller.startSubscription(getState(),pb,bp);
+							// Source/Sink tag paths can be changed outside the property editor.
+							if(  bp.getName().equals(BlockConstants.BLOCK_PROPERTY_TAG_PATH) &&
+								(pb.getClassName().equals(BlockConstants.BLOCK_CLASS_SOURCE) ||
+								 pb.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK) ) ) {
+								controller.sendPropertyBindingNotification(pb.getBlockId().toString(), bp.getName(), bp.getBinding());
+							}
 						}
 					}
 				}
@@ -243,7 +249,11 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 						outgoingConnections.put(key, connections);
 						if( DEBUG ) log.infof("%s.updateConnections: mapping connection from %s:%s",CLSS,upstreamBlock.getBlockId().toString(),pc.getUpstreamPortName());
 					}
-					if( !connections.contains(pc) ) connections.add(pc);
+					// This may be a new connection, so push its value.
+					if( !connections.contains(pc) ) {
+						connections.add(pc);
+						controller.sendConnectionNotification(upstreamBlock.getBlockId().toString(), key.getPort(), upstreamBlock.getLastValue());
+					}
 				}
 				else {
 					log.warnf("%s.updateConnections: Source block (%s) not found for connection",CLSS,pc.getSource().toString());
@@ -587,6 +597,9 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 	}
 	
 	public DiagramState getState() {return state;}
+	public void setState(DiagramState s) {
+		setState(s,false);
+	}
 	/**
 	 * Set the state of the diagram. Note that the state does not affect the activity 
 	 * of blocks within the diagram. It only affects the way that block results are 
@@ -598,11 +611,12 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 	 * Likewise if the state was ISOLATED, perform the same sequence.
 	 * 
 	 * @param s the new state
+	 * @param force if true execute even if there is no state change. This stops and starts the tag subscriptions.
 	 */
-	public void setState(DiagramState s) {
+	public void setState(DiagramState s,boolean force) {
 		if( DEBUG ) log.infof("%s.setState: %s->%s", CLSS,getState().name(),s.name());
 		// Only restart subscriptions on a change.
-		if( !s.equals(getState())) {
+		if( force || !s.equals(getState())) {
 			// Check if we need to stop current subscriptions
 			if( !DiagramState.DISABLED.equals(getState()) ) {
 				stopSubscriptions();
@@ -666,6 +680,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 	public void updateBlockTimers(DiagramState s) {
 		// Set the proper timer
 		WatchdogTimer timer = controller.getTimer();
+		if( DiagramState.ISOLATED.equals(s) )  timer = controller.getSecondaryTimer();
 		for(ProcessBlock blk:blocks.values()) {
 			blk.setTimer(timer);
 		}

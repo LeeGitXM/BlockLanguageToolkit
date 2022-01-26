@@ -588,7 +588,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 			}
 		}
 	}
-	
+
 	private class SetStateAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
 		private final DiagramState state;

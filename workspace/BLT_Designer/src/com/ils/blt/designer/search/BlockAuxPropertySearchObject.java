@@ -17,39 +17,47 @@ import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockComponent;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignableContainer;
 import com.inductiveautomation.ignition.designer.findreplace.SearchObject;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 /**
- * Return the block class and name.
- * @author chuckc
+ *  Return the text as a concatenation of property name and value from the block aux property list.
  *
  */
-public class BlockNameSearchObject implements SearchObject {
-	private final DesignerContext context;
+public class BlockAuxPropertySearchObject implements SearchObject {
+	private final String CLSS = "BlockAuxPropertySearchObject";
+	private final LoggerEx log;
 	private static final Dimension IMAGE_SIZE = new Dimension(18,18);
+	private final String name;
+	private final String value;
 	private final ProcessDiagramView diagram;
 	private final ProcessBlockView block;
+	private final DesignerContext context;
 	private final ResourceBundle rb;
 	
-	public BlockNameSearchObject(DesignerContext ctx, ProcessDiagramView parent, ProcessBlockView blk) {
+	public BlockAuxPropertySearchObject(DesignerContext ctx,String nam,String val,ProcessDiagramView parent, ProcessBlockView blk) {
 		this.context = ctx;
+		this.name = nam;
+		this.value = val;
 		this.diagram = parent;
 		this.block = blk;
 		this.rb = ResourceBundle.getBundle("com.ils.blt.designer.designer");  // designer.properties
+		this.log = LogUtil.getLogger(getClass().getPackage().getName());
 	}
 	@Override
 	public Icon getIcon() {
 		ImageIcon icon = null;
-		Image img = ImageLoader.getInstance().loadImage("Block/icons/palette/blank_analysis.png",IMAGE_SIZE);
+		Image img = ImageLoader.getInstance().loadImage("Block/icons/palette/blank.png",IMAGE_SIZE);
 		if( img !=null) icon = new ImageIcon(img);
 		return icon;
 	}
 
 	@Override
 	public String getName() {
-		return "Name";
+		return "AuxData: "+name;
 	}
 
 	@Override
@@ -59,7 +67,7 @@ public class BlockNameSearchObject implements SearchObject {
 
 	@Override
 	public String getText() {
-		return block.getName();
+		return name+":"+value;
 	}
 
 	// We navigate to the diagram.
@@ -90,8 +98,7 @@ public class BlockNameSearchObject implements SearchObject {
 
 	@Override
 	public void setText(String arg0) throws IllegalArgumentException {
-		ErrorUtil.showWarning(rb.getString("Locator.BlockChangeWarning"),rb.getString("Locator.WarningTitle") ,false);
-		
+		ErrorUtil.showWarning(rb.getString("Locator.AuxChangeWarning"),rb.getString("Locator.WarningTitle") ,false);
 	}
 
 }

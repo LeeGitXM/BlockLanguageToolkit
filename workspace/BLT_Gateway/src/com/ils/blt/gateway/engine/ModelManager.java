@@ -713,7 +713,6 @@ public class ModelManager implements ProjectListener  {
 				nodesByResourceId.put(ResourceKey.keyForResource(diagram.getResourceId()),diagram);
 				addToHierarchy(diagram);
 				diagram.createBlocks(sd.getBlocks());
-
 				diagram.updateConnections(sd.getConnections());
 				if(!diagram.getState().equals(sd.getState()) ) {
 					diagram.setState(sd.getState()); 
@@ -722,6 +721,7 @@ public class ModelManager implements ProjectListener  {
 					diagram.synchronizeSubscriptions();
 				}
 			}
+
 			// Carefully update the diagram with new features/properties.
 			// Leave existing blocks/subscriptions "as-is". 
 			else {
@@ -737,10 +737,9 @@ public class ModelManager implements ProjectListener  {
 					deletedBlock.onDelete();
 				}
 				diagram.createBlocks(sd.getBlocks());            // Adds blocks that are new in update
-				diagram.createAttributeDisplays(sd.getAttributeDisplays());
 				diagram.updateConnections(sd.getConnections());  // Adds connections that are new in update
 				diagram.updateProperties(sd);                    // Fixes subscriptions, as necessary
-				diagram.setState(sd.getState());// Handle state change, if any
+				diagram.setState(sd.getState(),true);            // Handle state change, if no change update tag subscriptions anyway. 
 			}
 
 			if( diagram!=null )  {
@@ -904,7 +903,6 @@ public class ModelManager implements ProjectListener  {
 							controller.removeSubscription(block, prop);
 						}
 						block.onDelete();
-
 						// If this is a source connection, delete its associated tag
 						if(block.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK)) {
 							BlockProperty prop = block.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);

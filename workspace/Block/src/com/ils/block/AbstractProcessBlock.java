@@ -264,10 +264,13 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 			if(DEBUG) log.infof("%s.setState: %s",name,this.state.name());
 		}
 	}
-	// Set the name in the name BlockProperty. Name is not a separate attribute
+	// Do not use a  BlockProperty. Name is a simple class member
 	@Override
-	public void setName(String lbl) { 
-		this.name = lbl;
+	public void setName(String txt) { 
+		if( txt!=null ) {
+			this.name = txt;
+			if( controller!=null ) controller.sendNameChangeNotification(getBlockId().toString(),name);
+		}
 	}
 	@Override
 	public String getStatusText() {return statusText;}
@@ -582,7 +585,8 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 * basic implementation reports all values bound to ENGINE.
 	 * 
 	 * It is expected that most blocks will implement this in
-	 * a more efficient way.
+	 * a more efficient way. Note that this does NOT assume that the ENGINE property
+	 * is associated with an OUTPUT port (there is no connection notification.)
 	 */
 	@Override
 	public void notifyOfStatus() {

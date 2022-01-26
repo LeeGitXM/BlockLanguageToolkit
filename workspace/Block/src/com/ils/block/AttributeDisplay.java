@@ -18,19 +18,14 @@ import com.inductiveautomation.ignition.common.project.resource.ProjectResourceI
 
 /**
  * This is a pseudo-block that displays the current value of another, associated
- * block. The "value" property is what is displayed.
+ * block. The "value" property is what is displayed. The gateway version of this block
+ * has no behavior. It only exists to support serialization. The designer version of 
+ * the block is a BlockAttributeView.
  */
 @ExecutableBlock
-public class AttributeDisplay extends AbstractProcessBlock implements ProcessBlock {
+public class AttributeDisplay extends AbstractProcessBlock implements Cloneable,ProcessBlock {
 	private static final String CLSS = "AttributeDisplay";
-	public static final int ATTRIBUTE_DISPLAY_SEPARATION  = 30; // Default y separation
 	public static final String DEFAULT_FONT = "SansSerif";      // Font family - Serif, Dialog,Monospaced
-	public static final int DEFAULT_FONT_SIZE = 12;
-	public static final int DEFAULT_HEIGHT = 25;
-	public static final int DEFAULT_OFFSET_X = 50;
-	public static final int DEFAULT_OFFSET_Y = 25;
-	public static final int DEFAULT_WIDTH = 100;
-	
 
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -41,7 +36,7 @@ public class AttributeDisplay extends AbstractProcessBlock implements ProcessBlo
 	}
 	
 	/**
-	 * Constructor. Custom property is "Text".
+	 * Constructor. 
 	 * 
 	 * @param ec execution controller for handling block output
 	 * @param parent resource Id identifying the parent of this block (a diagram)
@@ -51,7 +46,13 @@ public class AttributeDisplay extends AbstractProcessBlock implements ProcessBlo
 		super(ec,parent,block);
 		initialize();
 	}
-
+	/**
+	 * Guarantee that the class name matches the constant used throughout
+	 * the application to identify an attribute display.
+	 */
+	@Override
+	public String getClassName() { return BlockConstants.BLOCK_CLASS_ATTRIBUTE; }
+	
 	/**
 	 * Handle a change to the property value
 	 */
@@ -63,26 +64,48 @@ public class AttributeDisplay extends AbstractProcessBlock implements ProcessBlo
 	public void notifyOfStatus() {}
 	@Override
 	public void propagate() {}
+	
+	@Override
+	public AttributeDisplay clone() {
+		try {
+			return (AttributeDisplay)super.clone();
+		}
+		catch(CloneNotSupportedException cnse) {
+			log.infof("%s.clone: Error cloning (%s)",CLSS,cnse.getMessage());
+			return null;
+		}
+	}
 	/**
 	 * Add properties that are new for this class.
 	 * Populate them with default values.
 	 */
 	private void initialize() {
 		setName(CLSS);
-		BlockProperty blockId = new BlockProperty(BlockConstants.ATTRIBUTE_DISPLAY_BLOCK_ID,"The id of the block to be displayed", PropertyType.STRING, false);
-		setProperty(BlockConstants.ATTRIBUTE_DISPLAY_BLOCK_ID, blockId);	
-		BlockProperty property = new BlockProperty(BlockConstants.ATTRIBUTTE_DISPLAY_PROPERTY,"Name", PropertyType.STRING, false);
-		setProperty(BlockConstants.ATTRIBUTTE_DISPLAY_PROPERTY, property);	
-		BlockProperty width = new BlockProperty(BlockConstants.ATTRIBUTE_DISPLAY_WIDTH, Integer.valueOf(DEFAULT_WIDTH), PropertyType.INTEGER,true);
-		setProperty(BlockConstants.ATTRIBUTE_DISPLAY_WIDTH, width);		
-		BlockProperty height = new BlockProperty(BlockConstants.ATTRIBUTE_DISPLAY_HEIGHT, Integer.valueOf(DEFAULT_HEIGHT), PropertyType.INTEGER,true);
-		setProperty(BlockConstants.ATTRIBUTE_DISPLAY_HEIGHT, height);		
-		BlockProperty backgroundColor = new BlockProperty(BlockConstants.ATTRIBUTE_DISPLAY_BACKGROUND_COLOR, "TRANSPARENT", PropertyType.COLOR,true);
-		setProperty(BlockConstants.ATTRIBUTE_DISPLAY_BACKGROUND_COLOR, backgroundColor);
-		BlockProperty offsetx = new BlockProperty(BlockConstants.ATTRIBUTE_DISPLAY_OFFSET_X, Integer.valueOf(DEFAULT_WIDTH), PropertyType.INTEGER,true);
-		setProperty(BlockConstants.ATTRIBUTE_DISPLAY_WIDTH, offsetx);		
-		BlockProperty offsety = new BlockProperty(BlockConstants.ATTRIBUTE_DISPLAY_OFFSET_Y, Integer.valueOf(DEFAULT_HEIGHT), PropertyType.INTEGER,true);
-		setProperty(BlockConstants.ATTRIBUTE_DISPLAY_HEIGHT, offsety);
+		// These two properties define which property to display
+		BlockProperty blockId = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_BLOCK_ID,"", PropertyType.STRING, false);
+		setProperty(BlockConstants.ATTRIBUTE_PROPERTY_BLOCK_ID, blockId);
+		BlockProperty property = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_PROPERTY,"Name", PropertyType.STRING, false);
+		setProperty(BlockConstants.ATTRIBUTE_PROPERTY_PROPERTY, property);
+		BlockProperty value = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_VALUE,"", PropertyType.STRING, false);
+		setProperty(BlockConstants.ATTRIBUTE_PROPERTY_VALUE, value);
+		
+		// These attributes defined how the display is configured
+		BlockProperty backgroundColor = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_BACKGROUND_COLOR, "TRANSPARENT", PropertyType.COLOR,true);
+		setProperty(BlockConstants.ATTRIBUTE_PROPERTY_BACKGROUND_COLOR, backgroundColor);
+		BlockProperty foregroundColor = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_FOREGROUND_COLOR, "BLACK", PropertyType.COLOR,true);
+		setProperty(BlockConstants.ATTRIBUTE_PROPERTY_FOREGROUND_COLOR, foregroundColor);
+		BlockProperty height = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_HEIGHT, BlockConstants.ATTRIBUTE_DISPLAY_HEIGHT, PropertyType.INTEGER,true);
+		setProperty(BlockConstants.ATTRIBUTE_PROPERTY_HEIGHT, height);		
+		BlockProperty formatProperty = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_FORMAT, "%s", PropertyType.STRING,true);
+		setProperty(BlockConstants.ATTRIBUTE_PROPERTY_FORMAT, formatProperty);
+		BlockProperty fontSizeProperty = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_FONT_SIZE, 14, PropertyType.INTEGER,true);
+		setProperty(BlockConstants.ATTRIBUTE_PROPERTY_FONT_SIZE, fontSizeProperty);
+		BlockProperty offsetx = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_OFFSET_X, 0, PropertyType.INTEGER,false);
+		setProperty(BlockConstants.ATTRIBUTE_PROPERTY_OFFSET_X, offsetx);		
+		BlockProperty offsety = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_OFFSET_Y, 0, PropertyType.INTEGER,false);
+		setProperty(BlockConstants.ATTRIBUTE_PROPERTY_OFFSET_Y, offsety);
+		BlockProperty width = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_WIDTH, BlockConstants.ATTRIBUTE_DISPLAY_WIDTH, PropertyType.INTEGER,true);
+		setProperty(BlockConstants.ATTRIBUTE_PROPERTY_WIDTH, width);
 	}
 	
 	/**
@@ -97,8 +120,8 @@ public class AttributeDisplay extends AbstractProcessBlock implements ProcessBlo
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setBlockClass(getClass().getCanonicalName());
 		desc.setStyle(BlockStyle.ATTRIBUTE);
-		desc.setPreferredHeight(DEFAULT_HEIGHT);
-		desc.setPreferredWidth(DEFAULT_WIDTH);
+		desc.setPreferredHeight(BlockConstants.ATTRIBUTE_DISPLAY_HEIGHT);
+		desc.setPreferredWidth(BlockConstants.ATTRIBUTE_DISPLAY_WIDTH);
 	}
 	
 }

@@ -197,7 +197,10 @@ public class Statistics extends AbstractProcessBlock implements ProcessBlock {
 		double[] values = new double[size];
 		int index = 0;
 		for( QualifiedValue qv:qualifiedValueMap.values()) {
-			values[index] = fcns.coerceToDouble(qv.getValue());
+			if(qv.getValue()==null) return result;  // NaN
+			double val = fcns.coerceToDouble(qv.getValue());
+			if( Double.isNaN(val)) return result;
+			values[index] = val;
 			index++;
 		}
 		switch(function) {

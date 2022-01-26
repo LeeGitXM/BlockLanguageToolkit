@@ -101,6 +101,7 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 						 tagPathProperty.getBinding(),
 						 (tagPathProperty.getValue()==null?"null":tagPathProperty.getValue().toString()));
 			}
+			notifyOfStatus();
 		}
 		if( lastValue!=null &&  lastValue.getValue() != null && !isLocked()  ) {
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
@@ -217,9 +218,11 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 		}
 	}
 	
+	/* Not sure why this was added, removed PAH 8/19/21
 	@Override 
 	public String getClassName() {return BlockConstants.BLOCK_CLASS_INPUT;}
-
+	*/
+	
 	/**
 	 * Send status update notification for our last output value.
 	 */

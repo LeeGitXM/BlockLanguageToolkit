@@ -16,7 +16,7 @@ import com.inductiveautomation.ignition.designer.findreplace.SearchProvider;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
 public class BLTSearchProvider implements SearchProvider {
-	private final String CLSS = "SAISearchProvider";
+	private final String CLSS = "BLTSearchProvider";
 	public final static int SEARCH_APPLICATION = 1;
 	public final static int SEARCH_FAMILY = 2;
 	public final static int SEARCH_DIAGRAM = 4;

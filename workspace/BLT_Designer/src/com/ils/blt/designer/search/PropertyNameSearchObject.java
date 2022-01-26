@@ -44,12 +44,12 @@ public class PropertyNameSearchObject implements SearchObject {
 
 	@Override
 	public String getName() {
-		return block.getName();
+		return property.getName();
 	}
 
 	@Override
 	public String getOwnerName() {
-		return diagram.getName();
+		return diagram.getDiagramName()+":"+block.getName();
 	}
 
 	@Override

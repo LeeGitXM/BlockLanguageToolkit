@@ -2,7 +2,6 @@ package com.ils.blt.designer.editor;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.NumberFormat;
@@ -18,6 +17,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
@@ -59,6 +59,7 @@ public class OutputEditorPane extends JPanel implements ActionListener  {
 	final JComboBox<String> feedbackMethodComboBox = new JComboBox<String>();
 	private static Icon previousIcon = new ImageIcon(OutputEditorPane.class.getResource("/images/arrow_left_green.png"));
 	final JButton previousButton = new JButton(previousIcon);
+	final JButton cancelButton = new JButton("Cancel");
 	private static Icon tagBrowserIcon = new ImageIcon(OutputEditorPane.class.getResource("/images/arrow_right_green.png"));
 	final JButton tagButton = new JButton("Tags", tagBrowserIcon);
 	private final UtilityFunctions fcns = new UtilityFunctions();
@@ -183,22 +184,34 @@ public class OutputEditorPane extends JPanel implements ActionListener  {
 		
 		mainPanel.add(absoluteContainer, "span, growx, wrap");
 		
-		// Add the Previous / Back button - it should be all the way at the bottom, anchored to the left side.
+		// Add the Previous / Back button and a cancel button- it should be all the way at the bottom, anchored to the left side.
 		// Perform a save of all the fields before we go to the outputs
-		JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		JPanel bottomPanel = new JPanel(new MigLayout("","[25%, left][50%, center][25%]",""));
 		add(bottomPanel,BorderLayout.SOUTH);
 		bottomPanel.add(previousButton);
 		
-		// This is saving the contents of the pane all the way to the database.  That isn't really correct.  It should save it to a data structure in the 
+		// TODO This is saving the contents of the pane all the way to the database.  That isn't really correct.  It should save it to a data structure in the 
 		// Designer that only gets written to the DB when they press File -> Save.  We should mark the application / output as Dirty.
 		previousButton.setPreferredSize(ApplicationPropertyEditor.NAV_BUTTON_SIZE);
 		previousButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				save();
-				editor.saveResource();
-				editor.setSelectedPane(ApplicationPropertyEditor.OUTPUTS);
-			}
+				log.info("In actionPerformed() - line 201");
+				if (customValidation()){
+					save();
+					editor.saveResource();
+					editor.setSelectedPane(ApplicationPropertyEditor.OUTPUTS);
+				};
+			};
 		});
+		
+		/*
+		 * Add a cancel button in case they pressed the "+" button but didn't really mean to create a new output.  PAH 9/20/21
+		 */
+		cancelButton.setPreferredSize(ApplicationPropertyEditor.BUTTON_SIZE);
+		cancelButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {doCancel();}
+		});
+		bottomPanel.add(cancelButton,"wrap");
 
 		// There were two action listeners here - I think you should only have one, so maybe this was an attempt to cache the change until they select File-> Save PH 06/29/3021
 //		previousButton.setPreferredSize(ApplicationPropertyEditor.NAV_BUTTON_SIZE);
@@ -216,8 +229,8 @@ public class OutputEditorPane extends JPanel implements ActionListener  {
 	 * @param map
 	 */
 	public void updateFields(Map<String,String> map){
-		log.infof("%s.updateFields()", CLSS);
 		outputMap=map;
+		log.infof("%s: Setting up editor for %s (%s)", CLSS, outputMap.get("QuantOutput"), outputMap.get("QuantOutputId"));
 		nameField.setText((String) outputMap.get("QuantOutput"));
 		tagField.setText((String) outputMap.get("TagPath"));
 		
@@ -239,6 +252,80 @@ public class OutputEditorPane extends JPanel implements ActionListener  {
 	}
 	
 	public JTextField getTagField() { return this.tagField; }
+	
+	/*
+	 * This is a totally custom validation function.  There are some Swing provided methods that probably get called automatically
+	 * that could be used instead. Reserved function are isValid() and validate()
+	 */
+	protected boolean customValidation(){
+		log.infof("Validating the output...");
+		
+		String quantOutputId = outputMap.get("QuantOutputId");
+		log.infof("   id: %s", quantOutputId);
+		
+		String outputName=nameField.getText();
+		log.infof("Output Name: <%s>", outputName);
+		// Test for a null output name
+		if (outputName== null || outputName.equals("")){
+			JOptionPane.showMessageDialog(editor.context.getFrame(),
+					"Output name is required.",
+					"Null output name warning",
+					JOptionPane.WARNING_MESSAGE);
+			return false;
+		}
+		
+		String tagName=tagField.getText();
+		log.infof("Tag name: <%s>", tagName);
+		// Test for a null tag name
+		if (tagName == null || tagName.equals("")){
+			JOptionPane.showMessageDialog(editor.context.getFrame(),
+					"Tag name is required.",
+					"Null tag name warning",
+					JOptionPane.WARNING_MESSAGE);
+			return false;
+		}
+		
+		// Validate that the output name is unique
+		List<Map<String,String>> outputList=model.getMapLists().get("QuantOutputs");
+		Integer i = 0;
+		if( outputList!=null ) {
+			for(Map<String,String> map : outputList) {
+				String id = (String) map.get("QuantOutputId");
+				String str = (String) map.get("QuantOutput");
+				log.infof("Comparing %s to %s (%s)", outputName, str, id);
+				
+				/*
+				 * Validate that the name for a new output is unique
+				 */
+				if (quantOutputId.equals("-1") && (str.equals(outputName))){
+					JOptionPane.showMessageDialog(editor.context.getFrame(),
+							"The Output name must be unique.",
+							"Unique Name Warning for a <b>New</b> Output",
+							JOptionPane.WARNING_MESSAGE);
+					return false;
+				}
+				
+				/*
+				 * Validate that the name for an existing output is unique - this handles a rename
+				 */
+				else if ( !(quantOutputId.equals("-1")) && !(quantOutputId.equals(id)) && (str.equals(outputName)) ){
+					JOptionPane.showMessageDialog(editor.context.getFrame(),
+							"The Output name must be unique.",
+							"Unique Name Warning for a <b>Renamed</b> Output",
+							JOptionPane.WARNING_MESSAGE);
+					return false;
+				}
+				i = i + 1;
+			}			
+		}
+		
+		if (quantOutputId.equals("-1")){
+			outputMap.put("QuantOutputId", i.toString());
+		}
+		
+		return true;
+	}
+	
 
 	// The user exited a field, so save everything (I don't keep track of what, if anything, was 
 	// changed.
@@ -279,11 +366,39 @@ public class OutputEditorPane extends JPanel implements ActionListener  {
 	protected void doTagSelector() {
 		editor.setSelectedPane(ApplicationPropertyEditor.TAGSELECTOR);	
 	}
+	
+	protected void doCancel() {
+		log.infof("%s.doCancel: Cancelling edits...", CLSS);
+		String quantOutputId = outputMap.get("QuantOutputId");
+		String quantOutputName = nameField.getText();
+		log.tracef("... the ouput being edited was: %s - %s", quantOutputName, quantOutputId);
+		if (quantOutputId.equals("New")){
+			log.infof("...this was a new output...");
+			
+			// Look through the list of outputs for the new one
+			List<Map<String,String>> outputList=model.getMapLists().get("QuantOutputs");
+			if( outputList!=null ) {
+				for(Map<String,String> map : outputList) {
+					String str = (String) map.get("QuantOutputId");
+					if(str.equals(quantOutputId)){
+						log.tracef("Deleting the **new** output from the map!");
+						outputList.remove(map);
+						break;
+					}
+				}
+			}
+		}
+		editor.setSelectedPane(ApplicationPropertyEditor.OUTPUTS);	
+	}
 
 	// ============================================== Action listener ==========================================
 	@Override
 	public void actionPerformed(ActionEvent event) {
+		/*
+		 * I'm not sure what triggers this to be called, but it is NOT called when they press the back arrow or select File -> Save
+		 */
+		log.info("In actionPerformed() - line 325");
 		save();
 		editor.saveResource();
-	}	
+	}
 }

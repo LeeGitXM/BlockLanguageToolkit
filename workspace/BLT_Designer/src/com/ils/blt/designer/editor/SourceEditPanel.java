@@ -42,6 +42,7 @@ public class SourceEditPanel extends BasicEditPanel {
 	private List<SerializableBlockStateDescriptor> sinks;
 	private JTable table;
 
+	@SuppressWarnings("unchecked")
 	public SourceEditPanel(final BlockPropertyEditor editor) {
 		super(editor);
 		sinks = editor.getRequestHandler().listBlocksOfClass(editor.getContext().getProjectName(),BlockConstants.BLOCK_CLASS_SINK);
@@ -75,7 +76,7 @@ public class SourceEditPanel extends BasicEditPanel {
 					Object binding = handler.getPropertyBinding(diag.getResourceId(), sinkDescriptor.getIdString(), BlockConstants.BLOCK_PROPERTY_TAG_PATH);
 					tagProperty.setValue(val);
 					tagProperty.setBinding(binding.toString());
-					block.setName(sinkDescriptor.getName());
+					// block.setName(sinkDescriptor.getName());  // Don't change the name for a sink re-match
 					editor.updateCorePanel(BlockEditConstants.HOME_PANEL,block); // Core attributes
 					editor.updatePanelForProperty(BlockEditConstants.HOME_PANEL, tagProperty);
 					editor.updatePanelValue(SourceMainPanel.PROP_NAME, sinkDescriptor.getName());

@@ -121,14 +121,14 @@ public class ResourceSaveManager implements Runnable {
 	 */
 	
 	// TODO Make this saveDirtyDiagrams PAH 7/16/21
+
 	private void saveOpenDiagrams(AbstractResourceNavTreeNode node) {
 		Optional<ProjectResource>option = node.getProjectResource();
 		ProjectResource res = option.get();
 		ProcessDiagramView view = null;  // PH 7/16/21
 		node.setItalic(false);
 		if( res!=null ) {
-			if(res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
-				
+			if(res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {	
 				if( DEBUG ) log.infof("%s.saveOpenDiagrams(), found: %s %s", CLSS, res.getResourceId().getProjectName(),
 						  res.getResourceId().getResourcePath().getPath().toString());
 				
@@ -136,12 +136,13 @@ public class ResourceSaveManager implements Runnable {
 				BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(res.getResourcePath());
 				if( tab!=null ) {
 					view = (ProcessDiagramView)tab.getModel();
-					if( DEBUG ) log.infof("%s.run(), %s (%s)", CLSS, view.getName(), (view.isDirty()?"DIRTY":"CLEAN"));
+					if( DEBUG ) log.infof("%s.saveOpenDiagrams, %s (%s)", CLSS, view.getName(), (view.isDirty()?"DIRTY":"CLEAN"));
 					if (view.isDirty()){
 						if( DEBUG ) log.infof("%s.saveOpenDiagrams: Saving %s...", CLSS, res.getResourcePath().getPath().toString());
 						new DiagramUpdateManager(workspace, res).run();
 						view.setDirty(false);
 						if( DEBUG ) log.infof("%s.saveOpenDiagrams: %s saved!", CLSS, res.getResourcePath().getPath().toString());
+
 					}
 				}
 			}
@@ -176,4 +177,5 @@ public class ResourceSaveManager implements Runnable {
 			accumulateNodeResources((AbstractResourceNavTreeNode)child);
 		}
 	}
+
 }

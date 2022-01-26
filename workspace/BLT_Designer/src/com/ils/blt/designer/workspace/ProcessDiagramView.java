@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
@@ -44,6 +45,7 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorP
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorType;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.BlockDiagramModel;
+import com.inductiveautomation.ignition.designer.blockandconnector.model.BlockListener;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Connection;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.impl.LookupConnection;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
@@ -60,7 +62,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	private List<Connection> connections = new ArrayList<>();
 	private static final int MIN_WIDTH = 200;
 	private static final int MIN_HEIGHT = 200;
-	private static final boolean DEBUG = true;
+	private static final boolean DEBUG = false;
 	private Dimension diagramSize = new Dimension(MIN_WIDTH,MIN_HEIGHT);
 	private String name = "UNSET";
 	private UUID encapsulationBlockID = null;  // Used only if this diagram represents a sub-workspace
@@ -89,7 +91,14 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		suppressStateChangeNotification = true;
 		synchronized (diagram) {
 			for( SerializableBlock sb:diagram.getBlocks()) {
-				ProcessBlockView pbv = new ProcessBlockView(sb);
+				ProcessBlockView pbv = null;
+				if( sb.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_ATTRIBUTE)) {
+					BlockAttributeView bav = new BlockAttributeView(sb);
+					pbv = bav;
+				}
+				else {
+					pbv = new ProcessBlockView(sb);
+				}
 				blockMap.put(sb.getId(), pbv);
 				if( DEBUG ) log.infof("%s.ProcessDiagramView: Added a ProcessBlockView for %s to map", CLSS, sb.getName());
 				this.addBlock(pbv);
@@ -133,9 +142,22 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		// We do this initially. From then on it's whatever the user leaves it at.
 		double maxX = MIN_WIDTH;
 		double maxY = MIN_HEIGHT;
+		// By this time we've created all the blocks, configure any attribute displays
 		for(ProcessBlockView blk:blockMap.values()) {
 			if( blk.getLocation().getX()+blk.getPreferredWidth()>maxX ) maxX = blk.getLocation().getX()+blk.getPreferredWidth();
 			if( blk.getLocation().getY()+blk.getPreferredHeight()>maxY) maxY = blk.getLocation().getY()+blk.getPreferredHeight();
+			
+			if(blk.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_ATTRIBUTE)) {
+				BlockAttributeView bav = (BlockAttributeView)blk;
+				ProcessBlockView refBlock = (ProcessBlockView)getBlock(UUID.fromString(bav.getBlockId()));
+				if( refBlock!=null ) {
+					bav.setReferenceBlock(refBlock);
+					bav.startListener();
+				}
+				else {
+					log.warnf("%s.init: WARNING: reference block for attribute display is null",CLSS);
+				}
+			}
 		}
 		
 		diagramSize =  new Dimension((int)(maxX*1.05),(int)(maxY*1.25));
@@ -363,22 +385,24 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	
 	@Override
 	public void deleteBlock(Block blk) {
-		// Delete every connection attached to the block
-		List<Connection> connectionsToBeDeleted = new ArrayList<Connection>();
-		UUID blockId = blk.getId();
-		for( AnchorPoint ap:blk.getAnchorPoints()) {
-			boolean isOrigin = ap.isConnectorOrigin();
-			for(Connection cxn:connections) {
-				if(isOrigin && blockId.equals(cxn.getOrigin().getBlock().getId()) )         connectionsToBeDeleted.add(cxn);
-				else if(!isOrigin && blockId.equals(cxn.getTerminus().getBlock().getId()) ) connectionsToBeDeleted.add(cxn);
+		List<UUID> displaysToDelete = new ArrayList<>();
+		log.infof("%s.deleteBlock: deleting a %s",CLSS,blk.getClass().getCanonicalName());
+		if( !(blk instanceof BlockAttributeView) ) {
+			// Delete every connection attached to the block
+			List<Connection> connectionsToBeDeleted = new ArrayList<Connection>();
+			UUID blockId = blk.getId();
+			for( AnchorPoint ap:blk.getAnchorPoints()) {
+				boolean isOrigin = ap.isConnectorOrigin();
+				for(Connection cxn:connections) {
+					if(isOrigin && blockId.equals(cxn.getOrigin().getBlock().getId()) )         connectionsToBeDeleted.add(cxn);
+					else if(!isOrigin && blockId.equals(cxn.getTerminus().getBlock().getId()) ) connectionsToBeDeleted.add(cxn);
+				}
+			}
+			for(Connection cxn:connectionsToBeDeleted) {
+				connections.remove(cxn);
 			}
 		}
 		
-		for(Connection cxn:connectionsToBeDeleted) {
-			connections.remove(cxn);
-		}
-		
-		log.infof("%s.deleteBlock: deleting a sink (%s)",CLSS,blk.getClass().getCanonicalName());
 		
 		// For a Sink, remove its bound tag
 		if( blk instanceof ProcessBlockView ) {
@@ -398,12 +422,27 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 						msg.append(source.getName());
 						msg.append("\n");
 					}
-					JOptionPane.showMessageDialog(null, msg.toString(), "Warning", JOptionPane.INFORMATION_MESSAGE);
+					JOptionPane.showMessageDialog(null, msg.toString(),"Warning",JOptionPane.INFORMATION_MESSAGE);
+				}
+			}
+			
+			// Delete any associated attribute views associated with the block
+			
+			for(ProcessBlockView pbv:blockMap.values()) {
+				if(view.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_ATTRIBUTE)) {
+					BlockAttributeView bav = (BlockAttributeView)pbv;
+					if(bav.getReferenceBlock()!=null && bav.getReferenceBlock().getId().equals(blk.getId()) )  {
+						displaysToDelete.add(bav.getId());
+					}
 				}
 			}
 		}
+		log.infof("%s.deleteBlock: deleting a block (%s)",CLSS,blk.getClass().getCanonicalName());
 		// Delete the block by removing it from the map
 		blockMap.remove(blk.getId());
+		for(UUID uuid:displaysToDelete) {
+			blockMap.remove(uuid);
+		}
 		fireStateChanged();
 	}
 	
@@ -436,7 +475,9 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	public Color getBackgroundColorForState() {
 		Color result = BLTProperties.DIAGRAM_ACTIVE_BACKGROUND;
 		if( getState().equals(DiagramState.ISOLATED)) result = BLTProperties.DIAGRAM_ISOLATED_BACKGROUND;
-		else if( getState().equals(DiagramState.DISABLED)) result = BLTProperties.DIAGRAM_DISABLED_BACKGROUND;
+		
+		// Dirty trumps active and isolated but not disabled
+		if( getState().equals(DiagramState.DISABLED)) result = BLTProperties.DIAGRAM_DISABLED_BACKGROUND;
 		else if( isDirty() ) result = BLTProperties.DIAGRAM_DIRTY_BACKGROUND;
 		return result;
 	}
@@ -561,12 +602,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		// this as it evaluates. Update the value from the newly deserialized diagram.
 		// Also register self for any block name changes
 		for(ProcessBlockView block:blockMap.values() ) {
-			block.startup();
-			if( block.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SOURCE) ||
-				block.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SINK)) {
-				String key = NotificationKey.keyForBlockName(block.getId().toString());
-				handler.addNotificationChangeListener(key,CLSS, block);
-			}
+			block.startup();  // Registers listeners on all block properties, including name
 		}
 		// Register self for watermark changes
 		String key = NotificationKey.watermarkKeyForDiagram(resourceId);
@@ -629,6 +665,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	}
 
 	// This is called from the PropertyPanel editor and should be when a tag is dropped on a block
+	// This is also called whenever a block is selected - PAH 8/12/21
 	// Validate business rules
 	public String isValidBindingChange(ProcessBlockView pblock,BlockProperty prop,String tagPath, DataType type,Integer tagProp) {
 		String msg = null;
@@ -641,9 +678,11 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			BasicAnchorPoint intended = null;
 			if (connection.getOrigin().getBlock() == pblock) {
 				intended = (BasicAnchorPoint)connection.getTerminus();
+				log.infof("Intended Type of Origin: %s", intended.toString());
 			}
 			if (connection.getTerminus().getBlock() == pblock) {
 				intended = (BasicAnchorPoint)connection.getOrigin();
+				log.infof("Intended Type of Terminus: %s", intended.toString());
 			}
 
 			if (intended != null && !intended.allowConnectionType(conType)) {
@@ -652,26 +691,30 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		}
 		
 		// If block is a Sink, there cannot be another Sink that references the same tag.
-		// The tag cannot be a Boolean
+		// We use the name as an approximation of tag path- the descriptor properties aren't populated. 
+		// The tag cannot be a Boolean.
 		if(pblock.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK) ) {
-			if(type.equals(DataType.Boolean)) {
-				msg = String.format("Sink %s icannot be bound to a Boolean tag, Use a Text tag instead.",pblock.getName());
+			if(type!=null && type.equals(DataType.Boolean)) {
+				msg = String.format("A sink (%s) cannot be bound to a Boolean tag, Use a Text tag instead.",pblock.getName());
 			}
 			else {
 				if(tagPath!=null && !tagPath.isEmpty() ) {
 					List<SerializableBlockStateDescriptor> blocks = appRequestHandler.listBlocksForTag(context.getProjectName(),tagPath);
 					for(SerializableBlockStateDescriptor desc:blocks) {
 						if( desc.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK) &&
-								!desc.getIdString().equals(pblock.getId().toString())) {
-							msg = String.format("%s: cannot bind to same tag as sink %s", pblock.getName(),desc.getName());
+								!desc.getIdString().equals(pblock.getId().toString())   ) {
+							msg = String.format("A sink (%s) cannot bind to same tag (%s) as another sink (%s)", pblock.getName(),tagPath,desc.getName());
 							break;
 						}
 					}
 				}
 			}
 		}
+		
+		if( msg!=null ) return msg;
+		
 		// block binding to expressions for output
-		else if( pblock.getClassName().equals(BlockConstants.BLOCK_CLASS_OUTPUT)    &&
+		if( pblock.getClassName().equals(BlockConstants.BLOCK_CLASS_OUTPUT)    &&
 				prop.getName().equals(BlockConstants.BLOCK_PROPERTY_TAG_PATH) &&
 				tagProp != ExpressionType.None.getIntValue() ) {  // only update the tagpath property
 			msg = "Unable to bind expression tag to output";
@@ -681,17 +724,35 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 				pblock.getClassName().equals(BlockConstants.BLOCK_CLASS_OUTPUT))  &&
 				prop.getName().equals(BlockConstants.BLOCK_PROPERTY_TAG_PATH) &&
 				BusinessRules.isStandardConnectionsFolder(tagPath) ) {  
-			msg = "Input and outputs cannot be bound to tags in the connections folder";
+			msg = "Input or outputs cannot be bound to tags in the connections folder";
 		}
-		// require sources and sinks be bound to tags in connections
 		else if( (pblock.getClassName().equals(BlockConstants.BLOCK_CLASS_SOURCE)    ||
 				pblock.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK))  &&
 				prop.getName().equals(BlockConstants.BLOCK_PROPERTY_TAG_PATH) &&
 				!BusinessRules.isStandardConnectionsFolder(tagPath) ) {  
-			msg = String.format("Sources and sinks must be bound to tags in %s",BlockConstants.SOURCE_SINK_TAG_FOLDER);
+			msg = "Sources or sinks cannot be bound to tags outside the connections folder";
 		}
 
 		return msg;  // this could return an error message
+	}
+	
+	/**
+	 * We are about to saving the diagram. Update the notification handler to reflect new values,
+	 * in particular block name and property changes. After this, if we open the diagram view in the designer,
+	 * it will reflect the saved updates.
+	 * @param diagram
+	 */
+	public void updateNotificationHandlerForSave() {
+		NotificationHandler handler = NotificationHandler.getInstance();
+		for(Block blk:getBlocks()) {
+			ProcessBlockView block = (ProcessBlockView)blk;
+			String nkey = NotificationKey.keyForBlockName(block.getId().toString());
+			handler.initializeBlockNameNotification(nkey, block.getName());
+			for(BlockProperty prop:block.getProperties()) {
+				String pkey = NotificationKey.keyForProperty(block.getId().toString(),prop.getName());
+				handler.initializePropertyValueNotification(pkey, prop.getValue());
+			}
+		}
 	}
 	
 	// ------------------------------------------- NotificationChangeListener --------------------------------------
@@ -720,6 +781,18 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	@Override
 	public void watermarkChange(String mark) {
 		setWatermark(mark);
+	}
+
+	// ------------------------------------------- BlockListener --------------------------------------
+	// Moving a block is a change to the diagram. Mark it dirty and repaint the background.
+	@Override
+	public void blockMoved(Block blk) {
+		this.setDirty(true);
+		SwingUtilities.invokeLater(new WorkspaceBackgroundRepainter());
+	}
+
+	@Override
+	public void blockUIChanged(Block arg0) {
 	}
 
 }

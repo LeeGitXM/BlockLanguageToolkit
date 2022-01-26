@@ -14,8 +14,6 @@
 
 	<property name="local.gateway.url" value="http://localhost:8088/main/system/DeveloperModuleLoadingServlet" />
 
-	<property name="p200props" value="${basedir}/BLT_Build/pack200.properties" />
-
 	<tstamp>
 		<format property="build.date" pattern="MM/dd/yyyy HH:mm" />
 	</tstamp>
@@ -27,7 +25,7 @@
 	
 	<!-- External jar classpath. Includes all the external jars needed to build this module. -->
 	<path id="ExternalJar.classpath">
-		<fileset dir="${ignition.py.lib}/../../lib/core/common" includes="ils-common.jar" />
+		 <fileset dir="${ignition.py.lib}/../../lib/core/common" includes="ils-common.jar" />
 		 <fileset dir="${basedir}/../../external/lib" includes="commons-lang3*.jar" />
 		 <fileset dir="${basedir}/../../external/lib" includes="commons-math3*.jar" />
 		 <fileset dir="${basedir}/../../external/lib" includes="jackson-*.jar" />

@@ -3,7 +3,6 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ILS_Common"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/External"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/BLT_Common"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/Ignition-80"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
 		<attributes>
@@ -12,5 +11,6 @@
 	</classpathentry>
 	<classpathentry kind="lib" path="/Ignition-80/lib/miglayout-core.jar"/>
 	<classpathentry kind="lib" path="/Ignition-80/lib/miglayout-swing.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/BLT_Common"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

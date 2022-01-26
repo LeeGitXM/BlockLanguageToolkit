@@ -564,7 +564,7 @@ public abstract class AbstractBlockUIView extends JComponent implements BlockVie
 	 * @param ypos center of the text
 	 * @param fill color of the text
 	 */
-	private void paintTextAt(Graphics2D g, String text, float xpos, float ypos, Color fill,int fontSize) {
+	protected void paintTextAt(Graphics2D g, String text, float xpos, float ypos, Color fill,int fontSize) {
 		Font font = g.getFont();
 		font = font.deriveFont((float)fontSize);  // This is, presumably the correct way
 		FontRenderContext frc = g.getFontRenderContext();

@@ -185,6 +185,7 @@ public class BlockFactory  {
 						log.warnf("%s: updateBlockFromSerializable: Property <%s> not found in process block %s",CLSS,bp.getName(),pb.getName());
 						log.warnf("     available names are: %s",pb.getPropertyNames().toString()); 
 					}
+					
 				}
 			}
 		}

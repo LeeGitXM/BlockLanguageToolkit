@@ -250,6 +250,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		// Once blocks are started, start tag subscriptions
 		tagListener.setTagReader(tagReader);
 		tagListener.restartSubscriptions(context);
+		log.infof("%s.start: --- startup complete",CLSS);
 	}
 	
 	

@@ -57,7 +57,7 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	
 	public BLTGatewayHook() {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
-		log.info(CLSS+".Initializing BLT Gateway hook FOO");
+		log.infof("%s.Initializing BLT Gateway hook ------------------",CLSS);
 		BundleUtil.get().addBundle(prefix, getClass(), BUNDLE_NAME);
 		requestHandler = ControllerRequestHandler.getInstance();
 	}
@@ -80,7 +80,6 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 		
 		// Set context in the ScriptManager instance
 		ScriptExtensionManager.getInstance().setContext(context);
-		log.info(CLSS+".setup - done setting up scriptExtensionManager.");
 		// Register the ToolkitRecord making sure that the table exists
 		try {
 			context.getSchemaUpdater().updatePersistentRecords(ToolkitProjectRecord.META);
@@ -88,7 +87,7 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 		catch(SQLException sqle) {
 			log.error("BLTGatewayHook.setup: Error registering ToolkitProjectRecord",sqle);
 		}
-		log.info(CLSS+".setup() complete");
+		log.infof("%s.setup: complete ------------------",CLSS);
 	}
 	// NOTE: At the end of this period, the module status is "Running"
 	@Override
@@ -107,13 +106,11 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 				log.infof(CLSS+".startup() - adding project %s", project.getName());
 				mmgr.projectAdded(project.getName()); 
 		}
-
 		// Register for changes to our permanent settings
 		ToolkitProjectRecord.META.addRecordListener(recordListener);
 		controller.start(context);     // Start the controller once the project has been analyzed
-		
 		context.getProjectManager().addProjectListener(mmgr);  
-		log.infof("%s: Startup complete.",CLSS);
+		log.infof("%s.startup: complete ------------------",CLSS);
 	}
 
 	@Override
@@ -121,6 +118,7 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 		ToolkitProjectRecord.META.removeRecordListener(recordListener);
 		context.getProjectManager().removeProjectListener(mmgr);
 		BlockExecutionController.getInstance().stop(context);
+		log.infof("%s.shutdown: complete ------------------",CLSS);
 	}
 
 	@Override
@@ -155,5 +153,4 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	}
 	
 	public ToolkitProjectRecord getPersistentRecord() { return record; }
-
 }

@@ -14,7 +14,6 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Stroke;
 import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
@@ -73,6 +72,7 @@ import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.connection.ConnectionType;
+import com.ils.blt.common.notification.NotificationKey;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
@@ -81,6 +81,7 @@ import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.DiagramUpdateManager;
 import com.ils.blt.designer.NodeStatusManager;
+import com.ils.blt.designer.NotificationHandler;
 import com.ils.blt.designer.ResourceUpdateManager;
 import com.ils.blt.designer.config.AttributeDisplaySelector;
 import com.ils.blt.designer.config.BlockExplanationViewer;
@@ -171,6 +172,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	private final DesignerContext context;
 	private final EditActionHandler editActionHandler;
 	private final ExecutionManager executionEngine;
+	private final NotificationHandler notificationHandler = NotificationHandler.getInstance();
 	private final NodeStatusManager statusManager;
 	private Collection<ResourceWorkspaceFrame> frames;
 	private LoggerEx log = LogUtil.getLogger(getClass().getPackageName());
@@ -252,7 +254,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	 */
 	public PropertyEditorFrame getPropertyEditorFrame() { return this.propertyEditorFrame; }
 	/**
-	 * For popup menu
+	 * For popup menu. For an attribute display, the only reasonable choice is "delete"
 	 */
 	@Override
 	public JPopupMenu getSelectionPopupMenu(List<JComponent> selections) {
@@ -271,7 +273,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 //				menu.add(saveAction);
 				// NOTE: ctypeEditable gets turned off once a block has been serialized.
 				if( selection instanceof BlockComponent && pbv.isCtypeEditable() && 
-						!pbv.getClassName().equals(BlockConstants.BLOCK_CLASS_OUTPUT) ) {
+					!(pbv.getClassName().equals(BlockConstants.BLOCK_CLASS_OUTPUT) ||
+					  pbv.getClassName().equals(BlockConstants.BLOCK_CLASS_ATTRIBUTE)) ) {
 					
 					// Types are: ANY, DATA, TEXT, TRUTH-VALUE
 					// Assume the type from the terminus anchor
@@ -340,75 +343,79 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 					menu.add(linkSourceMenu);
 				}
 				if( DEBUG ) log.infof("%s.getSelectionPopupMenu: Selection editor class = %s",CLSS,pbv.getEditorClass());
-				// Do not allow editing when the diagram is disabled
-				if(pbv.getEditorClass() !=null && pbv.getEditorClass().length() > 0 &&
-						!getActiveDiagram().getState().equals(DiagramState.DISABLED)) {
-					CustomEditAction cea = new CustomEditAction(this,pbv);
-					menu.add(cea);
+
+				// None of the following apply to an attribute display
+				if(!pbv.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_ATTRIBUTE) ) {
+					// Do not allow editing when the diagram is disabled
+					if(pbv.getEditorClass() !=null && pbv.getEditorClass().length() > 0 &&
+							!getActiveDiagram().getState().equals(DiagramState.DISABLED)) {
+						CustomEditAction cea = new CustomEditAction(this,pbv);
+						menu.add(cea);
+					}
+					if( !getActiveDiagram().getState().equals(DiagramState.DISABLED)) {
+						PropertyDisplayAction cea = new PropertyDisplayAction(getActiveDiagram(),pbv, this);
+						menu.add(cea);
+					}
+					if(pbv.isSignalAnchorDisplayed()) {
+						HideSignalAction hsa = new HideSignalAction(this,getActiveDiagram(),pbv);
+						menu.add(hsa);
+					}
+					else {
+						ShowSignalAction ssa = new ShowSignalAction(this,getActiveDiagram(),pbv);
+						menu.add(ssa);
+					}
+					// Display an explanation if the block is currently TRUE or FALSE
+
+					String currentState = handler.getBlockState(getActiveDiagram().getResourceId(),pbv.getName());
+					if( currentState!=null && (currentState.equalsIgnoreCase("true")|| currentState.equalsIgnoreCase("false"))) {
+						ExplanationAction act = new ExplanationAction(getActiveDiagram(),pbv);
+						menu.add(act);
+					}
+					ViewInternalsAction via = new ViewInternalsAction(getActiveDiagram(),pbv);
+					menu.add(via);
+					menu.addSeparator();
+					PropagateAction ea = new PropagateAction(pbv);
+					menu.add(ea);
+					if( !pbv.getClassName().equals(BlockConstants.BLOCK_CLASS_INPUT)) {
+						TriggerUpstreamPropagationAction eaup = new TriggerUpstreamPropagationAction(pbv);
+						menu.add(eaup);
+					}
+					ForceAction fa = new ForceAction(getActiveDiagram(),pbv);
+					menu.add(fa);
+					HelpAction ha = new HelpAction(pbv);
+					menu.add(ha);
+					ResetAction ra = new ResetAction(pbv);
+					menu.add(ra);
+					if(pbv.isLocked()) {
+						UnlockAction ula = new UnlockAction(this,getActiveDiagram(),pbv);
+						menu.add(ula);
+					}
+					else {
+						LockAction la = new LockAction(this,getActiveDiagram(),pbv);
+						menu.add(la);
+					}
+					menu.addSeparator();
+					menu.add(context.getCutAction());
+					menu.add(context.getCopyAction());
+					menu.add(context.getPasteAction());
+
+					menu.add(new SelectAllBlocksAction(this,getActiveDiagram(),pbv));
+					if  (selections.size() > 1) {
+						AlignLeftAction al = new AlignLeftAction(this,getActiveDiagram(),pbv, selections);
+						menu.add(al);
+						AlignRightAction ar = new AlignRightAction(this,getActiveDiagram(),pbv, selections);
+						menu.add(ar);
+						AlignWidthCenterAction aw = new AlignWidthCenterAction(this,getActiveDiagram(),pbv, selections);
+						menu.add(aw);
+						AlignTopAction at = new AlignTopAction(this,getActiveDiagram(),pbv, selections);
+						menu.add(at);
+						AlignBottomAction ab = new AlignBottomAction(this,getActiveDiagram(),pbv, selections);
+						menu.add(ab);
+						AlignHeightCenterAction ah = new AlignHeightCenterAction(this,getActiveDiagram(),pbv, selections);
+						menu.add(ah);
+					}
 				}
-				if(!getActiveDiagram().getState().equals(DiagramState.DISABLED)) {
-					PropertyDisplayAction cea = new PropertyDisplayAction(getActiveDiagram(),pbv, this);
-					menu.add(cea);
-				}
-				if(pbv.isSignalAnchorDisplayed()) {
-					HideSignalAction hsa = new HideSignalAction(this,getActiveDiagram(),pbv);
-					menu.add(hsa);
-				}
-				else {
-					ShowSignalAction ssa = new ShowSignalAction(this,getActiveDiagram(),pbv);
-					menu.add(ssa);
-				}
-				// Display an explanation if the block is currently TRUE or FALSE
-				
-				String currentState = handler.getBlockState(getActiveDiagram().getResourceId(),pbv.getName());
-				if( currentState!=null && (currentState.equalsIgnoreCase("true")|| currentState.equalsIgnoreCase("false"))) {
-					ExplanationAction act = new ExplanationAction(getActiveDiagram(),pbv);
-					menu.add(act);
-				}
-				ViewInternalsAction via = new ViewInternalsAction(getActiveDiagram(),pbv);
-				menu.add(via);
-				menu.addSeparator();
-				PropagateAction ea = new PropagateAction(pbv);
-				menu.add(ea);
-				if( !pbv.getClassName().equals(BlockConstants.BLOCK_CLASS_INPUT)) {
-					TriggerUpstreamPropagationAction eaup = new TriggerUpstreamPropagationAction(pbv);
-					menu.add(eaup);
-				}
-				ForceAction fa = new ForceAction(getActiveDiagram(),pbv);
-				menu.add(fa);
-				HelpAction ha = new HelpAction(pbv);
-				menu.add(ha);
-				ResetAction ra = new ResetAction(pbv);
-				menu.add(ra);
-				if(pbv.isLocked()) {
-					UnlockAction ula = new UnlockAction(this,getActiveDiagram(),pbv);
-					menu.add(ula);
-				}
-				else {
-					LockAction la = new LockAction(this,getActiveDiagram(),pbv);
-					menu.add(la);
-				}
-				menu.addSeparator();
-				menu.add(context.getCutAction());
-				menu.add(context.getCopyAction());
-				menu.add(context.getPasteAction());
 				menu.add(context.getDeleteAction());
-				menu.add(new SelectAllBlocksAction(this,getActiveDiagram(),pbv));
-				if  (selections.size() > 1) {
-					AlignLeftAction al = new AlignLeftAction(this,getActiveDiagram(),pbv, selections);
-					menu.add(al);
-					AlignRightAction ar = new AlignRightAction(this,getActiveDiagram(),pbv, selections);
-					menu.add(ar);
-					AlignWidthCenterAction aw = new AlignWidthCenterAction(this,getActiveDiagram(),pbv, selections);
-					menu.add(aw);
-					AlignTopAction at = new AlignTopAction(this,getActiveDiagram(),pbv, selections);
-					menu.add(at);
-					AlignBottomAction ab = new AlignBottomAction(this,getActiveDiagram(),pbv, selections);
-					menu.add(ab);
-					AlignHeightCenterAction ah = new AlignHeightCenterAction(this,getActiveDiagram(),pbv, selections);
-					menu.add(ah);
-				}
-				
 				return menu;
 			}
 			else if( DiagramWorkspace.this.getSelectedContainer().getSelectedConnection()!=null ) {
@@ -527,7 +534,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		
 		// Display the internals viewer
 		public void actionPerformed(final ActionEvent e) {
-			final JDialog viewer = (JDialog)new AttributeDisplaySelector(context.getFrame(),diagram,block, workspace);
+			final JDialog viewer = (JDialog)new AttributeDisplaySelector(context.getFrame(),diagram,block);
 			
 			Object source = e.getSource();
 			if( source instanceof Component) {
@@ -655,16 +662,18 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		return ret;
 	}
 	
-	
+	// This is the generic drop handling
 	@Override
 	public boolean handleDrop(Object droppedOn,DropTargetDropEvent event) {
 		if (droppedOn instanceof BlockComponent) {
-			handleBlockDrop(droppedOn, event);
+			log.infof("%s.handleDrop: dropped on block component",CLSS);
+			handleTagOnBlockDrop(droppedOn, event);
 		}
-		if (droppedOn instanceof DiagramWorkspace) {
-			handleDiagramDrop(droppedOn, event);
+		else if (droppedOn instanceof DiagramWorkspace) {
+			log.infof("%s.handleDrop: dropped on diagram, checking for tag",CLSS);    // This handles case of dropee being a tag
+			handleTagDrop(droppedOn, event);
 		}
-		if (event.isDataFlavorSupported(BlockDataFlavor)) {
+		if (event.isDataFlavorSupported(BlockDataFlavor)) {        // Handle block dropped from palette
 			try {
 				if( event.getTransferable().getTransferData(BlockDataFlavor) instanceof ProcessBlockView) {
 					ProcessBlockView block = (ProcessBlockView)event.getTransferable().getTransferData(BlockDataFlavor);
@@ -677,9 +686,15 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 					if( isInBounds(dropPoint,bdc) ) {
 						block.setLocation(dropPoint);
 						this.getActiveDiagram().addBlock(block);
-						// Null doesn't work here ...
-						
-						log.infof("%s.handleDrop: dropped %s",CLSS,event.getTransferable().getTransferData(BlockDataFlavor).getClass().getName());
+						log.infof("%s.handleDrop: dropped block %s",CLSS,block.getClassName());
+						if( block.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK) ||
+							block.getClassName().equals(BlockConstants.BLOCK_CLASS_SOURCE)||
+							block.getClassName().equals(BlockConstants.BLOCK_CLASS_INPUT) ||
+							block.getClassName().equals(BlockConstants.BLOCK_CLASS_OUTPUT)) {
+							addNameDisplay(block,dropPoint.x,dropPoint.y);
+						}
+						this.getActiveDiagram().setDirty(true);
+						SwingUtilities.invokeLater(new WorkspaceBackgroundRepainter());
 						return true;
 					}
 					else {
@@ -715,6 +730,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 						ProcessDiagramView diagram = (ProcessDiagramView)container.getModel();
 						TagTreeNode tnode = (TagTreeNode) tagNodeArr.get(0);
 						int dropx = event.getLocation().x;
+						int dropy = event.getLocation().y;
 						int thewidth = getActiveDiagram().getDiagramSize().width;
 						nameFromTagTree(tnode);
 
@@ -734,6 +750,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 									desc.setCtypeEditable(true);
 									block = new ProcessBlockView(desc);
 									block.setName(nameFromTagTree(tnode));
+									updatePropertiesForTagPath(block,tnode.getTagPath().toStringFull());
+									addNameDisplay(block,dropx,dropy);
 								}
 								else {
 									desc.setBlockClass(BlockConstants.BLOCK_CLASS_INPUT);
@@ -744,6 +762,9 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 									desc.setCtypeEditable(true);
 									block = new ProcessBlockView(desc);
 									block.setName(enforceUniqueName(nameFromTagTree(tnode),diagram));
+									updatePropertiesForTagPath(block,tnode.getTagPath().toStringFull());
+									addNameDisplay(block,dropx,dropy);
+									
 								}
 								// Define a single output
 								AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.ANY);
@@ -772,6 +793,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 									// Define a single output
 									AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.ANY);
 									block.addAnchor(output);
+									addNameDisplay(block,dropx,dropy);
 								}
 								else {
 									desc.setBlockClass(BlockConstants.BLOCK_CLASS_OUTPUT);
@@ -782,7 +804,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 									desc.setCtypeEditable(true);
 									block = new ProcessBlockView(desc);
 									block.setName(enforceUniqueName(nameFromTagTree(tnode),diagram));
-
+									addNameDisplay(block,dropx,dropy);
 								}
 								// Define a single input
 								AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.ANY);
@@ -791,7 +813,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 								// Properties are the same for Outputs and Sinks
 								BlockProperty pathProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH,"",PropertyType.STRING,true);
 								pathProperty.setBindingType(BindingType.TAG_WRITE);
-								pathProperty.setBinding("");
+								pathProperty.setBinding(tnode.getTagPath().toStringFull());
 								block.setProperty( pathProperty);
 								BlockProperty valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,"",PropertyType.OBJECT,false);
 								valueProperty.setBindingType(BindingType.ENGINE);
@@ -841,9 +863,11 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 
 							}
 							else {
-								log.infof("%s.handleDiagramDrop: drop of %s out-of-bounds",CLSS,block.getClassName());
+								log.infof("%s.handleTagDrop: drop of %s out-of-bounds",CLSS,block.getClassName());
 							}
 						}
+						diagram.setDirty(true);
+						SwingUtilities.invokeLater(new WorkspaceBackgroundRepainter());
 					}
 				}
 			} 
@@ -869,18 +893,19 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			DataFlavor flava = NodeListTransferable.FLAVOR_NODE_INFO_LIST;
 			if (event.isDataFlavorSupported(flava)) {
 				Object node = event.getTransferable().getTransferData(flava);
-				if (node instanceof ArrayList && ((ArrayList) node).size() == 1) {
+				if (node instanceof ArrayList && ((ArrayList<?>) node).size() == 1) {
 					ArrayList<?> tagNodeArr = (ArrayList<?>)node;
 					if (tagNodeArr.get(0) instanceof TagTreeNode) {  // That's the thing we want!
 						BlockDesignableContainer container = getSelectedContainer();
 						ProcessDiagramView diagram = (ProcessDiagramView)container.getModel();
 						TagTreeNode tnode = (TagTreeNode) tagNodeArr.get(0);
-						log.infof("%s.handleDrop: tag data: %s",CLSS,tnode.getName());
+						log.infof("%s.handleTagOnBlockDrop: tag data: %s",CLSS,tnode.getName());
 						TagPath tp = tnode.getTagPath();
 
 						Block targetBlock = ((BlockComponent)droppedOn).getBlock();
 						if(targetBlock instanceof ProcessBlockView)  {
 							ProcessBlockView pblock = (ProcessBlockView)targetBlock;
+							
 							BlockProperty prop = pblock.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
 							if( prop==null) return;  // Unless there's a tag path, do nothing
 							
@@ -911,7 +936,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 								pblock.setName(nameFromTagTree(tnode));
 								pblock.setCtypeEditable(true);
 								pblock.modifyConnectionForTagChange(prop, tagType);
-								saveOpenDiagram(diagram.getResourceId());
+								diagram.setDirty(true);
+								SwingUtilities.invokeLater(new WorkspaceBackgroundRepainter());
 								diagram.fireStateChanged();
 							} 
 							else {
@@ -927,6 +953,25 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		}
 	}
 
+	/**
+	 * Add an attribute display of the name to the specified block. We do not listen for name changes
+	 * @param diagram
+	 * @param block
+	 */
+	private void addNameDisplay(ProcessBlockView block,int x,int y) {
+		BlockAttributeView bav = new BlockAttributeView(new AttributeDisplayDescriptor());
+		bav.setBlockId(block.getId().toString());
+		bav.setReferenceBlock(block);
+		bav.setPropName(BlockConstants.BLOCK_PROPERTY_NAME);
+		bav.setValue(block.getName());
+		bav.setFormat("%s");
+		bav.startListener();
+		Point loc = new Point(x+BlockConstants.ATTRIBUTE_DISPLAY_OFFSET_X,
+                y+block.getPreferredHeight()+BlockConstants.ATTRIBUTE_DISPLAY_OFFSET_Y);
+		this.getActiveDiagram().addBlock(bav);
+		SwingUtilities.invokeLater(new BlockPositioner(this,bav,loc));
+	}
+	
 	@Override
 	public void onActivation() {
 		zoomCombo.setVisible(true);
@@ -980,14 +1025,14 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			BrowseTreeNode tptn = tnode.getParent();
 			if( tptn instanceof TagTreeNode) {
 				tnode = (TagTreeNode)tptn;
-				name = tnode.getName();
+				nodeName = tnode.getName();
 			}
 			else {
-				name = tptn.getName();
+				nodeName = tptn.getName();
 				break;
 			}
 		}
-		return name;
+		return nodeName;
 	}
 
 	@Override
@@ -1068,7 +1113,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 						final ProjectResourceId newId = handler.createResourceId(diaId.getProjectName(), diaId.getResourcePath().getPath().toString(), diaId.getResourceType().toString());
 						SerializableDiagram diagram = new SerializableDiagram();
 						diagram.setName(pbv.getName());
-						diagram.setEncapsulationBlockId(pbv.getId());
 						diagram.setDirty(false);    // Will become dirty as soon as we add a block
 						log.infof("%s: new diagram for encapsulation block ...",CLSS);
 						try{ 
@@ -1284,8 +1328,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			// running in the gateway, obtain any updates
 			diagram.registerChangeListeners();
 			diagram.refresh();
-			
-			
+
 			BlockDesignableContainer tab = (BlockDesignableContainer)findDesignableContainer(resourceId.getResourcePath());
 			tab.setBackground(diagram.getBackgroundColorForState());
 			
@@ -1374,6 +1417,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		executionEngine.executeOnce(new DiagramUpdateManager(this,optional.get()));
 		
 		diagram.setDirty(false);
+		diagram.updateNotificationHandlerForSave();
 		c.setBackground(diagram.getBackgroundColorForState());
 		SwingUtilities.invokeLater(new WorkspaceRepainter());
 	}
@@ -1398,6 +1442,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		BlockDesignableContainer container = (BlockDesignableContainer)c;
 		ProcessDiagramView view = (ProcessDiagramView)(container.getModel());
 		view.removeChangeListener(this);
+		container.removeAll();
 	}
 	/**
 	 * Container layout manager is:
@@ -1453,6 +1498,23 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			cp.setEnabled(enableAlign);
 		}
 	}
+	
+	/**
+	 * Update the tag path property for a new path. While we're at it we publicize the name
+	 * @param diagram
+	 * @param block
+	 */
+	private void updatePropertiesForTagPath(ProcessBlockView block,String path) {
+		String name = block.getName();
+		String nameKey = NotificationKey.keyForBlockName(block.getId().toString());
+		notificationHandler.initializeBlockNameNotification(nameKey,name);
+		BlockProperty prop = block.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
+		if( prop !=null ) {
+			prop.setBinding(path);
+			String propKey = NotificationKey.keyForPropertyBinding(block.getId().toString(), prop.getName());
+			notificationHandler.initializePropertyBindingNotification(propKey, path);
+		}
+	}
 
 	private boolean isInBounds(Point dropPoint,BlockDesignableContainer bdc) {
 		Rectangle bounds = bdc.getBounds();
@@ -1461,7 +1523,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			dropPoint.y<bounds.y	  ||
 			dropPoint.x>bounds.x+bounds.width ||
 			dropPoint.y>bounds.y+bounds.height   )  inBounds = false;
-		log.infof("%s.handlerDrop: drop x,y = (%d,%d), bounds %d,%d,%d,%d",CLSS,dropPoint.x,dropPoint.y,bounds.x,bounds.y,bounds.width,bounds.height );
+		//log.infof("%s.isInBounds: drop x,y = (%d,%d), bounds %d,%d,%d,%d",CLSS,dropPoint.x,dropPoint.y,bounds.x,bounds.y,bounds.width,bounds.height );
 		return inBounds;
 	}
 
@@ -1474,7 +1536,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	 */
 	@Override
 	public void stateChanged(ChangeEvent event) {
-		log.infof("%s.stateChanged: source = %s",CLSS,event.getSource().getClass().getCanonicalName());
+		//log.infof("%s.stateChanged: source = %s",CLSS,event.getSource().getClass().getCanonicalName());
 		updateBackgroundForDirty();
 	}
 	
@@ -1635,7 +1697,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			block.getBlock().setLocation(new Point(topLeft.x, loc.y));
 		}
 		UndoManager.getInstance().add(new UndoMoveBlocks(undoMap));
-		SwingUtilities.invokeLater(new WorkspaceRepainter());
+		getActiveDiagram().setDirty(true);
+		SwingUtilities.invokeLater(new WorkspaceBackgroundRepainter());
 
 	}
 
@@ -1661,7 +1724,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			block.getBlock().setLocation(new Point(bottomRight.x-block.getWidth(), loc.y));
 		}
 		UndoManager.getInstance().add(new UndoMoveBlocks(undoMap));
-		SwingUtilities.invokeLater(new WorkspaceRepainter());
+		getActiveDiagram().setDirty(true);
+		SwingUtilities.invokeLater(new WorkspaceBackgroundRepainter());
 	}
 
 	public void alignWidthCenter() {
@@ -1677,7 +1741,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			block.getBlock().setLocation(new Point(bottomRight.x-block.getWidth()-adjust, loc.y));
 		}
 		UndoManager.getInstance().add(new UndoMoveBlocks(undoMap));
-		SwingUtilities.invokeLater(new WorkspaceRepainter());
+		getActiveDiagram().setDirty(true);
+		SwingUtilities.invokeLater(new WorkspaceBackgroundRepainter());;
 	}
 
 	public void alignHeightCenter() {
@@ -1693,7 +1758,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			block.getBlock().setLocation(new Point(loc.x, topLeft.y + adjust));
 		}
 		UndoManager.getInstance().add(new UndoMoveBlocks(undoMap));
-		SwingUtilities.invokeLater(new WorkspaceRepainter());
+		getActiveDiagram().setDirty(true);
+		SwingUtilities.invokeLater(new WorkspaceBackgroundRepainter());
 	}
 
 	public void alignTop() {
@@ -1707,7 +1773,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			block.getBlock().setLocation(new Point(loc.x, topLeft.y));
 		}
 		UndoManager.getInstance().add(new UndoMoveBlocks(undoMap));
-		SwingUtilities.invokeLater(new WorkspaceRepainter());
+		getActiveDiagram().setDirty(true);
+		SwingUtilities.invokeLater(new WorkspaceBackgroundRepainter());
 	}
 
 	public void alignBottom() {
@@ -1721,7 +1788,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			block.getBlock().setLocation(new Point(loc.x, bottomRight.y-block.getHeight()));
 		}
 		UndoManager.getInstance().add(new UndoMoveBlocks(undoMap));
-		SwingUtilities.invokeLater(new WorkspaceRepainter());
+		getActiveDiagram().setDirty(true);
+		SwingUtilities.invokeLater(new WorkspaceBackgroundRepainter());
 	}
 	
 	
@@ -2285,6 +2353,30 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
                 zoomPopup.show(c, e.getX(), e.getY());
             }
         }
+    }
+    /**
+     * Use this class to position a block (e.g. AttributeDisplay).
+     * Position the specified block, then repaint.
+     *
+     */
+    public class BlockPositioner implements Runnable {
+    	private final DiagramWorkspace workspace;
+    	private final BlockAttributeView block;
+    	private final Point location;
+    			
+    	public BlockPositioner(DiagramWorkspace wksp,BlockAttributeView blk,Point loc) {
+    		this.workspace = wksp;
+    		this.block = blk;
+    		this.location = loc;
+    	}
+    		
+    	@Override
+    	public void run() {
+    		block.setLocation(location);
+    		block.blockMoved(block);
+    		block.fireBlockMoved();
+    		workspace.repaint(200);  // Paint in 200 ms
+    	}
     }
    
 }

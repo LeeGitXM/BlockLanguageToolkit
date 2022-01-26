@@ -200,7 +200,6 @@ public class XYFit extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void evaluate() {
 		if( !isLocked() ) {
-			log.infof("In evaluate()");
 			state = TruthValue.UNKNOWN;
 			QualifiedValue currentValue = null;
 			if( x==null ) {

@@ -20,14 +20,12 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
 public class DiagramNameSearchObject implements SearchObject {
 	private static final Dimension IMAGE_SIZE = new Dimension(18,18);
 	private final ProcessDiagramView diagram;
-	private final String familyName;
 	private final DesignerContext context;
 	private final ResourceBundle rb;
 	
-	public DiagramNameSearchObject(DesignerContext ctx,String fam,ProcessDiagramView dia) {
+	public DiagramNameSearchObject(DesignerContext ctx,ProcessDiagramView dia) {
 		this.context = ctx;
 		this.diagram = dia;
-		this.familyName = fam;
 		this.rb = ResourceBundle.getBundle("com.ils.blt.designer.designer");  // designer.properties
 	}
 	@Override
@@ -40,12 +38,12 @@ public class DiagramNameSearchObject implements SearchObject {
 
 	@Override
 	public String getName() {
-		return diagram.getDiagramName();
+		return "Name";
 	}
 
 	@Override
 	public String getOwnerName() {
-		return familyName;
+		return diagram.getDiagramName();
 	}
 
 	@Override

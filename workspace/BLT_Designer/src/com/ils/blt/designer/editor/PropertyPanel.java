@@ -83,7 +83,7 @@ import net.miginfocom.swing.MigLayout;
  */
 public class PropertyPanel extends JPanel implements ChangeListener, FocusListener, NotificationChangeListener,TagChangeListener {
 	private static final long serialVersionUID = 2264535784255009984L;
-	private static final boolean DEBUG = true;
+	private static final boolean DEBUG = false;
 	private static SimpleDateFormat dateFormatter = new SimpleDateFormat(BlockConstants.TIMESTAMP_FORMAT);
 	private final NotificationHandler notificationHandler = NotificationHandler.getInstance();
 	private static UtilityFunctions fncs = new UtilityFunctions();
@@ -119,6 +119,11 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 		this.bindingKey = NotificationKey.keyForPropertyBinding(block.getId().toString(), property.getName());
 		this.valueKey = NotificationKey.keyForProperty(block.getId().toString(), property.getName());
 
+		// Make the tagpath property of sources and sinks read-only. We modify here to handle legacy diagrams
+		if( (block.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SINK) || block.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SOURCE)) &&
+				property.getName().equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_TAG_PATH) ) {
+			property.setEditable(false);
+		}
 
 		// Make tagpath read-only for Sources and Sinks regardless. This updates legacy diagrams.
 		if( (block.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK)||block.getClassName().equals(BlockConstants.BLOCK_CLASS_SOURCE)) && 
@@ -339,7 +344,6 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 					}
 				} 
 				catch (IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 				// block binding to expressions for output
@@ -365,6 +369,12 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 				// we should only do  this check if it affects the connection type.
 				if (property.getBinding()!=null ) {
 					block.modifyConnectionForTagChange(property, type);
+				}
+				// If there has been a change, update the editor and view
+				if( !oldPath.equalsIgnoreCase(tagPath)) {
+					BlockPropertyEditor editor = (BlockPropertyEditor)parent.getEditor();
+					editor.setDiagramDirty();
+					editor.getDiagram().updateNotificationHandlerForSave();editor.getDiagram().setDirty(true);
 				}
 			} 
 			else {
@@ -464,6 +474,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 	private void setColorCombo(JComboBox<String> box) {
 		box.removeAllItems();
 		box.addItem("TRANSPARENT");
+		box.addItem("BLACK");
 		box.addItem("RED");
 		box.addItem("GREEN");
 		box.addItem("BLUE");

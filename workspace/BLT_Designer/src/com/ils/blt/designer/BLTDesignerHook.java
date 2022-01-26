@@ -1,5 +1,5 @@
 /**
- *   (c) 2013-2021 ILS Automation. All rights reserved.
+ *   (c) 2013-2022 ILS Automation. All rights reserved.
  */
 package com.ils.blt.designer;
 
@@ -36,6 +36,7 @@ import com.ils.blt.designer.search.BLTSearchProvider;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
+import com.ils.blt.designer.workspace.WorkspaceBackgroundRepainter;
 import com.ils.blt.designer.workspace.WorkspaceRepainter;
 import com.ils.common.component.DiagramViewer;
 import com.ils.common.component.recmap.RecommendationMap;
@@ -64,6 +65,7 @@ import com.inductiveautomation.vision.api.designer.palette.Palette;
 import com.inductiveautomation.vision.api.designer.palette.PaletteItemGroup;
 import com.jidesoft.docking.DockingManager;
 
+
 public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	private static final String CLSS = "BLTDesignerHook";
 	private static final String INTERFACE_MENU_TITLE  = "External Interface Configuration";
@@ -90,7 +92,6 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	public BLTDesignerHook() {
 		log = LogUtil.getLogger(getClass().getPackageName());
 	}
-	
 	
 	@Override
 	public void initializeScriptManager(ScriptManager mgr) {
@@ -153,11 +154,12 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		DiagramUpdateManager.setContext(ctx);
 		ResourceUpdateManager.setContext(ctx);
 		ResourceSaveManager.setContext(ctx);
+		WorkspaceBackgroundRepainter.setContext(ctx);
 		WorkspaceRepainter.setContext(ctx);
 		context.addBeanInfoSearchPath("com.ils.blt.designer.component.beaninfos");
 		searchProvider = new BLTSearchProvider(context);
 		context.registerSearchProvider(searchProvider);
-				
+			
 		// Place icons for our custom widgets on the Vision palette
 		VisionDesignerInterface vdi = 
 					(VisionDesignerInterface) context.getModule(VisionDesignerInterface.VISION_MODULE_ID);
@@ -210,6 +212,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		// Query the gateway for latest notifications from all blocks
 		appRequestHandler.triggerStatusNotifications(context.getProjectName());
 		LogUtil.getLogger(Logger.getRootLogger().getName());  // Cause the logger to be created
+
 	}
 	
 	public NodeStatusManager getNavTreeStatusManager() { return nodeStatusManager; }
@@ -220,7 +223,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	// serialized into project resources.
 	@Override
 	public void notifyProjectSaveStart(SaveContext save) {
-		log.infof("%s: NotifyProjectSaveStart",CLSS);
+		log.infof("%s.notifyProjectSaveStart --------",CLSS);
 		
 		// check if problems with save, just notify for now.  Can do save.abort() if it's serious
 		StringBuffer msg = new StringBuffer();

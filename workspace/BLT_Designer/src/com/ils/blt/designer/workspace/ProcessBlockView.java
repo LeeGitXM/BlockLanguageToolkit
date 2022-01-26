@@ -77,7 +77,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 	private boolean ctypeEditable=false;          // Can we globally change our connection types
 	private boolean locked = false; 
 	private Point location = new Point(0,0);
-	private final LoggerEx log; 
+	protected final LoggerEx log; 
 	private String name;
 	private int preferredHeight = 0;              // Size the view to "natural" size
 	private int preferredWidth  = 0;              // Size the view to "natural" size
@@ -173,7 +173,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 				}
 			} 
 		}
-		this.setName(sb.getName());
+		this.name = sb.getName();
 		this.location = new Point(sb.getX(),sb.getY());
 		if(DEBUG) log.infof("%s: %s created %s %s (%s) view from serializable block", CLSS, sb.getName(),className, sb.getId().toString(),style.toString());
 	}
@@ -301,6 +301,9 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 	public GeneralPurposeDataContainer getAuxiliaryData() {
 		return auxiliaryData;
 	}
+	public void fireBlockMoved() {
+		super.fireBlockMoved();
+	}
 	
 	public int getBackground() { 
 		return background;
@@ -357,7 +360,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 	public Point getLocation() {
 		return location;
 	}
-	// Simply do a linear search
+	// Simply do a linear search - this allows a case-insensitive name match
 	public BlockProperty getProperty(String nam) {
 		BlockProperty result = null;
 		for( BlockProperty prop:getProperties()) {
@@ -420,9 +423,14 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 	public void setIconPath(String iconPath) {this.iconPath = iconPath;}
 	public void setLocked(boolean flag) {this.locked = flag;}
 	public void setName(String text) { 
-		this.name = text; 
-		fireStateChanged(); 
+		if( name==null ||  !name.equals(text) ) {
+			this.name = text;
+			String key = NotificationKey.keyForBlockName(getId().toString());
+			handler.initializeBlockNameNotification(key, name);
+			fireStateChanged();
+		}
 	}
+
 	@Override
 	public void setLocation(Point loc) {
 		location = loc;
@@ -430,9 +438,18 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 	}
 	public void setPreferredHeight(int preferredHeight) {this.preferredHeight = preferredHeight;}
 	public void setPreferredWidth(int preferredWidth) {this.preferredWidth = preferredWidth;}
+	// Do not allow a Name property. Use the class member instead.
 	public void setProperty(BlockProperty prop) { 
 		if( prop!=null && prop.getName()!=null ) {
-			propertyMap.put(prop.getName(), prop);
+			if(prop.getName().equals(BlockConstants.BLOCK_PROPERTY_NAME)) {
+				setName(prop.getValue().toString());
+			}
+			else {
+				propertyMap.put(prop.getName(), prop);
+				String key = NotificationKey.keyForProperty(getId().toString(),prop.getName());
+				handler.initializePropertyValueNotification(key, prop.getValue());
+				fireStateChanged();
+			}
 		}
 		else {
 			log.warnf("%s.setProperties: WARNING: attempt to set %s properties to null",CLSS,getName());
@@ -463,7 +480,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 		}
 	}
 	/**
-	 * Create a notification subscription for each property
+	 * Create a notification subscription for each property and the name
 	 */
 	public void startup () {
 		for(BlockProperty prop:getProperties()) {
@@ -472,17 +489,19 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 			if(DEBUG) log.infof("%s.startup: listening %s", CLSS, key);
 			handler.addNotificationChangeListener(key,CLSS, this);
 		}
+		String key = NotificationKey.keyForBlockName(getId().toString());
+		handler.addNotificationChangeListener(key,CLSS, this);
 	}
 	/**
 	 * Create a name that is highly likely to be unique within the diagram.
 	 * The name can be user-modified at any time. If we really need a uniqueness,
-	 * use the block's UUID.
+	 * use the block's UUID. Set the member directly to avoid excess notifications.
 	 */
 	public void createPseudoRandomName() {
 		String root = className;
 		int pos = className.lastIndexOf(".");
 		if( pos>=0 )  root = className.substring(pos+1);
-		setName(String.format("%s-%d", root.toUpperCase(),random.nextInt(1000)));
+		this.name = String.format("%s-%d", root.toUpperCase(),random.nextInt(1000));
 	}
 	
 	/**
@@ -491,7 +510,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 	 * use the block's UUID.
 	 */
 	public void createPseudoRandomNameExtension() {
-		setName(String.format("%s-%d",getName(),random.nextInt(1000)));
+		this.name = String.format("%s-%d",getName(),random.nextInt(1000));
 	}
 	
 	/**
@@ -517,7 +536,6 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 	 // notification on this event type.  The event instance
 	 // is lazily created using the parameters passed into
 	 // the fire method.
-
 	 protected void fireStateChanged() {
 		 // Guaranteed to return a non-null array
 		 Object[] listnrs = listenerList.getListenerList();
@@ -556,7 +574,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 	// ====================================== Change Listener =====================================
 	 /**
 	  * We are about to take UI action, so execute on the event thread.
-	  * This is probably in response to a change in one of the block properties.
+	  * This is probably in response to a change in one of the block properties or name.
 	  */
 	@Override
 	public void stateChanged(ChangeEvent e) {
@@ -593,7 +611,8 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 			type == DataType.Float4 ||
 			type == DataType.Float8 ) {
 			conType = ConnectionType.DATA; 
-		} else  if (type == DataType.String || 
+		} 
+		else  if (type == DataType.String || 
 			type == DataType.Text ) {
 			conType = ConnectionType.TEXT; 
 		} else  if (type == DataType.Boolean) { 

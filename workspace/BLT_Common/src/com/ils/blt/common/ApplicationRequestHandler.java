@@ -46,7 +46,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * blocks and connectors.
 	 */
 	public ApplicationRequestHandler()  {
-		log = LogUtil.getLogger(getClass().getPackageName());
+		log = LogUtil.getLogger(getClass().getPackage().getName());
 	}
 
 	@Override
@@ -379,7 +379,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	public String getFamilyName(ProjectResourceId uuid) {
 		String name = "NULL UUID";
 		if( uuid!=null ) {
-			log.infof("%s.getFamilyName... %s",CLSS,uuid);
+			//log.infof("%s.getFamilyName... %s",CLSS,uuid);
 			try {
 				name = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 						BLTProperties.MODULE_ID, "getFamilyName",uuid);
