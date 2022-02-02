@@ -241,11 +241,11 @@
 		
 		<!-- Copy dependent jars -->
 		<copy file="${ignition.py.lib}/../../lib/core/common/${common.jar.name}" todir="${basedir}/BLT_Build/temp_modl/" />
+		<copy file="${ignition.py.lib}/../../lib/core/common/${common.jar.name}.pack.gz" todir="${basedir}/BLT_Build/temp_modl/" />
 		<copy file="${basedir}/../../external/lib/jackson-core-2.2.3.jar" todir="${basedir}/BLT_Build/temp_modl/" />
 		<copy file="${basedir}/../../external/lib/jackson-databind-2.2.3.jar" todir="${basedir}/BLT_Build/temp_modl/" />
 		<copy file="${basedir}/../../external/lib/jackson-annotations-2.2.3.jar" todir="${basedir}/BLT_Build/temp_modl/" />
 		<copy file="${basedir}/../../external/lib/commons-math3-3.6.1.jar" todir="${basedir}/BLT_Build/temp_modl/" />
-		<copy file="${basedir}/../../external/lib/ils-common.jar" todir="${basedir}/BLT_Build/temp_modl/" />
 		<copy file="${jar.dir}/${block.jar.name}" todir="${basedir}/BLT_Build/temp_modl/" />
 
 		<!-- Copy license file, help and javadoc into the bundle -->

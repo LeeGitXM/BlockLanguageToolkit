@@ -51,10 +51,10 @@ public class Junction extends AbstractProcessBlock implements ProcessBlock {
 	private void initialize() {	
 		setName("Junction");
 
-		// Define an input
+		// Define inputs
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
 		input.setHint(PlacementHint.L);
-		input.setIsMultiple(false);
+		input.setIsMultiple(true);
 		anchors.add(input);
 
 		// Define a single output

@@ -340,7 +340,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		try {
 			logger.infof("%s.onEdit: alterName from %s to %s",CLSS,oldName,newTextValue);
 			context.structuredRename(resourceId, newTextValue);
-			executionEngine.executeOnce(new ResourceUpdateManager(workspace,getProjectResource()));
+			workspace.saveOpenDiagram(resourceId);
 		}
 		catch (IllegalArgumentException ex) {
 			ErrorUtil.showError(CLSS+".onEdit: "+ex.getMessage());

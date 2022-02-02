@@ -13,12 +13,12 @@ import java.util.Map;
 import java.util.UUID;
 
 import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
 
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.BusinessRules;
 import com.ils.blt.common.DiagramState;
+import com.ils.blt.common.ProcessBlock;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
@@ -69,8 +69,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	private final long resourceId;
 	private DiagramState state = DiagramState.ACTIVE;
 	private DesignerContext context;
-	private boolean dirty = false;   // A newly created diagram is "dirty" until it is saved
-	                                 // but this looks better. It'll be dirty again with the first block
+	private boolean dirty = false;   // A newly created diagram is "clean" because it matches the gateway version
 	private boolean suppressStateChangeNotification = false;
 	private String watermark = "";
 	
@@ -508,21 +507,26 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	public DiagramState getState() {return state;}
 	
 	/**
-	 * A diagram that is dirty is structurally out-of-sync with what is running
-	 * in the gateway.
+	 * A diagram that is dirty is out-of-sync with what is running
+	 * in the gateway. The difference can be as trivial as position.
 	 * @return true if the diagram does not represent what is actually running.
 	 */
 	public boolean isDirty() {return dirty;}
 	
-	public void setDirty(boolean dirty) {
-		this.dirty = dirty;
-		super.fireStateChanged();
+	public void setClean() {
+		this.dirty = false;
+		fireStateChanged();
+	}
+	
+	public void setDirty() {
+		this.dirty = true;
+		fireStateChanged();
 	}
 	
 	@Override
 	public void setDiagramSize(Dimension dim) {
 		diagramSize = dim;
-		super.fireStateChanged();  // Bypass setting block dirty
+		fireStateChanged();  // Bypass setting block dirty
 	}
 	
 	public void setEncapsulationBlockID(UUID encapsulationBlockID) {this.encapsulationBlockID = encapsulationBlockID;}
@@ -536,11 +540,11 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	@Override
 	public void fireStateChanged() {
 		if( !suppressStateChangeNotification ) {
-			setDirty(true); // Fires super method which informs the listeners.
+			super.fireStateChanged();
 		}
 	}
 	/**
-	 * Update the UI, including connections. The block class listens for property values.
+	 * Update the UI, including connections and property values.
 	 */
 	public void refresh() {
 		NotificationHandler handler = NotificationHandler.getInstance();
@@ -550,6 +554,17 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 				ProcessBlockView blk = (ProcessBlockView)bap.getBlock();
 				String key = NotificationKey.keyForConnection(blk.getId().toString(), bap.getId().toString());
 				handler.addNotificationChangeListener(key,CLSS, bap);
+			}
+		}
+		for(UUID key:blockMap.keySet()) {
+			ProcessBlockView blk = blockMap.get(key);
+			String bkey = NotificationKey.keyForBlockName(blk.getName());
+			handler.addNotificationChangeListener(bkey, CLSS, blk);
+			for(BlockProperty prop:blk.getProperties()) {
+				String pkey = NotificationKey.keyForProperty(blk.getId().toString(), prop.getName());
+				handler.addNotificationChangeListener(pkey, CLSS, blk);
+				String pbkey = NotificationKey.keyForPropertyBinding(blk.getId().toString(), prop.getName());
+				handler.addNotificationChangeListener(pbkey, CLSS, blk);
 			}
 		}
 	}
@@ -764,8 +779,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	// Moving a block is a change to the diagram. Mark it dirty and repaint the background.
 	@Override
 	public void blockMoved(Block blk) {
-		this.setDirty(true);
-		SwingUtilities.invokeLater(new WorkspaceBackgroundRepainter());
+		this.setDirty();
 	}
 
 	@Override

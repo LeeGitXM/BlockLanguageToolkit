@@ -1,5 +1,5 @@
 /**
- *   (c) 2013-2018  ILS Automation. All rights reserved.
+ *   (c) 2013-2022  ILS Automation. All rights reserved.
  */
 package com.ils.blt.designer.navtree;
 
@@ -223,7 +223,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 			DesignableContainer c = workspace.findDesignableContainer(resourceId);
 			BlockDesignableContainer container = (BlockDesignableContainer)c;
 			ProcessDiagramView diagram = (ProcessDiagramView)container.getModel();
-			diagram.setDirty(false);
+			workspace.setDiagramClean(diagram);
 			diagram.unregisterChangeListeners();
 			workspace.close(resourceId);
 		}
@@ -241,14 +241,12 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 
 		BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resourceId);
 		if( tab!=null ) {
-
 			ProcessDiagramView view = (ProcessDiagramView)tab.getModel();
 			for( Block blk:view.getBlocks()) {
 				ProcessBlockView pbv = (ProcessBlockView)blk;
 				pbv.setDirty(false);  // Suppresses the popup?
 			}
-			workspace.saveDiagramResource(tab);
-			
+			workspace.saveOpenDiagram(resourceId);
 		}
 	}
 
@@ -335,7 +333,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		try {
 			log.infof("%s.onEdit: alterName from %s to %s",TAG,oldName,newTextValue);
 			context.structuredRename(resourceId, newTextValue);
-			executionEngine.executeOnce(new ResourceUpdateManager(workspace,getProjectResource()));
+			workspace.saveOpenDiagram(resourceId);
 			// If it's open, change its name. Otherwise we sync on opening.
 			if(workspace.isOpen(resourceId) ) {
 				BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resourceId);

@@ -90,39 +90,11 @@ public class BlockPropertyEditor extends AbstractPropertyEditor   {
 	public ProcessBlockView getBlock() { return this.block; }
 	public ProcessDiagramView getDiagram() { return this.diagram; }
 	public void setDiagramDirty() {
-		diagram.setDirty(true);
-		SwingUtilities.invokeLater(new WorkspaceRepainter());
+		workspace.setDiagramDirty(workspace.getActiveDiagram());
 	}
 	
 	public DesignerContext getContext() { return this.context; }
-	/**
-	 * Changing the name is non-structural. If the diagram is not
-	 * dirty for structural reasons, then we go ahead and save the
-	 * project resource.
-	 */
-	public void saveDiagram() {
-		if( !diagram.isDirty()) {
-			BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(diagram.getResourceId());
-			if( tab!=null )  workspace.saveDiagramResource(tab);
-		}
-	}
-	/**
-	 * Save a diagram that is not the current.
-	 */
-	public void saveDiagram(long resid) {
-		BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resid);
-		if( tab!=null )  workspace.saveDiagramResource(tab);
-	}
-	
-	/**
-	 * One of the edit panels has modified a block property. Update the
-	 * running diagram directly. Do not mark the diagram as "dirty" since
-	 * we've only changed a block property. Save the project resource.
-	 */
-	public void saveDiagramClean() {
-		saveDiagram();
-		diagram.setDirty(false);	
-	}
+
 	/**
 	 * Modify a tag path to account for global production/isolation providers
 	 * as well as the current state of the diagram.

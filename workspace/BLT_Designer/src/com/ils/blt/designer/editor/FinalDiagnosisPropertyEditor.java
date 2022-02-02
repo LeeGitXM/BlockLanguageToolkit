@@ -73,10 +73,10 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 	private final ApplicationRequestHandler requestHandler;
 	private final int DIALOG_HEIGHT = 700;
 	private final int DIALOG_WIDTH = 300;
+	private final DiagramWorkspace workspace;
 	private final ProcessDiagramView diagram;
 	private final ProcessBlockView block;
 	
-	private BasicEditPanel mainPanel = null;
 	private JPanel corePanel = null;
 	private JPanel propertiesPanel = null;
 	
@@ -123,11 +123,12 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 	public FinalDiagnosisPropertyEditor(DesignerContext context, DiagramWorkspace wrkspc, ProcessBlockView blk) {
 		this.block = blk;
 		this.model = blk.getAuxiliaryData();
+		this.workspace = wrkspc;
 		this.key = NotificationKey.keyForAuxData(block.getId().toString());
 		this.rb = ResourceBundle.getBundle("com.ils.blt.designer.designer");  // designer.properties
 		this.requestHandler = new ApplicationRequestHandler();
 		this.context = context;
-        this.diagram = wrkspc.getActiveDiagram();
+        this.diagram = workspace.getActiveDiagram();
 		this.log = LogUtil.getLogger(getClass().getPackage().getName());
 		log.infof("%s: creating a Final Diagnosis Editor", CLSS);
 		this.database = requestHandler.getProductionDatabase();
@@ -405,13 +406,6 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		trapBox.setSelected(tf.equals("0")?false:true);
 	}
 	
-	/*
-	 * Call this whenever anything is edited
-	 */
-	public void setDiagramDirty() {
-		diagram.setDirty(true);
-		SwingUtilities.invokeLater(new WorkspaceRepainter());
-	}
 
 	/*
 	 * Copy values from the UI back into the block's aux data.
@@ -439,7 +433,7 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		List<String> inUseList = dual.getDestinations();
 		model.getLists().put("OutputsInUse",inUseList);
 		block.setAuxiliaryData(model);
-
+		workspace.setDiagramDirty(workspace.getActiveDiagram());
 	}
 	
 	/*
@@ -552,6 +546,7 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 				return;  // abort save
 			}
 			block.setName(nameField.getText());
+			workspace.setDiagramDirty(workspace.getActiveDiagram());
 		}
 	}
 	
@@ -564,7 +559,6 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		 */
 		log.tracef("%s: in propertyChange()",CLSS);
 		if (event.getPropertyName().equalsIgnoreCase(DualListBox.PROPERTY_CHANGE_UPDATE)) {
-			setDiagramDirty();
 			save();
 		}
 	}	
@@ -620,35 +614,30 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		if(source.equals(finalDiagnosisLabelField) ) {
 			if( !finalDiagnosisLabelField.getText().equals(properties.get("FinalDiagnosisLabel")) ){
 				log.tracef("--------  THE LABEL HAS BEEN CHANGED -------------");
-				setDiagramDirty();
 				save();
 			}
 		}
 		else if(source.equals(calculationMethodField) ) {
 			if( !calculationMethodField.getText().equals(properties.get("CalculationMethod")) ){
 				log.tracef("--------  THE CALCULATION METHOD HAS BEEN CHANGED -------------");
-				setDiagramDirty();
 				save();
 			}
 		}
 		else if (source.equals(postProcessingCallbackField) ) {
 			if( !postProcessingCallbackField.getText().equals(properties.get("PostProcessingCallback")) ){
 				log.tracef("--------  THE POST PROCESSING CALLBACK HAS BEEN CHANGED -------------");
-				setDiagramDirty();
 				save();
 			}
 		}
 		else if (source.equals(priorityField) ) {
 			if( !priorityField.getText().equals(properties.get("Priority")) ){
 				log.tracef("--------  THE PRIORITY HAS BEEN CHANGED -------------");
-				setDiagramDirty();
 				save();
 			}
 		}
 		else if (source.equals(refreshRateField) ) {
 			if( !refreshRateField.getText().equals(properties.get("RefreshRate")) ){
 				log.tracef("--------  THE REFRESH RATE HAS BEEN CHANGED -------------");
-				setDiagramDirty();
 				save();
 			}
 		}
@@ -657,63 +646,54 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 				log.tracef("--------  THE FINAL DIAGNOSIS NAME HAS BEEN CHANGED -------------");
 				log.tracef("Old name: %s", block.getName());
 				log.tracef("New name: %s", nameField.getText());
-				setDiagramDirty();
 				saveName();
 			}
 		}
 		else if( source.equals(textRecommendationArea) ) {
 			if( !textRecommendationArea.getText().equals(properties.get("TextRecommendation")) ){
 				log.tracef("--------  THE TEXT RECOMMENDATION HAS BEEN CHANGED -------------");
-				setDiagramDirty();
 				save();
 			}
 		}
 		else if (source.equals(explanationArea) ) {
 			if( !explanationArea.getText().equals(properties.get("Explanation"))){
 				log.tracef("--------  THE EXPLANATION HAS BEEN CHANGED -------------");
-				setDiagramDirty();
 				save();
 			}
 		}
 		else if( source.equals(commentArea) ) {
 			if( !commentArea.getText().equals(properties.get("Comment"))) {
 				log.tracef("--------  THE COMMENT HAS BEEN CHANGED -------------");
-				setDiagramDirty();
 				save();
 			}
 		}
 		else if( source.equals(constantCheckBox) ) {
 			if( !(constantCheckBox.isSelected()?"1":"0").equals(properties.get("Constant"))){
 				log.tracef("--------  THE CONSTANT CHECK BOX HAS BEEN CHANGED -------------");				
-				setDiagramDirty();
 				save();
 			}
 		}
 		else if (source.equals(postTextRecommendationCheckBox) ) {
 			if( !(postTextRecommendationCheckBox.isSelected()?"1":"0").equals(properties.get("PostTextRecommendation"))){
 				log.tracef("--------  THE POST TEXT RECOMMENDATION CHECK BOX HAS BEEN CHANGED -------------");				
-				setDiagramDirty();
 				save();
 			}
 		}
 		else if( source.equals(showExplanationWithRecommendationCheckBox) ) {
 			if( !(showExplanationWithRecommendationCheckBox.isSelected()?"1":"0").equals(properties.get("ShowExplanationWithRecommendation"))){
 				log.tracef("--------  THE SHOW EXPLANATION CHECK BOX HAS BEEN CHANGED -------------");				
-				setDiagramDirty();
 				save();
 			}
 		}
 		else if( source.equals(manualMoveAllowedCheckBox) ) {
 			if( !(manualMoveAllowedCheckBox.isSelected()?"1":"0").equals(properties.get("ManualMoveAllowed"))){
 				log.tracef("--------  THE MANUAL MOVE ALLOWED CHECK BOX HAS BEEN CHANGED -------------");				
-				setDiagramDirty();
 				save();
 			}
 		}
 		else if( source.equals(trapBox) ) {
 			if( !(trapBox.isSelected()?"1":"0").equals(properties.get("TrapInsignificantRecommendations"))){
 				log.tracef("--------  THE TRAP INSIGNIFICANT RECOMMENDATIONS CHECK BOX HAS BEEN CHANGED -------------");				
-				setDiagramDirty();
 				save();
 			}			
 		}
