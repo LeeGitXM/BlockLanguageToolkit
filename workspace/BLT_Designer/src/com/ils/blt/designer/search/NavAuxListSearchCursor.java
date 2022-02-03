@@ -4,6 +4,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.findreplace.SearchObjectCursor;
@@ -16,11 +17,11 @@ public class NavAuxListSearchCursor extends SearchObjectCursor {
 	private Map<String,List<String>> lists;
 	private Iterator<String> iterator;
 	private final String parentName;
-	private final String parentId;
+	private final ProjectResourceId parentId;
 	private final String nodeName;
 	private final LoggerEx log;
 	
-	public NavAuxListSearchCursor(DesignerContext ctx,Map<String,List<String>> stringLists,String parent,String node,String uuid) {
+	public NavAuxListSearchCursor(DesignerContext ctx,Map<String,List<String>> stringLists,ProjectResourceId parent,String node,String uuid) {
 		this.context = ctx;
 		this.log = LogUtil.getLogger(getClass().getPackage().getName());
 		this.lists = stringLists;
@@ -28,9 +29,9 @@ public class NavAuxListSearchCursor extends SearchObjectCursor {
 		if( lists!=null ) {
 			iterator = lists.keySet().iterator();
 		}
-		this.parentName = parent;
+		this.parentName = parent.getFolderPath();
 		this.nodeName = node;
-		this.parentId = uuid;
+		this.parentId = parent;
 	}
 	@Override
 	public Object next() {
@@ -39,7 +40,7 @@ public class NavAuxListSearchCursor extends SearchObjectCursor {
 		if( iterator.hasNext() ) {
 			String key = iterator.next();
 			List<String> list = lists.get(key);
-			so = new NavAuxListSearchObject(context,key,list,parentName,nodeName,parentId);
+			so = new NavAuxListSearchObject(context,key,list,parentId,nodeName,parentId);
 			log.infof("%s.next %s",CLSS,parentName,nodeName);
 		}
 		}

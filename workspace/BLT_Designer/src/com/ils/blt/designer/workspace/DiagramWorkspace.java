@@ -14,6 +14,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Stroke;
 import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
@@ -717,7 +718,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	// Check to see if this is a tag dropped on the workspace.  Make it an Input block if it's on the left, 
 	// Output on the right half -- unless the tagpath starts with "Connections". Then we make
 	// Sources/Sinks
-	private void handleDiagramDrop(Object droppedOn, DropTargetDropEvent event) {
+	private void handleTagDrop(Object droppedOn, DropTargetDropEvent event) {
 		DataFlavor flava = NodeListTransferable.FLAVOR_NODE_INFO_LIST;
 		if (event.isDataFlavorSupported(flava)) {
 			try {
@@ -888,7 +889,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	// Craig is correct in that there is an amount of ugliness that involves hard-coded block class names
 	// and properties
 	@SuppressWarnings("rawtypes")
-	public void handleBlockDrop(Object droppedOn, DropTargetDropEvent event) {
+	public void handleTagOnBlockDrop(Object droppedOn, DropTargetDropEvent event) {
 		try {
 			DataFlavor flava = NodeListTransferable.FLAVOR_NODE_INFO_LIST;
 			if (event.isDataFlavorSupported(flava)) {
@@ -1025,14 +1026,14 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			BrowseTreeNode tptn = tnode.getParent();
 			if( tptn instanceof TagTreeNode) {
 				tnode = (TagTreeNode)tptn;
-				nodeName = tnode.getName();
+				name = tnode.getName();
 			}
 			else {
-				nodeName = tptn.getName();
+				name = tptn.getName();
 				break;
 			}
 		}
-		return nodeName;
+		return name;
 	}
 
 	@Override

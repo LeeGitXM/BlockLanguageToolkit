@@ -32,10 +32,8 @@ public class WorkspaceBackgroundRepainter implements Runnable {
 	@Override
 	public void run() {
 		DiagramWorkspace workspace = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getWorkspace();
-		ProcessDiagramView diagram = workspace.getActiveDiagram();
-		Color bk = diagram.getBackgroundColorForState();
-		BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(diagram.getResourceId());
-		tab.setBackground(bk);
-		workspace.repaint(200);  // Paint in 200 ms
+		if( workspace!=null) {
+			workspace.repaint(200);  // Paint in 200 ms
+		}
 	}
 }

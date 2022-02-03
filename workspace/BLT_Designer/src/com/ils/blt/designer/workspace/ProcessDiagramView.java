@@ -782,17 +782,4 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	public void watermarkChange(String mark) {
 		setWatermark(mark);
 	}
-
-	// ------------------------------------------- BlockListener --------------------------------------
-	// Moving a block is a change to the diagram. Mark it dirty and repaint the background.
-	@Override
-	public void blockMoved(Block blk) {
-		this.setDirty(true);
-		SwingUtilities.invokeLater(new WorkspaceBackgroundRepainter());
-	}
-
-	@Override
-	public void blockUIChanged(Block arg0) {
-	}
-
 }

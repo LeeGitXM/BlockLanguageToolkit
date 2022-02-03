@@ -35,7 +35,7 @@ public class ApplicationSearchCursor extends SearchObjectCursor {
 			log.infof("%s.next %s",CLSS,application.getResourceName());
 		}
 		else if( index==1 ) {
-			GeneralPurposeDataContainer aux = GeneralPurposeTreeNode.deserializeApplication(application).getAuxiliaryData();
+			GeneralPurposeDataContainer aux = new GeneralPurposeTreeNode(context).deserializeApplication(application).getAuxiliaryData();
 			if( aux!=null && aux.containsData() ) {
 				String rootName = getRootName();
 				so = new NavAuxSearchCursor(context,aux,rootName,application.getResourceName(),application.getResourcePath().toString());

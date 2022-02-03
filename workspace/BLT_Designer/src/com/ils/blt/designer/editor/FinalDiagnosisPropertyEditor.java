@@ -110,7 +110,7 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 	protected static final Dimension EXPLANATION_AREA_SIZE  = new Dimension(250,300);
 	protected static final Dimension TEXT_RECOMMENDATION_AREA_SIZE  = new Dimension(250,300);
 	protected static final Dimension COMMENT_AREA_SIZE  = new Dimension(250,300);
-	private CorePropertyPanel corePanel;
+	private JPanel corePanel;
 	
 	// from configuration dialog
 	protected final DesignerContext context;
@@ -131,7 +131,7 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		this.requestHandler = new ApplicationRequestHandler();
 		this.context = context;
         this.diagram = wrkspc.getActiveDiagram();
-		this.corePanel = new CorePropertyPanel(this,block);
+		this.corePanel = createCorePanel(block);
 		this.log = LogUtil.getLogger(getClass().getPackageName());
 		this.database = requestHandler.getProjectProductionDatabase(context.getProjectName());
 		this.provider = requestHandler.getProjectProductionTagProvider(context.getProjectName());
