@@ -963,7 +963,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		BlockAttributeView bav = new BlockAttributeView(new AttributeDisplayDescriptor());
 		bav.setBlockId(block.getId().toString());
 		bav.setReferenceBlock(block);
-		bav.setPropName(BlockConstants.BLOCK_PROPERTY_NAME);
+		bav.setPropertyName(BlockConstants.BLOCK_PROPERTY_NAME);
 		bav.setValue(block.getName());
 		bav.setFormat("%s");
 		bav.startListener();

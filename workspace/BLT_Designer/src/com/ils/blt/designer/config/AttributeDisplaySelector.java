@@ -145,7 +145,7 @@ public class AttributeDisplaySelector extends JDialog implements TableModelListe
 					bav = new BlockAttributeView(new AttributeDisplayDescriptor());
 					bav.setBlockId(block.getId().toString());
 					bav.setReferenceBlock(block);
-					bav.setPropName(propName);
+					bav.setPropertyName(propName);
 					if(propName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_NAME)) {
 						bav.setValue(block.getName());
 						bav.setFormat("Name: %s");
@@ -255,7 +255,7 @@ public class AttributeDisplaySelector extends JDialog implements TableModelListe
 				BlockAttributeView bav = (BlockAttributeView)block;
 				// First check for the same block
 				if( bav.getBlockId().equalsIgnoreCase(refBlock.getId().toString())) {
-					if( propName.equalsIgnoreCase(bav.getPropName())) {
+					if( propName.equalsIgnoreCase(bav.getPropertyName())) {
 						display = bav;
 					}
 				}

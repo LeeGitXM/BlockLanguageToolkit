@@ -78,11 +78,11 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 	private boolean locked = false; 
 	private Point location = new Point(0,0);
 	protected final LoggerEx log; 
-	private String name;
+	protected String name;
 	private int preferredHeight = 0;              // Size the view to "natural" size
 	private int preferredWidth  = 0;              // Size the view to "natural" size
 	private String backgroundColor  = "GREY";
-	private Map<String,BlockProperty> propertyMap = new HashMap<String,BlockProperty>();
+	protected Map<String,BlockProperty> propertyMap = new HashMap<String,BlockProperty>();
 	private TruthValue state = TruthValue.UNSET;
 	private String badgeChar = null;
 	private String statusText;                    // Auxiliary text to display

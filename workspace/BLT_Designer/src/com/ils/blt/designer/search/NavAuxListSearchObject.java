@@ -32,7 +32,7 @@ public class NavAuxListSearchObject implements SearchObject {
 	private final DesignerContext context;
 	private final ResourceBundle rb;
 	
-	public NavAuxListSearchObject(DesignerContext ctx,String k,List<String> data,ProjectResourceId parent,String node,ProjectResourceId resid) {
+	public NavAuxListSearchObject(DesignerContext ctx,String k,List<String> data,ProjectResourceId parent,String node) {
 		this.context = ctx;
 		this.key = k;
 		this.list = data;

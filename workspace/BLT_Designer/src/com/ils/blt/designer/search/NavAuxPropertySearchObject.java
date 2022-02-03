@@ -30,7 +30,7 @@ public class NavAuxPropertySearchObject implements SearchObject {
 	private final DesignerContext context;
 	private final ResourceBundle rb;
 	
-	public NavAuxPropertySearchObject(DesignerContext ctx,String nam,String val,ProjectResourceId parent,String node,String parentUUID) {
+	public NavAuxPropertySearchObject(DesignerContext ctx,String nam,String val,ProjectResourceId parent,String node) {
 		this.context = ctx;
 		this.name = nam;
 		this.value = val;

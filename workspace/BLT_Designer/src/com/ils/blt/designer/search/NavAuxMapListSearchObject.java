@@ -11,6 +11,7 @@ import javax.swing.ImageIcon;
 
 import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.findreplace.SearchObject;
@@ -28,17 +29,17 @@ public class NavAuxMapListSearchObject implements SearchObject {
 	private final List<Map<String,String>> list;
 	private final String parentName;
 	private final String nodeName;
-	private final String parentId;
+	private final ProjectResourceId parentId;
 	private final DesignerContext context;
 	private final ResourceBundle rb;
 	
-	public NavAuxMapListSearchObject(DesignerContext ctx,String k,List<Map<String,String>> data,String parent,String node,String parentUUID) {
+	public NavAuxMapListSearchObject(DesignerContext ctx,String k,List<Map<String,String>> data,ProjectResourceId parent,String node) {
 		this.context = ctx;
 		this.key = k;
 		this.list = data;
-		this.parentName = parent;
+		this.parentName = parent.getResourcePath().getName();
 		this.nodeName = node;
-		this.parentId = parentUUID;
+		this.parentId = parent;
 		this.rb = ResourceBundle.getBundle("com.ils.blt.designer.designer");  // designer.properties
 		this.log = LogUtil.getLogger(getClass().getPackage().getName());
 	}

@@ -21,7 +21,7 @@ public class NavAuxListSearchCursor extends SearchObjectCursor {
 	private final String nodeName;
 	private final LoggerEx log;
 	
-	public NavAuxListSearchCursor(DesignerContext ctx,Map<String,List<String>> stringLists,ProjectResourceId parent,String node,String uuid) {
+	public NavAuxListSearchCursor(DesignerContext ctx,Map<String,List<String>> stringLists,ProjectResourceId parent,String node) {
 		this.context = ctx;
 		this.log = LogUtil.getLogger(getClass().getPackage().getName());
 		this.lists = stringLists;
@@ -29,9 +29,9 @@ public class NavAuxListSearchCursor extends SearchObjectCursor {
 		if( lists!=null ) {
 			iterator = lists.keySet().iterator();
 		}
-		this.parentName = parent.getFolderPath();
-		this.nodeName = node;
 		this.parentId = parent;
+		this.parentName = parent.getResourcePath().getName();
+		this.nodeName = node;
 	}
 	@Override
 	public Object next() {
@@ -40,7 +40,7 @@ public class NavAuxListSearchCursor extends SearchObjectCursor {
 		if( iterator.hasNext() ) {
 			String key = iterator.next();
 			List<String> list = lists.get(key);
-			so = new NavAuxListSearchObject(context,key,list,parentId,nodeName,parentId);
+			so = new NavAuxListSearchObject(context,key,list,parentId,nodeName);
 			log.infof("%s.next %s",CLSS,parentName,nodeName);
 		}
 		}

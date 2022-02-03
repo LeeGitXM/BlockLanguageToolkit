@@ -4,6 +4,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.findreplace.SearchObjectCursor;
@@ -16,11 +17,11 @@ public class NavAuxMapListSearchCursor extends SearchObjectCursor {
 	private Map<String,List<Map<String,String>>> maplists;
 	private Iterator<String> iterator;
 	private final String parentName;
-	private final String parentId;
+	private final ProjectResourceId parentId;
 	private final String nodeName;
 	private final LoggerEx log;
 	
-	public NavAuxMapListSearchCursor(DesignerContext ctx,Map<String,List<Map<String,String>>> stringMapLists,String parent,String node,String uuid) {
+	public NavAuxMapListSearchCursor(DesignerContext ctx,Map<String,List<Map<String,String>>> stringMapLists,ProjectResourceId parent,String node) {
 		this.context = ctx;
 		this.log = LogUtil.getLogger(getClass().getPackage().getName());
 		this.maplists = stringMapLists;
@@ -28,9 +29,9 @@ public class NavAuxMapListSearchCursor extends SearchObjectCursor {
 		if( maplists!=null ) {
 			iterator = maplists.keySet().iterator();
 		}
-		this.parentName = parent;
+		this.parentName = parent.getResourcePath().getName();
 		this.nodeName = node;
-		this.parentId = uuid;
+		this.parentId = parent;
 	}
 	@Override
 	public Object next() {
@@ -39,7 +40,7 @@ public class NavAuxMapListSearchCursor extends SearchObjectCursor {
 			if( iterator.hasNext() ) {
 				 String key = iterator.next();
 				 List<Map<String,String>> list = maplists.get(key);
-				so = new NavAuxMapListSearchObject(context,key,list,parentName,nodeName,parentId);
+				so = new NavAuxMapListSearchObject(context,key,list,parentId,nodeName);
 				log.infof("%s.next %s",CLSS,parentName,nodeName);
 			}
 		}
