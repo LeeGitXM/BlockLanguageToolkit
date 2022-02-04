@@ -6,8 +6,6 @@ package com.ils.blt.designer.editor;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.SwingUtilities;
-
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.block.BlockConstants;
@@ -15,10 +13,8 @@ import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
-import com.ils.blt.designer.workspace.WorkspaceRepainter;
 import com.ils.common.persistence.ToolkitProperties;
 import com.ils.common.tag.TagUtility;
-import com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignableContainer;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
 

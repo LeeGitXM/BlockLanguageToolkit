@@ -87,6 +87,7 @@ import com.ils.blt.designer.config.BlockExplanationViewer;
 import com.ils.blt.designer.config.BlockInternalsViewer;
 import com.ils.blt.designer.config.ForceValueSettingsDialog;
 import com.ils.blt.designer.editor.BlockEditConstants;
+import com.ils.blt.designer.editor.BlockPropertyEditor;
 import com.ils.blt.designer.editor.PropertyEditorFrame;
 import com.ils.blt.designer.navtree.DiagramTreeNode;
 import com.inductiveautomation.ignition.client.designable.DesignableContainer;
@@ -687,7 +688,12 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 							block.getClassName().equals(BlockConstants.BLOCK_CLASS_OUTPUT)) {
 							addNameDisplay(block,dropPoint.x,dropPoint.y);
 						}
-						this.getActiveDiagram().setDirty();
+						setDiagramDirty(getActiveDiagram());
+						// Create the process editor for the new block
+						BlockPropertyEditor editor = new BlockPropertyEditor(context,this,block);
+						PropertyEditorFrame peframe = getPropertyEditorFrame();
+						peframe.setEditor(editor);
+						
 						return true;
 					}
 					else {
@@ -840,13 +846,18 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 										property.setBinding(tnode.getTagPath().toStringFull());}
 										block.modifyConnectionForTagChange(property, type);
 								}
+								this.getActiveDiagram().setDirty();
+								// Create the process editor for the new block
+								BlockPropertyEditor editor = new BlockPropertyEditor(context,this,block);
+								PropertyEditorFrame peframe = getPropertyEditorFrame();
+								peframe.setEditor(editor);
 								log.infof("%s.handleTagDrop: dropped %s",CLSS,block.getClassName());
 							}
 							else {
 								log.infof("%s.handleTagDrop: drop of %s out-of-bounds",CLSS,block.getClassName());
 							}
 						}
-						diagram.setDirty();
+						setDiagramDirty(this.getActiveDiagram());
 					}
 				}
 			} 
@@ -901,7 +912,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 								pblock.setName(nameFromTagTree(tnode));
 								pblock.setCtypeEditable(true);
 								pblock.modifyConnectionForTagChange(prop, tagType);
-								diagram.setDirty();
+								setDiagramDirty(this.getActiveDiagram());
 							} 
 							else {
 								JOptionPane.showMessageDialog(null, connectionMessage, "Warning", JOptionPane.INFORMATION_MESSAGE);
@@ -1077,6 +1088,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 						diagram.setResourceId(newId);
 						diagram.setId(UUID.randomUUID());
 						diagram.setEncapsulationBlockId(pbv.getId());
+						setDiagramClean(theDiagram);
 						diagram.setDirty(false);    // Will become dirty as soon as we add a block
 						log.infof("%s: new diagram for encapsulation block ...",CLSS);
 						try{ 

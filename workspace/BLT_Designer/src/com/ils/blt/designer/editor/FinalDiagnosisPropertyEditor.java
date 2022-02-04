@@ -1,5 +1,5 @@
 /**
- *   (c) 2015-2021  ILS Automation. All rights reserved.
+ *   (c) 2015-2022  ILS Automation. All rights reserved.
  */
 package com.ils.blt.designer.editor;
 
@@ -12,7 +12,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -43,7 +42,6 @@ import com.ils.blt.designer.navtree.GeneralPurposeTreeNode;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
-import com.ils.blt.designer.workspace.WorkspaceRepainter;
 import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.ui.DualListBox;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
@@ -140,6 +138,7 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		 *  A final Diagnosis is on a diagram and there is a DiagramTreeNode in the project tree that corresponds to the diagram.
 		 *  From that node we can walk up the project tree until we hit an application.  There might be a problem if some 
 		 *  knucklehead puts a final diagnosis onto a diagram that is not built under the Application / Family framework.
+		 *  NOTE: That would be me --- clc
 		 *  The steps are:
 		 *  	get the resource tree manager
 		 *  	get the node for the diagram 
@@ -151,24 +150,26 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		this.nodeStatusMgr = wrkspc.getNodeStatusManager();
 		this.diagramTreeNode = (DiagramTreeNode) nodeStatusMgr.findNode(diagram.getResourceId());
 		this.appNode = this.diagramTreeNode.getApplicationTreeNode();
-		if (this.appNode == null) {
-			log.errorf("**** ERROR APPLICATION NOT FOUND ****");
-			// Need to somehow bail here and let the user know they are screwed!
+		if (this.appNode != null) {
+			this.applicationResource = appNode.getProjectResource();
+			// Somehow I need to get the serializable application, I have the tree node that represents the 
+			// application and I have the resource for the application.  
+			SerializableApplication sap = this.appNode.deserializeApplication(this.applicationResource);
+			this.appModel = sap.getAuxiliaryData();
 		}
-		this.applicationResource = appNode.getProjectResource();
-		
-		// Somehow I need to get the serializable application, I have the tree node that represents the 
-		// application and I have the resource for the application.  
-		SerializableApplication sap = this.appNode.deserializeApplication(this.applicationResource);
-		this.appModel = sap.getAuxiliaryData();
-		
+		else {
+			log.errorf("%s: **** ERROR APPLICATION NOT FOUND (FinalDiagnosis not in any application hierarchy) ****",CLSS);
+			// Need to somehow bail here and let the user know they are screwed!
+			this.applicationResource = null;
+			this.appModel = new GeneralPurposeDataContainer();
+		}
         initialize(block);
         setUI();
 		// Register for notifications
 		log.tracef("%s: adding notification listener %s", CLSS, key);
 		notificationHandler.addNotificationChangeListener(key, CLSS, this);
+	
 	}
-
 	/**
 	 * The super class takes care of making a central tabbed pane --- but
 	 * we don't want it. Simply put our mainPanel as the content pane.

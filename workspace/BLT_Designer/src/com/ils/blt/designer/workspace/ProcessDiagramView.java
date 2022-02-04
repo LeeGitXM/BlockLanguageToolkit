@@ -31,6 +31,7 @@ import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableConnection;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.designer.NotificationHandler;
+import com.ils.blt.designer.editor.BlockPropertyEditor;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
@@ -420,6 +421,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		for(UUID uuid:displaysToDelete) {
 			blockMap.remove(uuid);
 		}
+		setDirty();
 		fireStateChanged();
 	}
 	

@@ -21,16 +21,12 @@ import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.PropertyType;
-import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
-import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
-import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;

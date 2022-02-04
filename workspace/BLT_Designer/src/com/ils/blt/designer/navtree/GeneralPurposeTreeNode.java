@@ -364,7 +364,6 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			logger.infof("%s.onSelected: selected family %s (%d)",CLSS,sfam.getName(),resourceId);
 			FamilyPropertyEditor famEditor = new FamilyPropertyEditor(context,sfam,resource);
 			workspace.getPropertyEditorFrame().setEditor(famEditor) ;
-			//workspace.getPropertyEditorFrame().refreshPropertyEditor();
 		}
 	}
 
