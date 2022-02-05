@@ -557,8 +557,8 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		 * This is called when the editor is built - I think the purpose is to handle changes made via a tag binding where the tag changes value while
 		 * the editor is open.  Not sure why the code below seems to single out the dual list box. PAH 10/6/21 (This is just a theory)
 		 */
-		log.tracef("%s: in propertyChange()",CLSS);
 		if (event.getPropertyName().equalsIgnoreCase(DualListBox.PROPERTY_CHANGE_UPDATE)) {
+			log.infof("%s: in propertyChange()",CLSS);
 			save();
 		}
 	}	
@@ -613,19 +613,19 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		 */
 		if(source.equals(finalDiagnosisLabelField) ) {
 			if( !finalDiagnosisLabelField.getText().equals(properties.get("FinalDiagnosisLabel")) ){
-				log.tracef("--------  THE LABEL HAS BEEN CHANGED -------------");
+				log.infof("--------  THE LABEL HAS BEEN CHANGED -------------");
 				save();
 			}
 		}
 		else if(source.equals(calculationMethodField) ) {
 			if( !calculationMethodField.getText().equals(properties.get("CalculationMethod")) ){
-				log.tracef("--------  THE CALCULATION METHOD HAS BEEN CHANGED -------------");
+				log.infof("--------  THE CALCULATION METHOD HAS BEEN CHANGED -------------");
 				save();
 			}
 		}
 		else if (source.equals(postProcessingCallbackField) ) {
 			if( !postProcessingCallbackField.getText().equals(properties.get("PostProcessingCallback")) ){
-				log.tracef("--------  THE POST PROCESSING CALLBACK HAS BEEN CHANGED -------------");
+				log.infof("--------  THE POST PROCESSING CALLBACK HAS BEEN CHANGED -------------");
 				save();
 			}
 		}
@@ -669,31 +669,31 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		}
 		else if( source.equals(constantCheckBox) ) {
 			if( !(constantCheckBox.isSelected()?"1":"0").equals(properties.get("Constant"))){
-				log.tracef("--------  THE CONSTANT CHECK BOX HAS BEEN CHANGED -------------");				
+				log.infof("--------  THE CONSTANT CHECK BOX HAS BEEN CHANGED -------------");				
 				save();
 			}
 		}
 		else if (source.equals(postTextRecommendationCheckBox) ) {
 			if( !(postTextRecommendationCheckBox.isSelected()?"1":"0").equals(properties.get("PostTextRecommendation"))){
-				log.tracef("--------  THE POST TEXT RECOMMENDATION CHECK BOX HAS BEEN CHANGED -------------");				
+				log.infof("--------  THE POST TEXT RECOMMENDATION CHECK BOX HAS BEEN CHANGED -------------");				
 				save();
 			}
 		}
 		else if( source.equals(showExplanationWithRecommendationCheckBox) ) {
 			if( !(showExplanationWithRecommendationCheckBox.isSelected()?"1":"0").equals(properties.get("ShowExplanationWithRecommendation"))){
-				log.tracef("--------  THE SHOW EXPLANATION CHECK BOX HAS BEEN CHANGED -------------");				
+				log.infof("--------  THE SHOW EXPLANATION CHECK BOX HAS BEEN CHANGED -------------");				
 				save();
 			}
 		}
 		else if( source.equals(manualMoveAllowedCheckBox) ) {
 			if( !(manualMoveAllowedCheckBox.isSelected()?"1":"0").equals(properties.get("ManualMoveAllowed"))){
-				log.tracef("--------  THE MANUAL MOVE ALLOWED CHECK BOX HAS BEEN CHANGED -------------");				
+				log.infof("--------  THE MANUAL MOVE ALLOWED CHECK BOX HAS BEEN CHANGED -------------");				
 				save();
 			}
 		}
 		else if( source.equals(trapBox) ) {
 			if( !(trapBox.isSelected()?"1":"0").equals(properties.get("TrapInsignificantRecommendations"))){
-				log.tracef("--------  THE TRAP INSIGNIFICANT RECOMMENDATIONS CHECK BOX HAS BEEN CHANGED -------------");				
+				log.infof("--------  THE TRAP INSIGNIFICANT RECOMMENDATIONS CHECK BOX HAS BEEN CHANGED -------------");				
 				save();
 			}			
 		}
