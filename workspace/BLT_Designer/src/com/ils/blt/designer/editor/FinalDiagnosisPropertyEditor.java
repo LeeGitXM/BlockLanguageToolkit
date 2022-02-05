@@ -212,8 +212,7 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		 * the project tree is selected or another block on the diagram.
 		 */
 		log.tracef("%s.shutdown: removing change listener and saving", CLSS);
-		notificationHandler.removeNotificationChangeListener(key, CLSS);
-		save();		
+		notificationHandler.removeNotificationChangeListener(key, CLSS);		
 	}
 	
 	

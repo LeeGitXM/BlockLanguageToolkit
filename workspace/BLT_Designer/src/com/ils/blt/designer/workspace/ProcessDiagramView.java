@@ -723,6 +723,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		else if( (pblock.getClassName().equals(BlockConstants.BLOCK_CLASS_SOURCE)    ||
 				pblock.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK))  &&
 				prop.getName().equals(BlockConstants.BLOCK_PROPERTY_TAG_PATH) &&
+				!tagPath.isEmpty() &&
 				!BusinessRules.isStandardConnectionsFolder(tagPath) ) {  
 			msg = "Sources or sinks cannot be bound to tags outside the connections folder";
 		}
