@@ -1,5 +1,5 @@
 /**
- *   (c) 2014-2021  ILS Automation. All rights reserved.
+ *   (c) 2014-2022  ILS Automation. All rights reserved.
  */
 package com.ils.blt.designer.editor;
 
@@ -43,7 +43,6 @@ import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessAnchorDescriptor;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
-import com.ils.blt.designer.workspace.WorkspaceRepainter;
 import com.inductiveautomation.ignition.client.sqltags.ClientTagManager;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.sqltags.model.Tag;
@@ -798,6 +797,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 		return null;
 	}
 	// The display contains tag value, quality and timestamp
+	// Note: This gets triggered each time we start the subscription
 	@Override
 	public void tagChanged(TagChangeEvent event) {
 		final Tag tag = event.getTag();
