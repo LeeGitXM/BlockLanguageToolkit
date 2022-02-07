@@ -1,5 +1,5 @@
 /**
- *   (c) 2013  ILS Automation. All rights reserved.
+ *   (c) 2013-2022  ILS Automation. All rights reserved.
  */
 package com.ils.blt.designer.workspace;
 
@@ -31,6 +31,8 @@ import javax.swing.SwingUtilities;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.PalettePrototype;
+import com.ils.blt.designer.editor.BlockPropertyEditor;
+import com.ils.blt.designer.editor.PropertyEditorFrame;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -39,6 +41,7 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.BlockDi
 import com.inductiveautomation.ignition.designer.designable.tools.AbstractDesignTool;
 import com.inductiveautomation.ignition.designer.gui.DragInitiatorListener;
 import com.inductiveautomation.ignition.designer.gui.IconUtil;
+import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.model.ResourceWorkspaceFrame;
 import com.jidesoft.docking.DockableFrame;
 
@@ -51,6 +54,7 @@ public class ProcessBlockPalette extends DockableFrame implements ResourceWorksp
 	private static final String TAG = "ProcessBlockPalette";
 	public static final String DOCKING_KEY = "ProcessBlockPalette";
 	private static final Dimension IMAGE_SIZE = new Dimension(32,32);
+	private final DesignerContext context;
 	private final DiagramWorkspace workspace;
 	private LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
 	
@@ -58,8 +62,9 @@ public class ProcessBlockPalette extends DockableFrame implements ResourceWorksp
 	/**
 	 * Constructor 
 	 */
-	public ProcessBlockPalette(DiagramWorkspace workspace) {
+	public ProcessBlockPalette(DesignerContext ctx,DiagramWorkspace workspace) {
 		super(DOCKING_KEY, IconUtil.getRootIcon("delay_block_16.png"));  // Pinned icon
+		this.context = ctx;
 		setUndockedBounds(new Rectangle(200, 100, 550, 130));
 		setAutohideHeight(100);
 		setAutohideWidth(120);
@@ -111,14 +116,11 @@ public class ProcessBlockPalette extends DockableFrame implements ResourceWorksp
 		return DOCKING_KEY;
 	}
 
-
 	@Override
 	public boolean isInitiallyVisible() {
 		return true;
 	}
 	
-
-
 	private class PaletteEntry extends AbstractAction {
 		private static final long serialVersionUID = 6689395234849746852L;
 		private final PalettePrototype prototype;
@@ -187,6 +189,11 @@ public class ProcessBlockPalette extends DockableFrame implements ResourceWorksp
 				BlockDiagramModel model = c.getModel();
 				block.setLocation(p);
 				model.addBlock(block);
+				// Create the process editor for the new block
+				DiagramWorkspace ws = (DiagramWorkspace)workspace;
+				BlockPropertyEditor editor = new BlockPropertyEditor(context,ws,block);
+				PropertyEditorFrame peframe = ws.getPropertyEditorFrame();
+				peframe.setEditor(editor);
 			}
 			else {
 				log.infof("%s.InsertBlockTool: press rejected - out-of-bounds",TAG);

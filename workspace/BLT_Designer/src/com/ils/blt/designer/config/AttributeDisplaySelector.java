@@ -1,5 +1,5 @@
 /**
- *   (c) 2014-2021  ILS Automation. All rights reserved.
+ *   (c) 2014-2022  ILS Automation. All rights reserved.
  *   http://docs.oracle.com/javase/tutorial/displayCode.html?code=http://docs.oracle.com/javase/tutorial/uiswing/examples/components/SharedModelDemoProject/src/components/SharedModelDemo.java
  *   
  *   This class implements a swing dialog that provides a table of all of the properties of the originating block.
@@ -27,7 +27,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
@@ -42,7 +41,6 @@ import com.ils.blt.designer.workspace.AttributeDisplayDescriptor;
 import com.ils.blt.designer.workspace.BlockAttributeView;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
-import com.ils.blt.designer.workspace.WorkspaceRepainter;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -180,7 +178,8 @@ public class AttributeDisplaySelector extends JDialog implements TableModelListe
 				else  {
 				}
 			}
-			SwingUtilities.invokeLater(new WorkspaceRepainter());
+			arrangeDisplays();
+			diagram.setDirty();
 		}
 	}
 
@@ -243,7 +242,20 @@ public class AttributeDisplaySelector extends JDialog implements TableModelListe
 		panel.add(separator, "growx,wrap");
 		return label;
 	}
-
+	/**
+	 * Arrange the locations of the displays in a stack pattern.
+	 * The
+	 */
+	private void arrangeDisplays() {
+		Point ref = block.getLocation();
+		int count = 0;
+		for(BlockAttributeView bav:findDisplays(diagram,block)) {
+			Point loc = new Point(ref.x,ref.y);
+			bav.setLocation(loc);
+			bav.fireBlockMoved();
+			count++;
+		}
+	}
 	/**
 	 * The "display" is a BlockAttributeView block with the indicated reference block and property.
 	 * @return the attribute display for the given block and property

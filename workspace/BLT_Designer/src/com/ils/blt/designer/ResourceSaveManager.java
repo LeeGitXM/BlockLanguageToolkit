@@ -138,11 +138,10 @@ public class ResourceSaveManager implements Runnable {
 					view = (ProcessDiagramView)tab.getModel();
 					if( DEBUG ) log.infof("%s.saveOpenDiagrams, %s (%s)", CLSS, view.getName(), (view.isDirty()?"DIRTY":"CLEAN"));
 					if (view.isDirty()){
-						if( DEBUG ) log.infof("%s.saveOpenDiagrams: Saving %s...", CLSS, res.getResourcePath().getPath().toString());
+						view.registerChangeListeners();     // The diagram may include new components
+						if( DEBUG ) log.infof("%s.saveOpenDiagrams: Saving %s...", CLSS, view.getName());
 						new DiagramUpdateManager(workspace, res).run();
-						view.setDirty(false);
-						if( DEBUG ) log.infof("%s.saveOpenDiagrams: %s saved!", CLSS, res.getResourcePath().getPath().toString());
-
+						if( DEBUG ) log.infof("%s.saveOpenDiagrams: %s saved!", CLSS, view.getName());
 					}
 				}
 			}

@@ -343,9 +343,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		try {
 			logger.infof("%s.onEdit: alterName from %s to %s",CLSS,oldName,newTextValue);
 			alterName(newTextValue);
-			Optional<ProjectResource> optional = context.getProject().getResource(resourceId);
-			ProjectResource resource = optional.get();
-			executionEngine.executeOnce(new DiagramUpdateManager(workspace,resource));
+			workspace.saveOpenDiagram(resourceId);
 		}
 		catch (IllegalArgumentException ex) {
 			ErrorUtil.showError(CLSS+".onEdit: "+ex.getMessage());
@@ -376,7 +374,6 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			logger.infof("%s.onSelected: selected family %s (%d)",CLSS,sfam.getName(),resourceId);
 			FamilyPropertyEditor famEditor = new FamilyPropertyEditor(context,sfam,resource);
 			workspace.getPropertyEditorFrame().setEditor(famEditor) ;
-			//workspace.getPropertyEditorFrame().refreshPropertyEditor();
 		}
 	}
 

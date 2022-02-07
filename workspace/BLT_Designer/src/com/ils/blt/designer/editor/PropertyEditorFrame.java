@@ -117,7 +117,6 @@ public class PropertyEditorFrame extends DockableFrame implements ResourceWorksp
 					else {
 						newEditor = new BlockPropertyEditor(context,workspace,blk);
 					}
-
 				}
 				// There may be a connection selected
 				else {

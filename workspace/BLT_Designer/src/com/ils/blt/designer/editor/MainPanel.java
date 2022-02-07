@@ -1,5 +1,5 @@
 /**
- *   (c) 2014-2021  ILS Automation. All rights reserved.
+ *   (c) 2014-2022  ILS Automation. All rights reserved.
  */
 package com.ils.blt.designer.editor;
 
@@ -80,8 +80,7 @@ public class MainPanel extends BasicEditPanel {
 		add(separator,"span,growy");
 	}
 	public BlockPropertyEditor getBlockPropertyEditor() { return this.bpe; }
-	public void saveDiagramClean() {bpe.saveDiagramClean();} 
-	public void setDiagramDirty()  {bpe.setDiagramDirty(); }
+
 	/**
 	 * Iterate over panels and close any subscriptions
 	 */

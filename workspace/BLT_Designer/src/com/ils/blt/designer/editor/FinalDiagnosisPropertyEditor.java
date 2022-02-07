@@ -1,5 +1,5 @@
 /**
- *   (c) 2015-2021  ILS Automation. All rights reserved.
+ *   (c) 2015-2022  ILS Automation. All rights reserved.
  */
 package com.ils.blt.designer.editor;
 
@@ -44,7 +44,6 @@ import com.ils.blt.designer.navtree.GeneralPurposeTreeNode;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
-import com.ils.blt.designer.workspace.WorkspaceRepainter;
 import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.ui.DualListBox;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
@@ -75,11 +74,10 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 	private final ApplicationRequestHandler requestHandler;
 	private final int DIALOG_HEIGHT = 700;
 	private final int DIALOG_WIDTH = 300;
+	private final DiagramWorkspace workspace;
 	private final ProcessDiagramView diagram;
 	private final ProcessBlockView block;
-	
-	private BasicEditPanel mainPanel = null;
-	
+	private JPanel corePanel = null;
 	private JPanel propertiesPanel = null;
 	
 	private final GeneralPurposeDataContainer model;           // Data container operated on by panels
@@ -110,7 +108,6 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 	protected static final Dimension EXPLANATION_AREA_SIZE  = new Dimension(250,300);
 	protected static final Dimension TEXT_RECOMMENDATION_AREA_SIZE  = new Dimension(250,300);
 	protected static final Dimension COMMENT_AREA_SIZE  = new Dimension(250,300);
-	private JPanel corePanel;
 	
 	// from configuration dialog
 	protected final DesignerContext context;
@@ -126,15 +123,17 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 	public FinalDiagnosisPropertyEditor(DesignerContext context, DiagramWorkspace wrkspc, ProcessBlockView blk) {
 		this.block = blk;
 		this.model = blk.getAuxiliaryData();
+		this.workspace = wrkspc;
 		this.key = NotificationKey.keyForAuxData(block.getId().toString());
 		this.rb = ResourceBundle.getBundle("com.ils.blt.designer.designer");  // designer.properties
 		this.requestHandler = new ApplicationRequestHandler();
 		this.context = context;
-        this.diagram = wrkspc.getActiveDiagram();
 		this.corePanel = createCorePanel(block);
 		this.log = LogUtil.getLogger(getClass().getPackageName());
 		this.database = requestHandler.getProjectProductionDatabase(context.getProjectName());
 		this.provider = requestHandler.getProjectProductionTagProvider(context.getProjectName());
+        this.diagram = workspace.getActiveDiagram();
+		log.infof("%s: creating a Final Diagnosis Editor", CLSS);
 		this.setPreferredSize(new Dimension(DIALOG_WIDTH,DIALOG_HEIGHT));
 		
 		/*
@@ -142,6 +141,7 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		 *  A final Diagnosis is on a diagram and there is a DiagramTreeNode in the project tree that corresponds to the diagram.
 		 *  From that node we can walk up the project tree until we hit an application.  There might be a problem if some 
 		 *  knucklehead puts a final diagnosis onto a diagram that is not built under the Application / Family framework.
+		 *  NOTE: That would be me --- clc
 		 *  The steps are:
 		 *  	get the resource tree manager
 		 *  	get the node for the diagram 
@@ -153,25 +153,27 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		this.nodeStatusMgr = wrkspc.getNodeStatusManager();
 		this.diagramTreeNode = (DiagramTreeNode) nodeStatusMgr.findNode(diagram.getResourceId());
 		this.appNode = this.diagramTreeNode.getApplicationTreeNode();
-		if (this.appNode == null) {
-			log.errorf("%s **** ERROR APPLICATION NOT FOUND ****");
-			// Need to somehow bail here and let the user know they are screwed!
+		if (this.appNode != null) {
+			Optional<ProjectResource> optional =  appNode.getProjectResource();
+			this.applicationResource = optional.get();
+			// Somehow I need to get the serializable application, I have the tree node that represents the 
+			// application and I have the resource for the application.  
+			SerializableApplication sap = this.appNode.deserializeApplication(this.applicationResource);
+			this.appModel = sap.getAuxiliaryData();
 		}
-		Optional<ProjectResource> optional = appNode.getProjectResource();
-		this.applicationResource = optional.get();
-		
-		// Somehow I need to get the serializable application, I have the tree node that represents the 
-		// application and I have the resource for the application.  
-		SerializableApplication sap = this.appNode.deserializeApplication(this.applicationResource);
-		this.appModel = sap.getAuxiliaryData();
-		
+		else {
+			log.errorf("%s: **** ERROR APPLICATION NOT FOUND (FinalDiagnosis not in any application hierarchy) ****",CLSS);
+			// Need to somehow bail here and let the user know they are screwed!
+			this.applicationResource = null;
+			this.appModel = new GeneralPurposeDataContainer();
+		}
         initialize(block);
         setUI();
 		// Register for notifications
 		log.tracef("%s: adding notification listener %s", CLSS, key);
 		notificationHandler.addNotificationChangeListener(key, CLSS, this);
+	
 	}
-
 	/**
 	 * The super class takes care of making a central tabbed pane --- but
 	 * we don't want it. Simply put our mainPanel as the content pane.
@@ -405,13 +407,6 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		trapBox.setSelected(tf.equals("0")?false:true);
 	}
 	
-	/*
-	 * Call this whenever anything is edited
-	 */
-	public void setDiagramDirty() {
-		diagram.setDirty(true);
-		SwingUtilities.invokeLater(new WorkspaceRepainter());
-	}
 
 	/*
 	 * Copy values from the UI back into the block's aux data.
@@ -439,7 +434,7 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		List<String> inUseList = dual.getDestinations();
 		model.getLists().put("OutputsInUse",inUseList);
 		block.setAuxiliaryData(model);
-
+		workspace.setDiagramDirty(workspace.getActiveDiagram());
 	}
 	
 	/*
@@ -552,6 +547,7 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 				return;  // abort save
 			}
 			block.setName(nameField.getText());
+			workspace.setDiagramDirty(workspace.getActiveDiagram());
 		}
 	}
 	
@@ -614,35 +610,30 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		if(source.equals(finalDiagnosisLabelField) ) {
 			if( !finalDiagnosisLabelField.getText().equals(properties.get("FinalDiagnosisLabel")) ){
 				log.tracef("--------  THE LABEL HAS BEEN CHANGED -------------");
-				setDiagramDirty();
 				save();
 			}
 		}
 		else if(source.equals(calculationMethodField) ) {
 			if( !calculationMethodField.getText().equals(properties.get("CalculationMethod")) ){
 				log.tracef("--------  THE CALCULATION METHOD HAS BEEN CHANGED -------------");
-				setDiagramDirty();
 				save();
 			}
 		}
 		else if (source.equals(postProcessingCallbackField) ) {
 			if( !postProcessingCallbackField.getText().equals(properties.get("PostProcessingCallback")) ){
 				log.tracef("--------  THE POST PROCESSING CALLBACK HAS BEEN CHANGED -------------");
-				setDiagramDirty();
 				save();
 			}
 		}
 		else if (source.equals(priorityField) ) {
 			if( !priorityField.getText().equals(properties.get("Priority")) ){
 				log.tracef("--------  THE PRIORITY HAS BEEN CHANGED -------------");
-				setDiagramDirty();
 				save();
 			}
 		}
 		else if (source.equals(refreshRateField) ) {
 			if( !refreshRateField.getText().equals(properties.get("RefreshRate")) ){
 				log.tracef("--------  THE REFRESH RATE HAS BEEN CHANGED -------------");
-				setDiagramDirty();
 				save();
 			}
 		}
@@ -651,63 +642,54 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 				log.tracef("--------  THE FINAL DIAGNOSIS NAME HAS BEEN CHANGED -------------");
 				log.tracef("Old name: %s", block.getName());
 				log.tracef("New name: %s", nameField.getText());
-				setDiagramDirty();
 				saveName();
 			}
 		}
 		else if( source.equals(textRecommendationArea) ) {
 			if( !textRecommendationArea.getText().equals(properties.get("TextRecommendation")) ){
 				log.tracef("--------  THE TEXT RECOMMENDATION HAS BEEN CHANGED -------------");
-				setDiagramDirty();
 				save();
 			}
 		}
 		else if (source.equals(explanationArea) ) {
 			if( !explanationArea.getText().equals(properties.get("Explanation"))){
 				log.tracef("--------  THE EXPLANATION HAS BEEN CHANGED -------------");
-				setDiagramDirty();
 				save();
 			}
 		}
 		else if( source.equals(commentArea) ) {
 			if( !commentArea.getText().equals(properties.get("Comment"))) {
 				log.tracef("--------  THE COMMENT HAS BEEN CHANGED -------------");
-				setDiagramDirty();
 				save();
 			}
 		}
 		else if( source.equals(constantCheckBox) ) {
 			if( !(constantCheckBox.isSelected()?"1":"0").equals(properties.get("Constant"))){
 				log.tracef("--------  THE CONSTANT CHECK BOX HAS BEEN CHANGED -------------");				
-				setDiagramDirty();
 				save();
 			}
 		}
 		else if (source.equals(postTextRecommendationCheckBox) ) {
 			if( !(postTextRecommendationCheckBox.isSelected()?"1":"0").equals(properties.get("PostTextRecommendation"))){
 				log.tracef("--------  THE POST TEXT RECOMMENDATION CHECK BOX HAS BEEN CHANGED -------------");				
-				setDiagramDirty();
 				save();
 			}
 		}
 		else if( source.equals(showExplanationWithRecommendationCheckBox) ) {
 			if( !(showExplanationWithRecommendationCheckBox.isSelected()?"1":"0").equals(properties.get("ShowExplanationWithRecommendation"))){
 				log.tracef("--------  THE SHOW EXPLANATION CHECK BOX HAS BEEN CHANGED -------------");				
-				setDiagramDirty();
 				save();
 			}
 		}
 		else if( source.equals(manualMoveAllowedCheckBox) ) {
 			if( !(manualMoveAllowedCheckBox.isSelected()?"1":"0").equals(properties.get("ManualMoveAllowed"))){
 				log.tracef("--------  THE MANUAL MOVE ALLOWED CHECK BOX HAS BEEN CHANGED -------------");				
-				setDiagramDirty();
 				save();
 			}
 		}
 		else if( source.equals(trapBox) ) {
 			if( !(trapBox.isSelected()?"1":"0").equals(properties.get("TrapInsignificantRecommendations"))){
 				log.tracef("--------  THE TRAP INSIGNIFICANT RECOMMENDATIONS CHECK BOX HAS BEEN CHANGED -------------");				
-				setDiagramDirty();
 				save();
 			}			
 		}

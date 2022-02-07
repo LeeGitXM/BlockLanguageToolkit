@@ -94,7 +94,7 @@ public void run() {
 							res.getResourceId().getResourcePath().getPath().toString(),jpe.getMessage());
 					return;
 				}
-				view.setDirty(false);
+				view.setClean();
 				try {
 
 					context.getProject().modifyResource(res);

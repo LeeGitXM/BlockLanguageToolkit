@@ -1,5 +1,5 @@
 /**
- *   (c) 2013-2021  ILS Automation. All rights reserved.
+ *   (c) 2013-2022  ILS Automation. All rights reserved.
  *  
  */
 package com.ils.blt.designer;
@@ -234,7 +234,6 @@ public class NotificationHandler implements PushNotificationListener {
 			else {
 				log.warnf("%s.receiveNotification: key:%s, payload %s=%s (ignored)",CLSS,key,message.getClass().getName(),message.toString());
 			}
-			
 		}
 	}
 	/**
@@ -243,10 +242,7 @@ public class NotificationHandler implements PushNotificationListener {
 	 */
 	public void initializeBlockNameNotification(String key,String name) {
 		if( key==null || name==null) return;
-		
-		// Only initialize the payload map if the key doesn't exist
-		String payload = (String)payloadMap.get(key);
-		if(payload==null) payloadMap.put(key, name);
+		payloadMap.put(key, name);
 		Map<String,NotificationChangeListener> listeners = changeListenerMap.get(key);
 		if( listeners != null ) {
 			for(NotificationChangeListener listener:listeners.values()) {
@@ -263,9 +259,7 @@ public class NotificationHandler implements PushNotificationListener {
 	 */
 	public void initializePropertyBindingNotification(String key,Object value) {
 		if( key==null || value==null) return;
-		// Only initialize the payload map if the key doesn't exist
-		Object payload = payloadMap.get(key);
-		if( payload==null) payloadMap.put(key, value);
+		payloadMap.put(key, value);
 		Map<String,NotificationChangeListener> listeners = changeListenerMap.get(key);
 		if( listeners != null ) {
 			for(NotificationChangeListener listener:listeners.values()) {
@@ -285,9 +279,7 @@ public class NotificationHandler implements PushNotificationListener {
 	 */
 	public void initializePropertyValueNotification(String key,Object value) {
 		if( key==null || value==null) return;
-		// Only initialize the payload map if the key doesn't exist
-		Object payload = payloadMap.get(key);
-		if( payload==null) payloadMap.put(key, value);
+		payloadMap.put(key, value);
 		Map<String,NotificationChangeListener> listeners = changeListenerMap.get(key);
 		if( listeners != null ) {
 			for(NotificationChangeListener listener:listeners.values()) {

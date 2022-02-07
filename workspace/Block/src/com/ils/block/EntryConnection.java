@@ -23,6 +23,8 @@ import com.inductiveautomation.ignition.common.project.resource.ProjectResourceI
  * An Entry Connection is for use only on an EncapsulatedDiagram. Its function is to be
  * a surrogate for the associated anchor point in the parent Encapsulation block.
  * This block is automatically generated. It does NOT appear on the block palette.
+ * 
+ * NOTE: At present there is no such thing.
  */
 public class EntryConnection extends AbstractProcessBlock implements ProcessBlock {
 	

@@ -22,13 +22,11 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
 public class PythonEditorPanel extends BasicEditPanel {
 	private static final long serialVersionUID = 1L;
-	private final DesignerContext context;
 	private BlockProperty property = null;
 
 	
 	public PythonEditorPanel(DesignerContext ctx,final BlockPropertyEditor editor) {
 		super(editor);
-		this.context = ctx;
 		setLayout(new BorderLayout());
 		JPanel editorPanel = new JPanel();
 		JScrollPane treePane = new JScrollPane(editorPanel);
@@ -43,7 +41,7 @@ public class PythonEditorPanel extends BasicEditPanel {
 
 				if(property!=null) {
 					editor.updatePanelForProperty(BlockEditConstants.HOME_PANEL,property);
-					editor.saveDiagramClean();      // Immediate update in gateway
+					editor.setDiagramDirty(); 
 					setSelectedPane(BlockEditConstants.HOME_PANEL);
 				}
 			}

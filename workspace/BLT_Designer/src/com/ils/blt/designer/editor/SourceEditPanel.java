@@ -80,7 +80,7 @@ public class SourceEditPanel extends BasicEditPanel {
 					editor.updateCorePanel(BlockEditConstants.HOME_PANEL,block); // Core attributes
 					editor.updatePanelForProperty(BlockEditConstants.HOME_PANEL, tagProperty);
 					editor.updatePanelValue(SourceMainPanel.PROP_NAME, sinkDescriptor.getName());
-					editor.saveDiagramClean() ;   // Immediately update the running diagram
+					editor.setDiagramDirty() ; 
 				}
 				else {
 					log.warnf("%s.OK action: property is NULL, no action taken",TAG);

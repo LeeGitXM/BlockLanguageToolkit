@@ -1,5 +1,9 @@
 /**
+<<<<<<< HEAD
  *   (c) 2021  ILS Automation. All rights reserved.
+=======
+ *   (c) 2014-2022  ILS Automation. All rights reserved.
+>>>>>>> master
  */
 package com.ils.blt.designer;
 
@@ -20,7 +24,16 @@ import com.inductiveautomation.ignition.designer.project.ResourceNotFoundExcepti
 
 
 /**
+<<<<<<< HEAD
  * Update the single specified resource.
+=======
+ * Update or add the single project resource belonging to the specified node.
+ * This is used when a generic save is run from the main menu, when an open
+ * dialog is closed and when any of several menu choices are made from the
+ * Navigation tree. This should be the only class that does the actual saving. 
+ *
+ * Note that a diagram is equivalent to a project resource.
+>>>>>>> master
  * 
  * Use ExecutionManager.executeOnce() to invoke this in the background.
  * 
@@ -38,6 +51,11 @@ public class ResourceUpdateManager implements Runnable {
 	private final ThreadCounter counter = ThreadCounter.getInstance();
 	private final ApplicationRequestHandler requestHandler;
 	
+	/**
+	 * Created on close of a tab
+	 * @param pr
+	 * @param contents
+	 */
 	public ResourceUpdateManager(ProjectResource pr,byte[] contents) {
 		this.log = LogUtil.getLogger(getClass().getPackageName());
 		if(DEBUG) log.infof("%s.run: Creating a new ResourceUpdateManager ...", CLSS);;
@@ -46,7 +64,6 @@ public class ResourceUpdateManager implements Runnable {
 		this.counter.incrementCount();
 		this.requestHandler = new ApplicationRequestHandler();
 	}
-
 	/**
 	 * Call this method from the hook as soon as the context is established.
 	 * @param ctx designer context

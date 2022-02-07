@@ -1,5 +1,5 @@
 /**
- *   (c) 2014-2021  ILS Automation. All rights reserved.
+ *   (c) 2014-2022  ILS Automation. All rights reserved.
  */
 package com.ils.blt.designer.workspace;
 
@@ -89,6 +89,7 @@ import com.ils.blt.designer.config.BlockExplanationViewer;
 import com.ils.blt.designer.config.BlockInternalsViewer;
 import com.ils.blt.designer.config.ForceValueSettingsDialog;
 import com.ils.blt.designer.editor.BlockEditConstants;
+import com.ils.blt.designer.editor.BlockPropertyEditor;
 import com.ils.blt.designer.editor.PropertyEditorFrame;
 import com.ils.blt.designer.navtree.DiagramTreeNode;
 import com.inductiveautomation.ignition.client.designable.DesignableContainer;
@@ -208,7 +209,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	// Initialize the workspace frames.
 	private void initialize() {
 		// Create palette
-		ProcessBlockPalette tabbedPalette = new ProcessBlockPalette(this);
+		ProcessBlockPalette tabbedPalette = new ProcessBlockPalette(context,this);
 		tabbedPalette.setInitMode(DockContext.STATE_FRAMEDOCKED);
 		tabbedPalette.setInitSide(DockContext.DOCK_SIDE_NORTH);
 		tabbedPalette.setInitIndex(0);
@@ -694,8 +695,12 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 							block.getClassName().equals(BlockConstants.BLOCK_CLASS_OUTPUT)) {
 							addNameDisplay(block,dropPoint.x,dropPoint.y);
 						}
-						this.getActiveDiagram().setDirty(true);
-						SwingUtilities.invokeLater(new WorkspaceBackgroundRepainter());
+						setDiagramDirty(getActiveDiagram());
+						// Create the process editor for the new block
+						BlockPropertyEditor editor = new BlockPropertyEditor(context,this,block);
+						PropertyEditorFrame peframe = getPropertyEditorFrame();
+						peframe.setEditor(editor);
+						
 						return true;
 					}
 					else {
@@ -860,15 +865,18 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 										property.setBinding(tnode.getTagPath().toStringFull());}
 									block.modifyConnectionForTagChange(property, type);
 								}
-								log.infof("%s.handleDiagramDrop: dropped %s",CLSS,block.getClassName());
-
+								this.getActiveDiagram().setDirty();
+								// Create the process editor for the new block
+								BlockPropertyEditor editor = new BlockPropertyEditor(context,this,block);
+								PropertyEditorFrame peframe = getPropertyEditorFrame();
+								peframe.setEditor(editor);
+								log.infof("%s.handleTagDrop: dropped %s",CLSS,block.getClassName());
 							}
 							else {
 								log.infof("%s.handleTagDrop: drop of %s out-of-bounds",CLSS,block.getClassName());
 							}
 						}
-						diagram.setDirty(true);
-						SwingUtilities.invokeLater(new WorkspaceBackgroundRepainter());
+						setDiagramDirty(this.getActiveDiagram());
 					}
 				}
 			} 
@@ -937,9 +945,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 								pblock.setName(nameFromTagTree(tnode));
 								pblock.setCtypeEditable(true);
 								pblock.modifyConnectionForTagChange(prop, tagType);
-								diagram.setDirty(true);
-								SwingUtilities.invokeLater(new WorkspaceBackgroundRepainter());
-								diagram.fireStateChanged();
+								setDiagramDirty(this.getActiveDiagram());
 							} 
 							else {
 								JOptionPane.showMessageDialog(null, connectionMessage, "Warning", JOptionPane.INFORMATION_MESSAGE);
@@ -1107,37 +1113,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 //				Should this read in the aux data from the source block and copy it ?
 			
 				results.add(pbv);
-				// Special handling for an encapsulation block - create its sub-workspace
-				if(pbv.isEncapsulation()) {
-					try {
-						ProjectResourceId diaId = theDiagram.getResourceId();
-						final ProjectResourceId newId = handler.createResourceId(diaId.getProjectName(), diaId.getResourcePath().getPath().toString(), diaId.getResourceType().toString());
-						SerializableDiagram diagram = new SerializableDiagram();
-						diagram.setName(pbv.getName());
-						diagram.setDirty(false);    // Will become dirty as soon as we add a block
-						log.infof("%s: new diagram for encapsulation block ...",CLSS);
-						try{ 
-						    json = mapper.writeValueAsString(diagram);
-						}
-						catch(JsonProcessingException jpe) {
-							log.warnf("%s: Unable to serialize diagram (%s)",CLSS,jpe.getMessage());
-						}
-						log.infof("%s: serializeDiagram created json ... %s",CLSS,json);
-
-						byte[] bytes = json.getBytes();
-						if( DEBUG ) log.infof("%s: DiagramAction. create new %s resource %d (%d bytes)",CLSS,BLTProperties.DIAGRAM_RESOURCE_TYPE,
-								newId,bytes.length);
-						ProjectResourceBuilder builder = ProjectResource.newBuilder();
-						builder.putData(bytes);
-						builder.setProjectName(diaId.getProjectName());
-						builder.setResourceId(diaId);
-						builder.setResourcePath(diaId.getResourcePath());
-						executionEngine.executeOnce(new DiagramUpdateManager(this,builder.build()));					
-					} 
-					catch (Exception err) {
-						ErrorUtil.showError(CLSS+" Exception pasting blocks",err);
-					}
-				}
 			}
 		} 
 		catch (JsonParseException jpe) {
@@ -1324,7 +1299,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			ApplicationRequestHandler arh = new ApplicationRequestHandler();
 			arh.setDiagramState(diagram.getResourceId(), diagram.getState().name());
 			statusManager.setResourceState(diagram.getResourceId(),diagram.getState(),true);
-			diagram.setDirty(false);  // Newly opened from a serialized resource, should be in-sync.
+			diagram.setClean();  // Newly opened from a serialized resource, should be in-sync.
 			// In the probable case that the designer is opened after the diagram has started
 			// running in the gateway, obtain any updates
 			diagram.registerChangeListeners();
@@ -1376,7 +1351,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			}
 			else {
 				// Mark diagram as clean, since we reverted changes
-				diagram.setDirty(false);
+				setDiagramClean(diagram);
 			}
 		}
 		DiagramTreeNode node = (DiagramTreeNode)statusManager.findNode(diagram.getResourceId());
@@ -1402,32 +1377,45 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			}
 		}
 	}
-	
+
 	/**
 	 * This method obtains the project resourceId from the container and then 
 	 * saves the project resource. We assume that the resource has been updated.
 	 * @param c the tab
 	 */
-	public void saveDiagramResource(BlockDesignableContainer c) {
+	private void saveDiagramResource(BlockDesignableContainer c) {
 		ProcessDiagramView diagram = (ProcessDiagramView)c.getModel();
 		log.infof("%s.saveDiagramResource - %s ...",CLSS,diagram.getDiagramName());
 		diagram.registerChangeListeners();     // The diagram may include new components
+		diagram.refresh();
 		ResourcePath path = c.getResourcePath();
 		ProjectResourceId id = new ProjectResourceId(context.getProject().getName(),BLTProperties.DIAGRAM_RESOURCE_TYPE,path.getPath().toString());
 		Optional<ProjectResource> optional = context.getProject().getResource(id);
 		executionEngine.executeOnce(new DiagramUpdateManager(this,optional.get()));
-		
-		diagram.setDirty(false);
-		diagram.updateNotificationHandlerForSave();
-		c.setBackground(diagram.getBackgroundColorForState());
-		SwingUtilities.invokeLater(new WorkspaceRepainter());
+		diagram.setClean();
+
 	}
-	
+	/**
+	 * Display the open diagram as clean, presumeably after a recent save of the project resource.
+	 */
+	public void setDiagramClean(ProcessDiagramView diagram) {
+		diagram.setClean();
+		updateBackgroundForDiagramState();
+	}
+	/**
+	 * Display the open diagram as dirty and in need of a save.
+	 * Update the notification handler to save its dirty state.
+	 */
+	public void setDiagramDirty(ProcessDiagramView diagram) {
+		diagram.setDirty();
+		diagram.updateNotificationHandlerForSave();
+		updateBackgroundForDiagramState();
+	}
 	/**
 	 * The selection has changed. If we've made a major change on the currently active diagram,
 	 * set its background accordingly. The diagram should have set its own state.
 	 */
-	private void updateBackgroundForDirty() {
+	private void updateBackgroundForDiagramState() {
 		BlockDesignableContainer container = getSelectedContainer();
 		if( container!=null ) {
 			ProcessDiagramView view = (ProcessDiagramView)(container.getModel());			
@@ -1463,7 +1451,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			log.infof("%s.containerSelected: %s, updating background color...",CLSS,container.getName());
 			// Added to clear the dirty background if more than one diagram was dirty before the save. 
 			// When we save, we save every processDiagramView that is dirty and then we clear the dirty flag, but only the diagram that is on top got PAH 7/18/2021
-			updateBackgroundForDirty();
+			updateBackgroundForDiagramState();
 		}
 	}
 	public CommandBar getAlignBar() {
@@ -1538,7 +1526,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	@Override
 	public void stateChanged(ChangeEvent event) {
 		//log.infof("%s.stateChanged: source = %s",CLSS,event.getSource().getClass().getCanonicalName());
-		updateBackgroundForDirty();
+		updateBackgroundForDiagramState();
 	}
 	
 	/**
@@ -1623,10 +1611,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			}
 			handler.updateBlockAnchors(diagram.getResourceId(),block.getId().toString(),anchors); // update gateway. 
 			diagram.updateConnectionTypes(block,connectionType);
-			// Repaint the workspace
-			SwingUtilities.invokeLater(new WorkspaceRepainter());
-			setDirty();
-			
+			setDiagramDirty(getActiveDiagram());
 		}
 	}
 
@@ -1698,20 +1683,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			block.getBlock().setLocation(new Point(topLeft.x, loc.y));
 		}
 		UndoManager.getInstance().add(new UndoMoveBlocks(undoMap));
-		getActiveDiagram().setDirty(true);
-		SwingUtilities.invokeLater(new WorkspaceBackgroundRepainter());
-
-	}
-
-
-	private void setDirty() {
-		BlockDesignableContainer container = getSelectedContainer();
-		if (container != null) {
-			ProcessDiagramView diagram = (ProcessDiagramView)container.getModel();
-			if (diagram != null) {
-				diagram.setDirty(true);
-			}
-		}
+		setDiagramDirty(getActiveDiagram());
 	}
 	
 	public void alignRight() {
@@ -1725,8 +1697,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			block.getBlock().setLocation(new Point(bottomRight.x-block.getWidth(), loc.y));
 		}
 		UndoManager.getInstance().add(new UndoMoveBlocks(undoMap));
-		getActiveDiagram().setDirty(true);
-		SwingUtilities.invokeLater(new WorkspaceBackgroundRepainter());
+		setDiagramDirty(getActiveDiagram());
 	}
 
 	public void alignWidthCenter() {
@@ -1742,8 +1713,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			block.getBlock().setLocation(new Point(bottomRight.x-block.getWidth()-adjust, loc.y));
 		}
 		UndoManager.getInstance().add(new UndoMoveBlocks(undoMap));
-		getActiveDiagram().setDirty(true);
-		SwingUtilities.invokeLater(new WorkspaceBackgroundRepainter());;
+		setDiagramDirty(getActiveDiagram());
 	}
 
 	public void alignHeightCenter() {
@@ -1759,8 +1729,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			block.getBlock().setLocation(new Point(loc.x, topLeft.y + adjust));
 		}
 		UndoManager.getInstance().add(new UndoMoveBlocks(undoMap));
-		getActiveDiagram().setDirty(true);
-		SwingUtilities.invokeLater(new WorkspaceBackgroundRepainter());
+		setDiagramDirty(getActiveDiagram());
 	}
 
 	public void alignTop() {
@@ -1774,8 +1743,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			block.getBlock().setLocation(new Point(loc.x, topLeft.y));
 		}
 		UndoManager.getInstance().add(new UndoMoveBlocks(undoMap));
-		getActiveDiagram().setDirty(true);
-		SwingUtilities.invokeLater(new WorkspaceBackgroundRepainter());
+		setDiagramDirty(getActiveDiagram());
 	}
 
 	public void alignBottom() {
@@ -1789,8 +1757,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			block.getBlock().setLocation(new Point(loc.x, bottomRight.y-block.getHeight()));
 		}
 		UndoManager.getInstance().add(new UndoMoveBlocks(undoMap));
-		getActiveDiagram().setDirty(true);
-		SwingUtilities.invokeLater(new WorkspaceBackgroundRepainter());
+		setDiagramDirty(getActiveDiagram());
 	}
 	
 	

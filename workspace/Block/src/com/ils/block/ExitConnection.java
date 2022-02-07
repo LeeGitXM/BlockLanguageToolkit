@@ -1,5 +1,5 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved. 
+ *   (c) 2014-2022  ILS Automation. All rights reserved. 
  */
 package com.ils.block;
 
@@ -11,9 +11,7 @@ import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
-import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockStyle;
-import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.ConnectionPostNotification;
@@ -28,7 +26,6 @@ import com.inductiveautomation.ignition.common.project.resource.ProjectResourceI
  * This block is automatically generated. It does NOT appear on the block palette.
  */
 public class ExitConnection extends AbstractProcessBlock implements ProcessBlock {
-	public static final String BLOCK_PROPERTY_PARENT_ENCAPSULATION = "ParentEncapsulation";
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
 	 */
@@ -55,8 +52,6 @@ public class ExitConnection extends AbstractProcessBlock implements ProcessBlock
 	 */
 	private void initialize() {
 		setName("SinkConnection");
-		BlockProperty constant = new BlockProperty(BLOCK_PROPERTY_PARENT_ENCAPSULATION,"",PropertyType.STRING,false);
-		setProperty(BLOCK_PROPERTY_PARENT_ENCAPSULATION, constant);
 		// Define a single input - we get an input from the connection and broadcast it.
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.ANY);
 		anchors.add(input);

@@ -1,12 +1,10 @@
 /**
- *   (c) 2014-2021  ILS Automation. All rights reserved.
+ *   (c) 2014-2022  ILS Automation. All rights reserved.
  */
 package com.ils.blt.designer.editor;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.swing.SwingUtilities;
 
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.DiagramState;
@@ -15,11 +13,8 @@ import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
-import com.ils.blt.designer.workspace.WorkspaceRepainter;
 import com.ils.common.persistence.ToolkitProperties;
 import com.ils.common.tag.TagUtility;
-import com.inductiveautomation.ignition.common.project.resource.ResourcePath;
-import com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignableContainer;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
 
@@ -91,39 +86,10 @@ public class BlockPropertyEditor extends AbstractPropertyEditor   {
 	public ProcessBlockView getBlock() { return this.block; }
 	public ProcessDiagramView getDiagram() { return this.diagram; }
 	public void setDiagramDirty() {
-		diagram.setDirty(true);
-		SwingUtilities.invokeLater(new WorkspaceRepainter());
+		workspace.setDiagramDirty(workspace.getActiveDiagram());
 	}
 	
 	public DesignerContext getContext() { return this.context; }
-	/**
-	 * Changing the name is non-structural. If the diagram is not
-	 * dirty for structural reasons, then we go ahead and save the
-	 * project resource.
-	 */
-	public void saveDiagram() {
-		if( !diagram.isDirty()) {
-			BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(diagram.getResourcePath());
-			if( tab!=null )  workspace.saveDiagramResource(tab);
-		}
-	}
-	/**
-	 * Save a diagram that is not the current.
-	 */
-	public void saveDiagram(ResourcePath path) {
-		BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(path);
-		if( tab!=null )  workspace.saveDiagramResource(tab);
-	}
-	
-	/**
-	 * One of the edit panels has modified a block property. Update the
-	 * running diagram directly. Do not mark the diagram as "dirty" since
-	 * we've only changed a block property. Save the project resource.
-	 */
-	public void saveDiagramClean() {
-		saveDiagram();
-		diagram.setDirty(false);	
-	}
 	/**
 	 * Modify a tag path to account for global production/isolation providers
 	 * as well as the current state of the diagram.

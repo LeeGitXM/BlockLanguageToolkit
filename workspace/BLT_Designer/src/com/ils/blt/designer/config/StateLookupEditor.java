@@ -1,5 +1,5 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved.
+ *   (c) 2014-2022  ILS Automation. All rights reserved.
  *   http://docs.oracle.com/javase/tutorial/displayCode.html?code=http://docs.oracle.com/javase/tutorial/uiswing/examples/components/SharedModelDemoProject/src/components/SharedModelDemo.java
  */
 package com.ils.blt.designer.config;
@@ -25,7 +25,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
@@ -39,11 +38,8 @@ import com.ils.blt.designer.editor.BlockEditConstants;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
-import com.ils.blt.designer.workspace.WorkspaceRepainter;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.common.BundleUtil;
-import com.inductiveautomation.ignition.common.execution.ExecutionManager;
-import com.inductiveautomation.ignition.common.execution.impl.BasicExecutionEngine;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 
@@ -66,8 +62,6 @@ public class StateLookupEditor extends JDialog {
 	private final int TABLE_WIDTH = 550;
 	private final ProcessBlockView block;
 	private final ProcessDiagramView diagram;
-	private final DiagramWorkspace workspace;
-	private final ExecutionManager executionEngine;
 	private final Map<String,TruthValue> lookupMap;
 	private final JTable table;
 	JPanel internalPanel = null;
@@ -76,10 +70,8 @@ public class StateLookupEditor extends JDialog {
 		super(wksp.getContext().getFrame());
 		this.block = view;
 		this.diagram = dia;
-		this.workspace = wksp;
 		this.lookupMap = new HashMap<>();
 		this.table = new JTable();
-		this.executionEngine = new BasicExecutionEngine(1,CLSS);
 		this.setTitle(String.format(BundleUtil.get().getString(PREFIX+".StateLookupEdit.Title",view.getName())));
 		setAlwaysOnTop(true);
 		setModal(false);
@@ -134,8 +126,7 @@ public class StateLookupEditor extends JDialog {
 				for(BlockProperty prop:block.getProperties()) {
 					if( prop.getName().equals(BlockConstants.BLOCK_PROPERTY_NAME_VALUES)) {
 						prop.setValue(nameValues.toString());
-						diagram.setDirty(true);
-						SwingUtilities.invokeLater(new WorkspaceRepainter());
+						diagram.setDirty();
 						break;
 					}
 				}
