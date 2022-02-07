@@ -40,7 +40,6 @@ public class SerializableBlock {
 	private TruthValue state = TruthValue.UNSET;
 	private String statusText;
 	private BlockStyle style = BlockStyle.SQUARE;
-	private UUID subworkspaceId = null;     // Non-null only for encapsulation blocks. Subworkspace is a diagram.
 //	private boolean transmitEnabled= false;
 	private UUID uuid = null;
 	private int x = 0;
@@ -66,7 +65,6 @@ public class SerializableBlock {
 	public BlockProperty[] getProperties() { return properties; }
 	public TruthValue getState() {return state;}
 	public String getStatusText() { return statusText; }
-	public UUID getSubworkspaceId() {return subworkspaceId;}
 	public BlockStyle getStyle() { return style; }
 	public int getX() { return x; }
 	public int getY() { return y; }
@@ -102,7 +100,6 @@ public class SerializableBlock {
 //	public void setReceiveEnabled(boolean receiveEnabled) {this.receiveEnabled = receiveEnabled;}
 	public void setState(TruthValue state) {if(state!=null) this.state = state;}
 	public void setStatusText(String statusText) { this.statusText = statusText; }
-	public void setSubworkspaceId(UUID subworkspace) {this.subworkspaceId = subworkspace;}
 	public void setStyle(BlockStyle style) { this.style = style; }
 	public void setBadgeChar(String ch) { this.badgeChar = ch; }
 //	public void setTransmitEnabled(boolean transmitEnabled) {this.transmitEnabled = transmitEnabled;}

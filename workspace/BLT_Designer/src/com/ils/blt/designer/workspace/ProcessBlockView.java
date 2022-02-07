@@ -104,7 +104,6 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 		this.className = descriptor.getBlockClass();
 		this.ctypeEditable = descriptor.isCtypeEditable();
 		this.editorClass = descriptor.getEditorClass();
-		this.encapsulation = descriptor.isEncapsulation();
 		this.embeddedIcon = descriptor.getEmbeddedIcon();
 		this.embeddedLabel= descriptor.getEmbeddedLabel();
 		this.embeddedFontSize= descriptor.getEmbeddedFontSize();
@@ -144,7 +143,6 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 		this.embeddedIcon = sb.getEmbeddedIcon();
 		this.embeddedLabel= sb.getEmbeddedLabel();
 		this.embeddedFontSize = sb.getEmbeddedFontSize();
-		this.encapsulation = (sb.getSubworkspaceId()!=null);
 		this.iconPath = sb.getIconPath();
 		this.locked   = sb.isLocked();
 		this.log = LogUtil.getLogger(getClass().getPackageName());
@@ -154,7 +152,6 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 		this.state = sb.getState();
 		this.statusText = sb.getStatusText();
 		this.badgeChar      = sb.getBadgeChar();
-		this.subworkspaceId = sb.getSubworkspaceId();
 		this.anchors = new HashMap<>();
 		if(sb.getAnchors()!=null ) {
 			for( SerializableAnchor sa:sb.getAnchors() ) {
@@ -212,7 +209,6 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 		result.setState(getState());
 		result.setStatusText(getStatusText());
 		result.setStyle(getStyle());
-		result.setSubworkspaceId(subworkspaceId);
 		result.setBadgeChar(getBadgeChar());
 		result.setX(getLocation().x);
 		result.setY(getLocation().y);

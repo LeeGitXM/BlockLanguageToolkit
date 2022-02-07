@@ -30,7 +30,6 @@ public class BlockDescriptor {
 	private String editorClass = null;    // Class of custom property editor
 	
 	private boolean ctypeEditable=false;  // Can we globally change our connection types
-	private boolean encapsulation=false;  // Is this block is an encapsulation
 	private boolean externallyAugmented  = false;     // True if this block uses auxiliary getters/setters
 	private String iconPath = null;       // Icon to use for an icon-only block
 	private int preferredHeight = 0;      // Size block to its "natural" size
@@ -92,7 +91,6 @@ public class BlockDescriptor {
 	public BlockStyle getStyle() { return style; }
 	public boolean isExternallyAugmented()      { return externallyAugmented; }
 	public boolean isCtypeEditable() {return ctypeEditable;}
-	public boolean isEncapsulation() {return encapsulation;}
 	public String getBadgeChar() {return badgeChar;}
 	public boolean isReceiveEnabled() {return receiveEnabled;}
 //	public boolean isTransmitEnabled() {return transmitEnabled;}
@@ -106,7 +104,6 @@ public class BlockDescriptor {
 	public void setEmbeddedFontSize(int embeddedFontSize) {this.embeddedFontSize = embeddedFontSize;}
 	public void setEmbeddedIcon(String embeddedIcon) {this.embeddedIcon = embeddedIcon;}
 	public void setEmbeddedLabel(String embeddedLabel) {this.embeddedLabel = embeddedLabel;}
-	public void setEncapsulation(boolean encapsulation) {this.encapsulation = encapsulation;}
 	public void setIconPath(String iconPath) {this.iconPath = iconPath;}
 	public void setPreferredHeight(int preferredHeight) {this.preferredHeight = preferredHeight;}
 	public void setPreferredWidth(int preferredWidth) {this.preferredWidth = preferredWidth;}
