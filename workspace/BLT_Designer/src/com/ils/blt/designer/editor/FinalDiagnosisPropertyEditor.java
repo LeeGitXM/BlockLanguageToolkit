@@ -38,7 +38,6 @@ import com.ils.blt.common.serializable.SerializableApplication;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.NotificationHandler;
-import com.ils.blt.designer.editor.MainPanel.CorePropertyPanel;
 import com.ils.blt.designer.navtree.DiagramTreeNode;
 import com.ils.blt.designer.navtree.GeneralPurposeTreeNode;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
@@ -210,10 +209,13 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 	}
 	
 	public void shutdown() {
-		notificationHandler.removeNotificationChangeListener(key,CLSS);
-		save();
-		requestHandler.writeAuxData( diagram.getResourceId(), block.getId().toString(), model, provider, database);
-		if (DEBUG) log.infof("%s.shutdown: writing aux data",CLSS);
+		/*
+		 * This is a concrete method for the abstract method defined on AbstractPropertyEditor.  
+		 * This is called by the setEditor() method in PropertyEditorFrame, which encapsulates the editor, whenever something in
+		 * the project tree is selected or another block on the diagram.
+		 */
+		log.tracef("%s.shutdown: removing change listener and saving", CLSS);
+		notificationHandler.removeNotificationChangeListener(key, CLSS);		
 	}
 	
 	
@@ -554,7 +556,12 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 	// ============================================== PropertyChange listener ==========================================
 	@Override
 	public void propertyChange(PropertyChangeEvent event) {
-		if (event.getPropertyName().equalsIgnoreCase("PROPERTY_CHANGE_UPDATE")) {   // What is this?
+		/*
+		 * This is called when the editor is built - I think the purpose is to handle changes made via a tag binding where the tag changes value while
+		 * the editor is open.  Not sure why the code below seems to single out the dual list box. PAH 10/6/21 (This is just a theory)
+		 */
+		if (event.getPropertyName().equalsIgnoreCase(DualListBox.PROPERTY_CHANGE_UPDATE)) {
+			log.infof("%s: in propertyChange()",CLSS);
 			save();
 		}
 	}	
@@ -609,19 +616,19 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		 */
 		if(source.equals(finalDiagnosisLabelField) ) {
 			if( !finalDiagnosisLabelField.getText().equals(properties.get("FinalDiagnosisLabel")) ){
-				log.tracef("--------  THE LABEL HAS BEEN CHANGED -------------");
+				log.infof("--------  THE LABEL HAS BEEN CHANGED -------------");
 				save();
 			}
 		}
 		else if(source.equals(calculationMethodField) ) {
 			if( !calculationMethodField.getText().equals(properties.get("CalculationMethod")) ){
-				log.tracef("--------  THE CALCULATION METHOD HAS BEEN CHANGED -------------");
+				log.infof("--------  THE CALCULATION METHOD HAS BEEN CHANGED -------------");
 				save();
 			}
 		}
 		else if (source.equals(postProcessingCallbackField) ) {
 			if( !postProcessingCallbackField.getText().equals(properties.get("PostProcessingCallback")) ){
-				log.tracef("--------  THE POST PROCESSING CALLBACK HAS BEEN CHANGED -------------");
+				log.infof("--------  THE POST PROCESSING CALLBACK HAS BEEN CHANGED -------------");
 				save();
 			}
 		}
@@ -665,31 +672,31 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		}
 		else if( source.equals(constantCheckBox) ) {
 			if( !(constantCheckBox.isSelected()?"1":"0").equals(properties.get("Constant"))){
-				log.tracef("--------  THE CONSTANT CHECK BOX HAS BEEN CHANGED -------------");				
+				log.infof("--------  THE CONSTANT CHECK BOX HAS BEEN CHANGED -------------");				
 				save();
 			}
 		}
 		else if (source.equals(postTextRecommendationCheckBox) ) {
 			if( !(postTextRecommendationCheckBox.isSelected()?"1":"0").equals(properties.get("PostTextRecommendation"))){
-				log.tracef("--------  THE POST TEXT RECOMMENDATION CHECK BOX HAS BEEN CHANGED -------------");				
+				log.infof("--------  THE POST TEXT RECOMMENDATION CHECK BOX HAS BEEN CHANGED -------------");				
 				save();
 			}
 		}
 		else if( source.equals(showExplanationWithRecommendationCheckBox) ) {
 			if( !(showExplanationWithRecommendationCheckBox.isSelected()?"1":"0").equals(properties.get("ShowExplanationWithRecommendation"))){
-				log.tracef("--------  THE SHOW EXPLANATION CHECK BOX HAS BEEN CHANGED -------------");				
+				log.infof("--------  THE SHOW EXPLANATION CHECK BOX HAS BEEN CHANGED -------------");				
 				save();
 			}
 		}
 		else if( source.equals(manualMoveAllowedCheckBox) ) {
 			if( !(manualMoveAllowedCheckBox.isSelected()?"1":"0").equals(properties.get("ManualMoveAllowed"))){
-				log.tracef("--------  THE MANUAL MOVE ALLOWED CHECK BOX HAS BEEN CHANGED -------------");				
+				log.infof("--------  THE MANUAL MOVE ALLOWED CHECK BOX HAS BEEN CHANGED -------------");				
 				save();
 			}
 		}
 		else if( source.equals(trapBox) ) {
 			if( !(trapBox.isSelected()?"1":"0").equals(properties.get("TrapInsignificantRecommendations"))){
-				log.tracef("--------  THE TRAP INSIGNIFICANT RECOMMENDATIONS CHECK BOX HAS BEEN CHANGED -------------");				
+				log.infof("--------  THE TRAP INSIGNIFICANT RECOMMENDATIONS CHECK BOX HAS BEEN CHANGED -------------");				
 				save();
 			}			
 		}

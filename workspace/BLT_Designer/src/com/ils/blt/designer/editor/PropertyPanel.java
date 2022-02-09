@@ -1,5 +1,5 @@
 /**
- *   (c) 2014-2021  ILS Automation. All rights reserved.
+ *   (c) 2014-2022  ILS Automation. All rights reserved.
  */
 package com.ils.blt.designer.editor;
 
@@ -827,6 +827,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 	// =========================================== Tag Change Listener ===================================
 
 	// The display contains tag value, quality and timestamp
+	// Note: This gets triggered each time we start the subscription
 	@Override
 	public void tagChanged(TagChangeEvent event) {
 		final TagPath path = event.getTagPath();
