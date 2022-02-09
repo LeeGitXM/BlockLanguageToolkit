@@ -27,6 +27,7 @@ import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.SerializableFamily;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
+import com.ils.blt.gateway.BlockTagSynchronizer;
 import com.ils.common.persistence.ToolkitProperties;
 import com.ils.common.persistence.ToolkitRecordHandler;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
@@ -698,6 +699,7 @@ public class ModelManager implements ProjectListener  {
 	 */
 	private void addModifyDiagramResource(ProjectResource res,boolean startup) {
 		ProjectResourceId resId = res.getResourceId();
+		BlockTagSynchronizer bts = new BlockTagSynchronizer(res.getResourceId().getProjectName());
 		if(DEBUG) log.infof("%s.addModifyDiagramResource: adding diagram:%s(%s)",CLSS,res.getResourceName(),resId.getResourcePath().getPath().toString());
 		SerializableDiagram sd = deserializeDiagramResource(res);
 
@@ -713,6 +715,7 @@ public class ModelManager implements ProjectListener  {
 				nodesByResourceId.put(ResourceKey.keyForResource(diagram.getResourceId()),diagram);
 				addToHierarchy(diagram);
 				diagram.createBlocks(sd.getBlocks());
+				bts.synchBlocks(diagram);
 				diagram.updateConnections(sd.getConnections());
 				if(!diagram.getState().equals(sd.getState()) ) {
 					diagram.setState(sd.getState()); 
@@ -735,8 +738,10 @@ public class ModelManager implements ProjectListener  {
 				List<ProcessBlock> deletedBlocks = diagram.removeUnusedBlocks(sd.getBlocks());
 				for(ProcessBlock deletedBlock:deletedBlocks) {
 					deletedBlock.onDelete();
+					bts.synchDeletedBlock(deletedBlock);
 				}
 				diagram.createBlocks(sd.getBlocks());            // Adds blocks that are new in update
+				bts.synchBlocks(diagram);;
 				diagram.updateConnections(sd.getConnections());  // Adds connections that are new in update
 				diagram.updateProperties(sd);                    // Fixes subscriptions, as necessary
 				diagram.setState(sd.getState(),true);            // Handle state change, if no change update tag subscriptions anyway. 
@@ -775,6 +780,7 @@ public class ModelManager implements ProjectListener  {
 	 */
 	private void addModifyFamilyResource(ProjectResource res,boolean startup) {
 		ProjectResourceId resId = res.getResourceId();
+		BlockTagSynchronizer bts = new BlockTagSynchronizer(res.getProjectName());
 		if(DEBUG) log.infof("%s.addModifyFamilyResource: %s(%s)",CLSS,res.getResourceName(),resId.getResourcePath().getPath().toString());
 		SerializableFamily sf = deserializeFamilyResource(res);
 		if( sf!=null ) {
