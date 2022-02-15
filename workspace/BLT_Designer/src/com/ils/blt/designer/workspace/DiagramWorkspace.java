@@ -896,7 +896,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	// For a source/sink, tag must be in "Connections". For Input/Output it must not.
 	// Craig is correct in that there is an amount of ugliness that involves hard-coded block class names
 	// and properties
-	@SuppressWarnings("rawtypes")
 	public void handleTagOnBlockDrop(Object droppedOn, DropTargetDropEvent event) {
 		try {
 			DataFlavor flava = NodeListTransferable.FLAVOR_NODE_INFO_LIST;

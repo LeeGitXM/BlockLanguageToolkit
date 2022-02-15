@@ -17,6 +17,7 @@ import com.ils.blt.designer.navtree.GeneralPurposeTreeNode;
 import com.ils.blt.designer.navtree.NavTreeNodeInterface;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
+import com.inductiveautomation.ignition.common.project.resource.ResourcePath;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
@@ -49,9 +50,8 @@ public class NodeStatusManager implements NotificationChangeListener   {
 	public final DesignerContext context;
 	private final ApplicationRequestHandler handler;
 	private final NotificationHandler notificationHandler;
-	private final String projectName;
-	private final Map<ProjectResourceId,Set<ProjectResourceId>>  childrenByResourceId;
-	private final Map<ProjectResourceId,StatusEntry> statusByResourceId;
+	private final Map<ResourcePath,Set<ResourcePath>>  childrenByResourcePath;
+	private final Map<ResourcePath,StatusEntry> statusByResourcePath;
 	
 
 	/**
@@ -62,9 +62,8 @@ public class NodeStatusManager implements NotificationChangeListener   {
 		this.context = ctx;
 		this.handler = h;
 		this.notificationHandler = NotificationHandler.getInstance();
-		this.projectName = context.getProject().getName();
-		childrenByResourceId = new HashMap<>();
-		statusByResourceId = new HashMap<>();
+		childrenByResourcePath = new HashMap<>();
+		statusByResourcePath = new HashMap<>();
 	}
 	
 	/**
@@ -74,24 +73,24 @@ public class NodeStatusManager implements NotificationChangeListener   {
 	 */
 	public void createResourceStatus(AbstractResourceNavTreeNode node,ProjectResourceId parentResourceId,ProjectResourceId resourceId) {
 		if(node.getProjectResource()==null) throw new IllegalArgumentException("No project resource");
-		StatusEntry se = statusByResourceId.get(resourceId);
+		StatusEntry se = statusByResourcePath.get(resourceId.getResourcePath());
 		if( se == null ) {
 			DiagramState s = handler.getDiagramState(resourceId);
 			se = new StatusEntry(node,s);
 			se.setAlerting(handler.isAlerting(resourceId));
 			notificationHandler.addNotificationChangeListener(NotificationKey.keyForAlert(resourceId), CLSS, this);
-			statusByResourceId.put(resourceId,se);
+			statusByResourcePath.put(resourceId.getResourcePath(),se);
 		}
 		// We had a "provisional" entry 
 		else if( se.getNode()==null ) {
 			se.setNode(node);
 		}
-		Set<ProjectResourceId> set = childrenByResourceId.get(parentResourceId);
+		Set<ResourcePath> set = childrenByResourcePath.get(parentResourceId.getResourcePath());
 		if( set == null ) {
 			set = new HashSet<>();
-			childrenByResourceId.put(parentResourceId,set);
+			childrenByResourcePath.put(parentResourceId.getResourcePath(),set);
 		}
-		set.add(parentResourceId);
+		set.add(parentResourceId.getResourcePath());
 		log.debugf("%s.createResourceStatus: %s (%d:%d) %s",CLSS,(node==null?"":node.getName()),parentResourceId,resourceId,
 				                                           (se.getState()==null?"":se.getState().name()));
 	}
@@ -104,15 +103,15 @@ public class NodeStatusManager implements NotificationChangeListener   {
 	public void createRootResourceStatus(GeneralPurposeTreeNode rootNode) {
 		log.tracef("%s.newRootResource",CLSS);
 		ProjectResourceId resourceId = rootNode.getResourceId();
-		StatusEntry se = statusByResourceId.get(resourceId);
+		StatusEntry se = statusByResourcePath.get(resourceId);
 		if( se == null ) {
 			DiagramState s = handler.getDiagramState(resourceId);  
-			statusByResourceId.put(resourceId,se);
+			statusByResourcePath.put(resourceId.getResourcePath(),se);
 		}
-		if( childrenByResourceId.get(resourceId) == null ) {
-			Set<ProjectResourceId> set = new HashSet<>();
-			set.add(resourceId);
-			childrenByResourceId.put(resourceId,set);
+		if( childrenByResourcePath.get(resourceId) == null ) {
+			Set<ResourcePath> set = new HashSet<>();
+			set.add(resourceId.getResourcePath());
+			childrenByResourcePath.put(resourceId.getResourcePath(),set);
 		}
 	}	
 	/**
@@ -121,22 +120,22 @@ public class NodeStatusManager implements NotificationChangeListener   {
 	 */
 	public void deleteResource(ProjectResourceId key ) {
 		log.debugf("%s.deleteResource(%s)",CLSS,key.getResourcePath().getPath().toString());
-		StatusEntry se = statusByResourceId.get(key);
+		StatusEntry se = statusByResourcePath.get(key);
 		if( se!=null ) {
 			AbstractNavTreeNode antn = se.getParent();
 			if( antn instanceof AbstractResourceNavTreeNode ) {
 				ProjectResourceId parent = ((AbstractResourceNavTreeNode)antn).getResourceId();
-				Set<ProjectResourceId> children = childrenByResourceId.get(parent);
+				Set<ResourcePath> children = childrenByResourcePath.get(parent.getResourcePath());
 				if( children!=null) {
 					children.remove(key);
 				}
-				children = childrenByResourceId.get(key);
+				children = childrenByResourcePath.get(key);
 				recursivelyDeleteChildren(children);
 				se.prepareToBeDeleted();
 			}
 
 		}
-		statusByResourceId.remove(key);
+		statusByResourcePath.remove(key);
 	}
 	/**
 	 * Determine whether or not to display an alert badge. The node 
@@ -145,7 +144,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 	 * @return a cached diagram state.
 	 */
 	public boolean getAlertState(ProjectResourceId resourceId) {
-		boolean result = recursivelySearchForAlert(resourceId);
+		boolean result = recursivelySearchForAlert(resourceId.getResourcePath());
 		return result;
 	}
 	
@@ -155,7 +154,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 	 */
 	public DiagramState getResourceState(ProjectResourceId resourceId) {
 		DiagramState result = DiagramState.UNSET;
-		StatusEntry se = statusByResourceId.get(resourceId);
+		StatusEntry se = statusByResourcePath.get(resourceId.getResourcePath());
 		if( se!=null ) {
 			result = se.getState();
 		}
@@ -171,7 +170,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 	public AbstractResourceNavTreeNode findNode(ProjectResourceId key) {
 		log.debugf("%s.findNode(%s)",CLSS,key.getResourcePath().getPath().toString());
 		AbstractResourceNavTreeNode node = null;
-		StatusEntry se = statusByResourceId.get(key);
+		StatusEntry se = statusByResourcePath.get(key.getResourcePath());
 		if( se!=null ) node=se.getNode();
 		return node;
 	}
@@ -190,24 +189,24 @@ public class NodeStatusManager implements NotificationChangeListener   {
 //		return node;
 //	}
 //	
-	private void recursivelyDeleteChildren(Set<ProjectResourceId> children) {
+	private void recursivelyDeleteChildren(Set<ResourcePath> children) {
 		if( children==null ) return;
-		for(ProjectResourceId child:children) {
-			Set<ProjectResourceId> grandchildren = childrenByResourceId.get(child);
-			childrenByResourceId.remove(child);
+		for(ResourcePath child:children) {
+			Set<ResourcePath> grandchildren = childrenByResourcePath.get(child);
+			childrenByResourcePath.remove(child);
 			recursivelyDeleteChildren(grandchildren);
 		}
 	}
-	private boolean recursivelySearchForAlert(ProjectResourceId node) {
+	private boolean recursivelySearchForAlert(ResourcePath node) {
 		if( node==null ) return false;
-		StatusEntry se = statusByResourceId.get(node);
+		StatusEntry se = statusByResourcePath.get(node);
 		if( se==null) return false;
 		//log.tracef("%s.recursivelySearchForAlert: %s(%d) = %s",TAG,(se==null?"null":se.getName()),resourceId,(result?"TRUE":"FALSE"));
 		if( se.isAlerting()) return true;
 	
-		Set<ProjectResourceId> children = childrenByResourceId.get(node);
+		Set<ResourcePath> children = childrenByResourcePath.get(node);
 		if( children!=null) {
-			for(ProjectResourceId child:children) {
+			for(ResourcePath child:children) {
 				boolean result = recursivelySearchForAlert(child);
 				if( result ) return true;
 			}
@@ -220,13 +219,13 @@ public class NodeStatusManager implements NotificationChangeListener   {
      */
 	public void setResourceState(ProjectResourceId resourceId,DiagramState bs,boolean informGateway) {
 		if( informGateway ) handler.setDiagramState(resourceId, bs.name());
-		StatusEntry se = statusByResourceId.get(resourceId);
+		StatusEntry se = statusByResourcePath.get(resourceId.getResourcePath());
 		if( se!=null ) {
 			se.setState(bs);
 		}
 		else {
 			se = new StatusEntry(bs);
-			statusByResourceId.put(resourceId,se);
+			statusByResourcePath.put(resourceId.getResourcePath(),se);
 		}
 		log.tracef("%s.setResourceState: %s(%d) = %s",CLSS,se.getName(),resourceId,bs.name());
 	}
@@ -236,8 +235,8 @@ public class NodeStatusManager implements NotificationChangeListener   {
 	 */
 	public void updateAll() {
 		log.debugf("%s.updateAll()",CLSS);
-		for(ProjectResourceId key:statusByResourceId.keySet()) {
-			StatusEntry se = statusByResourceId.get(key);
+		for(ResourcePath key:statusByResourcePath.keySet()) {
+			StatusEntry se = statusByResourcePath.get(key);
 			if( se!=null ) {
 				se.setClean();
 //				context.getProject().clearAllFlags();  // EREIAM JH - is this premature?
@@ -254,7 +253,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 	public ProjectResourceId parentResourceId(ProjectResourceId resid) {
 		log.debugf("%s.findNode(%d)",CLSS,resid.getResourcePath().getPath().toString());
 		ProjectResourceId result = null;
-		StatusEntry se = statusByResourceId.get(resid);
+		StatusEntry se = statusByResourcePath.get(resid.getResourcePath());
 		if( se!=null ) { 
 			AbstractNavTreeNode antn = se.getParent();
 			if( antn instanceof AbstractResourceNavTreeNode) {
@@ -333,7 +332,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 // ================================ Notification Change Listener =========================================
 @Override
 public void diagramStateChange(String path, String state) {
-	StatusEntry se = statusByResourceId.get(path);
+	StatusEntry se = statusByResourcePath.get(path);
 	se.setAlerting(state.equalsIgnoreCase("true"));
 	se.getNode().reload();
 }

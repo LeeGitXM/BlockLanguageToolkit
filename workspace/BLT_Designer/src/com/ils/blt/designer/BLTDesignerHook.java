@@ -47,6 +47,7 @@ import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.licensing.LicenseState;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
+import com.inductiveautomation.ignition.common.project.resource.ResourcePath;
 import com.inductiveautomation.ignition.common.script.ScriptManager;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -147,7 +148,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 
 	@Override
 	public void startup(DesignerContext ctx, LicenseState activationState) throws Exception {
-		this.context = ctx;
+		context = ctx;
 		appRequestHandler = new ApplicationRequestHandler();
 		nodeStatusManager = new NodeStatusManager(context,appRequestHandler);
 		ScriptExtensionManager.getInstance().setContext(context);
@@ -182,7 +183,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 
 			}
 			else {
-				log.infof("%s: Group not a DefaultPaletteItemGroup, is %s",CLSS,group.getClass().getName());
+				log.infof("%s.startup: Group not a DefaultPaletteItemGroup, is %s",CLSS,group.getClass().getName());
 			}
 			JavaBeanPaletteItem jbpi = null;
 			try {
@@ -214,7 +215,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		// Query the gateway for latest notifications from all blocks
 		appRequestHandler.triggerStatusNotifications(context.getProjectName());
 		LogUtil.getLogger(Logger.getRootLogger().getName());  // Cause the logger to be created
-
+		log.infof("%s.startup: ===== Complete ======",CLSS);
 	}
 	
 	public NodeStatusManager getNavTreeStatusManager() { return nodeStatusManager; }
