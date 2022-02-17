@@ -394,7 +394,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	 * Note: This method should ONLY be called from the node status manager.
 	 */
 	public void updateUI(boolean dty) {
-		logger.debugf("%s.updateUI: %d dirty = %s",CLSS,resourceId,(dty?"true":"false"));
+		logger.infof("%s.updateUI: %d dirty = %s",CLSS,resourceId,(dty?"true":"false"));
 //		setItalic(dty);    // EREIAM JH - Disabled until italic system fixed
 		refresh();  // Update the UI
 	}
@@ -407,6 +407,14 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		menu.add(renameAction);
 		menu.add(deleteNodeAction);
 	}
+	
+	@Override
+	protected List<AbstractNavTreeNode> loadChildren() {
+		logger.infof("%s.loadChildren: %s",CLSS,getName());
+		List<ProjectResource> resources = project().browseFolder(moduleId, null,this.folderId);
+		logger.infof("%s.loadChildren: child count = %d",CLSS,resources.size());
+		return super.loadChildren();
+	}
 	/**
 	 * Create a child node because we've discovered a resource that matches this instance as a parent
 	 * based on its content matching the our UUID. If the node had been previously created, then 
@@ -417,7 +425,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		// If the project is disabled, then don't do anything
 		if( !context.getProject().isEnabled()) return null;
 		
-		logger.debugf("%s.createChildNode: %s(%d) type:%s, depth=%d", CLSS,getName(),resourceId,res.getResourceType(),getDepth());
+		logger.infof("%s.createChildNode: %s(%d) type:%s, depth=%d", CLSS,getName(),resourceId,res.getResourceType(),getDepth());
 		AbstractResourceNavTreeNode node = statusManager.findNode(res.getResourceId());
 		if( node==null ) {
 			if (    ProjectResource.FOLDER_RESOURCE_TYPE.equals(res.getResourceType()))       {
@@ -457,8 +465,12 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 //		node.setItalic(context.getProject().isResourceDirty(res.getResourceId()));    // EREIAM JH - Disabled until italic system fixed
 		return node;
 	}
+	
 	// For DiagramNode.delete
-	public void recreate() { super.recreate(); }
+	public void recreate() { 
+		logger.infof("%s.recreate:----%s",CLSS,getName());
+		super.recreate(); 
+	}
 	
 	/**
 	 * Define the menu used for popups. This appears to be called each time a menu is called for ..

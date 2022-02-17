@@ -72,15 +72,20 @@ public class SourceEditPanel extends BasicEditPanel {
 					ProcessBlockView block = editor.getBlock();
 					BlockProperty tagProperty = block.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
 					SerializableResourceDescriptor diag = handler.getDiagramForBlock(sinkDescriptor.getIdString());
-					Object val = handler.getPropertyValue(diag.getId(), sinkDescriptor.getIdString(), BlockConstants.BLOCK_PROPERTY_TAG_PATH);
-					Object binding = handler.getPropertyBinding(diag.getId(), sinkDescriptor.getIdString(), BlockConstants.BLOCK_PROPERTY_TAG_PATH);
-					tagProperty.setValue(val);
-					tagProperty.setBinding(binding.toString());
-					// block.setName(sinkDescriptor.getName());  // Don't change the name for a sink re-match
-					editor.updateCorePanel(BlockEditConstants.HOME_PANEL,block); // Core attributes
-					editor.updatePanelForProperty(BlockEditConstants.HOME_PANEL, tagProperty);
-					editor.updatePanelValue(SourceMainPanel.PROP_NAME, sinkDescriptor.getName());
-					editor.setDiagramDirty() ; 
+					if(diag!=null ) {
+						Object val = handler.getPropertyValue(diag.getId(), sinkDescriptor.getIdString(), BlockConstants.BLOCK_PROPERTY_TAG_PATH);
+						Object binding = handler.getPropertyBinding(diag.getId(), sinkDescriptor.getIdString(), BlockConstants.BLOCK_PROPERTY_TAG_PATH);
+						tagProperty.setValue(val);
+						tagProperty.setBinding(binding.toString());
+						// block.setName(sinkDescriptor.getName());  // Don't change the name for a sink re-match
+						editor.updateCorePanel(BlockEditConstants.HOME_PANEL,block); // Core attributes
+						editor.updatePanelForProperty(BlockEditConstants.HOME_PANEL, tagProperty);
+						editor.updatePanelValue(SourceMainPanel.PROP_NAME, sinkDescriptor.getName());
+						editor.setDiagramDirty() ; 
+					}
+					else {
+						log.warnf("%s.OK action: No diagram found for sink %s, no action taken",TAG,sinkDescriptor.getIdString());
+					}
 				}
 				else {
 					log.warnf("%s.OK action: property is NULL, no action taken",TAG);

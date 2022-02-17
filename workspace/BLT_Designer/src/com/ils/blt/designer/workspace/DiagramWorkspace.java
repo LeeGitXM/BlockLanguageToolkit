@@ -683,11 +683,13 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 						this.getActiveDiagram().addBlock(block);
 						log.infof("%s.handleDrop: dropped block %s",CLSS,block.getClassName());
 						if( block.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK) ||
-							block.getClassName().equals(BlockConstants.BLOCK_CLASS_SOURCE)||
 							block.getClassName().equals(BlockConstants.BLOCK_CLASS_INPUT) ||
 							block.getClassName().equals(BlockConstants.BLOCK_CLASS_OUTPUT)) {
 							addNameDisplay(block,dropPoint.x,dropPoint.y);
 						}
+						else if(block.getClassName().equals(BlockConstants.BLOCK_CLASS_SOURCE)) {
+								addNameDisplay(block,dropPoint.x,dropPoint.y);
+							}
 						setDiagramDirty(getActiveDiagram());
 						// Create the process editor for the new block
 						BlockPropertyEditor editor = new BlockPropertyEditor(context,this,block);

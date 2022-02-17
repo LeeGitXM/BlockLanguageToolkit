@@ -1092,6 +1092,49 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		}
 		return results;
 	}
+	/**
+	 * Do an exhaustive search for all source blocks that have the same binding
+	 * as the specified block. We cover all diagrams in the system. This method 
+	 * is not part of the external interface, as the result is not serializable.
+	 * @param diagramId identifier for the diagram
+	 * @param blockId Id of the sink
+	 * @return a list of descriptors for the sources that were found
+	 */
+	public synchronized List<ProcessBlock> listSourceBlocksForSink(String diagramId,String blockId) {
+		List<ProcessBlock> results = new ArrayList<>();
+		UUID diagramuuid = makeUUID(diagramId);
+		ProcessDiagram diagram = controller.getDiagram(diagramuuid);
+		ProcessBlock sink = null;
+		if(diagram!=null) {
+			sink = diagram.getBlock(makeUUID(blockId));
+		}
+
+		String tagPath = null;
+		if( sink!=null && (sink.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SINK))) {
+			BlockProperty prop = sink.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
+			if( prop!=null ) tagPath = fcns.providerlessPath(prop.getBinding());
+		}
+		
+		if( tagPath!=null && tagPath.length()>0 ) {
+			List<SerializableResourceDescriptor> descriptors = controller.getDiagramDescriptors();
+			for(SerializableResourceDescriptor descriptor:descriptors) {
+				UUID diaguuid = makeUUID(descriptor.getId());
+				diagram = controller.getDiagram(diaguuid);
+				for(ProcessBlock source:diagram.getProcessBlocks()) {
+					if( source.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SOURCE) ) {
+						BlockProperty prop = source.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
+						if( prop!=null && tagPath.equalsIgnoreCase(fcns.providerlessPath(prop.getBinding()))  ) {
+							results.add(source);
+						}
+					}
+				}
+			}
+		}
+		else {
+			log.warnf("%s.listSourceBlocksForSink: Block %s not found, not a sink/output or not bound",TAG,blockId);
+		}
+		return results;
+	}
 	@Override
 	public synchronized List<SerializableBlockStateDescriptor> listSubscriptionErrors() {
 		log.tracef("%s.listSubscriptionErrors:",TAG);

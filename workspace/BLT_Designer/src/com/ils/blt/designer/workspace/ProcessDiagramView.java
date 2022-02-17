@@ -387,6 +387,25 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	
 	@Override
 	public void deleteBlock(Block blk) {
+		// If the block is a Sink, complain if there are any associated Sources
+		ProcessBlockView bp = (ProcessBlockView)blk;
+		if(bp.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SINK)) {
+			List<SerializableBlockStateDescriptor> sources = appRequestHandler.listSourcesForSink(this.getId().toString(), bp.getId().toString());
+			Object[] options = { "Delete", "Cancel" };
+			if(sources.size()==1) {
+				int result = JOptionPane.showOptionDialog(null, String.format("There is a source associated with sink %s",
+						bp.getName()),"Warning",JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,
+				        null, options, options[0]);
+				if(result==1) return;   // Cancel
+			}
+			else if(sources.size()>1) {
+				int result = JOptionPane.showOptionDialog(null, String.format("There are %d sources associated with sink %s",
+						sources.size(),bp.getName()),"Warning",JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,
+				        null, options, options[0]);
+				if(result==1) return;   // Cancel
+			}
+		}
+		
 		List<UUID> displaysToDelete = new ArrayList<>();
 		if( !(blk instanceof BlockAttributeView) ) {
 			// Delete every connection attached to the block
@@ -405,7 +424,6 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			}
 			
 			// Delete any associated attribute views associated with the block
-			
 			for(ProcessBlockView view:blockMap.values()) {
 				if(view.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_ATTRIBUTE)) {
 					BlockAttributeView bav = (BlockAttributeView)view;

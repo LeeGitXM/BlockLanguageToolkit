@@ -71,7 +71,7 @@ public class SinkConnection extends Output implements ProcessBlock {
 	}
 	
 	/**
-	 * Guarantee that the clas name matches the constant used throughout
+	 * Guarantee that the class name matches the constant used throughout
 	 * the application to identify a sink.
 	 */
 	@Override

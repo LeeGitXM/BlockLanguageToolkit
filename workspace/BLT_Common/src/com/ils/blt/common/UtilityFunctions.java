@@ -1,5 +1,5 @@
 /**
- *   (c) 2013-2017  ILS Automation. All rights reserved.
+ *   (c) 2013-2022  ILS Automation. All rights reserved.
  */
 package com.ils.blt.common;
 
@@ -39,8 +39,7 @@ public class UtilityFunctions  {
 				result = Double.parseDouble(val);
 			}
 			catch(NumberFormatException nfe) {
-				//log.error(TAG+".parseDouble: Format exception "+nfe.getLocalizedMessage(),nfe);
-				log.errorf("%s.parseDouble: Format exception for value %s",TAG,val);
+				//log.errorf("%s.parseDouble: Format exception for value %s",TAG,val);
 			}
 		}
 		return result;
