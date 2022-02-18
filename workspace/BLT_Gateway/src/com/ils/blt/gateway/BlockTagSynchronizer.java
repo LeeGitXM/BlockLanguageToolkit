@@ -6,7 +6,6 @@ import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.ProcessBlock;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
-import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.blt.gateway.engine.ProcessDiagram;
 import com.ils.common.tag.TagUtility;
@@ -48,37 +47,13 @@ public class BlockTagSynchronizer {
 	public void synchBlocks(ProcessDiagram diagram) {
 		BlockExecutionController controller = BlockExecutionController.getInstance();
 		for(ProcessBlock block:diagram.getProcessBlocks()) {
-			// If the block is a source, remap its tag to what the corresponding sink will be.
-			// Do not create the tag. This is done by the sink
-			if( block.getClassName().equals(BlockConstants.BLOCK_CLASS_SOURCE)) {
-				BlockProperty prop = null;
-				for( BlockProperty property:block.getProperties() ) {
-					if(property.getName().equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_TAG_PATH)) {
-						prop = property;
-						break;
-					}
-				}
-				if(prop != null ) {
-					List<SerializableBlockStateDescriptor> sinks = handler.listSinksForSource(diagram.getResourceId(), block.getBlockId().toString());
-					if(sinks.size()>0) {
-						SerializableBlockStateDescriptor sink = sinks.get(0);  // There isn't supposed to be more than one sink for a source
-						String path = String.format("[%s]%s/%s",productionProvider,BlockConstants.SOURCE_SINK_TAG_FOLDER,sink.getName());
-						controller.removeSubscription(block,prop);
-						if(!diagram.getState().equals(DiagramState.ISOLATED)) prop.setBinding(path);
-						path = String.format("[%s]%s/%s",isolationProvider,BlockConstants.SOURCE_SINK_TAG_FOLDER,block.getName());
-						if(diagram.getState().equals(DiagramState.ISOLATED))  prop.setBinding(path);
-						controller.startSubscription(diagram.getState(),block,prop);
-					}
-				}
-				else {
-					log.warnf("%s.synchBlocks: Source %s does not have a tag path property",CLSS,block.getName());
-				}
-			}
 
 			// If the block is a sink, remap its tag path to correspond to its name.
 			// If the tag path is currently empty, do nothing. This is an unconfigured block.
-			else if( block.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK) && 
+			if( block.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK) && 
 					!isSystemName(block.getClassName(),block.getName() )) {
+				// Make a list of sources before we edit the sink tags
+				List<ProcessBlock> sources = handler.listSourceBlocksForSink(diagram.getResourceId(), block.getBlockId().toString());
 				BlockProperty prop = null;
 				for( BlockProperty property:block.getProperties() ) {
 					if(property.getName().equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_TAG_PATH)) {
@@ -96,12 +71,30 @@ public class BlockTagSynchronizer {
 					path = String.format("[%s]%s/%s",isolationProvider,BlockConstants.SOURCE_SINK_TAG_FOLDER,block.getName());
 					handler.createTag(projectName,DataType.String, path);
 					if(diagram.getState().equals(DiagramState.ISOLATED)) prop.setBinding(path);
-					prop.setBinding(path);
 					controller.sendPropertyBindingNotification(block.getBlockId().toString(), prop.getName(), prop.getBinding());
 					controller.startSubscription(diagram.getState(),block,prop);
+
+					// Now edit sources - the source will have the same tag property as the sink
+					for(ProcessBlock source:sources) {
+						BlockProperty sourceProp = source.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
+						if(sourceProp!=null) {
+							if(sourceProp.getBinding()!=null && !sourceProp.getBinding().isEmpty() ) {
+								controller.removeSubscription(source,sourceProp);
+							}
+							sourceProp.setBinding(prop.getBinding());
+							sourceProp.setValue(prop.getValue());
+							controller.sendPropertyBindingNotification(source.getBlockId().toString(), prop.getName(), prop.getBinding());
+							controller.startSubscription(diagram.getState(),source,prop);
+							String name = nameFromBinding(path);
+							source.setName(name);
+							controller.sendNameChangeNotification(source.getBlockId().toString(),name);
+							break;
+						}
+					}
 				}
+			
 				else {
-					log.warnf("%s.synchBlocks: Source %s does not have a tag path property",CLSS,block.getName());
+					log.warnf("%s.synchBlocks: Sink %s does not have a tag path property",CLSS,block.getName());
 				}
 			}
 		}
@@ -143,5 +136,23 @@ public class BlockTagSynchronizer {
 			}
 		}
 		return isSystem;
+	}
+	/**
+	 * @param tpath
+	 * @return a block name derived from a tag path
+	 */
+	private String nameFromBinding(String tpath) {
+		String name = "";
+		int pos = tpath.lastIndexOf("/");
+		if( pos>0 ) {
+			name = tpath.substring(pos+1);
+		}
+		else {
+			pos = tpath.lastIndexOf("]");
+			if( pos>0 ) {
+				name = tpath.substring(pos+1);
+			}
+		}
+		return name;
 	}
 }

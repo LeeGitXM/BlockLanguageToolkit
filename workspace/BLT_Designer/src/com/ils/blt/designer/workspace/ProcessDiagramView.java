@@ -18,7 +18,6 @@ import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.BusinessRules;
 import com.ils.blt.common.DiagramState;
-import com.ils.blt.common.ProcessBlock;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
@@ -31,7 +30,6 @@ import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableConnection;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.designer.NotificationHandler;
-import com.ils.blt.designer.editor.BlockPropertyEditor;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualityCode;
@@ -46,7 +44,6 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorP
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorType;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.BlockDiagramModel;
-import com.inductiveautomation.ignition.designer.blockandconnector.model.BlockListener;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Connection;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.impl.LookupConnection;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
@@ -385,6 +382,25 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	
 	@Override
 	public void deleteBlock(Block blk) {
+		// If the block is a Sink, complain if there are any associated Sources
+		ProcessBlockView bp = (ProcessBlockView)blk;
+		if(bp.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SINK)) {
+			List<SerializableBlockStateDescriptor> sources = appRequestHandler.listSourcesForSink(getResourceId(), bp.getId().toString());
+			Object[] options = { "Delete", "Cancel" };
+			if(sources.size()==1) {
+				int result = JOptionPane.showOptionDialog(null, String.format("There is a source associated with sink %s",
+						bp.getName()),"Warning",JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,
+				        null, options, options[0]);
+				if(result==1) return;   // Cancel
+			}
+			else if(sources.size()>1) {
+				int result = JOptionPane.showOptionDialog(null, String.format("There are %d sources associated with sink %s",
+						sources.size(),bp.getName()),"Warning",JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,
+				        null, options, options[0]);
+				if(result==1) return;   // Cancel
+			}
+		}
+		
 		List<UUID> displaysToDelete = new ArrayList<>();
 		log.infof("%s.deleteBlock: deleting a %s",CLSS,blk.getClass().getCanonicalName());
 		if( !(blk instanceof BlockAttributeView) ) {
@@ -429,7 +445,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			// Delete any associated attribute views associated with the block
 			
 			for(ProcessBlockView pbv:blockMap.values()) {
-				if(view.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_ATTRIBUTE)) {
+				if(pbv.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_ATTRIBUTE)) {
 					BlockAttributeView bav = (BlockAttributeView)pbv;
 					if(bav.getReferenceBlock()!=null && bav.getReferenceBlock().getId().equals(blk.getId()) )  {
 						displaysToDelete.add(bav.getId());

@@ -403,7 +403,6 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		Collection<ProjectResource> resources = project().browse(path).orElse(Collections.emptyList());
 		log.infof("%s.loadChildren: %s childCount = %d", CLSS,getName(),resources.size());
 		return super.loadChildren();
-		
 	}
 	/**
 	 * Create a child node because we've discovered a resource that matches this instance as a parent
@@ -414,7 +413,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	protected AbstractNavTreeNode createChildNode(ProjectResource res) {
 		// If the project is disabled, then don't do anything
 		if( !context.getProject().isEnabled()) return null;
-		
+
 		log.infof("%s.createChildNode: %s (%s) type:%s, depth=%d", CLSS,getName(),res.getResourcePath().getPath().toString(),res.getResourceType().toString(),getDepth());
 		AbstractResourceNavTreeNode node = statusManager.findNode(res.getResourceId());
 		if( node==null ) {
@@ -453,6 +452,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 //		node.setItalic(context.getProject().isResourceDirty(res.getResourceId()));    // EREIAM JH - Disabled until italic system fixed
 		return node;
 	}
+	
 	// For DiagramNode.delete
 	public void recreate() {
 		log.infof("%s.recreate: %s .....",CLSS,this.getName());
