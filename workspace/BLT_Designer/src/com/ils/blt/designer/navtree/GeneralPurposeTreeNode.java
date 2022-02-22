@@ -22,8 +22,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -80,6 +78,7 @@ import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceBuilder;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 import com.inductiveautomation.ignition.common.project.resource.ResourcePath;
+import com.inductiveautomation.ignition.common.project.resource.ResourceType;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.UndoManager;
@@ -133,9 +132,10 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	 * @param ctx the designer context
 	 */
 	public GeneralPurposeTreeNode(DesignerContext ctx) {
-		super(ctx, BLTProperties.FOLDER_RESOURCE_TYPE,ApplicationScope.GATEWAY);
+		super(ctx, BLTProperties.FOLDER_RESOURCE_TYPE,ApplicationScope.DESIGNER);
 		this.setName(BLTProperties.ROOT_FOLDER_NAME);
 		this.requestHandler = new ApplicationRequestHandler();
+		this.children = new ArrayList<>();
 		deleteNodeAction = null;
 		copyBranchAction = new CopyAction(this);
 		pasteBranchAction = new PasteAction(this);
@@ -155,23 +155,6 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		diagramIcon = iconFromPath("Block/icons/navtree/diagram.png");  
 		setIcon(closedIcon);
 		openIcon = IconUtil.getIcon("folder");
-		
-		// Search for children of root
-		List<ProjectResource> resources = context.getProject().getResources();
-		for(ProjectResource pr:resources) {
-			log.infof("%s: res %s [%s] (%s)",CLSS,pr.getResourcePath().getPath().toString(),
-					pr.getResourcePath().getParentPath(),pr.getResourcePath().getResourceType().toString());
-			try {
-				pr.getResourcePath().getParent();
-			}
-			catch(IllegalStateException ise) {  // Root resources don't have parents
-				if(pr.getResourceType().getModuleId().equals(BLTProperties.MODULE_ID)) {
-					this.children.add(createChildNode(pr));
-				}
-			}
-		}
-		
-
 	}
 	/**
 	 * This version of the constructor is used for all except the root. Create
@@ -186,6 +169,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		super(context,resource,ApplicationScope.DESIGNER);
 		this.requestHandler = new ApplicationRequestHandler();
 		this.renameHandler = new SerializableNodeRenameHandler();
+		this.children = new ArrayList<>();
 		setName(resource.getResourceName());      // Also sets text for tree
 		deleteNodeAction = new DeleteNodeAction(this);
 		copyBranchAction = new CopyAction(this);
@@ -398,11 +382,30 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	}
 	@Override 
 	public List<AbstractNavTreeNode> loadChildren() {
-		ResourcePath path = getPath();
-		log.infof("%s.loadChildren: %s (%s)", CLSS,getName(),path.getPath().toString());
-		Collection<ProjectResource> resources = project().browse(path).orElse(Collections.emptyList());
-		log.infof("%s.loadChildren: %s childCount = %d", CLSS,getName(),resources.size());
-		return super.loadChildren();
+		List<AbstractNavTreeNode> kids = new ArrayList<>();
+		List<ProjectResource> resources = context.getProject().getResources();
+		if( isRootFolder()) {
+			// Search for children of root
+			for(ProjectResource pr:resources) {
+				log.infof("%s: resource %s [%s] (%s)",CLSS,pr.getResourcePath().getPath().toString(),
+						pr.getResourcePath().getParentPath(),pr.getResourcePath().getResourceType().toString());
+				if(isRootChild(pr)) {
+					kids.add(createChildNode(pr));
+				}
+			}
+		}
+		else {
+			// Search for children of this node
+			for(ProjectResource pr:resources) {
+				log.infof("%s: resource %s [%s] (%s)",CLSS,pr.getResourcePath().getPath().toString(),
+						pr.getResourcePath().getParentPath(),pr.getResourcePath().getResourceType().toString());
+				if(isChildNode(pr)) {
+					kids.add(createChildNode(pr));
+				}
+			}
+		}
+		log.infof("%s.loadChildren: %s childCount = %d", CLSS,getName(),kids.size());
+		return kids;
 	}
 	/**
 	 * Create a child node because we've discovered a resource that matches this instance as a parent
@@ -413,31 +416,32 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	protected AbstractNavTreeNode createChildNode(ProjectResource res) {
 		// If the project is disabled, then don't do anything
 		if( !context.getProject().isEnabled()) return null;
-
-		log.infof("%s.createChildNode: %s (%s) type:%s, depth=%d", CLSS,getName(),res.getResourcePath().getPath().toString(),res.getResourceType().toString(),getDepth());
+		ResourceType rtype = res.getResourceType();
+		log.infof("%s.createChildNode: %s (%s) type:%s, depth=%d", CLSS,getName(),res.getResourcePath().getPath().toString(),rtype,getDepth());
 		AbstractResourceNavTreeNode node = statusManager.findNode(res.getResourceId());
 		if( node==null ) {
-			if (    BLTProperties.FOLDER_RESOURCE_TYPE.equals(res.getResourceType()))       {
+			if (    BLTProperties.FOLDER_RESOURCE_TYPE.equals(rtype) )       {
 				node = new GeneralPurposeTreeNode(context, res);
-				log.tracef("%s.createChildNode: (%s) %s->%s",CLSS,res.getResourceType(),this.getName(),node.getName());
+				log.tracef("%s.createChildNode: (%s) %s->%s",CLSS,rtype,this.getName(),node.getName());
 			}
-			else if ( BLTProperties.APPLICATION_RESOURCE_TYPE.equals(res.getResourceType()) )       {
+			else if ( BLTProperties.APPLICATION_RESOURCE_TYPE.equals(rtype) )       {
 				SerializableApplication sa = deserializeApplication(res);
 				node = new GeneralPurposeTreeNode(context, res);
-				log.tracef("%s.createChildNode: (%s) %s->%s",CLSS,res.getResourceType(),this.getName(),node.getName());
+				log.tracef("%s.createChildNode: (%s) %s->%s",CLSS,rtype,this.getName(),node.getName());
 			}
-			else if ( BLTProperties.FAMILY_RESOURCE_TYPE.equals(res.getResourceType()) )       {
+			else if ( BLTProperties.FAMILY_RESOURCE_TYPE.equals(rtype) )       {
 				SerializableFamily fa = deserializeFamily(res); 
 				node = new GeneralPurposeTreeNode(context, res);
-				log.tracef("%s.createChildNode: (%s) %s->%s",CLSS,res.getResourceType(),this.getName(),node.getName());
+				log.tracef("%s.createChildNode: (%s) %s->%s",CLSS,rtype,this.getName(),node.getName());
 			}
-			else if (BLTProperties.DIAGRAM_RESOURCE_TYPE.equals(res.getResourceType())) {
+			else if (BLTProperties.DIAGRAM_RESOURCE_TYPE.equals(rtype) ) {
 				node = new DiagramTreeNode(context,res,workspace);
 				log.tracef("%s.createChildDiagram: %s->%s",CLSS,this.getName(),node.getName());
 			} 
 			else {
-				log.warnf("%s: Attempted to create a child of type %s (ignored)",CLSS,res.getResourceType());
-				throw new IllegalArgumentException();
+				String msg = String.format("%s: Attempted to create a child of type %s (ignored)",CLSS,rtype);
+				log.warn(msg);
+				throw new IllegalArgumentException(msg);
 			}
 			statusManager.createResourceStatus(node,resourceId, res.getResourceId());
 		}
@@ -2159,6 +2163,33 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				parseNodeForConflicts(nameList, aNode, buf);
 			}
 		}
+	}
+	private boolean isRootChild(ProjectResource res) {
+		boolean result = false;
+		if( res.getResourcePath().getPath()!=null ) {
+			if(res.getResourcePath().getParentPath()!=null && res.getResourcePath().getParentPath().isEmpty() ) {
+				ResourceType type = res.getResourceId().getResourceType();
+				if( type!=null && 
+					   (type.equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ||
+						type.equals(BLTProperties.APPLICATION_RESOURCE_TYPE) ||
+						type.equals(BLTProperties.FAMILY_RESOURCE_TYPE) ||
+						type.equals(BLTProperties.FOLDER_RESOURCE_TYPE) )  ) {
+					result = true;
+				}
+			}
+		}
+		return result;
+	}
+	/**
+	 * @param res
+	 * @return true if this node is a direct child of the current node
+	 */
+	private boolean isChildNode(ProjectResource res) {
+		boolean result = false;
+		if( this.resourceId.getResourcePath().getParentPath()!=null && res.getResourcePath().getPath().equals(res.getResourcePath().getParentPath()) ) {
+			result = true;
+		}
+		return result;
 	}
     // ************************ ProjectResourceListener *****************************
 	/**

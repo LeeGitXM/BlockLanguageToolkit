@@ -47,7 +47,6 @@ import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.licensing.LicenseState;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
-import com.inductiveautomation.ignition.common.project.resource.ResourcePath;
 import com.inductiveautomation.ignition.common.script.ScriptManager;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -273,13 +272,13 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	@Override
 	public String getResourceCategoryKey(ProjectResourceId resourceId) {
 		// There is only one resource category that we are exporting
-		if( resourceId.getResourceType().equals(BLTProperties.APPLICATION_RESOURCE_TYPE) ) {
+		if( resourceId.getResourceType().getTypeId().equals(BLTProperties.APPLICATION_RESOURCE_TYPE) ) {
 			return PREFIX+".Export.Application.Category";
 		}
-		else if( resourceId.getResourceType().equals(BLTProperties.FAMILY_RESOURCE_TYPE) ) {
+		else if( resourceId.getResourceType().getTypeId().equals(BLTProperties.FAMILY_RESOURCE_TYPE) ) {
 			return PREFIX+".Export.Family.Category";
 		}
-		else if( resourceId.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
+		else if( resourceId.getResourceType().getTypeId().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
 			return PREFIX+".Export.Diagram.Category";
 		}
 		else { 
