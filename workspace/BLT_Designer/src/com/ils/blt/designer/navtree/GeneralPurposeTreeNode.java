@@ -201,6 +201,19 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		setIcon(closedIcon);
 	}
 
+	// For debugging
+	@Override 
+	public void checkChildren() {
+		log.infof("%s.checkChildren: ",CLSS);
+		super.checkChildren();
+	}
+	
+	@Override 
+	public boolean isLeaf() {
+		log.infof("%s.isLeaf: ",CLSS);
+		return super.isLeaf();
+	}
+	
 	// walk up the tree and see if there is a 
 	public boolean parentIsApplication() {
 		boolean ret = false;
@@ -387,8 +400,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		if( isRootFolder()) {
 			// Search for children of root
 			for(ProjectResource pr:resources) {
-				log.infof("%s: resource %s [%s] (%s)",CLSS,pr.getResourcePath().getPath().toString(),
-						pr.getResourcePath().getParentPath(),pr.getResourcePath().getResourceType().toString());
+				//log.infof("%s: resource %s [%s] (%s)",CLSS,pr.getResourcePath().getPath().toString(),
+				//		pr.getResourcePath().getParentPath(),pr.getResourcePath().getResourceType().toString());
 				if(isRootChild(pr)) {
 					kids.add(createChildNode(pr));
 				}
@@ -397,8 +410,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		else {
 			// Search for children of this node
 			for(ProjectResource pr:resources) {
-				log.infof("%s: resource %s [%s] (%s)",CLSS,pr.getResourcePath().getPath().toString(),
-						pr.getResourcePath().getParentPath(),pr.getResourcePath().getResourceType().toString());
+				log.infof("%s: resource %s vs %s",CLSS,this.resourceId.getResourcePath().getPath().toString(),
+						pr.getResourcePath().getParentPath());
 				if(isChildNode(pr)) {
 					kids.add(createChildNode(pr));
 				}
@@ -2186,7 +2199,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	 */
 	private boolean isChildNode(ProjectResource res) {
 		boolean result = false;
-		if( this.resourceId.getResourcePath().getParentPath()!=null && res.getResourcePath().getPath().equals(res.getResourcePath().getParentPath()) ) {
+		if( this.resourceId.getResourcePath().getParentPath()!=null && 
+			this.resourceId.getResourcePath().getPath().isParentOf(res.getResourcePath().getPath()) ) {
 			result = true;
 		}
 		return result;
