@@ -200,6 +200,11 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		ProjectResourceId resourceId = new ProjectResourceId(projectName,rtype,path);
 		return resourceId;
 	}
+	@Override
+	public ProjectResourceId createResourceId(String projectName, String path, ResourceType rtype) {
+		ProjectResourceId resourceId = new ProjectResourceId(projectName,rtype,path);
+		return resourceId;
+	}
 	
 	/**
 	 * Create the tag in both production and isolation

@@ -26,6 +26,7 @@ public interface BLTProperties   {
 	public final static ResourceType DIAGRAM_RESOURCE_TYPE       = new ResourceType(MODULE_ID,"blt.diagram");
 	public final static ResourceType FAMILY_RESOURCE_TYPE        = new ResourceType(MODULE_ID,"blt.family");
 	public final static ResourceType FOLDER_RESOURCE_TYPE        = new ResourceType(MODULE_ID,"__folder");
+	public final static ResourceType IGNITION7_FOLDER_RESOURCE_TYPE = new ResourceType(MODULE_ID,"__folder");   // Obsolete
 	
 	public final static String DIAGRAM_SCRIPT_PACKAGE      = "system.ils.blt.diagram";
 	

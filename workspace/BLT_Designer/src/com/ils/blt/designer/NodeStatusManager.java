@@ -204,6 +204,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 		//log.tracef("%s.recursivelySearchForAlert: %s(%d) = %s",TAG,(se==null?"null":se.getName()),resourceId,(result?"TRUE":"FALSE"));
 		if( se.isAlerting()) return true;
 	
+		/*
 		Set<ResourcePath> children = childrenByResourcePath.get(node);
 		if( children!=null) {
 			for(ResourcePath child:children) {
@@ -211,6 +212,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 				if( result ) return true;
 			}
 		}
+		*/
 		return false;
 	}
 	/**	

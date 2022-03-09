@@ -16,6 +16,7 @@ import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.common.GeneralPurposeDataContainer;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
+import com.inductiveautomation.ignition.common.project.resource.ResourceType;
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 
 /**
@@ -45,6 +46,7 @@ public interface ToolkitRequestHandler  {
 	 * @param resource type
 	 */
 	public ProjectResourceId createResourceId(String projectName,String path, String type);
+	public ProjectResourceId createResourceId(String projectName,String path, ResourceType rtype);
 	/**
 	 * Create a SQLTag memory tag given its path and data type.
 	 * Create in both production and isolation

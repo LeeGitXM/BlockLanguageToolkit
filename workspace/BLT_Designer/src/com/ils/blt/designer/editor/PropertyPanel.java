@@ -262,9 +262,13 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 			tmgr.subscribeAsync(tp, this);
 			CompletableFuture<Results<NodeDescription>> future = tmgr.browseAsync(tp, new BrowseFilter());
 			Results<NodeDescription> results = future.get();
-			Iterator<NodeDescription> iterator = results.getResults().iterator();
-			if(iterator.hasNext()) type = iterator.next().getDataType();
-
+			if( results!=null ) {
+				Iterator<NodeDescription> iterator = results.getResults().iterator();
+				if(iterator.hasNext()) type = iterator.next().getDataType();
+			}
+			else {
+				log.errorf("%s.subscribeToTagPath: No results reading tag %s",CLSS,path);
+			}
 		}
 		catch(ExecutionException ee) {
 			log.errorf("%s.subscribeToTagPath: Error getting datatype for %s (%s)",CLSS,path,ee.getMessage());

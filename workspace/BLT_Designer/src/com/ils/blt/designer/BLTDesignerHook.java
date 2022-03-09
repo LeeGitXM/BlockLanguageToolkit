@@ -10,6 +10,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.io.IOException;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Optional;
 
 import javax.swing.AbstractAction;
@@ -47,6 +48,7 @@ import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.licensing.LicenseState;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
+import com.inductiveautomation.ignition.common.project.resource.ResourceType;
 import com.inductiveautomation.ignition.common.script.ScriptManager;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -200,6 +202,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 			catch(Exception ie ) {
 				log.warnf("%s: Error creating vision palette entries (%s)",CLSS,ie.getMessage());
 			}
+			
 		}
 		
 		// Setup the diagram workspace
@@ -215,6 +218,8 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		appRequestHandler.triggerStatusNotifications(context.getProjectName());
 		LogUtil.getLogger(Logger.getRootLogger().getName());  // Cause the logger to be created
 		log.infof("%s.startup: ===== Complete ======",CLSS);
+		
+		listProjectResources();
 	}
 	
 	public NodeStatusManager getNavTreeStatusManager() { return nodeStatusManager; }
@@ -441,6 +446,28 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		return ret;
 	}
 	
-	
-	
+	/*
+	 * For debugging - list the resources attributed to the current project
+	 */
+	private void listProjectResources() {
+		log.infof("%s.listProjectResources: ===========",CLSS);
+		List<ProjectResource> resources = context.getProject().getResources();
+			for(ProjectResource pr:resources) {
+				if( pr.getResourcePath().getPath()==null ) {
+					log.infof("    %s: null path",pr.getResourceName());
+				}
+				else {
+					String parent = "null";
+					if(pr.getResourcePath().getParentPath()!=null ) parent = pr.getResourcePath().getParentPath();
+					ResourceType rt = pr.getResourceType();
+					log.infof("    %s:%s%s\t, parent=%s, type(%s,%s)",
+						pr.getResourceName(),
+						pr.getResourcePath().getPath().toString(),
+						(pr.isFolder()?" (folder)":""),
+						parent,
+						(rt==null?"":rt.getModuleId()),(rt==null?"":rt.getTypeId()) );
+			}
+		}
+		log.infof("%s.listProjectResources: ===== Complete ======",CLSS);
+	}
 }
