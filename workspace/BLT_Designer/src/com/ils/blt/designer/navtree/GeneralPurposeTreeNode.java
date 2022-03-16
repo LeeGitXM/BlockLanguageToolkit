@@ -1528,13 +1528,15 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 									}
 								} 
 								else {
-									ErrorUtil.showWarning("Tried to paste a family into an invalid location","Paste Application");
+									ErrorUtil.showWarning("Tried to paste a family into an invalid location","Paste Family");
 									return;
 								}
 							} 
 							else if( res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
 								AbstractResourceNavTreeNode node = nearestNonFolderNode(parentNode);
-								if (node.getProjectResource() != null && node.getProjectResource().getResourceType().equals(BLTProperties.FAMILY_RESOURCE_TYPE)) {
+								if( (node.getProjectResource() != null && 
+									 node.getProjectResource().getResourceType().equals(BLTProperties.FAMILY_RESOURCE_TYPE)) ||
+									parentNode.getProjectResource().getResourceType().equals(BLTProperties.FOLDER_RESOURCE_TYPE)   ) {
 									sd = mapper.readValue(new String(res.getData()), SerializableDiagram.class);
 									if( sd!=null ) {
 										ProcessDiagramView diagram = new ProcessDiagramView(res.getResourceId(),sd, context);
@@ -1560,11 +1562,6 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 										json = mapper.writeValueAsString(sd);
 										statusManager.setResourceState(newId, sd.getState(),false);
 										
-										
-//										if (diagnosis) {
-//											ErrorUtil.showWarning("Diagram contains diagnosis blocks that must be renamed before saving");
-//										}
-										
 									}
 									else {
 										ErrorUtil.showWarning(String.format("Failed to deserialize diagram (%s)",res.getName()),"Paste Diagram");
@@ -1572,7 +1569,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 									}
 								} 
 								else {
-									ErrorUtil.showWarning("Tried to paste a diagram into an invalid location","Paste Application");
+									ErrorUtil.showWarning("Tried to paste a diagram into an invalid location","Paste Diagram");
 									return;
 								}
 
