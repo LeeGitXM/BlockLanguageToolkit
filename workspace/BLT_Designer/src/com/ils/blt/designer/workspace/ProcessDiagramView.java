@@ -551,7 +551,10 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	
 	public void setEncapsulationBlockID(UUID encapsulationBlockID) {this.encapsulationBlockID = encapsulationBlockID;}
 	
-	public void setState(DiagramState state) {this.state = state;}
+	public void setState(DiagramState ds) { 
+		if( !state.equals(ds) ) dirty = true;
+		this.state = ds;
+	}
 	
 	/**
 	 * There are a few situations (like deserialization) where we want to suppress the dirty propagation.

@@ -99,9 +99,7 @@ public class ResourceUpdateManager implements Runnable {
 				log.warnf("%s.run: Exception serializing diagram, resource %d (%s)",CLSS,resourceId,jpe.getMessage());
 			}
 			workspace.setDiagramClean(diagram);
-
-
-
+			
 			/*
 			 * Now save the resource back into the project.
 			 */

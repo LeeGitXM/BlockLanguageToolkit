@@ -723,7 +723,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 			ApplicationRequestHandler arh = new ApplicationRequestHandler();
 			arh.setDiagramState(uuidString, state.name());
 			statusManager.setResourceState(resourceId,state,true);
-			setDirty(false);
+			setDirty(true);
 			setIcon(getIcon());
 			refresh();
 		} 

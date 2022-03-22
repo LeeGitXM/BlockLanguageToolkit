@@ -266,7 +266,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	// Use the state for Applications and Families to remember whether to 
 	// configure production or isolation databases
 	public DiagramState getState() { return this.state; }
-	public void setState(DiagramState ds) { this.state = ds; }
+	public void setState(DiagramState ds) { this.state = ds;}
 	/**
 	 * Query the block controller in the Gateway. The resources that it knows
 	 * about may, or may not, coincide with those in the Designer. 

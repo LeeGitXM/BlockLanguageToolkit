@@ -66,6 +66,10 @@ public class BlockTagSynchronizer {
 					String path = String.format("[%s]%s/%s",productionProvider,BlockConstants.SOURCE_SINK_TAG_FOLDER,block.getName());
 					handler.createTag(DataType.String, path);
 					if(!diagram.getState().equals(DiagramState.ISOLATED)) prop.setBinding(path);
+					try {
+						Thread.sleep(1000);
+					}
+					catch(InterruptedException ignore) {}
 					path = String.format("[%s]%s/%s",isolationProvider,BlockConstants.SOURCE_SINK_TAG_FOLDER,block.getName());
 					handler.createTag(DataType.String, path);
 					if(diagram.getState().equals(DiagramState.ISOLATED)) prop.setBinding(path);
