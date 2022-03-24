@@ -135,6 +135,7 @@ public class ApplicationScriptFunctions   {
 		return handler.getDiagramState(projectId,resourceId);
 	}
 	/**
+	 * @param diagramId String version of diagram UUID
 	 * @return the current state of the specified diagram.
 	 */
 	public static DiagramState getDiagramState(String diagramId)  {

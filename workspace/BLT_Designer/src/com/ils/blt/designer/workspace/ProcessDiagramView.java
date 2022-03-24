@@ -1,5 +1,5 @@
 /**
- *   (c) 2014-2021  ILS Automation. All rights reserved.
+ *   (c) 2014-2022  ILS Automation. All rights reserved.
  */
 package com.ils.blt.designer.workspace;
 
@@ -18,7 +18,6 @@ import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.BusinessRules;
 import com.ils.blt.common.DiagramState;
-import com.ils.blt.common.ProcessBlock;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
@@ -31,7 +30,6 @@ import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableConnection;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.designer.NotificationHandler;
-import com.ils.blt.designer.editor.BlockPropertyEditor;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
@@ -470,12 +468,18 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	 *         of the diagram
 	 */
 	public Color getBackgroundColorForState() {
-		Color result = BLTProperties.DIAGRAM_ACTIVE_BACKGROUND;
-		if( getState().equals(DiagramState.ISOLATED)) result = BLTProperties.DIAGRAM_ISOLATED_BACKGROUND;
-		
 		// Dirty trumps active and isolated but not disabled
-		if( getState().equals(DiagramState.DISABLED)) result = BLTProperties.DIAGRAM_DISABLED_BACKGROUND;
-		else if( isDirty() ) result = BLTProperties.DIAGRAM_DIRTY_BACKGROUND;
+		Color result = BLTProperties.DIAGRAM_DISABLED_BACKGROUND;
+		DiagramState designerState = getState();
+		if( !designerState.equals(DiagramState.DISABLED)) {
+			result = BLTProperties.DIAGRAM_ACTIVE_BACKGROUND;
+			Long key = new Long(resourceId);
+			if( designerState.equals(DiagramState.ISOLATED)) result = BLTProperties.DIAGRAM_ISOLATED_BACKGROUND;
+			if( isDirty() || 
+				!designerState.equals(appRequestHandler.getDiagramState(context.getProject().getId(),key))) {
+				result = BLTProperties.DIAGRAM_DIRTY_BACKGROUND;
+			}
+		}
 		return result;
 	}
 	
@@ -552,7 +556,6 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	public void setEncapsulationBlockID(UUID encapsulationBlockID) {this.encapsulationBlockID = encapsulationBlockID;}
 	
 	public void setState(DiagramState ds) { 
-		if( !state.equals(ds) ) dirty = true;
 		this.state = ds;
 	}
 	

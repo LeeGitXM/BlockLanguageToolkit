@@ -152,7 +152,7 @@ public class GatewayScriptFunctions   {
 		return handler.getDiagramForBlock(blockId);
 	}
 	/**
-	 * @param diagramId the id of the diagram as a String
+	 * @param diagramId the uuid of the diagram as a String
 	 * @return the current state of the specified diagram.
 	 */
 	public static DiagramState getDiagramState(String diagramId)  {

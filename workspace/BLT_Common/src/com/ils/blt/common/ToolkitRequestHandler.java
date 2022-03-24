@@ -134,7 +134,7 @@ public interface ToolkitRequestHandler  {
 	 */
 	public DiagramState getDiagramState(Long projectId, Long resourceId) ;
 	/**
-	 * @param diagramId String representation of the diagram's internal Id.
+	 * @param diagramId String representation of the diagram's internal UUID.
 	 * @return the current state of that diagram.
 	 */
 	public DiagramState getDiagramState(String diagramId);

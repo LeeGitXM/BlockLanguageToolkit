@@ -1,5 +1,5 @@
 /**
- *   (c) 2013-2021  ILS Automation. All rights reserved.
+ *   (c) 2013-2022  ILS Automation. All rights reserved.
  *  
  *  Based on sample code provided by Inductive Automation.
  */
@@ -60,7 +60,6 @@ import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.ResourceCreateManager;
 import com.ils.blt.designer.ResourceDeleteManager;
-import com.ils.blt.designer.ResourceUpdateManager;
 import com.ils.blt.designer.editor.ApplicationPropertyEditor;
 import com.ils.blt.designer.editor.FamilyPropertyEditor;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
@@ -111,7 +110,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	private final StartAction startAction = new StartAction();
 	private final StopAction stopAction = new StopAction();
 	private final DiagramWorkspace workspace;
-	private final NodeStatusManager statusManager;
+	private static NodeStatusManager statusManager;
 	private final FolderCreateAction folderCreateAction;
 	private final ApplicationRequestHandler requestHandler;
 	private final ExecutionManager executionEngine;
@@ -152,7 +151,6 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		diagramIcon = iconFromPath("Block/icons/navtree/diagram.png");  
 		setIcon(closedIcon);
 		openIcon = IconUtil.getIcon("folder");
-
 	}
 	/**
 	 * This version of the constructor is used for all except the root. Create
@@ -266,7 +264,10 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	// Use the state for Applications and Families to remember whether to 
 	// configure production or isolation databases
 	public DiagramState getState() { return this.state; }
-	public void setState(DiagramState ds) { this.state = ds;}
+	public void setState(DiagramState ds) { 
+		this.state = ds;
+		statusManager.setResourceState(resourceId, ds);
+	}
 	/**
 	 * Query the block controller in the Gateway. The resources that it knows
 	 * about may, or may not, coincide with those in the Designer. 
@@ -627,10 +628,11 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 
 	/**
 	 * Convert the resource data into a deserializeDiagram.
+	 * Set the state from that stored in the NotificationStatusManager
 	 * @param res
 	 * @return
 	 */
-	private SerializableDiagram deserializeDiagram(ProjectResource res) {
+	public static SerializableDiagram deserializeDiagram(ProjectResource res) {
 		SerializableDiagram sd = null;
 		try{
 			byte[] bytes = res.getData();
@@ -638,7 +640,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			mapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL,true);
 			sd = mapper.readValue(new String(bytes), SerializableDiagram.class);
 			sd.setName(res.getName());   // Sync the SerializableDiagram name w/ res
-			statusManager.setResourceState(resourceId, sd.getState(),false);
+			sd.setState(statusManager.getResourceState(res.getResourceId()));
 		}
 		catch(Exception ex) {
 			logger.warnf("%s.SerializableDiagram: Deserialization exception (%s)",CLSS,ex.getMessage());
@@ -1220,7 +1222,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 						sd.getName(), ApplicationScope.GATEWAY, json.getBytes());
 				resource.setParentUuid(parentId);
 				logger.infof("%s:ApplicationImportAction importing diagram %s(%d) (%s)", CLSS,sd.getName(),newId,sd.getId().toString());
-				statusManager.setResourceState(newId, sd.getState(),false);
+				statusManager.setResourceState(newId, sd.getState());
 				new ResourceCreateManager(resource).run();
 			} 
 			catch (Exception ex) {
@@ -1560,7 +1562,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 										sd.setState(DiagramState.DISABLED);
 										newResourceUUID = sd.getId();
 										json = mapper.writeValueAsString(sd);
-										statusManager.setResourceState(newId, sd.getState(),false);
+										statusManager.setResourceState(newId, sd.getState());
 										
 									}
 									else {
@@ -1882,8 +1884,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 											resource.setParentUuid(getFolderId());
 											new ResourceCreateManager(resource).run();	
 											parentNode.selectChild(new long[] {newId} );
-											statusManager.setResourceState(newId, sd.getState(),false);
-											setDirty(true);
+											statusManager.setResourceState(newId, sd.getState());
 										}
 										else {
 											ErrorUtil.showWarning(String.format("Failed to deserialize file (%s)",input.getAbsolutePath()),POPUP_TITLE);

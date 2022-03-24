@@ -9,8 +9,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.serializable.SerializableDiagram;
-import com.ils.blt.designer.workspace.DiagramWorkspace;
+import com.ils.blt.designer.navtree.GeneralPurposeTreeNode;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayException;
 import com.inductiveautomation.ignition.common.project.Project;
@@ -18,7 +19,6 @@ import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.IgnitionDesigner;
-import com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignableContainer;
 import com.inductiveautomation.ignition.designer.gateway.DTGatewayInterface;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
@@ -45,21 +45,26 @@ public class ResourceUpdateManager implements Runnable {
 	private static NodeStatusManager statusManager = null;
 	private ReentrantLock sharedLock = new ReentrantLock(); 
 	private final ProjectResource res;
-	private final DiagramWorkspace workspace;
 	private final ProcessDiagramView diagram;
 	private final ThreadCounter counter = ThreadCounter.getInstance();
 	private final ApplicationRequestHandler requestHandler;
+	private DiagramState newState = null;
 	
 	// DiagramWorkspace.onClose of a tab.
-	public ResourceUpdateManager(DiagramWorkspace wksp,ProjectResource pr,ProcessDiagramView dia) {
-		if(DEBUG) log.infof("%s.run: Creating a new ResourceUpdateManager for DiagramWorkspace %s...", CLSS, wksp.getName());
-		this.workspace = wksp;
+	public ResourceUpdateManager(ProjectResource pr,ProcessDiagramView dia) {
+		if(DEBUG) log.infof("%s.run: Creating a new ResourceUpdateManager for %s...", CLSS, dia.getName());
 		this.res = pr;
 		this.diagram = dia;
 		this.counter.incrementCount();
 		this.requestHandler = new ApplicationRequestHandler();
 	}
-
+	// On a save of a diagram that is not open
+	public ResourceUpdateManager(ProjectResource pr,DiagramState state) {
+		this.res = pr;
+		this.diagram = null;
+		this.newState = state;
+		this.requestHandler = new ApplicationRequestHandler();
+	}
 	
 	/**
 	 * Call this method from the hook as soon as the context is established.
@@ -84,11 +89,17 @@ public class ResourceUpdateManager implements Runnable {
 			 * will be a dirty.
 			 */
 			long resourceId = res.getResourceId();
+			SerializableDiagram sd = null;
+			if( diagram!=null) {
+					sd = diagram.createSerializableRepresentation();
+			}
+			else {
+					sd = GeneralPurposeTreeNode.deserializeDiagram(res);	
+			}
 
-			SerializableDiagram sd = diagram.createSerializableRepresentation();
-
-			if( DEBUG ) log.infof("%s.run(), %s-%s (%s)", CLSS, diagram.getName(), sd.getName(), (diagram.isDirty()?"DIRTY":"CLEAN"));
-			sd.setName(diagram.getName());
+			if( DEBUG ) log.infof("%s.run(), %s", CLSS, sd.getName());
+			if( diagram!=null) sd.setName(diagram.getName());
+			if(newState!=null) sd.setState(newState);
 			ObjectMapper mapper = new ObjectMapper();
 			try{
 				byte[] bytes = mapper.writeValueAsBytes(sd);
@@ -98,7 +109,6 @@ public class ResourceUpdateManager implements Runnable {
 			catch(JsonProcessingException jpe) {
 				log.warnf("%s.run: Exception serializing diagram, resource %d (%s)",CLSS,resourceId,jpe.getMessage());
 			}
-			workspace.setDiagramClean(diagram);
 			
 			/*
 			 * Now save the resource back into the project.

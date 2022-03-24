@@ -339,6 +339,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		return result;
 	}
 	/**
+	 * @param diagramId String representation of UUID
 	 * @return the current state of the specified diagram.
 	 */
 	@Override

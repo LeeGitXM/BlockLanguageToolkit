@@ -40,7 +40,6 @@ import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.NotificationHandler;
 import com.ils.blt.designer.ResourceDeleteManager;
-import com.ils.blt.designer.ResourceUpdateManager;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
@@ -413,95 +412,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		}
 	}
 
-//	// copy the currently selected node UUID to the clipboard
-//	private class CutAction extends BaseAction {
-//		private static final long serialVersionUID = 1L;
-//		private final AbstractResourceNavTreeNode parentNode;
-//
-//		public CutAction(AbstractResourceNavTreeNode pNode)  {
-//			super(PREFIX+".CutNode",IconUtil.getIcon("cut"));
-//			this.parentNode = pNode;
-//		}
-//
-//		public void actionPerformed(ActionEvent e) {
-//	       final Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-//
-//	       ProjectResource res = parentNode.getProjectResource();
-//           String data = ""+res.getResourceId();
-//           
-//           Transferable t =  new StringSelection(GeneralPurposeTreeNode.BLT_CUT_OPERATION + data);
-//				   
-//		   if (t != null) {
-//			   try { 
-//				   clipboard.setContents(t, null); 
-//			   } catch (Exception ex) {
-//				   ErrorUtil.showError(String.format("actionPerformed: Unhandled Exception (%s)",ex.getMessage()), "Cut Diagram");
-//			   }
-//		   }
-//				   
-//		}
-//	}
 
-	
-	
-//	private class DuplicateDiagramAction extends BaseAction {
-//		private static final long serialVersionUID = 1L;
-//		private final AbstractResourceNavTreeNode parentNode;
-//		public DuplicateDiagramAction(AbstractResourceNavTreeNode pNode)  {
-//			super(PREFIX+".DuplicateNode",IconUtil.getIcon("copy"));  // preferences
-//			this.parentNode = pNode;
-//		}
-//
-//		public void actionPerformed(ActionEvent e) {
-//			try {
-//				EventQueue.invokeLater(new Runnable() {
-//					public void run() {
-//						long newId;
-//
-//						try {	
-//							newId = context.newResourceId();
-//							ProjectResource res = parentNode.getProjectResource();
-//							byte[] bytes = res.getData();
-//							// It would be nice to simply use the clone constructor, but
-//							// unfortunately, we have to replace all UUIDs with new ones
-//							ObjectMapper mapper = new ObjectMapper();
-//							mapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL,true);
-//							SerializableDiagram sd = mapper.readValue(new String(bytes), SerializableDiagram.class);
-//							if( sd!=null ) {
-//								UUIDResetHandler uuidHandler = new UUIDResetHandler(sd);
-//								uuidHandler.convertUUIDs();
-//								sd.setDirty(true);    // Dirty because gateway doesn't know about it yet
-//								sd.setState(DiagramState.DISABLED);
-//								String json = mapper.writeValueAsString(sd);
-//								GeneralPurposeTreeNode grandparent = (GeneralPurposeTreeNode)parentNode.getParent();
-//								ProjectResource resource = new ProjectResource(newId,
-//										BLTProperties.MODULE_ID, BLTProperties.DIAGRAM_RESOURCE_TYPE,
-//										grandparent.nextFreeName(grandparent,sd.getName()), ApplicationScope.GATEWAY, json.getBytes());
-//								
-//								resource.setParentUuid(grandparent.getUUID());
-//								new ResourceCreateManager(resource).run();	
-//								grandparent.selectChild(new long[] {newId} );
-//								statusManager.setResourceState(newId, sd.getState(),false);
-//							}
-//							else {
-//								ErrorUtil.showWarning(String.format("Failed to deserialize diagram (%s)",res.getName()),"Clone Diagram");
-//							}
-//						}
-//						catch( IOException ioe) {
-//							// Should never happen, we just picked this off a chooser
-//							log.warnf("%s: actionPerformed, IOException(%s)",TAG,ioe.getLocalizedMessage()); 
-//						}
-//						catch (Exception ex) {
-//							log.errorf("%s: actionPerformed: Unhandled Exception (%s)",TAG,ex.getMessage());
-//						}
-//					}
-//				});
-//			} 
-//			catch (Exception err) {
-//				ErrorUtil.showError(TAG+" Exception cloning diagram",err);
-//			}
-//		}
-//	} 
 	// From the root node, recursively log the contents of the tree
 	private class DebugDiagramAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
@@ -698,18 +609,16 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	 */
 	public void setDiagramState(DiagramState state) {
 		try {
-			// Even if the diagram is showing, we need to do a save to change the state.
-			// (That's why this selection is disabled when the view is dirty)
-			DiagramState oldState = null;
+			// We change the state in the view and nav tree, but not the gateway (until a save).
 			ProjectResource res = context.getProject().getResource(resourceId);
 			BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resourceId);
-			String uuidString = "";
+			// Inform the navtree of the state and let listeners update the UI
+			statusManager.setResourceState(resourceId,state);
 			if( tab!=null ) {
 				log.infof("%s.setDiagramState: %s now %s (open)",TAG, tab.getName(),state.name());
 				ProcessDiagramView view = (ProcessDiagramView)(tab.getModel());
 				view.setState(state);		// Simply sets the view state
 				tab.setBackground(view.getBackgroundColorForState());
-				uuidString = view.getId().toString();
 			}
 			// Otherwise we need to de-serialize and get the UUID
 			else {
@@ -717,13 +626,8 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 				SerializableDiagram sd = null;
 				ObjectMapper mapper = new ObjectMapper();
 				sd = mapper.readValue(bytes,SerializableDiagram.class);
-				uuidString = sd.getId().toString();
 			}
-			// Inform the gateway of the state and let listeners update the UI
-			ApplicationRequestHandler arh = new ApplicationRequestHandler();
-			arh.setDiagramState(uuidString, state.name());
-			statusManager.setResourceState(resourceId,state,true);
-			setDirty(true);
+			
 			setIcon(getIcon());
 			refresh();
 		} 
@@ -829,8 +733,8 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	public void diagramStateChange(long resId, String state) {
 		try {
 			DiagramState ds = DiagramState.valueOf(state);
-			statusManager.setResourceState(resourceId, ds,false);
-			// Force repaints of both NavTree and workspace
+			statusManager.setResourceState(resourceId, ds);
+			// Repaint of both NavTree and workspace
 			refresh();
 			BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resourceId);
 			if( tab!=null ) {

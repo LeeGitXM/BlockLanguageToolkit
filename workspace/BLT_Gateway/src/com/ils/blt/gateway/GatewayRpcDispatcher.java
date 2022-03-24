@@ -18,6 +18,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.serializable.SerializableAnchor;
@@ -247,11 +248,14 @@ public class GatewayRpcDispatcher   {
 	}
 
 	public String getDiagramState(Long projectId,Long resourceId) {
-		return requestHandler.getDiagramState(projectId,resourceId).name();
+		DiagramState state = requestHandler.getDiagramState(projectId,resourceId);
+		return state.name();
 	}
 
 	public String getDiagramState(String diagramId) {
-		return requestHandler.getDiagramState(diagramId).name();
+		DiagramState state = requestHandler.getDiagramState(diagramId);
+		log.infof("%s: getDiagramState: Diagram %s = %s",TAG,diagramId,state.name());
+		return state.name();
 	}
 	/**
 	 * @return an explanation for the state of a block.

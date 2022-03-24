@@ -10,6 +10,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.io.IOException;
 import java.util.Enumeration;
+import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -210,7 +211,8 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		NotificationHandler.getInstance().setHook(this);
 		// Query the gateway for latest notifications from all blocks
 		appRequestHandler.triggerStatusNotifications();
-		
+		// As a debugging step
+		listProjectResources();
 		LogUtil.getLogger(Logger.ROOT_LOGGER_NAME);
 		log.infof("%s.startup: ----- Complete -----",CLSS);
 	}
@@ -438,6 +440,14 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		return ret;
 	}
 	
-	
+	private void listProjectResources() {
+		log.infof("%s.listProjectResources: ==============================",CLSS);
+		List<ProjectResource> resources = context.getProject().getResources();
+		for( ProjectResource resource:resources) {
+			log.infof("  %s (%d) %s:%s %s",resource.getName(),resource.getResourceId(),resource.getModuleId(),resource.getResourceType(),
+					(resource.getParentUuid()==null?"":resource.getParentUuid().toString()));
+		}
+		log.infof("%s.listProjectResources: ========= Complete ===========",CLSS);
+	}
 	
 }

@@ -7,6 +7,7 @@ import java.util.Enumeration;
 
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.DiagramState;
 import com.ils.blt.designer.navtree.DiagramTreeNode;
 import com.ils.blt.designer.navtree.NavTreeNodeInterface;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
@@ -41,6 +42,7 @@ public class ResourceSaveManager implements Runnable {
 	private final DiagramWorkspace workspace;
 	private final ThreadCounter counter = ThreadCounter.getInstance();
 	private final ApplicationRequestHandler requestHandler;
+	private static NodeStatusManager statusManager;
 	
 	public ResourceSaveManager(DiagramWorkspace wksp,AbstractResourceNavTreeNode node) {
 		this.root = node;
@@ -55,6 +57,7 @@ public class ResourceSaveManager implements Runnable {
 	 */
 	public static void setContext(DesignerContext ctx) {
 		context = ctx;
+		statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
 	}
 	/**
 	 * Save all application, family or diagram nodes.
@@ -91,10 +94,9 @@ public class ResourceSaveManager implements Runnable {
 		this.counter.decrementCount();
 	}
 	
-	// Recursively traverse the nav tree. Choose only diagrams and then only those that are open.
+	// Recursively traverse the nav tree. Choose only diagrams and then only those that are open or
+	// have a different state than what exists in the gateway.
 	// These are the only diagrams that can be out-of-sync with the gateway. Save them. 
-	// Note: the notion of dirtiness is simply a UI indicator for the user.
-	// We simply save everything that is open.
 	private void saveOpenDiagrams(AbstractResourceNavTreeNode node) {
 		ProjectResource res = node.getProjectResource();
 		ProcessDiagramView view = null;  // PH 7/16/21
@@ -117,15 +119,29 @@ public class ResourceSaveManager implements Runnable {
 				if( tab!=null ) {
 					view = (ProcessDiagramView)tab.getModel();
 					if( DEBUG ) log.infof("%s.saveOpenDiagrams, %s (%s)", CLSS, view.getName(), (view.isDirty()?"DIRTY":"CLEAN"));
-					if (view.isDirty()){
+					if (view.isDirty() ){
 						view.registerChangeListeners();     // The diagram may include new components
 						if( DEBUG ) log.infof("%s.saveOpenDiagrams: Saving %s...", CLSS, res.getName());
-						new ResourceUpdateManager(workspace, res,view).run();
+						new ResourceUpdateManager(res,view).run();
 						if( DEBUG ) log.infof("%s.saveOpenDiagrams: %s saved!", CLSS, res.getName());
+					}
+					view.setClean();
+					workspace.setDiagramClean(view);
+				}
+				// The resource can also be dirty if the state does not match its counterpart in the gateway
+				// If there is a mismatch, simply set the correct state directly into the gateway
+				long projectId = context.getProject().getId();
+				DiagramState designerState = statusManager.getResourceState(res.getResourceId());
+				if(designerState!=null ) {
+					DiagramState gwState = requestHandler.getDiagramState(projectId, res.getResourceId());
+					if( !designerState.equals(gwState)) {
+						requestHandler.setDiagramState(projectId, res.getResourceId(), designerState.name());
+						new ResourceUpdateManager(res,designerState).run();
 					}
 				}
 			}
 		}
+
 		@SuppressWarnings("rawtypes")
 		Enumeration walker = node.children();
 		while(walker.hasMoreElements()) {

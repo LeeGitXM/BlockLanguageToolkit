@@ -501,7 +501,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		return state;
 	}
 	/**
-	 * @param diagramId diagram identifier
+	 * @param diagramId string version of diagram UUID identifier
 	 * @return the current state of the specified diagram as a DiagramState.
 	 */
 	@Override

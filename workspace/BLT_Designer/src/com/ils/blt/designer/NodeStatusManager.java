@@ -1,5 +1,5 @@
 /**
- *   (c) 2013-2016  ILS Automation. All rights reserved.
+ *   (c) 2013-2022  ILS Automation. All rights reserved.
  */
 package com.ils.blt.designer;
 
@@ -30,11 +30,10 @@ import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceN
  *  It is a central reporting point for the current status of each node.
  *  
  *  The nodes themselves have no dirty state. "dirtiness" refers to
- *  the presence of unsaved diagrams and is managed by the project.
- *  
- *  We do keep track of the state (DISABLED,ISOLATION,ACTIVE). This
- *  refers to the state of child diagrams. When we set the state,
- *  it is set only for the current node, independent of child state.
+ *  a change in state for the node.  We keep track of the state 
+ *  (DISABLED,ISOLATION,ACTIVE) of child diagrams. When we set the state,
+ *  it is in designer scope only. We do not change the state in the
+ *  gateway until a project save.
  *  
  *  "Alerting" is completely independent of dirtiness. It refers to
  *  the state something inside a diagram. A node is alerting if any of its
@@ -43,7 +42,7 @@ import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceN
  *  The resourceId is known to both the view code and the nav tree.
  */
 public class NodeStatusManager implements NotificationChangeListener   {
-	private static String TAG = "NodeStatusManager";
+	private static String CLSS = "NodeStatusManager";
 	private final LoggerEx log;
 	public final DesignerContext context;
 	private final ApplicationRequestHandler handler;
@@ -54,7 +53,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 	
 
 	/**
-	 * The handler. There should be only one - owned by the hook instance
+	 * The manager. There should be only one - owned by the hook instance
 	 */
 	public NodeStatusManager(DesignerContext ctx,ApplicationRequestHandler h) {
 		this.log = LogUtil.getLogger(getClass().getPackage().getName());
@@ -68,7 +67,8 @@ public class NodeStatusManager implements NotificationChangeListener   {
 	
 	/**
 	 * Define status for a new resource. The default should work for newly discovered resources.
-	 * If this is re-called with the same resource, ignore.
+	 * If this is re-called with the same resource, ignore. Initially we get the node state from the
+	 * gateway
 	 * @param resourceId
 	 */
 	public void createResourceStatus(AbstractResourceNavTreeNode node,long parentResourceId,long resourceId) {
@@ -79,7 +79,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 			DiagramState s = handler.getDiagramState(projectId, key);
 			se = new StatusEntry(node,parentResourceId,s);
 			se.setAlerting(handler.isAlerting(projectId, key));
-			notificationHandler.addNotificationChangeListener(NotificationKey.keyForAlert(resourceId), TAG, this);
+			notificationHandler.addNotificationChangeListener(NotificationKey.keyForAlert(resourceId), CLSS, this);
 			statusByResourceId.put(key,se);
 		}
 		// We had a "provisional" entry 
@@ -94,7 +94,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 			childrenByResourceId.put(parentKey,set);
 		}
 		set.add(key);
-		log.debugf("%s.createResourceStatus: %s (%d:%d) %s",TAG,(node==null?"":node.getName()),parentResourceId,resourceId,
+		log.debugf("%s.createResourceStatus: %s (%d:%d) %s",CLSS,(node==null?"":node.getName()),parentResourceId,resourceId,
 				                                           (se.getState()==null?"":se.getState().name()));
 	}
 	
@@ -104,7 +104,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 	 * @param node of resource tree
 	 */
 	public void createRootResourceStatus(AbstractResourceNavTreeNode node) {
-		log.tracef("%s.newRootResource",TAG);
+		log.tracef("%s.newRootResource",CLSS);
 		Long key = new Long(BLTProperties.ROOT_RESOURCE_ID);
 		Long parentKey = new Long(BLTProperties.ROOT_PARENT_ID); 
 		if( statusByResourceId.get(key) == null ) {
@@ -122,7 +122,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 	 * @param resourceId
 	 */
 	public void deleteResource(long resourceId ) {
-		log.debugf("%s.deleteResource(%d)",TAG,resourceId);
+		log.debugf("%s.deleteResource(%d)",CLSS,resourceId);
 		Long key = new Long(resourceId);
 		StatusEntry se = statusByResourceId.get(resourceId);
 		if( se!=null ) {
@@ -149,6 +149,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 	}
 	
 	/**
+	 * If the diagram is dirty, the state is the designer-scope unsaved state
 	 * @param resourceId
 	 * @return a cached diagram state.
 	 */
@@ -158,7 +159,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 		if( se!=null ) {
 			result = se.getState();
 		}
-		log.tracef("%s.getResourceState: %s(%d) = %s",TAG,(se==null?"null":se.getName()),resourceId,result.name());
+		log.tracef("%s.getResourceState: %s(%d) = %s",CLSS,(se==null?"null":se.getName()),resourceId,result.name());
 		return result;
 	}
 	
@@ -168,7 +169,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 	 * @return the AbstractResourceNavTreeNode associated with the specified resourceId.
 	 */
 	public AbstractResourceNavTreeNode findNode(long resourceId) {
-		log.debugf("%s.findNode(%d)",TAG,resourceId);
+		log.debugf("%s.findNode(%d)",CLSS,resourceId);
 		Long key = new Long(resourceId);
 		AbstractResourceNavTreeNode node = null;
 		StatusEntry se = statusByResourceId.get(key);
@@ -176,20 +177,6 @@ public class NodeStatusManager implements NotificationChangeListener   {
 		return node;
 	}
 	
-//	/**
-//	 * Improved version of findNode.  Some newly created nodes don't seem to make it into here
-//	 * @param resourceId
-//	 * @return the AbstractResourceNavTreeNode associated with the specified resourceId.
-//	 */
-//	public AbstractResourceNavTreeNode findNodeSlower(long resourceId) {
-//		log.debugf("%s.findNodeSlower(%d)",TAG,resourceId);
-//		Long key = new Long(resourceId);
-//		AbstractResourceNavTreeNode node = null;
-//		StatusEntry se = childrenByResourceId.get(key);
-//		if( se!=null ) node=se.getNode();
-//		return node;
-//	}
-//	
 	private void recursivelyDeleteChildren(Set<Long> children) {
 		if( children==null ) return;
 		for(Long child:children) {
@@ -215,11 +202,10 @@ public class NodeStatusManager implements NotificationChangeListener   {
 		return false;
 	}
 	/**	
-	 * A state change, is of necessity, accompanied by a save. Clear the dirty count.
-	 * We explicitly synchronize with the gateway, but cache the result.
+	 * A state change. If the state differs from the gateway, then the node is set to dirty.
      */
-	public void setResourceState(long resourceId,DiagramState bs,boolean informGateway) {
-		if( informGateway ) handler.setDiagramState(projectId, new Long(resourceId), bs.name());
+	public void setResourceState(long resourceId,DiagramState bs) {
+		
 		StatusEntry se = statusByResourceId.get(resourceId);
 		if( se!=null ) {
 			se.setState(bs);
@@ -228,14 +214,18 @@ public class NodeStatusManager implements NotificationChangeListener   {
 			se = new StatusEntry(bs);
 			statusByResourceId.put(resourceId,se);
 		}
-		log.tracef("%s.setResourceState: %s(%d) = %s",TAG,se.getName(),resourceId,bs.name());
+		Long key = new Long(resourceId);
+		DiagramState gwstate = handler.getDiagramState(projectId,key);
+		se.dirty = !se.getState().equals(gwstate);
+		se.getNode().setItalic(se.dirty);
+		log.tracef("%s.setResourceState: %s(%d) = %s",CLSS,se.getName(),resourceId,bs.name());
 	}
 	/**
 	 * Called after a save from the main menu. Update the status
 	 * of the nav-tree nodes.
 	 */
 	public void updateAll() {
-		log.debugf("%s.updateAll()",TAG);
+		log.debugf("%s.updateAll()",CLSS);
 		for(Long key:statusByResourceId.keySet()) {
 			StatusEntry se = statusByResourceId.get(key);
 			if( se!=null ) {
@@ -252,7 +242,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 	 * @return the resourceId associated with the parent of the one specified
 	 */
 	public long parentResourceId(long resourceId) {
-		log.debugf("%s.findNode(%d)",TAG,resourceId);
+		log.debugf("%s.findNode(%d)",CLSS,resourceId);
 		Long key = new Long(resourceId);
 		long result = 0;
 		StatusEntry se = statusByResourceId.get(key);
@@ -268,7 +258,6 @@ public class NodeStatusManager implements NotificationChangeListener   {
 	private class StatusEntry {
 		private boolean alerting = false;
 		private boolean dirty = false;
-		private int dirtyChildren = 0;
 		private long parentId;           // A resourceId
 		private long resourceId;
 		private DiagramState state;
@@ -310,9 +299,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 		public long getParent() { return parentId; }
 		public void setParent(long pid) { this.parentId=pid; }
 		public DiagramState getState() { return state; }
-		// Note: isDirty refers to the node of interest alone, excluding children
-		public boolean isDirty() {return context.getProject().isResourceDirty(resourceId);}   //  This still shows dirty AFTER save just long enough to mess up the node italics system
-//		public boolean isDirty() {return se.node.isResourceDirty(resourceId);}  // EREIAM JH - didn't have time to work this out
+		public boolean isDirty() {return context.getProject().isResourceDirty(resourceId);}
 
 		public void prepareToBeDeleted() {
 			if( node instanceof NavTreeNodeInterface && resourceId!=BLTProperties.ROOT_RESOURCE_ID) {
@@ -332,8 +319,8 @@ public class NodeStatusManager implements NotificationChangeListener   {
 		public void setState(DiagramState s) { this.state = s; }
 		@Override
 		public String toString() {
-			String dump = String.format("%s(%d) %s, parent: %d, %s, %d dirty children",getName(),resourceId,state.name(),parentId,
-					(dirty?"dirty":"clean"),dirtyChildren);
+			String dump = String.format("%s(%d) %s, parent: %d, %s",getName(),resourceId,state.name(),parentId,
+					(dirty?"dirty":"clean"),dirty);
 			return dump;
 		}
 	}

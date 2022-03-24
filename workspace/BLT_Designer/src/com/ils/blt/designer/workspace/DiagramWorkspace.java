@@ -158,7 +158,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 							  			ChangeListener                                  {
 	private static final String ALIGN_MENU_TEXT = "Align Blocks";
 	private static final String CLSS = "DiagramWorkspace";
-	private static final boolean DEBUG = true;
+	private static final boolean DEBUG = false;
 	private static final long serialVersionUID = 4627016159409031941L;
 	private static final DataFlavor BlockDataFlavor = LocalObjectTransferable.flavorForClass(ObservablePropertySet.class);
 	public static final String key = "BlockDiagramWorkspace";
@@ -1108,7 +1108,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 								BLTProperties.MODULE_ID, BLTProperties.DIAGRAM_RESOURCE_TYPE,
 								pbv.getName(), ApplicationScope.GATEWAY, bytes);
 						resource.setParentUuid(getActiveDiagram().getId());
-						executionEngine.executeOnce(new ResourceUpdateManager(this,resource,theDiagram));					
+						executionEngine.executeOnce(new ResourceUpdateManager(resource,theDiagram));					
 					} 
 					catch (Exception err) {
 						ErrorUtil.showError(CLSS+" Exception pasting blocks",err);
@@ -1294,11 +1294,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			}
 			
 			super.open(diagram);
-			//saveOpenDiagram(resourceId);  // Shouldn't have to save a newly opened diagram, unless there is another user
-			// Inform the gateway of the state and let listeners update the UI
-			ApplicationRequestHandler arh = new ApplicationRequestHandler();
-			arh.setDiagramState(diagram.getId().toString(), diagram.getState().name());
-			statusManager.setResourceState(resourceId,diagram.getState(),true);
+			statusManager.setResourceState(resourceId,diagram.getState());
 			diagram.setClean();  // Newly opened from a serialized resource, should be in-sync.
 			// In the probable case that the designer is opened after the diagram has started
 			// running in the gateway, obtain any updates
@@ -1383,7 +1379,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		diagram.registerChangeListeners();     // The diagram may include new components
 		long resid = diagram.getResourceId();
 		diagram.refresh();
-		executionEngine.executeOnce(new ResourceUpdateManager(this,context.getProject().getResource(resid),diagram));
+		executionEngine.executeOnce(new ResourceUpdateManager(context.getProject().getResource(resid),diagram));
 	}
 	/**
 	 * Display the open diagram as clean, presumeably after a recent save of the project resource.
