@@ -64,13 +64,11 @@ public class BlockTagSynchronizer {
 						controller.removeSubscription(block,prop);
 					}
 					String path = String.format("[%s]%s/%s",productionProvider,BlockConstants.SOURCE_SINK_TAG_FOLDER,block.getName());
+					log.infof("%s.synchBlocks: Creating tag %s", CLSS, path);
 					handler.createTag(DataType.String, path);
 					if(!diagram.getState().equals(DiagramState.ISOLATED)) prop.setBinding(path);
-					try {
-						Thread.sleep(1000);
-					}
-					catch(InterruptedException ignore) {}
 					path = String.format("[%s]%s/%s",isolationProvider,BlockConstants.SOURCE_SINK_TAG_FOLDER,block.getName());
+					log.infof("%s.synchBlocks: Creating tag %s", CLSS, path);
 					handler.createTag(DataType.String, path);
 					if(diagram.getState().equals(DiagramState.ISOLATED)) prop.setBinding(path);
 					controller.sendPropertyBindingNotification(block.getBlockId().toString(), prop.getName(), prop.getBinding());

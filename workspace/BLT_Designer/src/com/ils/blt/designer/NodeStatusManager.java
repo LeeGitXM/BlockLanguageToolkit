@@ -214,10 +214,11 @@ public class NodeStatusManager implements NotificationChangeListener   {
 			se = new StatusEntry(bs);
 			statusByResourceId.put(resourceId,se);
 		}
+		
 		Long key = new Long(resourceId);
 		DiagramState gwstate = handler.getDiagramState(projectId,key);
 		se.dirty = !se.getState().equals(gwstate);
-		se.getNode().setItalic(se.dirty);
+		if( se.getNode()!=null ) se.getNode().setItalic(se.dirty);
 		log.tracef("%s.setResourceState: %s(%d) = %s",CLSS,se.getName(),resourceId,bs.name());
 	}
 	/**
