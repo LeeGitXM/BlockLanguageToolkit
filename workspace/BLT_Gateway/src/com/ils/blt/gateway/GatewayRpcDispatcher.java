@@ -507,16 +507,6 @@ public class GatewayRpcDispatcher   {
 		return new Boolean(requestHandler.sendTimestampedSignal(uuidString,command,message,arg,time.longValue()));
 	}
 
-
-	/**
-	 * Set the state of every diagram in an application to the specified value.
-	 * @param appname
-	 * @param state new state as a String
-	 */
-	public void setApplicationState(String appname, String state) {
-		requestHandler.setApplicationState(appname,state);
-	}
-
 	/** Set all changed properties for a block. 
 	 * @param diagramId the uniqueId of the parent diagram
 	 * @param blockId the uniqueId of the block

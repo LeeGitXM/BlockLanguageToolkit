@@ -1474,31 +1474,6 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		}
 		return success;
 	}
-	/**
-	 * Set the state of every diagram in an application to the specified value.
-	 * @param appname name of the toolkit application
-	 * @param state to which the application and all its descendants will be set
-	 */
-	@Override
-	public void setApplicationState(String appname, String state) {
-		try {
-			DiagramState ds = DiagramState.valueOf(state.toUpperCase());
-			for(SerializableResourceDescriptor srd:getDiagramDescriptors()) {
-				ProcessApplication app = pyHandler.getApplication(srd.getId());
-				if( app==null) continue;
-				if( app.getName().equals(appname)) {
-					UUID diagramuuid = UUID.fromString(srd.getId());
-					ProcessDiagram pd = controller.getDiagram(diagramuuid);
-					if( pd!=null) {
-						pd.setState(ds);    // Must notify designer
-					}
-				}
-			}
-		}
-		catch(IllegalArgumentException iae) {
-			log.warnf("%s.setApplicationState: Illegal state (%s) supplied (%s)",TAG,state,iae.getMessage());
-		}
-	}
 
 
 	/**

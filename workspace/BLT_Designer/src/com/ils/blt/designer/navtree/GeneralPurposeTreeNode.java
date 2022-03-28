@@ -2017,9 +2017,6 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 
 		// We need to set the state both locally and in the gateway
 		public void actionPerformed(ActionEvent e) {
-			// We don't know which state we're coming from for the various diagrams.
-			// Tell the gateway to set the state of all diagrams under the application
-			requestHandler.setApplicationState(app.getName(), treeState.name());
 			
 			// Set the nodes in the navtree.
 			recursivelyUpdateNodeState(app,treeState);

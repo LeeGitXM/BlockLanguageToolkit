@@ -1113,23 +1113,6 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		}
 		return result;
 	}
-	/**
-	 * Change the state of every diagram in the named application
-	 * to the specified state.
-	 * @param appname name of the application
-	 * @param state new diagram state
-	 */
-	@Override
-	public void setApplicationState(String appname, String state) {
-		log.infof("%s.setApplicationState for %s to %s...",CLSS,appname,state);
-		try {
-			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "setApplicationState",appname,state);
-		}
-		catch(Exception ex) {
-			log.infof("%s.setApplicationState: Exception (%s)",CLSS,ex.getMessage());
-		}
-	}
 
 	/** Update all changed properties for a block 
 	 * @param duuid diagram unique Id

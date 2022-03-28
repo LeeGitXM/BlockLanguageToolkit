@@ -525,15 +525,7 @@ public class ApplicationScriptFunctions   {
 	public static boolean sendTimestampedSignal(String diagramId,String command,String message,String arg,long time) {
 		return handler.sendTimestampedSignal(diagramId,command,message,arg,time);
 	}
-	/**
-	 * Change the state of every diagram in the named application
-	 * to the specified state.
-	 * @param appname name of the application
-	 * @param state new diagram state
-	 */
-	public static void setApplicationState(String appname, String state) {
-		handler.setApplicationState(appname, state);
-	}
+
 	/** 
 	 * Drive a block to the specified state. Other than the state change, there are normally
 	 * no other side effects. 
