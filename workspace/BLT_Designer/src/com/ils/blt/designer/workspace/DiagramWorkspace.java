@@ -164,7 +164,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 							  			ChangeListener                                  {
 	private static final String ALIGN_MENU_TEXT = "Align Blocks";
 	private static final String CLSS = "DiagramWorkspace";
-	private static final boolean DEBUG = true;
+	private static final boolean DEBUG = false;
 	private static final long serialVersionUID = 4627016159409031941L;
 	private static final DataFlavor BlockDataFlavor = LocalObjectTransferable.flavorForClass(ObservablePropertySet.class);
 	public static final String key = "BlockDiagramWorkspace";
@@ -1295,11 +1295,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			}
 			
 			super.open(diagram);
-			//saveOpenDiagram(resourceId);  // Shouldn't have to save a newly opened diagram, unless there is another user
-			// Inform the gateway of the state and let listeners update the UI
-			ApplicationRequestHandler arh = new ApplicationRequestHandler();
-			arh.setDiagramState(diagram.getResourceId(), diagram.getState().name());
-			statusManager.setResourceState(diagram.getResourceId(),diagram.getState(),true);
+
+			statusManager.setResourceState(resourceId,diagram.getState());
 			diagram.setClean();  // Newly opened from a serialized resource, should be in-sync.
 			// In the probable case that the designer is opened after the diagram has started
 			// running in the gateway, obtain any updates
@@ -1389,15 +1386,14 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		log.infof("%s.saveDiagramResource - %s ...",CLSS,diagram.getDiagramName());
 		diagram.registerChangeListeners();     // The diagram may include new components
 		diagram.refresh();
+
 		ResourcePath path = c.getResourcePath();
 		ProjectResourceId id = new ProjectResourceId(context.getProject().getName(),BLTProperties.DIAGRAM_RESOURCE_TYPE,path.getPath().toString());
 		Optional<ProjectResource> optional = context.getProject().getResource(id);
-		executionEngine.executeOnce(new DiagramUpdateManager(this,optional.get()));
-		diagram.setClean();
-
+		executionEngine.executeOnce(new ResourceUpdateManager(context.getProject().getResource(resid),diagram));
 	}
 	/**
-	 * Display the open diagram as clean, presumeably after a recent save of the project resource.
+	 * Display the open diagram as clean, presumably after a recent save of the project resource.
 	 */
 	public void setDiagramClean(ProcessDiagramView diagram) {
 		diagram.setClean();

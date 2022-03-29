@@ -1504,32 +1504,6 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		return success;
 	}
 	/**
-	 * Set the state of every diagram in an application to the specified value.
-	 * @param appname name of the toolkit application
-	 * @param state to which the application and all its descendants will be set
-	 */
-	@Override
-	public void setApplicationState(String projectName,String appname, String state) {
-		try {
-			DiagramState ds = DiagramState.valueOf(state.toUpperCase());
-			for(SerializableResourceDescriptor srd:getDiagramDescriptors()) {
-				ProcessApplication app = pyHandler.getApplication(srd.getResourceId());
-				if( app==null) continue;
-				if( app.getName().equals(appname)) {
-					ProcessDiagram pd = controller.getDiagram(srd.getResourceId());
-					if( pd!=null && pd.getProjectName().equals(projectName)) {
-						pd.setState(ds);    // Must notify designer
-					}
-				}
-			}
-		}
-		catch(IllegalArgumentException iae) {
-			log.warnf("%s.setApplicationState: Illegal state (%s) supplied (%s)",CLSS,state,iae.getMessage());
-		}
-	}
-
-
-	/**
 	 * Set the values of named properties in a block. This method ignores any binding that the
 	 * property may have and sets the value directly. Theoretically the value should be of the right
 	 * type for the property, but if not, it can be expected to be coerced into the proper data type 
@@ -1550,7 +1524,6 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			}
 		}
 	}
-
 
 	/**
 	 * Set the value of a named property in a block. This method ignores any binding that the

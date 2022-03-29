@@ -1,5 +1,5 @@
 /**
- *   (c) 2014-2021  ILS Automation. All rights reserved.
+ *   (c) 2014-2022  ILS Automation. All rights reserved.
  */
 package com.ils.blt.designer.workspace;
 
@@ -490,12 +490,18 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	 *         of the diagram
 	 */
 	public Color getBackgroundColorForState() {
-		Color result = BLTProperties.DIAGRAM_ACTIVE_BACKGROUND;
-		if( getState().equals(DiagramState.ISOLATED)) result = BLTProperties.DIAGRAM_ISOLATED_BACKGROUND;
-		
 		// Dirty trumps active and isolated but not disabled
-		if( getState().equals(DiagramState.DISABLED)) result = BLTProperties.DIAGRAM_DISABLED_BACKGROUND;
-		else if( isDirty() ) result = BLTProperties.DIAGRAM_DIRTY_BACKGROUND;
+		Color result = BLTProperties.DIAGRAM_DISABLED_BACKGROUND;
+		DiagramState designerState = getState();
+		if( !designerState.equals(DiagramState.DISABLED)) {
+			result = BLTProperties.DIAGRAM_ACTIVE_BACKGROUND;
+			Long key = new Long(resourceId);
+			if( designerState.equals(DiagramState.ISOLATED)) result = BLTProperties.DIAGRAM_ISOLATED_BACKGROUND;
+			if( isDirty() || 
+				!designerState.equals(appRequestHandler.getDiagramState(context.getProject().getId(),key))) {
+				result = BLTProperties.DIAGRAM_DIRTY_BACKGROUND;
+			}
+		}
 		return result;
 	}
 	
@@ -573,7 +579,9 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	
 	public void setEncapsulationBlockID(UUID encapsulationBlockID) {this.encapsulationBlockID = encapsulationBlockID;}
 	
-	public void setState(DiagramState state) {this.state = state;}
+	public void setState(DiagramState ds) { 
+		this.state = ds;
+	}
 	
 	/**
 	 * There are a few situations (like deserialization) where we want to suppress the dirty propagation.

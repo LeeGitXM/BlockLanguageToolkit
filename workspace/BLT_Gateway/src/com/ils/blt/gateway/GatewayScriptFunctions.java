@@ -153,7 +153,7 @@ public class GatewayScriptFunctions   {
 		return handler.getDiagramForBlock(blockId);
 	}
 	/**
-	 * @param diagramId the id of the diagram as a String
+	 * @param diagramId the uuid of the diagram as a String
 	 * @return the current state of the specified diagram.
 	 */
 	public static DiagramState getDiagramState(ProjectResourceId diagramId)  {
@@ -547,14 +547,6 @@ public class GatewayScriptFunctions   {
 	 */
 	public static boolean sendTimestampedSignal(ProjectResourceId diagramId,String command,String message,String arg,long time) {
 		return handler.sendTimestampedSignal(diagramId,command,message,arg,time);
-	}
-	/**
-	 * Set the state for every diagram under the named application.
-	 * @param app name of the application
-	 * @param state new state of the diagrams
-	 */
-	public static void setApplicationState(String projectName,String app,String state) {
-		handler.setApplicationState(projectName,app,state);
 	}
 	/** Change the binding on a block property in such a way that the block and UI
 	 * are notified of the change.

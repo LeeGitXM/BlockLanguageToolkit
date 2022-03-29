@@ -1,5 +1,5 @@
 /**
- *   (c) 2013-2021  ILS Automation. All rights reserved.
+ *   (c) 2013-2022  ILS Automation. All rights reserved.
  */
 package com.ils.blt.designer;
 
@@ -32,11 +32,10 @@ import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceN
  *  It is a central reporting point for the current status of each node.
  *  
  *  The nodes themselves have no dirty state. "dirtiness" refers to
- *  the presence of unsaved diagrams and is managed by the project.
- *  
- *  We do keep track of the state (DISABLED,ISOLATION,ACTIVE). This
- *  refers to the state of child diagrams. When we set the state,
- *  it is set only for the current node, independent of child state.
+ *  a change in state for the node.  We keep track of the state 
+ *  (DISABLED,ISOLATION,ACTIVE) of child diagrams. When we set the state,
+ *  it is in designer scope only. We do not change the state in the
+ *  gateway until a project save.
  *  
  *  "Alerting" is completely independent of dirtiness. It refers to
  *  the state something inside a diagram. A node is alerting if any of its
@@ -55,7 +54,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 	
 
 	/**
-	 * The handler. There should be only one - owned by the hook instance
+	 * The manager. There should be only one - owned by the hook instance
 	 */
 	public NodeStatusManager(DesignerContext ctx,ApplicationRequestHandler h) {
 		this.log = LogUtil.getLogger(getClass().getPackage().getName());
@@ -68,7 +67,8 @@ public class NodeStatusManager implements NotificationChangeListener   {
 	
 	/**
 	 * Define status for a new resource. The default should work for newly discovered resources.
-	 * If this is re-called with the same resource, ignore.
+	 * If this is re-called with the same resource, ignore. Initially we get the node state from the
+	 * gateway
 	 * @param resourceId
 	 */
 	public void createResourceStatus(AbstractResourceNavTreeNode node,ProjectResourceId parentResourceId,ProjectResourceId resourceId) {
@@ -90,6 +90,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 			set = new HashSet<>();
 			childrenByResourcePath.put(parentResourceId.getResourcePath(),set);
 		}
+
 		set.add(parentResourceId.getResourcePath());
 		log.debugf("%s.createResourceStatus: %s (%d:%d) %s",CLSS,(node==null?"":node.getName()),parentResourceId,resourceId,
 				                                           (se.getState()==null?"":se.getState().name()));
@@ -149,6 +150,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 	}
 	
 	/**
+	 * If the diagram is dirty, the state is the designer-scope unsaved state
 	 * @param resourceId
 	 * @return a cached diagram state.
 	 */
@@ -175,20 +177,6 @@ public class NodeStatusManager implements NotificationChangeListener   {
 		return node;
 	}
 	
-//	/**
-//	 * Improved version of findNode.  Some newly created nodes don't seem to make it into here
-//	 * @param resourceId
-//	 * @return the AbstractResourceNavTreeNode associated with the specified resourceId.
-//	 */
-//	public AbstractResourceNavTreeNode findNodeSlower(long resourceId) {
-//		log.debugf("%s.findNodeSlower(%d)",TAG,resourceId);
-//		Long key = new Long(resourceId);
-//		AbstractResourceNavTreeNode node = null;
-//		StatusEntry se = childrenByResourceId.get(key);
-//		if( se!=null ) node=se.getNode();
-//		return node;
-//	}
-//	
 	private void recursivelyDeleteChildren(Set<ResourcePath> children) {
 		if( children==null ) return;
 		for(ResourcePath child:children) {
@@ -216,8 +204,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 		return false;
 	}
 	/**	
-	 * A state change, is of necessity, accompanied by a save. Clear the dirty count.
-	 * We explicitly synchronize with the gateway, but cache the result.
+	 * A state change. If the state differs from the gateway, then the node is set to dirty.
      */
 	public void setResourceState(ProjectResourceId resourceId,DiagramState bs,boolean informGateway) {
 		if( informGateway ) handler.setDiagramState(resourceId, bs.name());
@@ -229,6 +216,9 @@ public class NodeStatusManager implements NotificationChangeListener   {
 			se = new StatusEntry(bs);
 			statusByResourcePath.put(resourceId.getResourcePath(),se);
 		}
+		DiagramState gwstate = handler.getDiagramState(resourceId);
+		se.dirty = !se.getState().equals(gwstate);
+		if( se.getNode()!=null ) se.getNode().setItalic(se.dirty);
 		log.tracef("%s.setResourceState: %s(%d) = %s",CLSS,se.getName(),resourceId,bs.name());
 	}
 	/**
@@ -273,7 +263,8 @@ public class NodeStatusManager implements NotificationChangeListener   {
 	private class StatusEntry {
 		private boolean alerting = false;
 		private boolean dirty = false;
-		private int dirtyChildren = 0;
+		private ProjectResourceId parentId;           // A resourceId
+		private ProjectResourceId resourceId;
 		private DiagramState state;
 		private AbstractResourceNavTreeNode node;
 		/**
@@ -305,8 +296,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 		public AbstractNavTreeNode getParent() { return (node==null?null:node.getParent()); } 
 		public DiagramState getState() { return state; }
 		// Note: isDirty refers to the node of interest alone, excluding children
-		public boolean isDirty() {return node.isChanged();} 
-
+		public boolean isDirty() {return context.getProject().isResourceDirty(resourceId);}
 		public void prepareToBeDeleted() {
 			if( node instanceof NavTreeNodeInterface && node.getName()!=BLTProperties.ROOT_FOLDER_NAME) {
 				((NavTreeNodeInterface)this.node).prepareForDeletion();
@@ -325,8 +315,8 @@ public class NodeStatusManager implements NotificationChangeListener   {
 		public void setState(DiagramState s) { this.state = s; }
 		@Override
 		public String toString() {
-			String dump = String.format("%s(%s, parent: %s, %s, %d dirty children",getName(),state.name(),getParent().getName(),
-					(dirty?"dirty":"clean"),dirtyChildren);
+			String dump = String.format("%s(%d) %s, parent: %d, %s",getName(),resourceId,state.name(),parentId,
+					(dirty?"dirty":"clean"),dirty);
 			return dump;
 		}
 	}

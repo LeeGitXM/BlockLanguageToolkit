@@ -1,5 +1,5 @@
 /**
- *   (c) 2014-2021  ILS Automation. All rights reserved.
+ *   (c) 2014-2022  ILS Automation. All rights reserved.
  */
 package com.ils.blt.gateway;
 
@@ -17,6 +17,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.serializable.SerializableAnchor;
@@ -215,7 +216,6 @@ public class GatewayRpcDispatcher   {
 	public String getDiagramState(ProjectResourceId resourceId) {
 		return requestHandler.getDiagramState(resourceId).name();
 	}
-
 
 	/**
 	 * @return an explanation for the state of a block.
@@ -466,16 +466,6 @@ public class GatewayRpcDispatcher   {
 	 */
 	public Boolean sendTimestampedSignal(ProjectResourceId id, String command,String message,String arg,Long time) {
 		return requestHandler.sendTimestampedSignal(id,command,message,arg,time.longValue());
-	}
-
-
-	/**
-	 * Set the state of every diagram in an application to the specified value.
-	 * @param appname
-	 * @param state new state as a String
-	 */
-	public void setApplicationState(String projectName,String appname, String state) {
-		requestHandler.setApplicationState(projectName,appname,state);
 	}
 
 	/** Set all changed properties for a block. 

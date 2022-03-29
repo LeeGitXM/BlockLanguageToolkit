@@ -1,5 +1,5 @@
 /**
-  *   (c) 2014-2021  ILS Automation. All rights reserved.
+  *   (c) 2014-2022  ILS Automation. All rights reserved.
  *  
  */
 package com.ils.blt.common;
@@ -480,14 +480,6 @@ public interface ToolkitRequestHandler  {
 	 * @return true if the signal was sent 
 	 */
 	public boolean sendTimestampedSignal(ProjectResourceId diagramId,String command,String message,String arg,long time) ;
-	
-	/**
-	 * Set the state of every diagram that is a member of the application to
-	 * the specified value.
-	 * @param appname name of the application
-	 * @param state new state for all diagrams in application
-	 */
-	public void setApplicationState(String projectName,String appname, String state);
 
 	/** Update all changed properties for a block 
 	 * @param duuid diagram unique Id

@@ -1,5 +1,5 @@
 /**
- *   (c) 2015-2021  ILS Automation. All rights reserved.
+ *   (c) 2015-2022  ILS Automation. All rights reserved.
  */
 package com.ils.blt.common;
 
@@ -1136,23 +1136,6 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 			log.infof("%s.sendTimestampedSignal: Exception (%s)",CLSS,ex.getMessage());
 		}
 		return result;
-	}
-	/**
-	 * Change the state of every diagram in the named application
-	 * to the specified state.
-	 * @param appname name of the application
-	 * @param state new diagram state
-	 */
-	@Override
-	public void setApplicationState(String projectName,String appname, String state) {
-		log.infof("%s.setApplicationState for %s:%s to %s...",CLSS,projectName,appname,state);
-		try {
-			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "setApplicationState",projectName,appname,state);
-		}
-		catch(Exception ex) {
-			log.infof("%s.setApplicationState: Exception (%s)",CLSS,ex.getMessage());
-		}
 	}
 
 	/** Update all changed properties for a block 

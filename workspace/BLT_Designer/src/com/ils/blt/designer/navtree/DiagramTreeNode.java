@@ -431,7 +431,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 				   
 		}
 	}
- 
+
 	// From the root node, recursively log the contents of the tree
 	private class DebugDiagramAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
@@ -609,6 +609,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	 */
 	public void setDiagramState(DiagramState state) {
 		try {
+<<<<<<< HEAD
 			// Even if the diagram is showing, we need to do a save to change the state.
 			// (That's why this selection is disabled when the view is dirty)
 			DiagramState oldState = null;
@@ -616,12 +617,22 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 			ProjectResource res = option.get();
 			BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resourceId.getResourcePath());
 			ProjectResourceId viewId = null;
+=======
+			// We change the state in the view and nav tree, but not the gateway (until a save).
+			ProjectResource res = context.getProject().getResource(resourceId);
+			BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resourceId);
+			// Inform the navtree of the state and let listeners update the UI
+			statusManager.setResourceState(resourceId,state);
+>>>>>>> master
 			if( tab!=null ) {
 				log.infof("%s.setDiagramState: %s now %s (open)",CLSS, tab.getName(),state.name());
 				ProcessDiagramView view = (ProcessDiagramView)(tab.getModel());
 				view.setState(state);		// Simply sets the view state
 				tab.setBackground(view.getBackgroundColorForState());
+<<<<<<< HEAD
 				viewId = view.getResourceId();
+=======
+>>>>>>> master
 			}
 			// Otherwise we need to de-serialize and get the path
 			else {
@@ -629,6 +640,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 				SerializableDiagram sd = null;
 				ObjectMapper mapper = new ObjectMapper();
 				sd = mapper.readValue(bytes,SerializableDiagram.class);
+<<<<<<< HEAD
 				viewId = requestHandler.createResourceId(res.getProjectName(), sd.getResourcePath().getPath().toString(), sd.getResourceType().getTypeId());
 			}
 			// Inform the gateway of the state and let listeners update the UI
@@ -636,6 +648,10 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 			arh.setDiagramState(viewId, state.name());
 			statusManager.setResourceState(resourceId,state,true);
 			setDirty(false);
+=======
+			}
+			
+>>>>>>> master
 			setIcon(getIcon());
 			refresh();
 		} 
@@ -735,8 +751,8 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	public void diagramStateChange(String path, String state) {
 		try {
 			DiagramState ds = DiagramState.valueOf(state);
-			statusManager.setResourceState(resourceId, ds,false);
-			// Force repaints of both NavTree and workspace
+			statusManager.setResourceState(resourceId, ds);
+			// Repaint of both NavTree and workspace
 			refresh();
 			BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resourceId.getResourcePath());
 			if( tab!=null ) {
