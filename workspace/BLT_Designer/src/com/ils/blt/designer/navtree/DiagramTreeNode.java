@@ -367,7 +367,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		for(ChangeOperation.CreateResourceOperation op:ops ) {
 			ProjectResourceId id = op.getResourceId();
 			log.debugf("%s.resourcesCreated.%s: %s(%s)",CLSS,op,getName(),id.getProjectName(),id.getResourcePath().getPath().toString());
-			executionEngine.executeOnce(new ResourceCreateManager(op.getResource()));
+			executionEngine.executeOnce(new ResourceCreateManager(op.getResource(),id.getResourcePath().getName()));
 		}
 	}
 	/**

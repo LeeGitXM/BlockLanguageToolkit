@@ -1007,7 +1007,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				builder.setResourceId(resid);
 				builder.setVersion(pr.getVersion()+1);
 				builder.setApplicationScope(ApplicationScope.GATEWAY);
-				new ResourceCreateManager(builder.build()).run();	// Must be synchronous for child to show
+				new ResourceCreateManager(builder.build(),newName).run();	// Must be synchronous for child to show
 				currentNode.selectChild(new ResourcePath[] {getResourceId().getResourcePath()});
 			} 
 			catch (Exception err) {
@@ -1191,7 +1191,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 												importFamily(resid.getResourcePath().getPath(),fam);
 											}
 											// Create after the children -- else sometimes folders are not populated.
-											new ResourceCreateManager(resource).run();   // In-line
+											new ResourceCreateManager(resource,resource.getResourceName()).run();   // In-line
 											saveApplicationAuxData(sa);
 											
 											root.selectChild(new ResourcePath[] {resid.getResourcePath()} );
@@ -1271,7 +1271,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				log.infof("%s.s:ApplicationImportAction. create %s(%s),(%d bytes)",CLSS,sd.getName(),BLTProperties.APPLICATION_RESOURCE_TYPE.toString(),bytes.length);
 				statusManager.setResourceState(resid, sd.getState(),false);
 				ProjectResource pr = builder.build();
-				new ResourceCreateManager(pr).run();
+				new ResourceCreateManager(pr,pr.getResourceName()).run();
 			} 
 			catch (Exception ex) {
 				ErrorUtil.showError(String.format("ApplicationImportAction: importing diagrm, unhandled Exception (%s)",ex.getMessage()),POPUP_TITLE,ex,true);
@@ -1291,7 +1291,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				builder.setVersion(0);
 				ProjectResource resource = builder.build();
 				log.infof("%s.s:FamilyImportAction. create %s(%s),(%d bytes)",CLSS,sf.getName(),BLTProperties.FAMILY_RESOURCE_TYPE.toString(),resource.getData().length);
-				new ResourceCreateManager(resource).run();   // in-line
+				new ResourceCreateManager(resource,resource.getResourceName()).run();   // in-line
 				// Now import the diagrams
 				for(SerializableDiagram diagram:sf.getDiagrams()) {
 					importDiagram(sf.getParentPath(),diagram);
@@ -1393,7 +1393,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			builder.setVersion(0);
 			ProjectResource resource = builder.build();
 
-			new ResourceCreateManager(resource).run();
+			new ResourceCreateManager(resource,resource.getResourceName()).run();
 			if (!copyChildren(child)) {
 				return false;
 			}
@@ -1640,7 +1640,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 							}
 							
 							// Finally display the parent node
-							new ResourceCreateManager(resource).run();
+							new ResourceCreateManager(resource,resource.getResourceName()).run();
 							AbstractResourceNavTreeNode newNode = statusManager.findNode(resource.getResourceId());  // so basically starting over here
 
 							UndoManager.getInstance().add(PasteAction.this,AbstractNavTreeNode.class);
@@ -1787,7 +1787,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				builder.putData(json.getBytes());
 				builder.setVersion(0);
 				ProjectResource resource = builder.build();
-				new ResourceCreateManager(resource).run();	
+				new ResourceCreateManager(resource,newName).run();	
 				currentNode.selectChild(new ResourcePath[] {resource.getResourcePath()} );
 				EventQueue.invokeLater(new Runnable() {
 					public void run() {
@@ -1828,7 +1828,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				builder.putData(bytes);
 				builder.setVersion(0);
 				ProjectResource famResource = builder.build();
-				new ResourceCreateManager(builder.build()).run();	
+				new ResourceCreateManager(builder.build(),newName).run();	
 				//recreate();
 				currentNode.selectChild(new ResourcePath[] {famResource.getResourcePath()} );
 			} 
@@ -1859,10 +1859,9 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				builder.setResourceId(resid);
 				builder.setVersion(0);
 				ProjectResource resource = builder.build();
-				new ResourceCreateManager(resource).run();	
-				log.infof("%s.FolderCreateAction. create new %s(%s.%s)",CLSS,BLTProperties.FOLDER_RESOURCE_TYPE.toString(),resid.getFolderPath(),
-						resid.getResourcePath().getName());
-				log.infof("%s.FolderCreateAction. create %s(%s),(%s)",CLSS,newName,BLTProperties.FOLDER_RESOURCE_TYPE.toString(),currentNode.pathToRoot().toString());
+				new ResourceCreateManager(resource,newName).run();	
+				log.infof("%s.FolderCreateAction. create %s(%s,%s) at %s",CLSS,newName,BLTProperties.FOLDER_RESOURCE_TYPE.getModuleId(),
+						BLTProperties.FOLDER_RESOURCE_TYPE.getTypeId(),resid.getResourcePath().getPath().toString());
 				//recreate();
 				currentNode.selectChild(new ResourcePath[] {resid.getResourcePath()} );
 			} 
@@ -1922,7 +1921,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 											builder.setResourceId(resid);
 											builder.setVersion(0);;
 											ProjectResource resource = builder.build();
-											new ResourceCreateManager(resource).run();	
+											new ResourceCreateManager(resource,resource.getResourceName()).run();	
 											parentNode.selectChild(new ResourcePath[] {resource.getResourcePath()} );
 											statusManager.setResourceState(resid, sd.getState(),false);
 											setDirty(true);
@@ -2309,7 +2308,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	 */
 	@Override
 	public void updateUI(boolean dty) {
-		log.infof("%s.updateUI: %d dirty = %s",CLSS,resourceId,(dty?"true":"false"));
+		log.infof("%s.updateUI: %s dirty = %s",CLSS,resourceId.getResourcePath().getPath().toString(),(dty?"true":"false"));
 		setItalic(dty);   // NOTE: italic system may be broken ?
 		refresh();  // Update the UI
 	}

@@ -26,10 +26,12 @@ public class ResourceCreateManager implements Runnable {
 	private final LoggerEx log;
 	private static DesignerContext context = null;
 	private final ProjectResource res;
+	private final String resName;
 	private final ThreadCounter counter = ThreadCounter.getInstance();
 
-	public ResourceCreateManager(ProjectResource pr) {
+	public ResourceCreateManager(ProjectResource pr,String nam) {
 		this.res = pr;
+		this.resName = nam;
 		this.counter.incrementCount();
 		this.log = LogUtil.getLogger(getClass().getPackageName());
 	}
@@ -49,6 +51,7 @@ public class ResourceCreateManager implements Runnable {
 		if( res!=null ) {
 			try {
 				context.getProject().createResource(res);
+				context.getProject().renameResource(res.getResourcePath(),resName);
 				GatewayInterface gw = GatewayConnectionManager.getInstance().getGatewayInterface();
 				ChangeOperation.ModifyResourceOperation co = ChangeOperation.ModifyResourceOperation.newModifyOp(res,res.getResourceSignature());
 				List<ChangeOperation> ops = new ArrayList<>();
@@ -60,8 +63,9 @@ public class ResourceCreateManager implements Runnable {
 						res.getResourceId().getResourcePath().getPath().toString(),rnf.getMessage());
 			}
 			catch(Exception ex) {
-				log.warnf("%s.run: Exception creating resource %s:%s (%s)",CLSS,res.getResourceId().getProjectName(),
+				String msg = String.format("%s.run: Exception creating resource %s %s:%s (%s)", CLSS,resName,res.getResourceId().getProjectName(),
 						res.getResourceId().getResourcePath().getPath().toString(),ex.getMessage());
+				log.warn(msg,ex);
 			}
 		}
 		this.counter.decrementCount();

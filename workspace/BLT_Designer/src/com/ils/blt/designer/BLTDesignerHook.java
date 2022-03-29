@@ -11,6 +11,7 @@ import java.awt.event.ItemEvent;
 import java.io.IOException;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import javax.swing.AbstractAction;
@@ -45,6 +46,7 @@ import com.inductiveautomation.factorypmi.designer.palette.model.DefaultPaletteI
 import com.inductiveautomation.ignition.client.util.action.StateChangeAction;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
 import com.inductiveautomation.ignition.common.BundleUtil;
+import com.inductiveautomation.ignition.common.gson.JsonElement;
 import com.inductiveautomation.ignition.common.licensing.LicenseState;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
@@ -453,19 +455,23 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		log.infof("%s.listProjectResources: ===========",CLSS);
 		List<ProjectResource> resources = context.getProject().getResources();
 			for(ProjectResource pr:resources) {
+				ResourceType rt = pr.getResourceType();
 				if( pr.getResourcePath().getPath()==null ) {
-					log.infof("    %s: null path",pr.getResourceName());
+					log.infof("    %s: null path type(%s,%s)",pr.getResourceName(),(rt==null?"":rt.getModuleId()),(rt==null?"":rt.getTypeId()));
 				}
 				else {
 					String parent = "null";
 					if(pr.getResourcePath().getParentPath()!=null ) parent = pr.getResourcePath().getParentPath();
-					ResourceType rt = pr.getResourceType();
 					log.infof("    %s:%s%s\t, parent=%s, type(%s,%s)",
 						pr.getResourceName(),
 						pr.getResourcePath().getPath().toString(),
 						(pr.isFolder()?" (folder)":""),
 						parent,
 						(rt==null?"":rt.getModuleId()),(rt==null?"":rt.getTypeId()) );
+					Map<String,JsonElement> attributes = pr.getAttributes();
+					for(String key:attributes.keySet()) {
+						log.infof("        %s (%s)",key,attributes.get(key).toString());
+					}
 			}
 		}
 		log.infof("%s.listProjectResources: ===== Complete ======",CLSS);
