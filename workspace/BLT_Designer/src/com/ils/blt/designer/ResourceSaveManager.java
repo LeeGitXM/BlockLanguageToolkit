@@ -30,13 +30,15 @@ import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceN
  * Use ExecutionManager.executeOnce() to invoke this in the background.
  * Do not re-execute the same instance.
  * 
+ * NOTE: There is a lot of dead code here. I believe only saveSynchronously() is ever used.
+ * 
  * @author chuckc
  *
  */
 public class ResourceSaveManager implements Runnable {
 	private static final String CLSS = "ResourceSaveManager";
 	private static final LoggerEx log = LogUtil.getLogger(ResourceSaveManager.class.getPackage().getName());
-	private static final boolean DEBUG = true;
+	private static final boolean DEBUG = false;
 	private static DesignerContext context = null;
 	private final AbstractResourceNavTreeNode root;	      // Root of our save.
 	private final DiagramWorkspace workspace;
@@ -139,6 +141,11 @@ public class ResourceSaveManager implements Runnable {
 						new ResourceUpdateManager(res,designerState).run();
 					}
 				}
+			}
+			// We also need to save newly created resources of any type
+			else if(res.getEditCount()==0 || node.isItalic()) {
+				node.setItalic(false);
+				new ResourceUpdateManager(res).run();
 			}
 		}
 

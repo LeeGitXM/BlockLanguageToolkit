@@ -20,6 +20,7 @@ public class SerializableFolder {
 
 	public SerializableFolder() {	
 		name="UNSET";
+		id = UUID.randomUUID();
 	}
 	public void addDiagram(SerializableDiagram sdiag) {
 		SerializableDiagram[] extended = new SerializableDiagram[diagrams.length+1];

@@ -622,6 +622,7 @@ public class ModelManager implements ProjectListener  {
 		if(DEBUG) log.infof("%s.projectUpdated: %s (%d)  %s",CLSS,diff.getName(),diff.getId(),vers.toString());
 		long projectId = diff.getId();
 		if( projectId<0 ) return;                   // Ignore global project
+		Long pid = new Long(projectId);
 		
 		UUID olduuid = uuidByProjectId.get(new Long(projectId));
 		if( olduuid==null ) {
@@ -635,15 +636,28 @@ public class ModelManager implements ProjectListener  {
 		if( diff.isEnabled() ) {
 			int countOfInteresting = 0;
 			List<ProjectResource> resources = diff.getResources();
-			Long pid = new Long(projectId);
 			for( ProjectResource res:resources ) {
 				if( isBLTResource(res.getResourceType()) || res.getResourceType().equalsIgnoreCase("Window") ) {
 					if(DEBUG) log.infof("%s.projectUpdated: add/update resource %d.%d %s (%s) %s %s", CLSS,projectId,res.getResourceId(),res.getName(),
 							res.getResourceType(),(diff.isResourceDirty(res)?"dirty":"clean"),(res.isLocked()?"locked":"unlocked"));
 					if(res.isLocked()) res.setLocked(false);
-					analyzeResource(pid,res,false);  // Not startup
 					countOfInteresting++;
 				}
+			}
+			if( countOfInteresting>0) {
+
+				new Thread(new Runnable() {
+					@Override
+					public void run() {
+						for( ProjectResource res:resources ) {
+							if( isBLTResource(res.getResourceType()) || res.getResourceType().equalsIgnoreCase("Window") ) {
+								if(DEBUG) log.infof("%s.projectUpdated: add/update resource %d.%d %s (%s) %s %s", CLSS,projectId,res.getResourceId(),res.getName(),
+										res.getResourceType(),(diff.isResourceDirty(res)?"dirty":"clean"),(res.isLocked()?"locked":"unlocked"));
+								analyzeResource(pid,res,false);  // Not startup
+							}
+						}
+					}
+				}).start(); 
 			}
 
 			Set<Long> deleted = diff.getDeletedResources();
@@ -662,10 +676,14 @@ public class ModelManager implements ProjectListener  {
 				for( ProjectResource res: project.getResources() ) {
 					if(DEBUG) log.infof("%s.projectUpdated: enabling %d:%d %s",CLSS,projectId,res.getResourceId(),res.getName());
 				}
-				
-				for( ProjectResource res: project.getResources() ) {
-					analyzeResource(pid,res,false);
-				}
+				new Thread(new Runnable() {
+				    @Override
+				    public void run() {
+						for( ProjectResource res: project.getResources() ) {
+							analyzeResource(pid,res,false);
+						}
+				    }
+				}).start();  
 			}
 		}
 		// Delete the BLT resources of projects that are disabled. There is nothing displayable in the Designer

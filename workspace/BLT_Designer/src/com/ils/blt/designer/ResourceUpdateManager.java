@@ -40,7 +40,7 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
 public class ResourceUpdateManager implements Runnable {
 	private static final String CLSS = "ResourceUpdateManager";
 	private static final LoggerEx log = LogUtil.getLogger(ResourceUpdateManager.class.getPackage().getName());
-	private static final boolean DEBUG = true;
+	private static final boolean DEBUG = false;
 	private static DesignerContext context = null;
 	private static NodeStatusManager statusManager = null;
 	private ReentrantLock sharedLock = new ReentrantLock(); 
@@ -66,6 +66,14 @@ public class ResourceUpdateManager implements Runnable {
 		this.requestHandler = new ApplicationRequestHandler();
 	}
 	
+	// On a save of a non-diagram resource
+	public ResourceUpdateManager(ProjectResource pr) {
+		this.res = pr;
+		this.diagram = null;
+		this.newState = null;
+		this.requestHandler = new ApplicationRequestHandler();
+	}
+	
 	/**
 	 * Call this method from the hook as soon as the context is established.
 	 * @param ctx designer context
@@ -82,7 +90,7 @@ public class ResourceUpdateManager implements Runnable {
 			sharedLock.lock();
 			// Now save the resource, as it is.
 			Project diff = context.getProject().getEmptyCopy();
-
+			
 			/*
 			 * Serialize the diagram resource and save it into the project. It should be open on a tab to be considered.
 			 * We ignore dirtiness if called from the main menu. If called as a result of closing a tab, the diagram
@@ -90,24 +98,26 @@ public class ResourceUpdateManager implements Runnable {
 			 */
 			long resourceId = res.getResourceId();
 			SerializableDiagram sd = null;
-			if( diagram!=null) {
+			if( res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
+				if( diagram!=null) {
 					sd = diagram.createSerializableRepresentation();
-			}
-			else {
+				}
+				else  {
 					sd = GeneralPurposeTreeNode.deserializeDiagram(res);	
-			}
+				}
 
-			if( DEBUG ) log.infof("%s.run(), %s", CLSS, sd.getName());
-			if( diagram!=null) sd.setName(diagram.getName());
-			if(newState!=null) sd.setState(newState);
-			ObjectMapper mapper = new ObjectMapper();
-			try{
-				byte[] bytes = mapper.writeValueAsBytes(sd);
-				//log.tracef("%s.run JSON = %s",CLSS,new String(bytes));
-				res.setData(bytes);
-			}
-			catch(JsonProcessingException jpe) {
-				log.warnf("%s.run: Exception serializing diagram, resource %d (%s)",CLSS,resourceId,jpe.getMessage());
+				if( DEBUG ) log.infof("%s.run(), %s", CLSS, sd.getName());
+				if( diagram!=null) sd.setName(diagram.getName());
+				if(newState!=null) sd.setState(newState);
+				ObjectMapper mapper = new ObjectMapper();
+				try{
+					byte[] bytes = mapper.writeValueAsBytes(sd);
+					//log.tracef("%s.run JSON = %s",CLSS,new String(bytes));
+					res.setData(bytes);
+				}
+				catch(JsonProcessingException jpe) {
+					log.warnf("%s.run: Exception serializing diagram, resource %d (%s)",CLSS,resourceId,jpe.getMessage());
+				}
 			}
 			
 			/*

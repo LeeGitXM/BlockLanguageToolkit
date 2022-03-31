@@ -151,6 +151,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		diagramIcon = iconFromPath("Block/icons/navtree/diagram.png");  
 		setIcon(closedIcon);
 		openIcon = IconUtil.getIcon("folder");
+		setDirty(true);
 	}
 	/**
 	 * This version of the constructor is used for all except the root. Create
@@ -170,8 +171,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		deleteNodeAction = new DeleteNodeAction(this);
 		copyBranchAction = new CopyAction(this);
 		pasteBranchAction = new PasteAction(this);
-
 		folderCreateAction = new FolderCreateAction(this);
+		
 		workspace = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getWorkspace();
 		statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
 		alertBadge =iconFromPath("Block/icons/badges/bell.png");
@@ -195,6 +196,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		familyIcon = iconFromPath("Block/icons/navtree/family24.png"); 
 		diagramIcon = iconFromPath("Block/icons/navtree/diagram.png"); 
 		setIcon(closedIcon);
+		setDirty(true);
 	}
 
 	// walk up the tree and see if there is a 
@@ -431,7 +433,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		if( node==null ) {
 			if (    ProjectResource.FOLDER_RESOURCE_TYPE.equals(res.getResourceType()))       {
 				node = new GeneralPurposeTreeNode(context, res, res.getDataAsUUID());
-				logger.tracef("%s.createChildNode: (%s) %s->%s",CLSS,res.getResourceType(),this.getName(),node.getName());
+				logger.infof("%s.createChildNode: (%s) %s->%s",CLSS,res.getResourceType(),this.getName(),node.getName());
 			}
 			else if ( BLTProperties.APPLICATION_RESOURCE_TYPE.equals(res.getResourceType()) )       {
 				SerializableApplication sa = deserializeApplication(res);
@@ -452,8 +454,6 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				throw new IllegalArgumentException();
 			}
 			statusManager.createResourceStatus(node,resourceId, res.getResourceId());
-			// Note: This shouldn't be necessary - plus it causes problems on a delete (when we search for resources to delete)
-			//executionEngine.executeOnce(new ResourceUpdateManager(workspace,res));   /// Creates, syncs resource
 		}
 		else {
 			logger.debugf("%s.createChildNode: REUSE %s->%s",CLSS,this.getName(),node.getName());
@@ -463,7 +463,6 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		if( node.getParent()==null) {
 			logger.errorf("%s.createChildNode: ERROR parent is null %s(%d)",CLSS,node.getName(),res.getResourceId());
 		}
-//		node.setItalic(context.getProject().isResourceDirty(res.getResourceId()));    // EREIAM JH - Disabled until italic system fixed
 		return node;
 	}
 	
