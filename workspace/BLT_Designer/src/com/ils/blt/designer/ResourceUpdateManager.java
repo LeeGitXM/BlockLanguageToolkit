@@ -5,10 +5,11 @@ package com.ils.blt.designer;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
 
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
-<<<<<<< HEAD
+import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayInterface;
 import com.inductiveautomation.ignition.common.project.ChangeOperation;
@@ -16,19 +17,6 @@ import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceBuilder;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
-=======
-import com.ils.blt.common.DiagramState;
-import com.ils.blt.common.serializable.SerializableDiagram;
-import com.ils.blt.designer.navtree.GeneralPurposeTreeNode;
-import com.ils.blt.designer.workspace.ProcessDiagramView;
-import com.inductiveautomation.ignition.client.gateway_interface.GatewayException;
-import com.inductiveautomation.ignition.common.project.Project;
-import com.inductiveautomation.ignition.common.project.ProjectResource;
-import com.inductiveautomation.ignition.common.util.LogUtil;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
-import com.inductiveautomation.ignition.designer.IgnitionDesigner;
-import com.inductiveautomation.ignition.designer.gateway.DTGatewayInterface;
->>>>>>> master
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.project.ResourceNotFoundException;
 
@@ -43,37 +31,35 @@ import com.inductiveautomation.ignition.designer.project.ResourceNotFoundExcepti
  */
 public class ResourceUpdateManager implements Runnable {
 	private static final String CLSS = "ResourceUpdateManager";
-	private final LoggerEx log;
+	private static final LoggerEx log = LogUtil.getLogger(ResourceUpdateManager.class.getPackage().getName());
 	private static final boolean DEBUG = true;
 	private static DesignerContext context = null;
-<<<<<<< HEAD
-	private static NodeStatusManager statusManager = null; 
-	private ProjectResource resource;
-	private final byte[] bytes;
-=======
 	private static NodeStatusManager statusManager = null;
-	private ReentrantLock sharedLock = new ReentrantLock(); 
-	private final ProjectResource res;
-	private final ProcessDiagramView diagram;
->>>>>>> master
+	private final byte[] bytes;
+	private ProjectResource resource;
+	private final DiagramWorkspace workspace;
 	private final ThreadCounter counter = ThreadCounter.getInstance();
 	private final ApplicationRequestHandler requestHandler;
-	private DiagramState newState = null;
 	
-
 	// DiagramWorkspace.onClose of a tab.
-	public ResourceUpdateManager(ProjectResource pr,ProcessDiagramView dia) {
-		if(DEBUG) log.infof("%s.run: Creating a new ResourceUpdateManager for %s...", CLSS, dia.getName());
-		this.res = pr;
-		this.diagram = dia;
+	public ResourceUpdateManager(DiagramWorkspace wksp,ProjectResource pr) {
+		if(DEBUG) log.infof("%s.run: Creating a new ResourceUpdateManager for DiagramWorkspace %s...", CLSS, wksp.getName());
+		this.workspace = wksp;
+		this.resource = pr;
+		this.bytes = pr.getData();
 		this.counter.incrementCount();
 		this.requestHandler = new ApplicationRequestHandler();
 	}
-	// On a save of a diagram that is not open
-	public ResourceUpdateManager(ProjectResource pr,DiagramState state) {
-		this.res = pr;
-		this.diagram = null;
-		this.newState = state;
+	
+	/**
+	 * This constructor is not valid for diagram updates
+	 * @param pr
+	 */
+	public ResourceUpdateManager(ProjectResource pr,byte[] contents) {
+		this.workspace = null;
+		this.resource = pr;
+		this.bytes = contents;
+		this.counter.incrementCount();
 		this.requestHandler = new ApplicationRequestHandler();
 	}
 	
@@ -90,50 +76,13 @@ public class ResourceUpdateManager implements Runnable {
 	 */
 	@Override
 	public void run() {
-<<<<<<< HEAD
+
 		synchronized(this) {
 			ProjectResourceBuilder builder = resource.toBuilder();
 			builder.clearData();
 			builder.putData(bytes);
 			resource = builder.build();
-=======
 
-		if( res!=null ) {
-			sharedLock.lock();
-			// Now save the resource, as it is.
-			Project diff = context.getProject().getEmptyCopy();
-
-			/*
-			 * Serialize the diagram resource and save it into the project. It should be open on a tab to be considered.
-			 * We ignore dirtiness if called from the main menu. If called as a result of closing a tab, the diagram
-			 * will be a dirty.
-			 */
-			long resourceId = res.getResourceId();
-			SerializableDiagram sd = null;
-			if( diagram!=null) {
-					sd = diagram.createSerializableRepresentation();
-			}
-			else {
-					sd = GeneralPurposeTreeNode.deserializeDiagram(res);	
-			}
-
-			if( DEBUG ) log.infof("%s.run(), %s", CLSS, sd.getName());
-			if( diagram!=null) sd.setName(diagram.getName());
-			if(newState!=null) sd.setState(newState);
-			ObjectMapper mapper = new ObjectMapper();
-			try{
-				byte[] bytes = mapper.writeValueAsBytes(sd);
-				//log.tracef("%s.run JSON = %s",CLSS,new String(bytes));
-				res.setData(bytes);
-			}
-			catch(JsonProcessingException jpe) {
-				log.warnf("%s.run: Exception serializing diagram, resource %d (%s)",CLSS,resourceId,jpe.getMessage());
-			}
-			
-			/*
-			 * Now save the resource back into the project.
-			 */
->>>>>>> master
 			try {
 				context.getProject().modifyResource(resource);
 				GatewayInterface gw = GatewayConnectionManager.getInstance().getGatewayInterface();

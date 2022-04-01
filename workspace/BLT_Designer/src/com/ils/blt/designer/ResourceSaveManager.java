@@ -32,6 +32,8 @@ import com.inductiveautomation.ignition.designer.project.ResourceNotFoundExcepti
  * Use ExecutionManager.executeOnce() to invoke this in the background.
  * Do not re-execute the same instance.
  * 
+ * NOTE: There is a lot of dead code here. I believe only saveSynchronously() is ever used.
+ * 
  * @author chuckc
  *
  */
@@ -68,6 +70,14 @@ public class ResourceSaveManager implements Runnable {
 	}
 	
 	/**
+	 * Save all application, family or diagram nodes.
+	 */
+	public void saveAll() {
+		accumulateNodeResources(root);
+		saveResources();
+	}
+	
+	/**
 	 * Now that the individual project resources have been acquired. create a change operation for each one then apply.
 	 * As we do this, inform the status manager.
 	 */
@@ -92,13 +102,7 @@ public class ResourceSaveManager implements Runnable {
 		 this.counter.decrementCount();
 	 }
 	 
-	/**
-	 * Save all application, family or diagram nodes.
-	 */
-	public void saveAll() {
-		accumulateNodeResources(root);
-		saveResources();
-	}
+
 	/**
 	 * Traverse the entire node hierarchy looking for diagrams that need saving.
 	 * When found, serialize into the project resource. This is in anticipation
@@ -116,26 +120,22 @@ public class ResourceSaveManager implements Runnable {
 		if( ops.size() > 0 ) requestHandler.triggerStatusNotifications(context.getProjectName());
 		this.counter.decrementCount();
 	}
-	
+
 	/**
 	 *  Recursively descend the node tree, looking for diagram resources where
 	 * the associated DiagramView is open. These are the only diagrams that
 	 * can be out-of-sync with the gateway.
 	 */
-	
+
 	private void saveOpenDiagrams(AbstractResourceNavTreeNode node) {
 		Optional<ProjectResource>option = node.getProjectResource();
 		if(option.isPresent()) {
 			ProjectResource res = option.get();
-			ProcessDiagramView view = null;  // PH 7/16/21
+			ProcessDiagramView view = null;
 			node.setItalic(false);
+
 			if( res!=null ) {
-				if(res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {	
-					if( DEBUG ) log.infof("%s.saveOpenDiagrams(), found: %s %s", CLSS, res.getResourceId().getProjectName(),
-							res.getResourceId().getResourcePath().getPath().toString());
-
-
-<<<<<<< HEAD
+				if(res.getResourcePath().getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {	
 					BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(res.getResourcePath());
 					if( tab!=null ) {
 						view = (ProcessDiagramView)tab.getModel();
@@ -143,87 +143,40 @@ public class ResourceSaveManager implements Runnable {
 						if (view.isDirty()){
 							view.registerChangeListeners();     // The diagram may include new components
 							if( DEBUG ) log.infof("%s.saveOpenDiagrams: Saving %s...", CLSS, view.getName());
-							new DiagramUpdateManager(workspace, res).run();
-							if( DEBUG ) log.infof("%s.saveOpenDiagrams: %s saved!", CLSS, view.getName());
+							new ResourceUpdateManager(workspace, res).run();
 						}
-=======
-				/*
-				 * Is there a way to get the view without it being open? No because a ProcessDiagramView doesn't exist if it's not showing.
-				 * Also the only way for it to get dirty is for it to be open.
-				 */
-				BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(res.getResourceId());
-				if( tab!=null ) {
-					view = (ProcessDiagramView)tab.getModel();
-					if( DEBUG ) log.infof("%s.saveOpenDiagrams, %s (%s)", CLSS, view.getName(), (view.isDirty()?"DIRTY":"CLEAN"));
-					if (view.isDirty() ){
-						view.registerChangeListeners();     // The diagram may include new components
-						if( DEBUG ) log.infof("%s.saveOpenDiagrams: Saving %s...", CLSS, res.getName());
-						new ResourceUpdateManager(res,view).run();
-						if( DEBUG ) log.infof("%s.saveOpenDiagrams: %s saved!", CLSS, res.getName());
->>>>>>> master
+
+						view.setClean();
+						workspace.setDiagramClean(view);
+
 					}
-					view.setClean();
-					workspace.setDiagramClean(view);
+					// The resource can also be dirty if the state does not match its counterpart in the gateway
+					// If there is a mismatch, simply set the correct state directly into the gateway
+					DiagramState designerState = statusManager.getResourceState(res.getResourceId());
+					if(designerState!=null ) {
+						DiagramState gwState = requestHandler.getDiagramState(res.getResourceId());
+						if( !designerState.equals(gwState)) {
+							requestHandler.setDiagramState(res.getResourceId(), designerState.name());
+							new ResourceUpdateManager(workspace,res).run();
+						}
+					}
 				}
-				// The resource can also be dirty if the state does not match its counterpart in the gateway
-				// If there is a mismatch, simply set the correct state directly into the gateway
-				long projectId = context.getProject().getId();
-				DiagramState designerState = statusManager.getResourceState(res.getResourceId());
-				if(designerState!=null ) {
-					DiagramState gwState = requestHandler.getDiagramState(projectId, res.getResourceId());
-					if( !designerState.equals(gwState)) {
-						requestHandler.setDiagramState(projectId, res.getResourceId(), designerState.name());
-						new ResourceUpdateManager(res,designerState).run();
-					}
+				// We also need to save newly created resources of any type
+				else if(node.isItalic()) {
+					node.setItalic(false);
+					new ResourceUpdateManager(workspace,res).run();
+
 				}
 			}
-<<<<<<< HEAD
+
 			@SuppressWarnings("rawtypes")
 			Enumeration walker = node.children();
 			while(walker.hasMoreElements()) {
 				Object child = walker.nextElement();
 				saveOpenDiagrams((AbstractResourceNavTreeNode)child);
-=======
-		}
-
-		@SuppressWarnings("rawtypes")
-		Enumeration walker = node.children();
-		while(walker.hasMoreElements()) {
-			Object child = walker.nextElement();
-			saveOpenDiagrams((AbstractResourceNavTreeNode)child);
-		}
-	}
-	
-	// Recursively descend the node tree, gathering up associated resources.
-	// Since this is used during a save, set the resources clean.
-	private int accumulateDirtyNodeResources(AbstractResourceNavTreeNode node,Project diff) {
-		ProjectResource res = node.getProjectResource();
-		int dirtyCount = 0;
-		if( res!=null ) {
-			long resid = res.getResourceId();
-			// For a diagram include either dirty or "dirty children"
-			if( node instanceof DiagramTreeNode && 
-				( ((NavTreeNodeInterface)node).isDirty() || context.getProject().isResourceDirty(resid)  )  ) {
-				if( DEBUG ) log.infof("%s.accumulateDirtyNodeResources: diagram %s (%d) %s",CLSS,res.getName(),resid,
-						    (context.getProject().isResourceDirty(res.getResourceId())?"DIRTY":"CLEAN"));
-				diff.putResource(res, true);    // Mark as dirty for our controller as resource listener
-				workspace.saveOpenDiagram(res.getResourceId());   // Close if open
-				dirtyCount++;
-				
-			}
-			// For other nodes include only "dirty"
-			else if( node instanceof NavTreeNodeInterface && ( ((NavTreeNodeInterface)node).isDirty()  )  ) {
-					if( DEBUG ) log.infof("%s.accumulateDirtyNodeResources: %s (%d) %s",CLSS,res.getName(),resid,
-							(context.getProject().isResourceDirty(res.getResourceId())?"DIRTY":"CLEAN"));
-					diff.putResource(res, true);    // Mark as dirty for our controller as resource listener
-					dirtyCount++;
->>>>>>> master
 			}
 		}
 	}
-	
-
-	
 	
 	// Recursively descend the node tree, gathering all nested resources. Mark all as dirty.
 	// Turn off italics.

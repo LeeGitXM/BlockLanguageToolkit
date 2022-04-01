@@ -589,6 +589,7 @@ public class ModelManager implements ProjectListener  {
 	 * @see com.inductiveautomation.ignition.gateway.project.ProjectListener#projectUpdated(com.inductiveautomation.ignition.common.project.Project, com.inductiveautomation.ignition.common.project.ProjectVersion)
 	 */
 	@Override
+
 	public void projectUpdated(String projectName) {
 		Optional<RuntimeProject> optional = context.getProjectManager().getProject(projectName);
 		Project diff = optional.get();
@@ -606,19 +607,40 @@ public class ModelManager implements ProjectListener  {
 					countOfInteresting++;
 				}
 			}
+			if( countOfInteresting>0) {
+
+				new Thread(new Runnable() {
+					@Override
+					public void run() {
+						for( ProjectResource res:resources ) {
+							if( isBLTResource(res.getResourceType().getTypeId()) || res.getResourceType().getTypeId().equalsIgnoreCase("Window") ) {
+								if(DEBUG) log.infof("%s.projectUpdated: add/update resource %s.%s %s (%s) %s", CLSS,projectName,res.getResourceName(),
+										res.getResourcePath().getPath().toString(),
+										res.getResourceType().toString(),(res.isLocked()?"locked":"unlocked"));
+								analyzeResource(res,false);  // Not startup
+							}
+						}
+					}
+				}).start(); 
+			}
 			
 			// If there haven't been any interesting resources, then we've probably
 			// just changed the enabled status of the project. Synchronize resources.
-			if( countOfInteresting==0) {
+			else  {
 
 				log.debug("============================== ENABLED =================================");
 				for( ProjectResource res: diff.getResources() ) {
 					if(DEBUG) log.infof("%s.projectUpdated: enabling %s:%s %s",CLSS,res.getResourceName(),res.getResourceId().getResourcePath().getPath().toString());
 				}
-				
-				for( ProjectResource res: diff.getResources() ) {
-					analyzeResource(res,false);
-				}
+
+				new Thread(new Runnable() {
+				    @Override
+				    public void run() {
+						for( ProjectResource res: diff.getResources() ) {
+							analyzeResource(res,false);
+						}
+				    }
+				}).start();  
 			}
 		}
 		// Delete the BLT resources of projects that are disabled. There is nothing displayable in the Designer

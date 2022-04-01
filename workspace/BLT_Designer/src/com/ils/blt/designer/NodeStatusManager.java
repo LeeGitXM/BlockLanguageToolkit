@@ -206,20 +206,19 @@ public class NodeStatusManager implements NotificationChangeListener   {
 	/**	
 	 * A state change. If the state differs from the gateway, then the node is set to dirty.
      */
-	public void setResourceState(ProjectResourceId resourceId,DiagramState bs,boolean informGateway) {
-		if( informGateway ) handler.setDiagramState(resourceId, bs.name());
+	public void setResourceState(ProjectResourceId resourceId,DiagramState ds) {
 		StatusEntry se = statusByResourcePath.get(resourceId.getResourcePath());
 		if( se!=null ) {
-			se.setState(bs);
+			se.setState(ds);
 		}
 		else {
-			se = new StatusEntry(bs);
+			se = new StatusEntry(ds);
 			statusByResourcePath.put(resourceId.getResourcePath(),se);
 		}
 		DiagramState gwstate = handler.getDiagramState(resourceId);
 		se.dirty = !se.getState().equals(gwstate);
 		if( se.getNode()!=null ) se.getNode().setItalic(se.dirty);
-		log.tracef("%s.setResourceState: %s(%d) = %s",CLSS,se.getName(),resourceId,bs.name());
+		log.tracef("%s.setResourceState: %s = %s",CLSS,se.getName(),ds.name());
 	}
 	/**
 	 * Called after a save from the main menu. Update the status
@@ -231,7 +230,6 @@ public class NodeStatusManager implements NotificationChangeListener   {
 			StatusEntry se = statusByResourcePath.get(key);
 			if( se!=null ) {
 				se.setClean();
-//				context.getProject().clearAllFlags();  // EREIAM JH - is this premature?
 				se.reportDirtyState();
 			}
 		}
@@ -248,7 +246,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 		StatusEntry se = statusByResourcePath.get(resid.getResourcePath());
 		if( se!=null ) { 
 			AbstractNavTreeNode antn = se.getParent();
-			if( antn instanceof AbstractResourceNavTreeNode) {
+			if(antn instanceof AbstractResourceNavTreeNode) {
 				result = ((AbstractResourceNavTreeNode)antn).getResourceId();
 			}
 		}
@@ -275,6 +273,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 		public StatusEntry(DiagramState s)  {
 			this.state = s;
 			this.node = null;
+			this.parentId = null;
 		}
 		
 		/**
@@ -296,7 +295,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 		public AbstractNavTreeNode getParent() { return (node==null?null:node.getParent()); } 
 		public DiagramState getState() { return state; }
 		// Note: isDirty refers to the node of interest alone, excluding children
-		public boolean isDirty() {return context.getProject().isResourceDirty(resourceId);}
+		public boolean isDirty() {return dirty; }
 		public void prepareToBeDeleted() {
 			if( node instanceof NavTreeNodeInterface && node.getName()!=BLTProperties.ROOT_FOLDER_NAME) {
 				((NavTreeNodeInterface)this.node).prepareForDeletion();
@@ -307,11 +306,8 @@ public class NodeStatusManager implements NotificationChangeListener   {
 				((NavTreeNodeInterface)this.node).updateUI(isDirty());
 			}
 		}
-		public void setClean() {
-			if( node instanceof GeneralPurposeTreeNode) {
-				((GeneralPurposeTreeNode)node).setDirty(false);
-			}
-		};
+		public void setClean() { dirty = false; }
+
 		public void setState(DiagramState s) { this.state = s; }
 		@Override
 		public String toString() {
@@ -326,7 +322,8 @@ public class NodeStatusManager implements NotificationChangeListener   {
 public void diagramStateChange(String path, String state) {
 	StatusEntry se = statusByResourcePath.get(path);
 	se.setAlerting(state.equalsIgnoreCase("true"));
-	se.getNode().reload();
+	AbstractResourceNavTreeNode node = se.getNode();
+	node.reload();
 }
 
 @Override

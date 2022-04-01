@@ -38,7 +38,6 @@ import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.designer.BLTDesignerHook;
-import com.ils.blt.designer.DiagramUpdateManager;
 import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.NotificationHandler;
 import com.ils.blt.designer.ResourceCreateManager;
@@ -635,7 +634,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 				sd = mapper.readValue(bytes,SerializableDiagram.class);
 			}
 			// Inform the gateway of the state and let listeners update the UI
-			statusManager.setResourceState(resourceId,state,true);
+			statusManager.setResourceState(resourceId,state);
 			setDirty(false);
 			setIcon(getIcon());
 			refresh();

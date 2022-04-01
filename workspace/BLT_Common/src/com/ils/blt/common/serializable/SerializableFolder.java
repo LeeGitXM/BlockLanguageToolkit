@@ -17,6 +17,7 @@ public class SerializableFolder extends SerializableNode {
 
 
 	public SerializableFolder() {	
+		name="UNSET";
 	}
 	
 	public ResourceType getResourceType() {

@@ -80,7 +80,6 @@ import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.designer.BLTDesignerHook;
-import com.ils.blt.designer.DiagramUpdateManager;
 import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.NotificationHandler;
 import com.ils.blt.designer.ResourceUpdateManager;
@@ -105,7 +104,6 @@ import com.inductiveautomation.ignition.common.config.PropertySet;
 import com.inductiveautomation.ignition.common.execution.ExecutionManager;
 import com.inductiveautomation.ignition.common.execution.impl.BasicExecutionEngine;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
-import com.inductiveautomation.ignition.common.project.resource.ProjectResourceBuilder;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 import com.inductiveautomation.ignition.common.project.resource.ResourcePath;
 import com.inductiveautomation.ignition.common.sqltags.model.TagProp;
@@ -1390,7 +1388,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		ResourcePath path = c.getResourcePath();
 		ProjectResourceId id = new ProjectResourceId(context.getProject().getName(),BLTProperties.DIAGRAM_RESOURCE_TYPE,path.getPath().toString());
 		Optional<ProjectResource> optional = context.getProject().getResource(id);
-		executionEngine.executeOnce(new ResourceUpdateManager(context.getProject().getResource(resid),diagram));
+		executionEngine.executeOnce(new ResourceUpdateManager(this,optional.get()));
 	}
 	/**
 	 * Display the open diagram as clean, presumably after a recent save of the project resource.

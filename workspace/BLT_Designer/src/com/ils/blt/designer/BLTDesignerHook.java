@@ -157,7 +157,6 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		ScriptExtensionManager.getInstance().setContext(context);
 		ResourceCreateManager.setContext(ctx);
 		ResourceDeleteManager.setContext(ctx);
-		DiagramUpdateManager.setContext(ctx);
 		ResourceUpdateManager.setContext(ctx);
 		ResourceSaveManager.setContext(ctx);
 		WorkspaceBackgroundRepainter.setContext(ctx);

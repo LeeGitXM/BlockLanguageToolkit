@@ -495,10 +495,9 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		DiagramState designerState = getState();
 		if( !designerState.equals(DiagramState.DISABLED)) {
 			result = BLTProperties.DIAGRAM_ACTIVE_BACKGROUND;
-			Long key = new Long(resourceId);
 			if( designerState.equals(DiagramState.ISOLATED)) result = BLTProperties.DIAGRAM_ISOLATED_BACKGROUND;
 			if( isDirty() || 
-				!designerState.equals(appRequestHandler.getDiagramState(context.getProject().getId(),key))) {
+				!designerState.equals(appRequestHandler.getDiagramState(resourceId))) {
 				result = BLTProperties.DIAGRAM_DIRTY_BACKGROUND;
 			}
 		}

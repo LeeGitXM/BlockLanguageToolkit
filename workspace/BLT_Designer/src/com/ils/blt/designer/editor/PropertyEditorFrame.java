@@ -35,7 +35,7 @@ public class PropertyEditorFrame extends DockableFrame implements ResourceWorksp
 	public static final String DOCKING_KEY = "ProcessDiagramEditorFrame";
 	public static final String TITLE = "Symbolic AI Property Editor";
 	public static final String SHORT_TITLE = "Properties";
-	private static final boolean DEBUG = true;
+	private static final boolean DEBUG = false;
 	private final DesignerContext context;
 	private final DiagramWorkspace workspace;
 	private final JPanel contentPanel;

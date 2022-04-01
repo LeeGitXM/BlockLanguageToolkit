@@ -59,6 +59,7 @@ import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.ResourceCreateManager;
 import com.ils.blt.designer.ResourceDeleteManager;
+import com.ils.blt.designer.ResourceUpdateManager;
 import com.ils.blt.designer.editor.ApplicationPropertyEditor;
 import com.ils.blt.designer.editor.FamilyPropertyEditor;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
@@ -106,7 +107,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	public static final String BLT_COPY_OPERATION = "BLTCOPY";
 	private static final int OFFSET = 100;
 	private static final String PREFIX = BLTProperties.BUNDLE_PREFIX;  // Required for some defaults
-	private final LoggerEx log = LogUtil.getLogger(getClass().getPackageName());
+	private final static LoggerEx log = LogUtil.getLogger(GeneralPurposeTreeNode.class.getPackageName());
 	private boolean dirty = false;
 	private DiagramState state = DiagramState.ACTIVE;  // Used for Applications and Families
 	private final DeleteNodeAction deleteNodeAction;
@@ -115,12 +116,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	private final StartAction startAction = new StartAction();
 	private final StopAction stopAction = new StopAction();
 	private final DiagramWorkspace workspace;
-<<<<<<< HEAD
 	private final SerializableNodeRenameHandler renameHandler;
-	private final NodeStatusManager statusManager;
-=======
 	private static NodeStatusManager statusManager;
->>>>>>> master
 	private final FolderCreateAction folderCreateAction;
 	private final ApplicationRequestHandler requestHandler;
 	protected final ImageIcon alertBadge;
@@ -160,6 +157,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		diagramIcon = iconFromPath("Block/icons/navtree/diagram.png");  
 		setIcon(closedIcon);
 		openIcon = IconUtil.getIcon("folder");
+		setDirty(true);
 	}
 	/**
 	 * This version of the constructor is used for all except the root. Create
@@ -181,8 +179,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		deleteNodeAction = new DeleteNodeAction(this);
 		copyBranchAction = new CopyAction(this);
 		pasteBranchAction = new PasteAction(this);
-
 		folderCreateAction = new FolderCreateAction(this);
+		
 		workspace = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getWorkspace();
 		statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
 		alertBadge =iconFromPath("Block/icons/badges/bell.png");
@@ -206,6 +204,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		familyIcon = iconFromPath("Block/icons/navtree/family24.png"); 
 		diagramIcon = iconFromPath("Block/icons/navtree/diagram.png"); 
 		setIcon(closedIcon);
+		setDirty(true);
 	}
 
 	// For debugging
@@ -497,7 +496,6 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		if( node.getParent()==null) {
 			log.errorf("%s.createChildNode: ERROR parent is null %s(%d)",CLSS,node.getName(),res.getResourceId());
 		}
-//		node.setItalic(context.getProject().isResourceDirty(res.getResourceId()));    // EREIAM JH - Disabled until italic system fixed
 		return node;
 	}
 
@@ -696,13 +694,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			ObjectMapper mapper = new ObjectMapper();
 			mapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL,true);
 			sd = mapper.readValue(new String(bytes), SerializableDiagram.class);
-<<<<<<< HEAD
 			sd.setName(res.getResourceName());   // Sync the SerializableDiagram name w/ res
-			statusManager.setResourceState(resourceId, sd.getState(),false);
-=======
-			sd.setName(res.getName());   // Sync the SerializableDiagram name w/ res
-			sd.setState(statusManager.getResourceState(res.getResourceId()));
->>>>>>> master
+			statusManager.setResourceState(res.getResourceId(), sd.getState());
 		}
 		catch(Exception ex) {
 			log.warnf("%s.SerializableDiagram: Deserialization exception (%s)",CLSS,ex.getMessage());
@@ -1272,7 +1265,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			try{
 				sd.setState(DiagramState.DISABLED);
 				sd.setDirty(true);
-<<<<<<< HEAD
+
 				byte[] bytes = mapper.writeValueAsBytes(sd);
 				if(log.isTraceEnabled() ) log.trace(bytes.toString());
 				ProjectResourceId resid = requestHandler.createResourceId(getResourceId().getProjectName(), sd.getPath().toString(), BLTProperties.DIAGRAM_RESOURCE_TYPE);
@@ -1282,21 +1275,9 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				builder.setApplicationScope(ApplicationScope.GATEWAY);
 				builder.setVersion(0);
 				log.infof("%s.s:ApplicationImportAction. create %s(%s),(%d bytes)",CLSS,sd.getName(),BLTProperties.APPLICATION_RESOURCE_TYPE.toString(),bytes.length);
-				statusManager.setResourceState(resid, sd.getState(),false);
+				statusManager.setResourceState(resid, sd.getState());
 				ProjectResource pr = builder.build();
 				new ResourceCreateManager(pr,pr.getResourceName()).run();
-=======
-				long newId = context.newResourceId();
-				String json = mapper.writeValueAsString(sd);
-				if(logger.isTraceEnabled() ) logger.trace(json);
-				ProjectResource resource = new ProjectResource(newId,
-						BLTProperties.MODULE_ID, BLTProperties.DIAGRAM_RESOURCE_TYPE,
-						sd.getName(), ApplicationScope.GATEWAY, json.getBytes());
-				resource.setParentUuid(parentId);
-				logger.infof("%s:ApplicationImportAction importing diagram %s(%d) (%s)", CLSS,sd.getName(),newId,sd.getId().toString());
-				statusManager.setResourceState(newId, sd.getState());
-				new ResourceCreateManager(resource).run();
->>>>>>> master
 			} 
 			catch (Exception ex) {
 				ErrorUtil.showError(String.format("ApplicationImportAction: importing diagrm, unhandled Exception (%s)",ex.getMessage()),POPUP_TITLE,ex,true);
@@ -1609,13 +1590,9 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 							} 
 							else if( res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
 								AbstractResourceNavTreeNode node = nearestNonFolderNode(parentNode);
-<<<<<<< HEAD
-								if (node.getProjectResource() != null && node.getResourcePath().getResourceType().equals(BLTProperties.FAMILY_RESOURCE_TYPE)) {
-=======
 								if( (node.getProjectResource() != null && 
-									 node.getProjectResource().getResourceType().equals(BLTProperties.FAMILY_RESOURCE_TYPE)) ||
-									parentNode.getProjectResource().getResourceType().equals(BLTProperties.FOLDER_RESOURCE_TYPE)   ) {
->>>>>>> master
+									 node.getResourcePath().getResourceType().equals(BLTProperties.FAMILY_RESOURCE_TYPE)) ||
+									parentNode.getResourcePath().getResourceType().equals(BLTProperties.FOLDER_RESOURCE_TYPE)   ) {
 									sd = mapper.readValue(new String(res.getData()), SerializableDiagram.class);
 									if( sd!=null ) {
 										ProcessDiagramView diagram = new ProcessDiagramView(res.getResourceId(),sd, context);
@@ -1631,12 +1608,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 										sd.setDirty(true);    // Dirty because gateway doesn't know about it yet
 										sd.setState(DiagramState.DISABLED);
 										json = mapper.writeValueAsString(sd);
-<<<<<<< HEAD
-										statusManager.setResourceState(node.getResourceId(), sd.getState(),false);
-=======
-										statusManager.setResourceState(newId, sd.getState());
-										
->>>>>>> master
+										statusManager.setResourceState(node.getResourceId(), sd.getState());
+
 									}
 									else {
 										ErrorUtil.showWarning(String.format("Failed to deserialize diagram (%s)",res.getResourceName()),"Paste Diagram");
@@ -1949,7 +1922,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 											sd.setDirty(true);    // Dirty because gateway doesn't know about it yet
 											sd.setState(DiagramState.DISABLED);
 											String json = mapper.writeValueAsString(sd);
-<<<<<<< HEAD
+
 											log.debugf("%s:ImportDiagramAction saved resource as:\n%s", CLSS,json);
 											ProjectResourceId resid = requestHandler.createResourceId(getResourceId().getProjectName(), getResourceId().getFolderPath(), BLTProperties.DIAGRAM_RESOURCE_TYPE);
 											ProjectResourceBuilder builder = ProjectResource.newBuilder();
@@ -1960,18 +1933,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 											ProjectResource resource = builder.build();
 											new ResourceCreateManager(resource,resource.getResourceName()).run();	
 											parentNode.selectChild(new ResourcePath[] {resource.getResourcePath()} );
-											statusManager.setResourceState(resid, sd.getState(),false);
+											statusManager.setResourceState(resid, sd.getState());
 											setDirty(true);
-=======
-											logger.debugf("%s:ImportDiagramAction saved resource as:\n%s", CLSS,json);
-											ProjectResource resource = new ProjectResource(newId,
-													BLTProperties.MODULE_ID, BLTProperties.DIAGRAM_RESOURCE_TYPE,
-													sd.getName(), ApplicationScope.GATEWAY, json.getBytes());
-											resource.setParentUuid(getFolderId());
-											new ResourceCreateManager(resource).run();	
-											parentNode.selectChild(new long[] {newId} );
-											statusManager.setResourceState(newId, sd.getState());
->>>>>>> master
 										}
 										else {
 											ErrorUtil.showWarning(String.format("Failed to deserialize file (%s)",input.getAbsolutePath()),POPUP_TITLE);
@@ -2028,12 +1991,6 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 
 		// We need to set the state both locally and in the gateway
 		public void actionPerformed(ActionEvent e) {
-<<<<<<< HEAD
-			// We don't know which state we're coming from for the various diagrams.
-			// Tell the gateway to set the state of all diagrams under the application
-			requestHandler.setApplicationState(context.getProjectName(),app.getName(), treeState.name());
-=======
->>>>>>> master
 			
 			// Set the nodes in the navtree.
 			recursivelyUpdateNodeState(app,treeState);
