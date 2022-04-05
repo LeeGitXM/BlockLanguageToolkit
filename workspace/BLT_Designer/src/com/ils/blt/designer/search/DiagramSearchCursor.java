@@ -29,7 +29,6 @@ public class DiagramSearchCursor extends SearchObjectCursor {
 	private final boolean searchDiagrams;
 	private final boolean searchBlocks;
 	private final int searchKey;
-	private String familyName;
 	private int index = 0;
 	private Iterator<? extends Block> blockWalker; 
 	
@@ -50,7 +49,6 @@ public class DiagramSearchCursor extends SearchObjectCursor {
 		if( index==0 ) {
 			diagram = deserializeResource(resource);
 			ApplicationRequestHandler appRequestHandler = new ApplicationRequestHandler();
-			familyName = appRequestHandler.getFamilyName(diagram.getResourceId());
 
 		}
 		

@@ -17,8 +17,6 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
 public class BLTSearchProvider implements SearchProvider {
 	private final String CLSS = "BLTSearchProvider";
-	public final static int SEARCH_APPLICATION = 1;
-	public final static int SEARCH_FAMILY = 2;
 	public final static int SEARCH_DIAGRAM = 4;
 	public final static int SEARCH_BLOCK = 8;
 	public final static int SEARCH_PROPERTY = 16;
@@ -33,8 +31,6 @@ public class BLTSearchProvider implements SearchProvider {
 	@Override
 	public List<Object> getCategories() {
 		List<Object> cts = new ArrayList<>();
-		cts.add("Application");
-		cts.add("Family");
 		cts.add("Diagram");
 		cts.add("Block");
 		cts.add("Property");
@@ -62,9 +58,7 @@ public class BLTSearchProvider implements SearchProvider {
 		SearchObjectAggregator agg = new SearchObjectAggregator(progress);
 		List<ProjectResource> resources = null;
 		int searchKey = 0;
-		
-		if( selectedCategories.contains("Application") ) searchKey += SEARCH_APPLICATION;
-		if( selectedCategories.contains("Family") ) searchKey += SEARCH_FAMILY;
+	
 		if( selectedCategories.contains("Diagram") ) searchKey += SEARCH_DIAGRAM;
 		if( selectedCategories.contains("Block") ) searchKey += SEARCH_BLOCK;
 		if( selectedCategories.contains("Property") ) searchKey += SEARCH_PROPERTY;
@@ -75,23 +69,6 @@ public class BLTSearchProvider implements SearchProvider {
 				log.infof("%s.retrieveSearchableObjects diagrams = %s:%s",CLSS,res.getResourceId().getProjectName(),
 						res.getResourceId().getResourcePath().getPath().toString());
 				agg.add(new DiagramSearchCursor(context,res,searchKey));
-			}
-		}
-		if( selectedCategories.contains("Application") ) {
-			resources = context.getProject().getResourcesOfType(BLTProperties.APPLICATION_RESOURCE_TYPE);
-			for(ProjectResource res:resources) {
-				log.infof("%s.retrieveSearchableObjects applications = %s:%s",CLSS,res.getResourceId().getProjectName(),
-						res.getResourceId().getResourcePath().getPath().toString());
-				agg.add(new ApplicationSearchCursor(context,res));
-			}
-		}
-		
-		if( selectedCategories.contains("Family") ) {
-			resources = context.getProject().getResourcesOfType(BLTProperties.FAMILY_RESOURCE_TYPE);
-			for(ProjectResource res:resources) {
-				log.infof("%s.retrieveSearchableObjects families = %s:%s",CLSS,res.getResourceId().getProjectName(),
-						res.getResourceId().getResourcePath().getPath().toString());
-				agg.add(new FamilySearchCursor(context,res));
 			}
 		}
 		return agg;

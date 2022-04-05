@@ -12,7 +12,6 @@
 		<documentation>index.html</documentation>
 
 		<!-- Add the module dependencies for each scope -->
-		<!-- NOTE: Build fails here if we specify a Gateway dependency -->
 		<depends scope="D">com.inductiveautomation.vision</depends>
 		
 		<!-- Load in our jars for each scope -->

@@ -41,16 +41,12 @@ import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.BroadcastNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.notification.Signal;
-import com.ils.blt.common.script.Script;
-import com.ils.blt.common.script.ScriptConstants;
 import com.ils.blt.common.script.ScriptExtensionManager;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.gateway.engine.BlockExecutionController;
-import com.ils.blt.gateway.engine.ProcessApplication;
 import com.ils.blt.gateway.engine.ProcessDiagram;
-import com.ils.blt.gateway.engine.ProcessFamily;
 import com.ils.blt.gateway.engine.ProcessNode;
 import com.ils.blt.gateway.proxy.ProxyHandler;
 import com.ils.common.GeneralPurposeDataContainer;
@@ -232,12 +228,6 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		return diagram!=null;
 	}
 
-	
-	@Override
-	public String getApplicationName(ProjectResourceId id) {
-		ProcessApplication app = pyHandler.getApplication(id);
-		return (app==null?"UNDEFINED":app.getName());
-	}
 	@Override
 	public String getBlockId(ProjectResourceId diagramId, String blockName) {
 		String id = "UNKNOWN";
@@ -477,12 +467,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 					//log.debugf("%s.getApplication, found application = %s ",CLSS,app.getName());
 					break;
 				}
-				else if( node instanceof ProcessApplication ) {
-					ds = ((ProcessApplication)node).getState();
-					//log.debugf("%s.getApplication, found application = %s ",CLSS,app.getName());
-					break;
-				}
-				// The parent can be either a folder, application, family or root
+				// The parent can be either a folder, or root
 				ProcessNode parentNode = controller.getParentNode(node);
 				ProjectResourceId parent = parentNode.getResourceId();
 				node = controller.getProcessNode(parent);
@@ -559,13 +544,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	public String getExecutionState() {
 		return BlockExecutionController.getExecutionState();
 	}
-	@Override
-	public String getFamilyName(ProjectResourceId id) {
-		String name = "UNDEFINED";
-		ProcessFamily fam = pyHandler.getFamily(id);
-		if( fam!=null ) name = fam.getName();
-		return name;
-	}
+
 	/**
 	 * Use the UUID of this block to signify that this is the source.
 	 * @param diagramId
@@ -697,12 +676,6 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			while( node!=null ) {
 				if( node instanceof ProcessDiagram ) {
 					ds = ((ProcessDiagram)node).getState();
-					//log.debugf("%s.getApplication, found application = %s ",TAG,app.getName());
-					break;
-				}
-				else if( node instanceof ProcessApplication ) {
-					ds = ((ProcessApplication)node).getState();
-					//log.debugf("%s.getApplication, found application = %s ",TAG,app.getName());
 					break;
 				}
 				node = controller.getParentNode(node);
@@ -964,53 +937,6 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		catch(Exception ex) {
 			log.debug(CLSS+".listConfigurationErrors: Exception ("+ex.getMessage()+")",ex);
 		}
-		return result;
-	}
-	
-	/**
-	 * Query an application in the gateway for list of descendants down to the level of a diagram. 
-	 * The list does not include the application itself.
-	 * @param appName of the parent application
-	 * @return a list of nodes under the named application
-	 */
-	public synchronized List<SerializableResourceDescriptor> listDescriptorsForApplication(String appName) {
-		List<SerializableResourceDescriptor> result = new ArrayList<>();
-		ProcessApplication app = controller.getDelegate().getApplication(appName);
-		if(app!=null) {
-			List<ProcessNode> descendants = new ArrayList<>();
-			app.collectDescendants(descendants);
-			for( ProcessNode child:descendants) {
-				if( child instanceof ProcessApplication ) continue;
-				SerializableResourceDescriptor desc = child.toResourceDescriptor();
-				if( child instanceof ProcessDiagram )     desc.setType(BLTProperties.DIAGRAM_RESOURCE_TYPE.getTypeId());
-				else if( child instanceof ProcessFamily ) desc.setType(BLTProperties.FAMILY_RESOURCE_TYPE.getTypeId());
-				result.add(desc);
-			}
-		}
-		
-		return result;
-		
-	}
-	/**
-	 * Query a family in the gateway for list of descendants down to the level of a diagram. 
-	 * @param appName of the parent application
-	 * @param famName name of the target family
-	 * @return a list of nodes under the named application
-	 */
-	public synchronized List<SerializableResourceDescriptor> listDescriptorsForFamily(String appName,String famName) {
-		List<SerializableResourceDescriptor> result = new ArrayList<>();
-		ProcessFamily fam = controller.getDelegate().getFamily(appName,famName);
-		if(fam!=null) {
-			List<ProcessNode> descendants = new ArrayList<>();
-			fam.collectDescendants(descendants);
-			for( ProcessNode child:descendants) {
-				if( child instanceof ProcessFamily ) continue;
-				SerializableResourceDescriptor desc = child.toResourceDescriptor();
-				if( child instanceof ProcessDiagram ) desc.setType(BLTProperties.DIAGRAM_RESOURCE_TYPE.getTypeId());
-				result.add(desc);
-			}
-		}
-		
 		return result;
 	}
 	
@@ -1349,17 +1275,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		Optional<ProjectResource> ores = project.getResource(resid);
 		ProjectResource res = ores.get();
 		GeneralPurposeDataContainer container = new GeneralPurposeDataContainer();
-		if( res!=null && res.getResourceType().equals(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
-			Script script = extensionManager.createExtensionScript(ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.GET_AUX_OPERATION, provider);
-			extensionManager.runScript(context.getScriptManager(), script, nodeId,container,db);
-			controller.sendAuxDataNotification(nodeId, new BasicQualifiedValue(container));
-		}
-		else if( res!=null && res.getResourceType().equals(BLTProperties.FAMILY_RESOURCE_TYPE)) {
-			Script script = extensionManager.createExtensionScript(ScriptConstants.FAMILY_CLASS_NAME, ScriptConstants.GET_AUX_OPERATION, provider);
-			extensionManager.runScript(context.getScriptManager(), script, nodeId,container,db);
-			controller.sendAuxDataNotification(nodeId, new BasicQualifiedValue(container));
-		}
-		else if( res!=null && res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
+		if( res!=null && res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
 			ProcessBlock block = controller.getDelegate().getBlock(resid, UUID.fromString(nodeId));
 			block.getAuxData(container);
 			controller.sendAuxDataNotification(nodeId, new BasicQualifiedValue(container));
@@ -1815,16 +1731,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		proj.getResource(resid);
 		Optional<ProjectResource> optres = proj.getResource(resid);
 		ProjectResource res = optres.get();
-		if( res!=null && res.getResourceType().equals(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
-			Script script = extensionManager.createExtensionScript(ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.SET_AUX_OPERATION, provider);
-			extensionManager.runScript(context.getScriptManager(), script, nodeId,container,db);
-		}
-		else if( res!=null && res.getResourceType().equals(BLTProperties.FAMILY_RESOURCE_TYPE)) {
-			Script script = extensionManager.createExtensionScript(ScriptConstants.FAMILY_CLASS_NAME, ScriptConstants.SET_AUX_OPERATION, provider);
-			extensionManager.runScript(context.getScriptManager(), script, nodeId,container,db);
-			controller.sendAuxDataNotification(nodeId, new BasicQualifiedValue(container));
-		}
-		else if( res!=null && res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
+		if( res!=null && res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
 			ProcessBlock block = controller.getProcessBlock(resid, nodeId);
 			block.setAuxData(container);
 		}

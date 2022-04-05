@@ -34,7 +34,6 @@ import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.block.ActiveState;
 import com.ils.blt.common.notification.NotificationChangeListener;
 import com.ils.blt.common.notification.NotificationKey;
-import com.ils.blt.common.serializable.SerializableApplication;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.NotificationHandler;
@@ -68,8 +67,6 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 	private final NotificationHandler notificationHandler = NotificationHandler.getInstance();
 	private final NodeStatusManager nodeStatusMgr;			// PH 06/30/2021
 	private final DiagramTreeNode diagramTreeNode;		// PH 06/30/2021
-	private final GeneralPurposeTreeNode appNode;			// PH 06/30/2021
-	private final ProjectResource applicationResource;		// PH 06/30/2021
 	private final ApplicationRequestHandler requestHandler;
 	private final int DIALOG_HEIGHT = 700;
 	private final int DIALOG_WIDTH = 300;
@@ -80,7 +77,7 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 	private JPanel propertiesPanel = null;
 	
 	private final GeneralPurposeDataContainer model;           // Data container operated on by panels
-	private final GeneralPurposeDataContainer appModel;           // Data container operated on by panels PH 06/30/2021
+
 	protected DualListBox dual;
 	
 	protected JTextField finalDiagnosisClassField;
@@ -151,21 +148,6 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		 */
 		this.nodeStatusMgr = wrkspc.getNodeStatusManager();
 		this.diagramTreeNode = (DiagramTreeNode) nodeStatusMgr.findNode(diagram.getResourceId());
-		this.appNode = this.diagramTreeNode.getApplicationTreeNode();
-		if (this.appNode != null) {
-			Optional<ProjectResource> optional =  appNode.getProjectResource();
-			this.applicationResource = optional.get();
-			// Somehow I need to get the serializable application, I have the tree node that represents the 
-			// application and I have the resource for the application.  
-			SerializableApplication sap = this.appNode.deserializeApplication(this.applicationResource);
-			this.appModel = sap.getAuxiliaryData();
-		}
-		else {
-			log.errorf("%s: **** ERROR APPLICATION NOT FOUND (FinalDiagnosis not in any application hierarchy) ****",CLSS);
-			// Need to somehow bail here and let the user know they are screwed!
-			this.applicationResource = null;
-			this.appModel = new GeneralPurposeDataContainer();
-		}
         initialize(block);
         setUI();
 		// Register for notifications
@@ -334,8 +316,7 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 		dual.setDestinationElements(q1);
 		
 		// Get the list of quant outputs that have been defined for the application
-		List< Map<String,String> > outputMapList = appModel.getMapLists().get("QuantOutputs");
-		log.tracef("Application Output Map List: %s", outputMapList);
+		List< Map<String,String> > outputMapList = new ArrayList<>();      // TODO
 		
 		// Convert the list of output maps to a list of strings (output names)
 		List<String> q0 = new ArrayList<>();
@@ -542,12 +523,6 @@ public class FinalDiagnosisPropertyEditor extends AbstractPropertyEditor impleme
 	public void saveName() {
 		if( !nameField.getText().equalsIgnoreCase(block.getName()) ) {
 			BLTDesignerHook hook = (BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID);
-			String msg = hook.scanForDiagnosisNameConflicts(diagram, nameField.getText());// send name and block
-			if (msg != null && msg.length() > 1) {
-				log.errorf("Naming error: " + msg);
-				ErrorUtil.showError("Naming error, duplicate diagnosis name: " + msg);
-				return;  // abort save
-			}
 			block.setName(nameField.getText());
 			workspace.setDiagramDirty(workspace.getActiveDiagram());
 		}

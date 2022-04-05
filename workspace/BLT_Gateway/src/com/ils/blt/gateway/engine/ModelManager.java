@@ -1,5 +1,5 @@
 /**
- *   (c) 2014-2021 ILS Automation. All rights reserved. 
+ *   (c) 2014-2022 ILS Automation. All rights reserved. 
  */
 package com.ils.blt.gateway.engine;
 
@@ -22,10 +22,8 @@ import com.ils.blt.common.connection.Connection;
 import com.ils.blt.common.script.Script;
 import com.ils.blt.common.script.ScriptConstants;
 import com.ils.blt.common.script.ScriptExtensionManager;
-import com.ils.blt.common.serializable.SerializableApplication;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableDiagram;
-import com.ils.blt.common.serializable.SerializableFamily;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.gateway.BlockTagSynchronizer;
 import com.ils.common.persistence.ToolkitProperties;
@@ -116,20 +114,7 @@ public class ModelManager implements ProjectListener  {
 		if( resourceId.getResourceType().getModuleId()!=null && resourceId.getResourceType().getModuleId().equalsIgnoreCase(BLTProperties.MODULE_ID)) {
 			ResourceType type = res.getResourceType();
 			
-			if( type.equals(BLTProperties.APPLICATION_RESOURCE_TYPE) ) {
-				if(DEBUG) log.infof("%s.analyzeResource: adding an application = %s %s", CLSS, res.getResourceName(), (startup?"(STARTUP)":""));
-				addModifyApplicationResource(res,startup);
-			}
-			else if( type.equals(BLTProperties.FAMILY_RESOURCE_TYPE) ) {
-				if(DEBUG) log.infof("%s.analyzeResource: adding a family = %s %s", CLSS, res.getResourceName(), (startup?"(STARTUP)":""));
-				addModifyFamilyResource(res,startup);
-			}
-			else if( type.equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
-				if(DEBUG) log.infof("%s.analyzeResource: adding a diagram = %s %s", CLSS, res.getResourceName(), (startup?"(STARTUP)":""));
-				addModifyDiagramResource(res,startup);
-				if(DEBUG) log.infof("%s.analyzeResource: diagram %s successfully added!", CLSS, res.getResourceName() );
-			}
-			else if( type.equals(BLTProperties.FOLDER_RESOURCE_TYPE) ) {
+			if( type.equals(BLTProperties.FOLDER_RESOURCE_TYPE) ) {
 				if(DEBUG) log.infof("%s.analyzeResource: adding a folder = %s %s", CLSS, res.getResourceName(), (startup?"(STARTUP)":""));
 				addModifyFolderResource(res);
 			}
@@ -220,21 +205,6 @@ public class ModelManager implements ProjectListener  {
 		return diagram;
 	}
 	
-	/**
-	 * @return the named application
-	 */
-	public ProcessApplication getApplication(String name) {
-		ProcessApplication app = null;
-		for(ProcessNode node:nodesByResourceId.values()) {
-			if( node instanceof ProcessApplication && 
-				node.getName().equals(name)) {
-				app = (ProcessApplication)node;
-				break;
-			}
-		}
-		return app;
-	}
-	
 
 	/**
 	 * Get a list of diagram tree paths known to the specified project. 
@@ -291,28 +261,7 @@ public class ModelManager implements ProjectListener  {
 		if(DEBUG) log.infof("%s.getDiagramDescriptors: found %d", CLSS,result.size());
 		return result;	
 	}
-	/**
-	 * @return the named family under the named application
-	 */
-	public ProcessFamily getFamily(String appName,String famName) {
-		ProcessFamily fam = null;
-		ProcessApplication app = getApplication(appName);
-		if( app!=null ) {
-			for(ProcessNode node:nodesByResourceId.values()) {
-				if( node instanceof ProcessFamily &&
-					node.getName().equals(famName)) {
-					// Check to see if the parent of the family is the app..
-					String parentPath = node.getParentPath().getPath().toString();
-					String applicationPath = app.getPath().toString();
-					if( applicationPath.equalsIgnoreCase(parentPath)) {
-						fam = (ProcessFamily)node;
-						break;
-					}
-				}
-			}
-		}
-		return fam;
-	}
+
 	/**
 	 * @return the root node of the diagram tree
 	 */
@@ -490,9 +439,7 @@ public class ModelManager implements ProjectListener  {
 				SerializableResourceDescriptor sd = new SerializableResourceDescriptor();
 				sd.setName(node.getName());
 				sd.setProjectName(projectName);
-				if( node instanceof ProcessApplication ) sd.setType(BLTProperties.APPLICATION_RESOURCE_TYPE.getTypeId());
-				else if( node instanceof ProcessFamily ) sd.setType(BLTProperties.FAMILY_RESOURCE_TYPE.getTypeId());
-				else if( node instanceof ProcessDiagram )sd.setType(BLTProperties.DIAGRAM_RESOURCE_TYPE.getTypeId());
+				if( node instanceof ProcessDiagram )sd.setType(BLTProperties.DIAGRAM_RESOURCE_TYPE.getTypeId());
 				else sd.setType(BLTProperties.FOLDER_RESOURCE_TYPE.getTypeId());
 				result.add(sd);
 			}
@@ -655,61 +602,7 @@ public class ModelManager implements ProjectListener  {
 	}
 	
 	// ===================================== Private Methods ==========================================
-	/**
-	 * Add or update an application in the model from a ProjectResource.
-	 * This is essentially just a tree node. Use presence in the node map
-	 * to determine whether or not this is a new resource or an update.
-	 * If the startup flag is set, the resource 
-	 * is modified to include aux data from the extension script.
-	 * @param projectId the identity of a project
-	 * @param res the project resource containing the diagram
-	 * @param startup true if called from the gateway hook
-	 */
-	private void addModifyApplicationResource(ProjectResource res,boolean startup) {
-		ProjectResourceId resId = res.getResourceId();
-		if(DEBUG) log.infof("%s.addModifyApplicationResource: %s(%s)",CLSS,resId.getProjectName(),resId.getResourcePath().getPath().toString());
-		SerializableApplication sa = deserializeApplicationResource(res);
-		if(sa!=null ) {
-			ProcessApplication application = new ProcessApplication(sa.getName(),resId.getResourcePath().getParent(),resId);
-			application.setAuxiliaryData(sa.getAuxiliaryData());
-			ProcessNode node = nodesByResourcePath.get(resId.getResourcePath());
-			if( node==null ) {
-				// Add in the new Application
-				nodesByResourceId.put(ResourceKey.keyForResource(application.getResourceId()),application);
-				addToHierarchy(application);
-			}
-			else  {
-				// Update attributes for application stored in tree.
-				node.setName(res.getResourceName());
-				if(node instanceof ProcessApplication )  {
-					ProcessApplication processApp = (ProcessApplication)node;
-					processApp.setState(application.getState());
-					processApp.setAuxiliaryData(sa.getAuxiliaryData());;
-				}
-			}
-			// Invoke extension script on application save except on startup
-			// On startup we need to update the project resource with AuxData
-			if( !startup ) {
-				String provider = (application.getState().equals(DiagramState.ACTIVE) ? 
-						toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER):
-							toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER));
-				Script script = extensionManager.createExtensionScript(ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.SAVE_OPERATION, provider);
-				extensionManager.runScript(context.getProjectManager().getProjectScriptManager(application.getProjectName()), 
-						script, application.getPath().toString());
-				String db = (application.getState().equals(DiagramState.ACTIVE) ? 
-						toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_DATABASE):
-							toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_DATABASE));
 
-				script = extensionManager.createExtensionScript(ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.SET_AUX_OPERATION, provider);
-				extensionManager.runScript(context.getScriptManager(), script, application.getPath().toString(),application.getAuxiliaryData(),db);
-				
-			}
-			controller.sendAuxDataNotification(application.getPath().toString(), new BasicQualifiedValue(application.getAuxiliaryData()));
-		}
-		else {
-			log.warnf("%s.addModifyApplicationResource: failed to deserialize %s(%s)",CLSS,resId.getProjectName(),resId.getResourcePath().getPath().toString());
-		}
-	}
 	/**
 	 * Add or update a diagram in the model from a ProjectResource. The state of the 
 	 * diagram is as it was serialized. There is a one-one correspondence 
@@ -790,61 +683,7 @@ public class ModelManager implements ProjectListener  {
 			log.warnf("%s.addModifyDiagramResource - Failed to create diagram from resource (%s)",CLSS,res.getResourceName());
 		}
 	}	
-	
-	/**
-	 * Add or update a family in the model from a ProjectResource.
-	 * This is essentially just a tree node. If the startup flag is set, the resource 
-	 * is modified to include aux data from the extension script.
-	 * @param projectId the identity of a project
-	 * @param res the project resource containing the diagram
-	 * @param startup
-	 */
-	private void addModifyFamilyResource(ProjectResource res,boolean startup) {
-		ProjectResourceId resId = res.getResourceId();
-		BlockTagSynchronizer bts = new BlockTagSynchronizer(res.getProjectName());
-		if(DEBUG) log.infof("%s.addModifyFamilyResource: %s(%s)",CLSS,res.getResourceName(),resId.getResourcePath().getPath().toString());
-		SerializableFamily sf = deserializeFamilyResource(res);
-		if( sf!=null ) {
-			ProcessFamily family = new ProcessFamily(sf.getName(),resId.getResourcePath().getParent(),resId);
-			family.setAuxiliaryData(sf.getAuxiliaryData());
-			ProcessNode node = nodesByResourcePath.get(resId.getResourcePath());
-			if( node==null ) {
-				// Add in the new Family
-				nodesByResourceId.put(ResourceKey.keyForResource(family.getResourceId()),family);
-				addToHierarchy(family);
-			}
-			else {
-				// Update attributes
-				node.setName(res.getResourceName());
-				if( node instanceof ProcessFamily ) {
-					ProcessFamily processFam = (ProcessFamily)node;
-					processFam.setState(family.getState());
-					processFam.setAuxiliaryData(sf.getAuxiliaryData());
-				}
-			}
-			// Invoke extension script on family save except on startup
-			if( !startup ) {
-				String provider = (family.getState().equals(DiagramState.ACTIVE) ? 
-						toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER):
-							toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER));
-				Script script = extensionManager.createExtensionScript(ScriptConstants.FAMILY_CLASS_NAME, ScriptConstants.SAVE_OPERATION, provider);
-				extensionManager.runScript(context.getProjectManager().getProjectScriptManager(family.getProjectName()), 
-						script, family.getPath().toString());
-				String db = (family.getState().equals(DiagramState.ACTIVE) ? 
-						toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_DATABASE):
-							toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_DATABASE));
 
-				script = extensionManager.createExtensionScript(ScriptConstants.FAMILY_CLASS_NAME, ScriptConstants.SET_AUX_OPERATION, provider);
-				extensionManager.runScript(context.getScriptManager(), script, family.getPath(),family.getAuxiliaryData(),db);
-			}
-			controller.sendAuxDataNotification(family.getPath(), new BasicQualifiedValue(family.getAuxiliaryData()));
-		}
-		else {
-			log.warnf("%s.addModifyFamilyResource: failed to deserialize %s(%s)",CLSS,res.getResourceName(),
-					res.getResourceId().getResourcePath().getPath().toString());
-		}
-
-	}
 	/**
 	 * Add or update a folder resource from the ProjectResource.
 	 * @param projectId the identity of a project
@@ -953,14 +792,6 @@ public class ModelManager implements ProjectListener  {
 				// Invoke the proper extension function on a delete
 				// NOTE: Need to use keys for class names
 				String classKey = ScriptConstants.DIAGRAM_CLASS_NAME;
-				if( node instanceof ProcessApplication ) {
-					classKey = ScriptConstants.APPLICATION_CLASS_NAME;
-					nodeState = ((ProcessApplication)node).getState();
-				}
-				else if( node instanceof ProcessFamily ) {
-					classKey = ScriptConstants.FAMILY_CLASS_NAME;
-					nodeState = ((ProcessFamily)node).getState();
-				}
 							
 				// Invoke extension script for the delete
 				// Execute for BOTH production and isolation
@@ -986,42 +817,6 @@ public class ModelManager implements ProjectListener  {
 		root.removeProject(projectName);
 	}
 	
-	/**
-	 * We've discovered a changed model resource. Deserialize and convert into a ProcessApplication.
-	 * Note that the name is wholly contained in the resource, not its contents. Clear out any nested
-	 * resources as these are only used when serializing the application outside of a project.
-	 * @param projId the identifier of the project
-	 * @param res
-	 */ 
-	public SerializableApplication deserializeApplicationResource(ProjectResource res) {
-		SerializableApplication sa = null;
-		byte[] serializedObj = res.getData();
-		if( serializedObj!=null && serializedObj.length>0 ) {
-			String json = new String(serializedObj);
-			if(DEBUG) log.infof("%s.deserializeApplicationResource: json = %s",CLSS,json);
-			try{
-				ObjectMapper mapper = new ObjectMapper();
-				sa = mapper.readValue(json, SerializableApplication.class);
-				if( sa!=null ) {
-					sa.setName(res.getProjectName());
-					if(DEBUG) log.infof("%s.deserializeApplicationResource: Successfully deserialized application %s",CLSS,sa.getName());
-
-				}
-				else {
-					log.warnf("%s.deserializeApplicationResource: deserialization failed",CLSS);
-				}
-			}
-			// Print stack trace
-			catch( Exception ex) {
-				log.warnf("%s.deserializeApplicationResource: exception (%s)",CLSS,ex.getLocalizedMessage(),ex);
-			}
-		}
-		else {
-			log.warnf("%s.deserializeApplicationResource: resource (%s) has no data",CLSS,res.getResourceName());
-		}
-
-		return sa;
-	}
 	/**
 	 *  We've discovered a changed model resource. Deserialize and return.
 	 *  Note: We had difficulty with the Ignition XML serializer because it didn't handle Java generics;
@@ -1064,49 +859,14 @@ public class ModelManager implements ProjectListener  {
 		}
 		return sd;
 	}
-	
-	/**
-	 * We've discovered a changed model resource. Deserialize and convert into a SerializableFamily.
-	 * @param projId the identifier of the project
-	 * @param res
-	 */ 
-	public SerializableFamily deserializeFamilyResource(ProjectResource res) {
-		SerializableFamily sf = null;
-		byte[] serializedObj = res.getData();
-		if( serializedObj!=null && serializedObj.length>0 ) {
-			String json = new String(serializedObj);
-			if(DEBUG) log.infof("%s.deserializeFamilyResource: json = %s",CLSS,json);
 
-			try{
-				ObjectMapper mapper = new ObjectMapper();
-				sf = mapper.readValue(json, SerializableFamily.class);
-				if( sf!=null ) {
-					sf.setName(res.getResourceName());     // Resource is the source of the name.
-					if(DEBUG) log.infof("%s.deserializeFamilyResource: Successfully deserialized family %s",CLSS,sf.getName());
-				}
-				else {
-					log.warnf("%s: deserializeFamilyResource: deserialization failed",CLSS);
-				}
-			}
-			// Print stack trace
-			catch( Exception ex) {
-				log.warnf("%s.deserializeFamilyResource: exception (%s)",CLSS,ex.getLocalizedMessage(),ex);
-			}
-		}
-		else {
-			log.warnf("%s.deserializeFamilyResource: resource (%s) has no data",CLSS,res.getResourceName());
-		}
-		return sf;
-	}
 
 	private boolean isBLTResource(String type) {
 		boolean isBLTType = false;
-		if( type!=null ) {
-			if( type.equalsIgnoreCase(BLTProperties.APPLICATION_RESOURCE_TYPE.getTypeId()) ||
-				type.equalsIgnoreCase(BLTProperties.FAMILY_RESOURCE_TYPE.getTypeId()) ||
-				type.equalsIgnoreCase(BLTProperties.DIAGRAM_RESOURCE_TYPE.getTypeId()) ) {
+		if( type!=null &&
+			(type.equalsIgnoreCase(BLTProperties.DIAGRAM_RESOURCE_TYPE.getTypeId()) ||
+				type.equalsIgnoreCase(BLTProperties.FOLDER_RESOURCE_TYPE.getTypeId())) ) {
 				isBLTType = true;
-			}
 		}
 		return isBLTType;
 	}

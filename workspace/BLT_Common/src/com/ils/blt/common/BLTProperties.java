@@ -15,18 +15,14 @@ import com.inductiveautomation.ignition.common.project.resource.ResourceType;
 public interface BLTProperties   {   
 	public final static String MODULE_ID = "block";     // See module-blt.xml
 	public final static String MODULE_NAME = "BLT";     // See build-blt.xml
-	public final static String SFC_MODULE_ID = "com.ils.sfc"; 
 	
 	/** This is the name of the jar file containing block class definitions */
 	public final static String BLOCK_JAR_NAME = "block-definition";
 	/** This is the name of the package containing block class definitions */
 	public final static String BLOCK_PACKAGE_NAME = "com.ils.block";
 	
-	public final static ResourceType APPLICATION_RESOURCE_TYPE   = new ResourceType(MODULE_ID,"blt.application");
 	public final static ResourceType DIAGRAM_RESOURCE_TYPE       = new ResourceType(MODULE_ID,"blt.diagram");
-	public final static ResourceType FAMILY_RESOURCE_TYPE        = new ResourceType(MODULE_ID,"blt.family");
-	public final static ResourceType FOLDER_RESOURCE_TYPE        = new ResourceType(MODULE_ID,"blt.folder");
-	public final static ResourceType IGNITION7_FOLDER_RESOURCE_TYPE = new ResourceType(MODULE_ID,"__folder");   // Obsolete
+	public final static ResourceType FOLDER_RESOURCE_TYPE 		 = new ResourceType(MODULE_ID,"__folder");      // Compatible w/ Ignition 7
 	
 	public final static String DIAGRAM_SCRIPT_PACKAGE      = "system.ils.blt.diagram";
 	

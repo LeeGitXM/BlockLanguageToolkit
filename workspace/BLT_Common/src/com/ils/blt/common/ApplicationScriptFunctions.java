@@ -72,13 +72,6 @@ public class ApplicationScriptFunctions   {
 	public static boolean diagramExists(ProjectResourceId resourceId) {
 		return handler.diagramExists(resourceId);
 	}
-	/**
-	 * @param resourceId id of the application
-	 * @return the application name
-	 */
-	public static String getApplicationName(ProjectResourceId resourceId) {
-		return handler.getApplicationName(resourceId);
-	}
 	
 	/**
 	 * Query the gateway for a list of prototypes for the defined blocks.
@@ -156,9 +149,6 @@ public class ApplicationScriptFunctions   {
 		return handler.getExplanation(diagramId,blockId);
 	}
 
-	public static String getFamilyName(ProjectResourceId uuid) {
-		return handler.getFamilyName(uuid);
-	}
 	/**
 	 * @return the the internal state of a block.
 	 */

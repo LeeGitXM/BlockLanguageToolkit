@@ -39,33 +39,12 @@ public class SerializableNodeRenameHandler   {
 	public void convertPaths(SerializableNode root,StringPath parent) {
 		root.setParentPath(parent);
 		
-		if(root.getResourceType().equals(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
-			SerializableApplication app = (SerializableApplication)root;
-			for(SerializableFamily fam:app.getFamilies()) {
-				convertPaths(fam,root.getPath());
-			}
-			for(SerializableFolder folder:app.getFolders()) {
-				convertPaths(folder,root.getPath());
-			}
-		}
-		else if(root.getResourceType().equals(BLTProperties.FAMILY_RESOURCE_TYPE)) {
-			SerializableFamily fam = (SerializableFamily)root;
-			for(SerializableDiagram diag:fam.getDiagrams()) {
-				convertDiagramPaths(diag,root.getPath());
-			}
-			for(SerializableFolder folder:fam.getFolders()) {
-				convertPaths(folder,root.getPath());
-			}
-		}
-		else if(root.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
+		if(root.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
 			SerializableDiagram diag = (SerializableDiagram)root;
 			convertDiagramPaths(diag,root.getPath());
 		}
 		else if(root.getResourceType().equals(BLTProperties.FOLDER_RESOURCE_TYPE)) {
 			SerializableFolder folder = (SerializableFolder)root;
-			for(SerializableFamily fam:folder.getFamilies()) {
-				convertPaths(fam,root.getPath());
-			}
 			for(SerializableFolder f:folder.getFolders()) {
 				convertPaths(f,root.getPath());
 			}

@@ -64,13 +64,7 @@ public class GatewayScriptFunctions   {
 	public static void deleteTag(String projectName,String path) {
 		handler.deleteTag(projectName,path);
 	}
-	/**
-	 * @param uuid string value of application's UUID
-	 * @return name of the application
-	 */
-	public static String getApplicationName(ProjectResourceId id) {
-		return handler.getApplicationName(id);
-	}
+	
 	/**
 	 * Query the gateway for a list of prototypes for the defined blocks.
 	 * @return a list containing prototypes for all existing blocks 
@@ -158,13 +152,6 @@ public class GatewayScriptFunctions   {
 	 */
 	public static DiagramState getDiagramState(ProjectResourceId diagramId)  {
 		return handler.getDiagramState(diagramId);
-	}
-	/**
-	 * @param uuid string value of family's UUID
-	 * @return name of the family
-	 */
-	public static String getFamilyName(ProjectResourceId id) {
-		return handler.getFamilyName(id);
 	}
 
 	/**
@@ -359,23 +346,7 @@ public class GatewayScriptFunctions   {
 	public static List<SerializableBlockStateDescriptor> listUnresponsiveBlocks(double hours, String className) {
 		return handler.listUnresponsiveBlocks(hours,className);
 	}
-	/**
-	 * Query an application in the gateway for list of descendants down to the level of a diagram. 
-	 * @param appName of the parent application
-	 * @return a list of nodes under the named application
-	 */
-	public static List<SerializableResourceDescriptor> listDescriptorsForApplication(String appName) {
-		return handler.listDescriptorsForApplication(appName);
-	}
-	/**
-	 * Query a family in the gateway for list of descendants down to the level of a diagram. 
-	 * @param appName of the parent application
-	 * @param famName of the parent family
-	 * @return a list of nodes under the named family
-	 */
-	public static List<SerializableResourceDescriptor> listDescriptorsForFamily(String appName,String famName) {
-		return handler.listDescriptorsForFamily(appName,famName);
-	}
+
 	/**
 	 * @param diagramId identifier of the diagram to be queried, a String
 	 * @param className fully qualified class name of blocks to be listed

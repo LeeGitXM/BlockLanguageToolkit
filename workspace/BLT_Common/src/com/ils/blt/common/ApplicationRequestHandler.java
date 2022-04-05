@@ -145,24 +145,6 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		}
 		return result;
 	}
-	/**
-	 * @param uuid unique identifier of he application as a string
-	 */
-	@Override
-	public String getApplicationName(ProjectResourceId resourceId) {
-		String name = "NULL";
-		if( resourceId!=null) {
-			log.infof("%s.getApplicationName... %s",CLSS,resourceId);
-			try {
-				name = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-						BLTProperties.MODULE_ID, "getApplicationName",resourceId);
-			}
-			catch(Exception ex) {
-				log.infof("%s.getApplicationName: Exception (%s)",CLSS,ex.getMessage());
-			};
-		}
-		return name;
-	}
 
 	/**
 	 * @param diagramId unique identifier of the diagram as a string 
@@ -379,21 +361,6 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 			log.infof("%s.getExplanation: Exception (%s)",CLSS,ex.getMessage());
 		};
 		return reason;
-	}
-	@Override
-	public String getFamilyName(ProjectResourceId uuid) {
-		String name = "NULL UUID";
-		if( uuid!=null ) {
-			//log.infof("%s.getFamilyName... %s",CLSS,uuid);
-			try {
-				name = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-						BLTProperties.MODULE_ID, "getFamilyName",uuid);
-			}
-			catch(Exception ex) {
-				log.infof("%s.getFamilyName: Exception (%s)",CLSS,ex.getMessage());
-			};
-		}
-		return name;
 	}
 	/**
 	 * @return the hostname of the gateway
@@ -1293,18 +1260,11 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		catch(Exception ge) {
 			log.infof("%s.setProjectTimeFactor: GatewayException (%s:%s)",CLSS,ge.getClass().getName(),ge.getMessage());
 		}
-		try {
-			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.SFC_MODULE_ID, "setProjectTimeFactor",factor);
-		}
-		catch(Exception ignore) {}
 	}
 
 	/**
 	 * Save a project-dependent value into the HSQL database table associated with the toolkit. The 
-	 * table contains name-value pairs, so any name is allowable. We also execute
-	 * this method on behalf of the SFC-module in case there are any side-effects
-	 * of saving particular parameters.
+	 * table contains name-value pairs, so any name is allowable. 
 	 * @param projectName name of project with which property is associated
 	 * @param propertyName name of the property for which a value is to be set
 	 * @param value the new value of the property.
@@ -1319,17 +1279,10 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		catch(Exception ge) {
 			log.infof("%s.setProjectToolkitProperty: GatewayException (%s:%s)",CLSS,ge.getClass().getName(),ge.getMessage());
 		}
-		try {
-			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.SFC_MODULE_ID, "setProjectToolkitProperty",projectName,propertyName,value);
-		}
-		catch(Exception ignore) {}
 	}
 	/**
 	 * Save a value into the HSQL database table associated with the toolkit. The 
-	 * table contains name-value pairs, so any name is allowable. We also execute
-	 * this method on behalf of the SFC-module in case there are any side-effects
-	 * of saving particular parameters.
+	 * table contains name-value pairs, so any name is allowable.
 	 * @param projectName name of project with which property is associated
 	 * @param propertyName name of the property for which a value is to be set
 	 * @param value the new value of the property.
@@ -1344,11 +1297,6 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		catch(Exception ge) {
 			log.infof("%s.setToolkitProperty: GatewayException (%s:%s)",CLSS,ge.getClass().getName(),ge.getMessage());
 		}
-		try {
-			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.SFC_MODULE_ID, "setToolkitProperty",propertyName,value);
-		}
-		catch(Exception ignore) {}
 	}
 	/**
 	 * Define a watermark for a diagram. This is shown only in the designer. 

@@ -235,16 +235,8 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		
 		// check if problems with save, just notify for now.  Can do save.abort() if it's serious
 		StringBuffer msg = new StringBuffer();
-		rootNode.scanForNameConflicts(rootNode,msg);
-		if (msg.length() > 1) {
-			log.infof("%s: Workspace error, please correct before saving:  %s",CLSS, msg);
-			ErrorUtil.showError(msg.toString(), "Save Workspace Error, save aborted");
-			save.abort(new Throwable(msg.toString()));
-		} 
-		else {
-			ResourceSaveManager saver = new ResourceSaveManager(getWorkspace(),rootNode);
-			saver.saveSynchronously();
-		}
+		ResourceSaveManager saver = new ResourceSaveManager(getWorkspace(),rootNode);
+		saver.saveSynchronously();
 		nodeStatusManager.updateAll();
 	}
 	
@@ -278,13 +270,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	@Override
 	public String getResourceCategoryKey(ProjectResourceId resourceId) {
 		// There is only one resource category that we are exporting
-		if( resourceId.getResourceType().getTypeId().equals(BLTProperties.APPLICATION_RESOURCE_TYPE) ) {
-			return PREFIX+".Export.Application.Category";
-		}
-		else if( resourceId.getResourceType().getTypeId().equals(BLTProperties.FAMILY_RESOURCE_TYPE) ) {
-			return PREFIX+".Export.Family.Category";
-		}
-		else if( resourceId.getResourceType().getTypeId().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
+		if( resourceId.getResourceType().getTypeId().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
 			return PREFIX+".Export.Diagram.Category";
 		}
 		else { 
@@ -362,48 +348,6 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
             validator.setVisible(true);
         }
     }
-	
-	
-	private GeneralPurposeTreeNode findApplicationForDiagram(ProcessDiagramView diagram) {
-		NodeStatusManager mgr = getNavTreeStatusManager();
-		GeneralPurposeTreeNode rtNode = (GeneralPurposeTreeNode)mgr.findNode(diagram.getResourceId());
-		AbstractResourceNavTreeNode ret = applicationForDiagram(null, rtNode, diagram);
-		return (ret == null?null:(GeneralPurposeTreeNode)ret);
-
-	}
-
-	private AbstractResourceNavTreeNode applicationForDiagram(AbstractResourceNavTreeNode app, AbstractResourceNavTreeNode node, ProcessDiagramView diagram) {
-		AbstractResourceNavTreeNode ret = null;
-
-		if (node.getProjectResource() != null && node.getResourceId().getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
-			if (diagram.getName().equals(node.getName())) {
-				Optional<ProjectResource> optional = node.getProjectResource();
-				ProjectResource bob = optional.get();
-				ret = app;
-			}
-		}
-		else {
-			if (node.getProjectResource() != null && node.getResourceId().getResourceType().equals(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
-				app = node;
-			}
-			Enumeration<AbstractResourceNavTreeNode> enumer = node.children();
-			while(enumer.hasMoreElements() && ret == null) {
-				AbstractResourceNavTreeNode theNode = enumer.nextElement();
-				ret = applicationForDiagram(app, theNode, diagram);
-			}
-		}
-		return ret;
-	}
-
-	public String scanForDiagnosisNameConflicts(ProcessDiagramView diagram, String name) {
-		String ret = "";
-		// find application for the diagram.  This isn't particularly efficient as it traverses the whole tree
-		GeneralPurposeTreeNode node = findApplicationForDiagram(diagram);
-		
-		ret = parseChildForDiagnosisName(node, name);
-		
-		return ret;
-	}
 
 	public String parseChildForDiagnosisName(AbstractResourceNavTreeNode theNode, String name) {
 		String ret = "";

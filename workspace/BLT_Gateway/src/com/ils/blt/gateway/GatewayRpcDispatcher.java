@@ -86,10 +86,6 @@ public class GatewayRpcDispatcher   {
 	public Boolean diagramExists(ProjectResourceId id) {
 		return requestHandler.diagramExists(id);
 	}
-
-	public String getApplicationName(ProjectResourceId id) {
-		return requestHandler.getApplicationName(id);
-	}
 	
 	/**
 	 * @param diagramId string representation of the diagram's unique id
@@ -222,9 +218,6 @@ public class GatewayRpcDispatcher   {
 	 */
 	public String getExplanation(ProjectResourceId diagramId,String blockId) {
 		return requestHandler.getExplanation(diagramId,blockId);
-	}
-	public String getFamilyName(ProjectResourceId id) {
-		return requestHandler.getFamilyName(id);
 	}
 	/**
 	 * @return the hostname for the gateway

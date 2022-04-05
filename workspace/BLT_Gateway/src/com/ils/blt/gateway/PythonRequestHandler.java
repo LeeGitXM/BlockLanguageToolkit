@@ -1,5 +1,5 @@
 /**
-e *   (c) 2013-2021  ILS Automation. All rights reserved.
+e *   (c) 2013-2022  ILS Automation. All rights reserved.
  *  
  */
 package com.ils.blt.gateway;
@@ -11,9 +11,7 @@ import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.ProcessBlock;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.gateway.engine.BlockExecutionController;
-import com.ils.blt.gateway.engine.ProcessApplication;
 import com.ils.blt.gateway.engine.ProcessDiagram;
-import com.ils.blt.gateway.engine.ProcessFamily;
 import com.ils.blt.gateway.engine.ProcessNode;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
@@ -34,32 +32,7 @@ public class PythonRequestHandler   {
 	private static String alerterClassName = null;
 	
 	public PythonRequestHandler() {}
-	/**
-	 * Traverse the parent nodes until we find an Application. If there 
-	 * are none in our ancestry, return null.
-	 * 
-	 * @param nodeId idenLoggerExtifier for the node, a string version of a UUID
-	 * @return the ancestrial application
-	 */
-	public ProcessApplication getApplication(ProjectResourceId nodeId)  {
-		//log.infof("%s.getApplication, node = %s ",CLSS,nodeId);
-		ProcessApplication app = null;
-		try {
-			ProcessNode node = controller.getProcessNode(nodeId);
-			while( node!=null ) {
-				if( node instanceof ProcessApplication ) {
-					app = (ProcessApplication)node;
-					//log.infof("%s.getApplication, found application = %s ",CLSS,app.getName());
-					break;
-				}
-				node = controller.getParentNode(node);
-			}
-		}
-		catch(IllegalArgumentException iae) {
-			log.warnf("%s.getApplication: %s is an illegal UUID (%s)",CLSS,nodeId,iae.getMessage());
-		}
-		return app;
-	}
+
 	
 	
 	/**
@@ -185,31 +158,7 @@ public class PythonRequestHandler   {
 		}
 		return result;
 	}
-	/**
-	 * Traverse the parent nodes until we find a Family. If there 
-	 * are none in our ancestry, return null.
-	 * 
-	 * @param nodeId identifier for the node, a string version of a UUID
-	 * @return the ancestrial family
-	 */
-	public ProcessFamily getFamily(ProjectResourceId nodeId)  {
-		log.tracef("%s.getFamily, node = %s ",CLSS,nodeId.getResourcePath().getPath().toString());
-		ProcessFamily fam = null;
-		try {	
-			ProcessNode node = controller.getProcessNode(nodeId);
-			while( node!=null ) {
-				if( node instanceof ProcessFamily ) {
-					fam = (ProcessFamily)node;
-					break;
-				}
-				node = controller.getParentNode(node);
-			}
-		}
-		catch(IllegalArgumentException iae) {
-			log.warnf("%s.getFamily: %s is an illegal UUID (%s)",CLSS,nodeId,iae.getMessage());
-		}
-		return fam;
-	}
+
 
 	public boolean isAlerting(ProcessDiagram diagram) {
 		return getAlertStatus(diagram);

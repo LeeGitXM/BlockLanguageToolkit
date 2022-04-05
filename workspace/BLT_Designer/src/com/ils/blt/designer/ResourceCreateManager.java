@@ -7,9 +7,11 @@ import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnecti
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayInterface;
 import com.inductiveautomation.ignition.common.project.ChangeOperation;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceBuilder;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
+import com.inductiveautomation.ignition.designer.project.DesignableProject;
 import com.inductiveautomation.ignition.designer.project.ResourceNotFoundException;
 
 
@@ -25,13 +27,27 @@ public class ResourceCreateManager implements Runnable {
 	private static final String CLSS = "ResourceCreateManager";
 	private final LoggerEx log;
 	private static DesignerContext context = null;
+	private final ProjectResourceBuilder builder;
 	private final ProjectResource res;
 	private final String resName;
 	private final ThreadCounter counter = ThreadCounter.getInstance();
 
+	/**
+	 * Use this version of the constructor to create or modify a specified resource.
+	 * @param pr
+	 */
+	public ResourceCreateManager(ProjectResource pr) {
+		this.res = pr;
+		this.resName = null;
+		this.builder = null;
+		this.counter.incrementCount();
+		this.log = LogUtil.getLogger(getClass().getPackageName());
+	}
+	
 	public ResourceCreateManager(ProjectResource pr,String nam) {
 		this.res = pr;
 		this.resName = nam;
+		this.builder = null;
 		this.counter.incrementCount();
 		this.log = LogUtil.getLogger(getClass().getPackageName());
 	}
@@ -44,14 +60,20 @@ public class ResourceCreateManager implements Runnable {
 		context = ctx;
 	}
 	/**
-	 *  Now save the resource, as it is.
+	 *  Create or modify the resource, depending on what is supplied.
 	 */
 	@Override
 	public void run() {
 		if( res!=null ) {
 			try {
-				context.getProject().createResource(res);
-				context.getProject().renameResource(res.getResourcePath(),resName);
+				DesignableProject project = context.getProject();
+				if( builder==null) {
+					project.createOrModify(res);
+				}
+				else {
+					context.getProject().createResource(res);
+					context.getProject().renameResource(res.getResourcePath(),resName);
+				}
 				GatewayInterface gw = GatewayConnectionManager.getInstance().getGatewayInterface();
 				ChangeOperation.ModifyResourceOperation co = ChangeOperation.ModifyResourceOperation.newModifyOp(res,res.getResourceSignature());
 				List<ChangeOperation> ops = new ArrayList<>();

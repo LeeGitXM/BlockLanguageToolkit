@@ -12,7 +12,6 @@ import com.inductiveautomation.ignition.common.project.resource.ResourceType;
  */
 public class SerializableFolder extends SerializableNode {
 	private SerializableDiagram[] diagrams;
-	private SerializableFamily[] families;
 	private SerializableFolder[] folders;
 
 
@@ -30,12 +29,7 @@ public class SerializableFolder extends SerializableNode {
 	    System.arraycopy(diagrams, 0, extended, 0, diagrams.length);
 	    diagrams = extended;
 	}
-	public void addFamily(SerializableFamily sfam) {
-		SerializableFamily[] extended = new SerializableFamily[families.length+1];
-	    extended[families.length] = sfam;
-	    System.arraycopy(families, 0, extended, 0, families.length);
-	    families = extended;
-	}
+
 	public void addFolder(SerializableFolder sfold) {
 		SerializableFolder[] extended = new SerializableFolder[folders.length+1];
 	    extended[folders.length] = sfold;
@@ -44,10 +38,8 @@ public class SerializableFolder extends SerializableNode {
 	}
 	
 	public SerializableDiagram[] getDiagrams() { return diagrams; }
-	public SerializableFamily[] getFamilies() { return families; }
 	public SerializableFolder[] getFolders() {return folders;}
 	public void setDiagrams(SerializableDiagram[] list) { diagrams=list; }
-	public void setFamilies(SerializableFamily[] list) { families=list; }
 	public void setFolders(SerializableFolder[] folders) {this.folders = folders;}
 
 }

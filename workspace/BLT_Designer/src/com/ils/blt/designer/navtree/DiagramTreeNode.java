@@ -66,10 +66,10 @@ import com.inductiveautomation.ignition.designer.navtree.model.AbstractNavTreeNo
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceNavTreeNode;
 
 /**
- * A DiagramNode appears as leaf node in the Diagnostics NavTree hierarchy.
+ * A DiagramNode appears as leaf node in the BLT NavTree hierarchy.
  * It serves as a Nav-tree standin for a DiagramWorkspace. A DiagramNode
  * may have children - EncapsulatedDiagramNodes - which are standins for
- * sub-workspaces of EncapsulationBlocks. 
+ * sub-workspaces of EncapsulationBlocks. --- not implemented
  * 
  * The frame is responsible for rendering the diagram based on the model resource.
  * The model can exist without the frame, but not vice-versa.
@@ -184,36 +184,6 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
         menu.add(resetAction);
 	}
 
-	
-	
-	// Return application node for the current node.
-	// If the current node is a diagram, then walk up the project until u find an application.
-	// Remember that Symbolic Ai diagrams can exist outside the scope of the App / Family structure, but they better NOT use a Final Diagnosis.
-	// PH 06/30/2021
-	public GeneralPurposeTreeNode getApplicationTreeNode() {
-		GeneralPurposeTreeNode appNode = null;
-
-		AbstractNavTreeNode parentNode = getParent();
-		while( parentNode!=null ) {
-			if( parentNode instanceof GeneralPurposeTreeNode ) {
-				GeneralPurposeTreeNode node = (GeneralPurposeTreeNode)parentNode;
-				if( node.getProjectResource()==null ) {
-					;  // Folder node
-				}
-				else if( node.getResourceId().getResourceType().equals(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
-					appNode = node;
-					break;
-				}
-			}
-			parentNode = parentNode.getParent();
-		}
-		return appNode;
-	}
-	
-	
-	
-	
-	
 
 	/**
 	 *  Called when the parent folder is deleted.
@@ -354,25 +324,19 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	}
 
 	// ----------------------- Project Resource Listener -------------------------------
-
 	/**
-	 * The updates that we are interested in are:
-	 *    1) Name changes to this resource
-	 * We can ignore deletions because we delete the model resource
-	 * by deleting the panel resource.
+	 * This creates the actual resource when a new diagram node is created
 	 */
 	@Override
 	public void resourcesCreated(String projectName,List<ChangeOperation.CreateResourceOperation> ops) {
 		for(ChangeOperation.CreateResourceOperation op:ops ) {
 			ProjectResourceId id = op.getResourceId();
-			log.debugf("%s.resourcesCreated.%s: %s(%s)",CLSS,op,getName(),id.getProjectName(),id.getResourcePath().getPath().toString());
-			executionEngine.executeOnce(new ResourceCreateManager(op.getResource(),id.getResourcePath().getName()));
+			log.infof("%s.resourcesCreated.%s: %s(%s)",CLSS,op,getName(),id.getProjectName(),id.getResourcePath().getPath().toString());
+			executionEngine.executeOnce(new ResourceCreateManager(op.getResource()));
 		}
 	}
 	/**
-	 * The updates that we are interested in are:
-	 *    1) Name changes to this resource
-	 * We can ignore deletions because we delete the model resource
+	 * We can ignore deletions because we delete the resource model
 	 * by deleting the panel resource.
 	 */
 	@Override
@@ -388,7 +352,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	public void resourcesModified(String projectName,List<ChangeOperation.ModifyResourceOperation> ops) {
 		for(ChangeOperation.ModifyResourceOperation op:ops ) {
 			if( op.getResourceId().equals(resourceId) ) {
-				log.debugf("%s.resourcesModified.%s: %s(%s)",CLSS,op,getName(),resourceId.getProjectName(),resourceId.getResourcePath().getPath().toString());
+				log.infof("%s.resourcesModified.%s: %s(%s)",CLSS,op,getName(),resourceId.getProjectName(),resourceId.getResourcePath().getPath().toString());
 				ProjectResource res = op.getResource();
 				if( res.getResourceName()==null || !res.getResourceName().equals(getName()) ) {
 					alterName(res.getResourceName());
@@ -430,7 +394,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 				   
 		}
 	}
-
+ 
 	// From the root node, recursively log the contents of the tree
 	private class DebugDiagramAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
@@ -555,7 +519,6 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	    		AbstractNavTreeNode p = node.getParent();
 	    			if( p instanceof GeneralPurposeTreeNode )  {
 	    				GeneralPurposeTreeNode parentNode = (GeneralPurposeTreeNode)p;
-	    				parentNode.recreate();
 	    				parentNode.expand();
 	    			}
 	    		}
@@ -615,16 +578,12 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 			ProjectResource res = option.get();
 			BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resourceId.getResourcePath());
 			ProjectResourceId viewId = null;
-
-			// We change the state in the view and nav tree, but not the gateway (until a save).
-			// Inform the navtree of the state and let listeners update the UI
-			statusManager.setResourceState(resourceId,state);
-
 			if( tab!=null ) {
 				log.infof("%s.setDiagramState: %s now %s (open)",CLSS, tab.getName(),state.name());
 				ProcessDiagramView view = (ProcessDiagramView)(tab.getModel());
 				view.setState(state);		// Simply sets the view state
 				tab.setBackground(view.getBackgroundColorForState());
+				viewId = view.getResourceId();
 			}
 			// Otherwise we need to de-serialize and get the path
 			else {
@@ -632,8 +591,11 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 				SerializableDiagram sd = null;
 				ObjectMapper mapper = new ObjectMapper();
 				sd = mapper.readValue(bytes,SerializableDiagram.class);
+				viewId = requestHandler.createResourceId(res.getProjectName(), sd.getResourcePath().getPath().toString(), sd.getResourceType().getTypeId());
 			}
 			// Inform the gateway of the state and let listeners update the UI
+			ApplicationRequestHandler arh = new ApplicationRequestHandler();
+			arh.setDiagramState(viewId, state.name());
 			statusManager.setResourceState(resourceId,state);
 			setDirty(false);
 			setIcon(getIcon());
@@ -736,7 +698,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		try {
 			DiagramState ds = DiagramState.valueOf(state);
 			statusManager.setResourceState(resourceId, ds);
-			// Repaint of both NavTree and workspace
+			// Force repaints of both NavTree and workspace
 			refresh();
 			BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resourceId.getResourcePath());
 			if( tab!=null ) {

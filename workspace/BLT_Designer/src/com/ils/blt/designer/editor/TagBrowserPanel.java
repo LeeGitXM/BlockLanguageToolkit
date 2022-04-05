@@ -1,10 +1,11 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved.
+ *   (c) 2014-2022  ILS Automation. All rights reserved.
  */
 package com.ils.blt.designer.editor;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -12,7 +13,6 @@ import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTree;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
@@ -20,7 +20,6 @@ import com.ils.blt.common.BusinessRules;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
 import com.inductiveautomation.ignition.client.tags.tree.TagRenderer;
-import com.inductiveautomation.ignition.common.sqltags.model.TagTree;
 import com.inductiveautomation.ignition.common.tags.model.TagPath;
 import com.inductiveautomation.ignition.common.tags.paths.parser.TagPathParser;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
@@ -35,6 +34,7 @@ import com.inductiveautomation.ignition.designer.tags.tree.node.TagTreeNode;
 public class TagBrowserPanel extends BasicEditPanel {
 	private static final String CLSS = "TagBrowserPanel";
 	private static final long serialVersionUID = 1L;
+	private static Dimension NAV_BUTTON_SIZE = new Dimension(60,40);
 	private final DesignerContext context;
 	private static String selectedPath = "";
 	private BlockProperty property = null;
@@ -70,7 +70,7 @@ public class TagBrowserPanel extends BasicEditPanel {
 		}
 		
 		JButton okButton = new JButton("OK");
-		okButton.setPreferredSize(ApplicationPropertyEditor.NAV_BUTTON_SIZE);
+		okButton.setPreferredSize(NAV_BUTTON_SIZE);
 		buttonPanel.add(okButton);
 		okButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -116,7 +116,7 @@ public class TagBrowserPanel extends BasicEditPanel {
 		});
 		
 		JButton cancelButton = new JButton("Cancel");
-		cancelButton.setPreferredSize(ApplicationPropertyEditor.NAV_BUTTON_SIZE);
+		cancelButton.setPreferredSize(NAV_BUTTON_SIZE);
 		buttonPanel.add(cancelButton);
 		cancelButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {

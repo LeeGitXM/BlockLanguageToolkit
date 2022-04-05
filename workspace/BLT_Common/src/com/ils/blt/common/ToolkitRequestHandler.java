@@ -63,13 +63,6 @@ public interface ToolkitRequestHandler  {
 	 * @return true if the referenced diagram exists in the gateway
 	 */
 	public boolean diagramExists(ProjectResourceId diagramId) ;
-
-	/**
-	 * @param resourceId string representation of the application's unique id
-	 * @return the name of the application that is equal to or
-	 *         superior to the node with the specified UUID
-	 */
-	public String getApplicationName(ProjectResourceId resourceId);
 	
 	/**
 	 * Obtain a list of BlockProperty objects for the specified block. 
@@ -143,12 +136,6 @@ public interface ToolkitRequestHandler  {
 	 */
 	public DiagramState getDiagramState(ProjectResourceId id) ;
 	
-	/**
-	 * @param uuid identifier of any node as a string
-	 * @return the name of the family that is equal to or
-	 *         superior to the node with the specified UUID
-	 */
-	public String getFamilyName(ProjectResourceId uuid);
 	/**
 	 * @param diagramId string representation of the diagram's unique id
 	 * @param blockId identifier of the block within the diagram

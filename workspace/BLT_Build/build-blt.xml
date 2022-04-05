@@ -73,7 +73,7 @@
 		<fileset dir="${basedir}/BLT_Build/bin/${BLTModule.name}_Client/dist/" includes="*.jar" />
 	</path>
 
-	<!-- This target will build the toolkit module and deploy it to the local Ignition gateway -->
+	<!-- This target will build the toolkit and migration modules and deploy them to the local Ignition gateway -->
 	<target name="BuildAndInstallModule" depends="clean, deploy" />
 	
 	<!-- Cleans all previously built files (leaves doc) -->
@@ -87,6 +87,7 @@
 		<delete dir="${basedir}/BLT_Common/bin"/>
 		<delete dir="${basedir}/BLT_Designer/bin"/>
 		<delete dir="${basedir}/BLT_Gateway/bin"/>
+		<delete dir="${basedir}/BLT_Migrator/bin"/>
 		<delete file="${ignition.py.lib}/../../lib/core/common/${blt.common.jar.name}"/>
 		<delete file="${ignition.py.lib}/../../lib/core/gateway/${blt.gateway.jar.name}"/>
 		<delete dir="~/.ignition/cache/platform/${block.jar.name}"/>
@@ -118,7 +119,7 @@
 	</target>
 	
 	<!-- Compile the Common library -->
-	<target name="common.build" description="Compile the source">
+	<target name="build.common" description="Compile the source">
 		<!-- <echo  message="Using Java version ${ant.java.version}."/> -->
 		<mkdir dir="${common.bin.dir}/images"/>
 		<javac destdir="${common.bin.dir}" debug="true" includeantruntime="false">
@@ -135,7 +136,7 @@
 	</target>
 	
 	<!-- Compile the Block Definition library -->
-	<target name="block.build" description="Compile the source">
+	<target name="build.block" description="Compile the source">
 		<mkdir dir="${block.bin.dir}"/>
 		<javac destdir="${block.bin.dir}" debug="true" includeantruntime="false">
 			<src path="${block.src.dir}"/>
@@ -146,8 +147,8 @@
 		<jar destfile="${basedir}/BLT_Build/temp_modl/${block.jar.name}" includes="**/*.class,**/*.png" basedir="${block.bin.dir}"/>
 	</target>
 
-	<!-- Builds the toolkit module jars and the final .modl file -->
-	<target name="build" depends="common.build,common.jar" description="Compile the source">
+	<!-- ======== Builds the toolkit module jars and the final .modl file ======== -->
+	<target name="build.blt" depends="build.common,common.jar" description="Compile the source">
 		<echo message="${BLTModule.name} ${BLTModule.version}" />	
 		<delete dir="${basedir}/BLT_Build/temp_modl" />	
 		
@@ -164,7 +165,7 @@
 			<param name="module.build.classpath" value="${BLTModule.name}_Common.classpath"/>
 		</antcall>
 		
-		<antcall target="block.build">
+		<antcall target="build.block">
 		</antcall>
 		
 		<antcall target="block.jar">
@@ -251,6 +252,7 @@
 			<param name="moduleout"  value="${basedir}/BLT_Build/modules/${BLTModule.name}-module-signed.modl"/>
 		</antcall>
 	</target>
+	
 	<!-- Install jar files that are necessary for Python scripts -->
 	<target name="python.jars" >
 		<echo message="Copying jar files from ${basedir}/BLT_Build/temp_modl" />
@@ -284,7 +286,7 @@
 	</target>
 
 	<!-- Installs BLT module in local Ignition gateway. Note that the gateway must be running for this to succeed. -->
-	<target name="deploy" depends="build,python.jars" >
+	<target name="deploy" depends="build.blt,python.jars" >
 		<echo message="Installing ${BLTModule.name} on Ignition Gateway." />
 		<postmodule posturl="${local.gateway.url}" modulefile="${basedir}/BLT_Build/modules/${BLTModule.name}-module-signed.modl" />
 	</target>	
