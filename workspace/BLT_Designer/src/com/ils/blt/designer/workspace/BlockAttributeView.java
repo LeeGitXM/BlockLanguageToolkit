@@ -114,12 +114,16 @@ public class BlockAttributeView extends ProcessBlockView implements BlockListene
 	 */
 	private void initialize() {
 		BlockProperty h = getProperty(BlockConstants.ATTRIBUTE_PROPERTY_HEIGHT);
-		String key = NotificationKey.keyForProperty(getBlockId(), h.getName());
-		notificationHandler.addNotificationChangeListener(key,CLSS,this);
+		if( h!=null ) {
+			String key = NotificationKey.keyForProperty(getBlockId(), h.getName());
+			notificationHandler.addNotificationChangeListener(key,CLSS,this);
+		}
 		setPreferredHeight(fncs.coerceToInteger(h.getValue().toString()));
 		BlockProperty w = getProperty(BlockConstants.ATTRIBUTE_PROPERTY_WIDTH);
-		key = NotificationKey.keyForProperty(getBlockId(), w.getName());
-		notificationHandler.addNotificationChangeListener(key,CLSS,this);;
+		if( w!=null ) {
+			String key = NotificationKey.keyForProperty(getBlockId(), w.getName());
+			notificationHandler.addNotificationChangeListener(key,CLSS,this);
+		}
 		setPreferredWidth(fncs.coerceToInteger(w.getValue().toString()));
 	}
 	public String getBlockId() { return getProperty(BlockConstants.ATTRIBUTE_PROPERTY_BLOCK_ID).getValue().toString(); }
