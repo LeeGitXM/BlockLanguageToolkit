@@ -1,5 +1,5 @@
 /**
- *   (c) 2012  ILS Automation. All rights reserved.
+ *   (c) 2012-2022  ILS Automation. All rights reserved.
  *  
  */
 package com.ils.blt.designer.component.beaninfos;
@@ -73,7 +73,6 @@ public class BlockComponentInitializer implements ComponentPopupInitializer<Pref
 
 		// Assume that we are operating on only a single object
 		final PrefuseViewerComponent block = (PrefuseViewerComponent)components.get(0);
-		final JFrame frame = (JFrame)SwingUtilities.getAncestorOfClass( JFrame.class,block);
 		// They make it really hard to track down the "IgnitionDesigner" object .. but here's how - Note EREIAM JH 
 		IgnitionDesigner dsnr = null;
 		try {

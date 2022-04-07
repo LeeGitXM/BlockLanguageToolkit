@@ -1,10 +1,10 @@
 package com.ils.blt.common.serializable;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagramState;
 import com.inductiveautomation.ignition.common.StringPath;
-import com.inductiveautomation.ignition.common.project.resource.ResourcePath;
-import com.inductiveautomation.ignition.common.project.resource.ResourceType;
+import com.inductiveautomation.ignition.common.project.resource.ResourcePath;;
 
 /**
  * A SerialiableNode is the bass class for a collection of project
@@ -22,10 +22,10 @@ public abstract class SerializableNode {
 		name = "UNSET";
 	}
 	
-	public abstract ResourceType getResourceType();
+	public abstract boolean isFolder();
 	
 	public ResourcePath getResourcePath() {
-		return new ResourcePath(getResourceType(),path);
+		return new ResourcePath(BLTProperties.DIAGRAM_RESOURCE_TYPE,path);
 	}
 	public String getName() { return name; }
 	public StringPath getParentPath() { return this.path.getParentPath(); }

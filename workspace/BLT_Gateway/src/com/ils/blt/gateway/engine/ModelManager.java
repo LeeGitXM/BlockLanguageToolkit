@@ -82,8 +82,7 @@ public class ModelManager implements ProjectListener  {
 		nodesByResourceId = new HashMap<>();
 		orphansByResourcePath = new HashMap<>();
 		nodesByResourcePath = new HashMap<>();
-		ResourceType rtype = BLTProperties.FOLDER_RESOURCE_TYPE;
-		ProjectResourceId resourceId = new ProjectResourceId(BLTProperties.UNDEFINED,rtype,BLTProperties.ROOT_FOLDER_NAME);
+		ProjectResourceId resourceId = new ProjectResourceId(BLTProperties.UNDEFINED,BLTProperties.DIAGRAM_RESOURCE_TYPE,BLTProperties.ROOT_FOLDER_NAME);
 		root = new RootNode(context,resourceId);
 		nodesByResourcePath.put(root.getResourceId().getResourcePath(), root);
 	}
@@ -114,7 +113,7 @@ public class ModelManager implements ProjectListener  {
 		if( resourceId.getResourceType().getModuleId()!=null && resourceId.getResourceType().getModuleId().equalsIgnoreCase(BLTProperties.MODULE_ID)) {
 			ResourceType type = res.getResourceType();
 			
-			if( type.equals(BLTProperties.FOLDER_RESOURCE_TYPE) ) {
+			if( res.isFolder() ) {
 				if(DEBUG) log.infof("%s.analyzeResource: adding a folder = %s %s", CLSS, res.getResourceName(), (startup?"(STARTUP)":""));
 				addModifyFolderResource(res);
 			}
@@ -225,7 +224,7 @@ public class ModelManager implements ProjectListener  {
 					descriptor.setName(node.getName());
 					descriptor.setProjectName(projectName);
 					descriptor.setPath(node.getPath());
-					descriptor.setType(BLTProperties.DIAGRAM_RESOURCE_TYPE.getTypeId());
+					descriptor.setIsFolder(false);
 					result.add(descriptor);
 				}
 			}
@@ -253,7 +252,7 @@ public class ModelManager implements ProjectListener  {
 					descriptor.setName(node.getName());
 					descriptor.setProjectName(projectName);
 					descriptor.setPath(node.getPath());
-					descriptor.setType(BLTProperties.DIAGRAM_RESOURCE_TYPE.getTypeId());
+					descriptor.setIsFolder(false);
 					result.add(descriptor);
 				}
 			}
@@ -439,8 +438,8 @@ public class ModelManager implements ProjectListener  {
 				SerializableResourceDescriptor sd = new SerializableResourceDescriptor();
 				sd.setName(node.getName());
 				sd.setProjectName(projectName);
-				if( node instanceof ProcessDiagram )sd.setType(BLTProperties.DIAGRAM_RESOURCE_TYPE.getTypeId());
-				else sd.setType(BLTProperties.FOLDER_RESOURCE_TYPE.getTypeId());
+				if( node instanceof ProcessDiagram )sd.setIsFolder(false);
+				else sd.setIsFolder(true);
 				result.add(sd);
 			}
 		}
@@ -692,13 +691,18 @@ public class ModelManager implements ProjectListener  {
 	 */
 	private void addModifyFolderResource(ProjectResource res) {
 		ProjectResourceId resId = res.getResourceId();
-		if(DEBUG) log.infof("%s.addFolderResource:  %s(%s)",CLSS,res.getResourceName(),resId.getResourcePath().getPath());
+		if(DEBUG) log.infof("%s.addModifyFolderResource:  %s(%s)",CLSS,res.getResourceName(),resId.getResourcePath().getPath());
 		ProcessNode node = nodesByResourcePath.get(resId.getResourcePath());
 		if( node==null ) {
-			node = new ProcessNode(res.getResourceName(),resId.getResourcePath().getParent(),resId);
-			// Add in the new Folder
-			nodesByResourceId.put(ResourceKey.keyForResource(node.getResourceId()),node);
-			addToHierarchy(node);
+			try {
+				node = new ProcessNode(res.getResourceName(),resId.getResourcePath().getParent(),resId);
+				// Add in the new Folder
+				nodesByResourceId.put(ResourceKey.keyForResource(node.getResourceId()),node);
+				addToHierarchy(node);
+			}
+			catch( IllegalStateException ise ) {
+				log.infof("%s.addModifyFolderResource: processed root node",CLSS);
+			}
 		}
 		else {
 			// The only attribute to update is the name
@@ -864,8 +868,7 @@ public class ModelManager implements ProjectListener  {
 	private boolean isBLTResource(String type) {
 		boolean isBLTType = false;
 		if( type!=null &&
-			(type.equalsIgnoreCase(BLTProperties.DIAGRAM_RESOURCE_TYPE.getTypeId()) ||
-				type.equalsIgnoreCase(BLTProperties.FOLDER_RESOURCE_TYPE.getTypeId())) ) {
+			type.equals(BLTProperties.DIAGRAM_RESOURCE_TYPE.getTypeId()) ) {
 				isBLTType = true;
 		}
 		return isBLTType;

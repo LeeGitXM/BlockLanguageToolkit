@@ -93,13 +93,13 @@ import com.inductiveautomation.ignition.designer.project.ResourceNotFoundExcepti
  * Leaf nodes are of type DiagramNode. 
  * Note that a FolderNode is an AbstractResourceNavTreeNode
  */
-public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInterface, ProjectResourceListener {
-	private static final String CLSS = "GeneralPurposeTreeNode";
+public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, ProjectResourceListener {
+	private static final String CLSS = "NavTreeFolder";
 	public static final String BLT_CUT_OPERATION = "BLTCUT";
 	public static final String BLT_COPY_OPERATION = "BLTCOPY";
 	private static final int OFFSET = 100;
 	private static final String PREFIX = BLTProperties.BUNDLE_PREFIX;  // Required for some defaults
-	private final static LoggerEx log = LogUtil.getLogger(GeneralPurposeTreeNode.class.getPackageName());
+	private final static LoggerEx log = LogUtil.getLogger(NavTreeFolder.class.getPackageName());
 	private boolean dirty = false;
 	private DiagramState state = DiagramState.ACTIVE;  // Used for Applications and Families
 	private final DeleteNodeAction deleteNodeAction;
@@ -118,54 +118,28 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	private final ImageIcon closedIcon;
 	private final ImageIcon diagramIcon;
 
-	/** 
-	 * Create a new folder node representing the root folder.
-	 * @param ctx the designer context
-	 */
-	public GeneralPurposeTreeNode(DesignerContext ctx) {
-		super(ctx, BLTProperties.FOLDER_RESOURCE_TYPE,ApplicationScope.DESIGNER);
-		this.setName(BLTProperties.ROOT_FOLDER_NAME);
-		this.requestHandler = new ApplicationRequestHandler();
-		this.children = null;
-		this.childrenLoaded = false;
-		this.parent = null;
-		deleteNodeAction = null;
-		copyBranchAction = new CopyAction(this);
-		pasteBranchAction = new PasteAction(this);
-		folderCreateAction = new FolderCreateAction(this);
-		workspace = ((BLTDesignerHook)ctx.getModule(BLTProperties.MODULE_ID)).getWorkspace();
-		renameHandler = new SerializableNodeRenameHandler();
-		statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
-		setText(BundleUtil.get().getString(PREFIX+".RootFolderName"));
-		alertBadge =iconFromPath("Block/icons/badges/bell.png");
-		if( context.getProject().isEnabled() ) {
-			closedIcon = IconUtil.getIcon("folder_closed");
-		}
-		else {
-			closedIcon = iconFromPath("Block/icons/navtree/disabled_folder.png");  // Project is disabled
-		}   
-		diagramIcon = iconFromPath("Block/icons/navtree/diagram.png");  
-		setIcon(closedIcon);
-		openIcon = IconUtil.getIcon("folder");
-		setDirty(true);
-	}
 	/**
-	 * This version of the constructor is used for all except the root. Create
-	 * either a simple folder, or a diagram holder.
-	 * This all depends on the resource type.
+	 * A NavTreeFolder is a NavTreeNode that contains either diagrams or other folders.
+	 * The root node is indicated by a resource that has no path and is named with the
+	 * module name.
 	 * 
 	 * @param context the designer context
 	 * @param resource the project resource
 	 * @param self UUID of the node itself
 	 */
-	public GeneralPurposeTreeNode(DesignerContext context,ProjectResource resource) {
+	public NavTreeFolder(DesignerContext context,ProjectResource resource) {
 		super(context,resource,ApplicationScope.DESIGNER);
 		this.requestHandler = new ApplicationRequestHandler();
 		this.renameHandler = new SerializableNodeRenameHandler();
 		this.children = null;
 		this.childrenLoaded = false;
 		this.parent = null;
-		setName(resource.getResourceName());      // Also sets text for tree
+		if( isRoot() ) {
+			setName(BLTProperties.ROOT_FOLDER_NAME);
+		}
+		else {
+			setName(resource.getResourceName());      // Also sets text for tree
+		}
 		deleteNodeAction = new DeleteNodeAction(this);
 		copyBranchAction = new CopyAction(this);
 		pasteBranchAction = new PasteAction(this);
@@ -178,7 +152,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		// Simple folder
 		closedIcon = IconUtil.getIcon("folder_closed");
 		openIcon = IconUtil.getIcon("folder"); 
-		diagramIcon = iconFromPath("Block/icons/navtree/diagram.png"); 
+		diagramIcon = iconFromPath("Block/icons/navtree/diagram.png");
 		setIcon(closedIcon);
 		setDirty(true);
 	}
@@ -186,31 +160,13 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	// For debugging
 	@Override 
 	public void checkChildren() {
-		if( !isRootFolder() ) {
-			log.infof("%s.checkChildren: %s = %d",CLSS,getName(),(children==null?0:this.children.size()));
-		}
+		log.infof("%s.checkChildren: %s = %d",CLSS,getName(),(children==null?0:this.children.size()));
 		super.checkChildren();
 	}
-	@Override 
-	public boolean isLeaf() {
-		if( !isRootFolder() ) {
-			log.infof("%s.isLeaf: %s = %s ",CLSS,getName(),(this.children==null?"true":"false"));
-		}
-		return super.isLeaf();
+
+	private boolean isRoot() {
+		return getResourcePath().getFolderPath().isEmpty();
 	}
-	
-	protected AbstractResourceNavTreeNode nearestNonFolderNode(GeneralPurposeTreeNode node) {
-		AbstractResourceNavTreeNode ret = node;
-		while (ret != null && ret.getProjectResource() != null && ret.getResourceId().getResourceType().equals(BLTProperties.FOLDER_RESOURCE_TYPE)) { // generic folder, go up
-			if (ret != null && ret.getParent() instanceof AbstractResourceNavTreeNode) {
-				ret = (AbstractResourceNavTreeNode)ret.getParent();
-			} else {
-				ret = null;
-			}
-		}
-		return ret;
-	}
-		
 	
 	@Override
 	public boolean confirmDelete(List<? extends AbstractNavTreeNode> selections) {
@@ -337,7 +293,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	// If an application or family is selected, then display editing panel in the PropertyEditor
 	@Override
 	public synchronized void onSelected() {
-		UndoManager.getInstance().setSelectedContext(GeneralPurposeTreeNode.class);
+		UndoManager.getInstance().setSelectedContext(NavTreeFolder.class);
 		Optional<ProjectResource> optional = context.getProject().getResource(resourceId);
 		ProjectResource resource = null;
 		try {
@@ -381,26 +337,15 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		log.infof("%s.loadChildren: %s ..................",CLSS,getName());
 		List<AbstractNavTreeNode> kids = new ArrayList<>();
 		List<ProjectResource> resources = context.getProject().getResources();
-		if( isRootFolder()) {
-			// Search for children of root
-			for(ProjectResource pr:resources) {
-				if(isRootChild(pr)) {
-					log.infof("%s.loadChildren: root child = %s [%s] (%s)",CLSS,pr.getResourcePath().getPath().toString(),
-							pr.getResourcePath().getParentPath(),pr.getResourcePath().getResourceType().toString());
-					kids.add(createChildNode(pr));
-				}
+		// Search for children of this node
+		for(ProjectResource pr:resources) {
+			log.infof("%s.loadChildren: resource %s vs %s",CLSS,this.resourceId.getResourcePath().getPath().toString(),
+					pr.getResourcePath().getParentPath());
+			if(isChildNode(pr)) {
+				kids.add(createChildNode(pr));
 			}
 		}
-		else {
-			// Search for children of this node
-			for(ProjectResource pr:resources) {
-				log.infof("%s.loadChildren: resource %s vs %s",CLSS,this.resourceId.getResourcePath().getPath().toString(),
-						pr.getResourcePath().getParentPath());
-				if(isChildNode(pr)) {
-					kids.add(createChildNode(pr));
-				}
-			}
-		}
+
 		return kids;
 	}
 	/**
@@ -416,19 +361,14 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		if( !context.getProject().isEnabled()) return null;
 		AbstractResourceNavTreeNode node = statusManager.findNode(res.getResourceId());
 		if( node==null ) {
-			if (    BLTProperties.FOLDER_RESOURCE_TYPE.equals(rtype) )       {
-				node = new GeneralPurposeTreeNode(context, res);
-				log.tracef("%s.createChildNode: (%s) %s->%s",CLSS,rtype,this.getName(),node.getName());
+			if (  res.isFolder() )       {
+				node = new NavTreeFolder(context, res);
+				log.infof("%s.createChildNode: (%s) %s->%s",CLSS,rtype,this.getName(),node.getName());
 			}
-			else if (BLTProperties.DIAGRAM_RESOURCE_TYPE.equals(rtype) ) {
+			else  {
 				node = new DiagramTreeNode(context,res,workspace);
 				log.tracef("%s.createChildDiagram: %s->%s",CLSS,this.getName(),node.getName());
 			} 
-			else {
-				String msg = String.format("%s: Attempted to create a child of type %s (ignored)",CLSS,rtype);
-				log.warn(msg);
-				throw new IllegalArgumentException(msg);
-			}
 			statusManager.createResourceStatus(node,resourceId, res.getResourceId());
 		}
 		else {
@@ -452,7 +392,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			log.errorf("%s.initPopupMenu: ERROR: Diagram (%d) has no parent",CLSS,hashCode());
 		}
 		context.getProject().addProjectResourceListener(this);
-		if (isRootFolder()) { 
+		if (isRoot()) { 
 			if( context.getProject().isEnabled()) {
 				ClearAction clearAction = new ClearAction();
 				DebugAction debugAction = new DebugAction();
@@ -473,14 +413,11 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				menu.add(debugAction);
 			}
 		}
-		else if( getProjectResource()==null ) {
-			log.warnf("%s.initPopupMenu: ERROR: node %s(%d) has no project resource",CLSS,this.getName(),resourceId);
-		}
-		else if(getResourcePath().getResourceType().equals(BLTProperties.FOLDER_RESOURCE_TYPE)) {
+		else if( getProjectResource()!=null ) {
 			
-			SetApplicationStateAction ssaActive = new SetApplicationStateAction(this,DiagramState.ACTIVE);
-			SetApplicationStateAction ssaDisable = new SetApplicationStateAction(this,DiagramState.DISABLED);
-			SetApplicationStateAction ssaIsolated = new SetApplicationStateAction(this,DiagramState.ISOLATED);
+			SetFolderStateAction ssaActive = new SetFolderStateAction(this,DiagramState.ACTIVE);
+			SetFolderStateAction ssaDisable = new SetFolderStateAction(this,DiagramState.DISABLED);
+			SetFolderStateAction ssaIsolated = new SetFolderStateAction(this,DiagramState.ISOLATED);
 			JMenu setStateMenu = new JMenu(BundleUtil.get().getString(PREFIX+".SetApplicationState"));
 			setStateMenu.add(ssaActive);
 			setStateMenu.add(ssaDisable);
@@ -513,7 +450,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			
 			addEditActions(menu);	
 		}
-		else {   
+		else { 
+			log.warnf("%s.initPopupMenu: ERROR: node %s(%d) has no project resource",CLSS,this.getName(),resourceId);
 			menu.addSeparator();
 			addEditActions(menu);
 		}
@@ -553,9 +491,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		if( img!=null ) result = new ImageIcon(img);
 		return result;
 	}
-	private boolean isRootFolder() {
-		return getName().equals(BLTProperties.ROOT_FOLDER_NAME);
-	}
+
 
 	// This nodes of the tree is associated with a diagram. It's only other possible children
 	// are other diagrams which are children of encapsulation blocks. At present these are not handled
@@ -612,17 +548,14 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			while(walker.hasMoreElements()) {
 				AbstractResourceNavTreeNode child = (AbstractResourceNavTreeNode)walker.nextElement();
 				optional = child.getProjectResource();
-				ProjectResourceId rid = child.getResourceId();
-				if( rid.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
+				ProjectResource pr = optional.get();
+				if( !pr.isFolder() ) {
 					SerializableDiagram sd = recursivelyDeserializeDiagram(child);
 					if( sd!=null ) sfold.addDiagram(sd);
 				}
-				else if(rid.getResourceType().equals(BLTProperties.FOLDER_RESOURCE_TYPE)) {
+				else {
 					SerializableFolder sf = recursivelyDeserializeFolder(child);
 					if( sf!=null ) sfold.addFolder(sf);
-				}
-				else {
-					log.infof("%s.recursivelyDeserializeFolder: %s unexpected child resource type (%s)",CLSS,res.getResourceName(),rid.getResourceType().getTypeId());
 				}
 			}
 		}
@@ -657,9 +590,9 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	private class FolderExportAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
 		private final static String POPUP_TITLE = "Export Application Tree";
-		private final GeneralPurposeTreeNode node;
+		private final NavTreeFolder node;
 		private final Component anchor;
-		public FolderExportAction(Component c,GeneralPurposeTreeNode gptn)  {
+		public FolderExportAction(Component c,NavTreeFolder gptn)  {
 			super(PREFIX+".FolderExport",IconUtil.getIcon("export1")); 
 			node=gptn;
 			anchor=c;
@@ -778,10 +711,10 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 										SerializableFolder sa = mapper.readValue(new String(bytes), SerializableFolder.class);
 										if( sa!=null ) {
 											renameHandler.convertPaths(sa,getResourceId().getResourcePath().getPath());
-											log.infof("%s.s:FolderImportAction. create %s(%s),(%d bytes)",CLSS,sa.getName(),BLTProperties.FOLDER_RESOURCE_TYPE.toString(),bytes.length);
+											log.infof("%s.s:FolderImportAction. create %s(%s),(%d bytes)",CLSS,sa.getName(),BLTProperties.DIAGRAM_RESOURCE_TYPE.toString(),bytes.length);
 											String json = mapper.writeValueAsString(sa);
 											if(log.isTraceEnabled() ) log.trace(json);
-											ProjectResourceId resid = requestHandler.createResourceId(getResourceId().getProjectName(), sa.getPath().toString(), BLTProperties.FOLDER_RESOURCE_TYPE);
+											ProjectResourceId resid = requestHandler.createResourceId(getResourceId().getProjectName(), sa.getPath().toString(), BLTProperties.DIAGRAM_RESOURCE_TYPE);
 											ProjectResourceBuilder builder = ProjectResource.newBuilder();
 											builder.putData(json.getBytes());
 											builder.setResourceId(resid);
@@ -890,7 +823,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			String json = "";
 			ProjectResourceId resid = null;
 
-			if( res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
+			if( !res.isFolder()) {
 
 				SerializableDiagram sd = mapper.readValue(new String(bytes), SerializableDiagram.class);
 				if( sd!=null ) {
@@ -914,22 +847,19 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 					return false;
 				}
 			}
-			else if( res.getResourceType().equals(BLTProperties.FOLDER_RESOURCE_TYPE)) {
+			else  {
 				SerializableFolder sf = mapper.readValue(new String(bytes), SerializableFolder.class);
 				if( sf!=null ) {
 					renameHandler.convertPaths(sf,res.getResourcePath().getPath());;
 					json = mapper.writeValueAsString(sf);
-					resid = requestHandler.createResourceId(getResourceId().getProjectName(), sf.getPath().toString(), BLTProperties.FOLDER_RESOURCE_TYPE);
+					resid = requestHandler.createResourceId(getResourceId().getProjectName(), sf.getPath().toString(), BLTProperties.DIAGRAM_RESOURCE_TYPE);
 				}
 				else {
 					ErrorUtil.showWarning(String.format("Failed to deserialize child folder (%s)",res.getResourceName()),"Copy Folder");
 					return false;
 				}
 			}
-			else {
-				ErrorUtil.showWarning(String.format("Unexpected child resource type(%s)",res.getResourceType()),"Copy Node");
-				return false;
-			}
+
 			ProjectResourceBuilder builder = ProjectResource.newBuilder();
 			builder.putData(json.getBytes());
 			builder.setResourceId(resid);
@@ -991,11 +921,11 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	// paste the nodes from the clipboard into the tree at the selected location
 	private class PasteAction extends BaseAction  implements UndoManager.UndoAction{
 		private static final long serialVersionUID = 1L;
-		private final GeneralPurposeTreeNode parentNode;  // Bad naming, it isn't really a parent node, it's this one
+		private final NavTreeFolder parentNode;  // Bad naming, it isn't really a parent node, it's this one
 		private String bundleString;
 		private ProjectResource pasted = null;
 
-		public PasteAction(GeneralPurposeTreeNode pNode)  {
+		public PasteAction(NavTreeFolder pNode)  {
 			super(PREFIX+".PasteNode",IconUtil.getIcon("paste"));
 			this.bundleString = PREFIX+".PasteNode";
 			this.parentNode = pNode;
@@ -1075,7 +1005,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			ProjectResource res = optional.get();
 	        optional = parentNode.getProjectResource();
 	        ProjectResource dst = optional.get();
-	        String newName = nextFreeName((GeneralPurposeTreeNode)parentNode,res.getResourceName());
+	        String newName = nextFreeName((NavTreeFolder)parentNode,res.getResourceName());
 			try {
 				EventQueue.invokeLater(new Runnable() {
 					public void run() {
@@ -1086,9 +1016,9 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 
 							String json = "";
 							if( res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
-								AbstractResourceNavTreeNode node = nearestNonFolderNode(parentNode);
+								AbstractResourceNavTreeNode node = parentNode;
 								if( (node.getProjectResource() != null && 
-										parentNode.getResourcePath().getResourceType().equals(BLTProperties.FOLDER_RESOURCE_TYPE)  )) {
+										parentNode.getResourcePath().getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)  )) {
 									sd = mapper.readValue(new String(res.getData()), SerializableDiagram.class);
 									if( sd!=null ) {
 										ProcessDiagramView diagram = new ProcessDiagramView(res.getResourceId(),sd, context);
@@ -1150,7 +1080,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 
 							UndoManager.getInstance().add(PasteAction.this,AbstractNavTreeNode.class);
 							pasted = resource;
-							((GeneralPurposeTreeNode)parentNode).selectChild(new ResourcePath[] {resource.getResourcePath().getParent()} );
+							((NavTreeFolder)parentNode).selectChild(new ResourcePath[] {resource.getResourcePath().getParent()} );
 							
 						}
 						catch( IOException ioe) {
@@ -1214,15 +1144,15 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			List<AbstractResourceNavTreeNode>selected = new ArrayList<>();
 			selected.add(node);
 			if(confirmDelete(selected)) {
-				if( res.getResourceType().equals(BLTProperties.FOLDER_RESOURCE_TYPE) ) {
+				if( res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
 					bundleString = PREFIX+".FolderNoun";
 				}
 				deleter.acquireResourcesToDelete();
 				if( execute() ) {
-					UndoManager.getInstance().add(this,GeneralPurposeTreeNode.class);
+					UndoManager.getInstance().add(this,NavTreeFolder.class);
 					
-					if( p instanceof GeneralPurposeTreeNode )  {
-						GeneralPurposeTreeNode parentNode = (GeneralPurposeTreeNode)p;
+					if( p instanceof NavTreeFolder )  {
+						NavTreeFolder parentNode = (NavTreeFolder)p;
 						parentNode.recreate();
 						parentNode.expand();
 					}
@@ -1314,7 +1244,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			try {
 				String newName = BundleUtil.get().getString(PREFIX+".NewFolder.Default.Name");
 				if( newName==null) newName = "New Folder";  // Missing Resource
-				ProjectResourceId resid = requestHandler.createResourceId(getResourceId().getProjectName(), getResourceId().getFolderPath(), BLTProperties.FOLDER_RESOURCE_TYPE);
+				ProjectResourceId resid = requestHandler.createResourceId(getResourceId().getProjectName(), getResourceId().getFolderPath(), BLTProperties.DIAGRAM_RESOURCE_TYPE);
 				ProjectResourceBuilder builder = ProjectResource.newBuilder();
 				builder.putAttribute("name",newName);
 				builder.setApplicationScope(ApplicationScope.GATEWAY);
@@ -1323,8 +1253,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				builder.setVersion(0);
 				ProjectResource resource = builder.build();
 				new ResourceCreateManager(resource,newName).run();	
-				log.infof("%s.FolderCreateAction. create %s(%s,%s) at %s",CLSS,newName,BLTProperties.FOLDER_RESOURCE_TYPE.getModuleId(),
-						BLTProperties.FOLDER_RESOURCE_TYPE.getTypeId(),resid.getResourcePath().getPath().toString());
+				log.infof("%s.FolderCreateAction. create %s(%s,%s) at %s",CLSS,newName,BLTProperties.DIAGRAM_RESOURCE_TYPE.getModuleId(),
+						BLTProperties.DIAGRAM_RESOURCE_TYPE.getTypeId(),resid.getResourcePath().getPath().toString());
 				//recreate();
 				currentNode.selectChild(new ResourcePath[] {resid.getResourcePath()} );
 			} 
@@ -1433,12 +1363,12 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	 * the project resources. If there is a state change, we save the diagram to keep
 	 * project resource/gateway/designer all in sync.
 	 */
-	private class SetApplicationStateAction extends BaseAction {
+	private class SetFolderStateAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
-		private final GeneralPurposeTreeNode app;
+		private final NavTreeFolder app;
 		private final DiagramState treeState;
-		public SetApplicationStateAction(GeneralPurposeTreeNode applicationNode,DiagramState s)  {
-			super(PREFIX+".SetApplicationState."+s.name());
+		public SetFolderStateAction(NavTreeFolder applicationNode,DiagramState s)  {
+			super(PREFIX+".SetFolderState."+s.name());
 			this.app = applicationNode;
 			this.treeState = s;
 		}
@@ -1548,7 +1478,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 					}
 					bytes = mapper.writeValueAsBytes(dia);
 				}
-				else if( pr.getResourceType().equals(BLTProperties.FOLDER_RESOURCE_TYPE) ) {
+				else if( pr.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
 					;
 				}
 				ResourceUpdateManager rum = new ResourceUpdateManager(pr,bytes);
@@ -1640,8 +1570,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			if(rp.getParentPath()!=null && rp.getParentPath().isEmpty() ) {
 				ResourceType type = res.getResourceId().getResourceType();
 				if( type!=null && 
-					   (type.equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ||
-						type.equals(BLTProperties.FOLDER_RESOURCE_TYPE) )  ) {
+					type.equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)  ) {
 					result = true;
 				}
 			}

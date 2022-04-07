@@ -670,7 +670,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 	@Override
 	public SerializableResourceDescriptor toResourceDescriptor() {
 		SerializableResourceDescriptor descriptor = super.toResourceDescriptor();
-		descriptor.setType(BLTProperties.DIAGRAM_RESOURCE_TYPE.getTypeId());
+		descriptor.setIsFolder(false);
 		return descriptor;
 	}
 	/**

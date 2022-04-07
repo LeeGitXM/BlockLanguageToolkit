@@ -1262,6 +1262,10 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		else {
 			Optional<ProjectResource> option = context.getProject().getResource(resourceId);
 			ProjectResource res = option.get();
+			if( res==null ) {
+				log.warnf("%s.open - resource is null (%s)",CLSS,resourceId.getResourcePath().getFolderPath());
+				return;
+			}
 			String json = new String(res.getData());
 			if( DEBUG ) log.infof("%s: open - diagram = %s",CLSS,json);
 			SerializableDiagram sd = null;

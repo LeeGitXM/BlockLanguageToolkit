@@ -26,9 +26,7 @@ public class SerializableDiagram extends SerializableNode {
 		connections= new SerializableConnection[0];
 	}
 	
-	public ResourceType getResourceType() {
-		return BLTProperties.DIAGRAM_RESOURCE_TYPE;
-	}
+	public boolean isFolder() { return false; }
 	
 	// These are actually of class AttributeDisplay
 	public ProcessBlock[] getAttributeDisplays() { return attributeDisplays; }

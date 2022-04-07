@@ -19,36 +19,38 @@ public class SerializableResourceDescriptor implements Serializable {
 	private static final long serialVersionUID = 5498197358912286066L;
 	private String name;
 	private String className;
+	private boolean folder;
 	private String path;
 	private String projectName;
-	private String type;
+	private final ResourceType rtype;
 	
 	public SerializableResourceDescriptor() {	
 		name="UNSET";
 		className = "";
+		folder = false;
 		path = "";
 		projectName = Project.GLOBAL_PROJECT_NAME;
-		type = "";
+		rtype = BLTProperties.DIAGRAM_RESOURCE_TYPE;;
 	}
 	
 	public String getClassName() {return className;}
 	public String getName() { return name; }
 	public String getPath() { return path; }
 	public String getProjectName() {return projectName;}
+	public boolean isFolder() { return folder; }
 	/**
 	 * Create a project resource id from components of the descriptor
 	 * @return a resource id
 	 */
 	public ProjectResourceId getResourceId() {
-		ResourceType rtype = new ResourceType(BLTProperties.MODULE_ID,type);
 		ProjectResourceId resourceId = new ProjectResourceId(projectName,rtype,path);
 		return resourceId;}
-	public String getType() {return type;}
+	public ResourceType getType() {return rtype;}
 	
 	public void setClassName(String className) {this.className = className;}
+	public void setIsFolder(boolean flag) { this.setIsFolder(this.folder = flag); }
 	public void setName(String nam) { if(nam!=null) name=nam; }
 	public void setPath(String p) { if(p!=null) path=p; }
 	public void setProjectName(String name) {this.projectName = name;}
-	public void setType(String type) {this.type = type;}
 
 }

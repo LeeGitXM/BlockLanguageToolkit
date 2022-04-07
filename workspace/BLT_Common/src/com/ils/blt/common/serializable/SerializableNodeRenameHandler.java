@@ -7,7 +7,6 @@ package com.ils.blt.common.serializable;
 import java.util.HashMap;
 import java.util.UUID;
 
-import com.ils.blt.common.BLTProperties;
 import com.inductiveautomation.ignition.common.StringPath;
 
 /**
@@ -39,11 +38,7 @@ public class SerializableNodeRenameHandler   {
 	public void convertPaths(SerializableNode root,StringPath parent) {
 		root.setParentPath(parent);
 		
-		if(root.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
-			SerializableDiagram diag = (SerializableDiagram)root;
-			convertDiagramPaths(diag,root.getPath());
-		}
-		else if(root.getResourceType().equals(BLTProperties.FOLDER_RESOURCE_TYPE)) {
+		if(root.isFolder()) {
 			SerializableFolder folder = (SerializableFolder)root;
 			for(SerializableFolder f:folder.getFolders()) {
 				convertPaths(f,root.getPath());
@@ -51,6 +46,10 @@ public class SerializableNodeRenameHandler   {
 			for(SerializableDiagram diag:folder.getDiagrams()) {
 				convertDiagramPaths(diag,root.getPath());
 			}
+		}
+		else {
+			SerializableDiagram diag = (SerializableDiagram)root;
+			convertDiagramPaths(diag,root.getPath());
 		}
 	}
 

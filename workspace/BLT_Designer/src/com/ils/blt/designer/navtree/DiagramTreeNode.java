@@ -381,7 +381,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
            Optional<ProjectResource> option = parentNode.getProjectResource();
            ProjectResource res = option.get();
            String data = ""+res.getResourceId();
-           Transferable t =  new StringSelection(GeneralPurposeTreeNode.BLT_COPY_OPERATION + data);
+           Transferable t =  new StringSelection(NavTreeFolder.BLT_COPY_OPERATION + data);
 				   
 		   if (t != null) {
 			   try { 
@@ -517,8 +517,8 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	    		executionEngine.executeOnce(deleter);
 
 	    		AbstractNavTreeNode p = node.getParent();
-	    			if( p instanceof GeneralPurposeTreeNode )  {
-	    				GeneralPurposeTreeNode parentNode = (GeneralPurposeTreeNode)p;
+	    			if( p instanceof NavTreeFolder )  {
+	    				NavTreeFolder parentNode = (NavTreeFolder)p;
 	    				parentNode.expand();
 	    			}
 	    		}
@@ -591,7 +591,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 				SerializableDiagram sd = null;
 				ObjectMapper mapper = new ObjectMapper();
 				sd = mapper.readValue(bytes,SerializableDiagram.class);
-				viewId = requestHandler.createResourceId(res.getProjectName(), sd.getResourcePath().getPath().toString(), sd.getResourceType().getTypeId());
+				viewId = requestHandler.createResourceId(res.getProjectName(), sd.getResourcePath().getPath().toString(), BLTProperties.DIAGRAM_RESOURCE_TYPE);
 			}
 			// Inform the gateway of the state and let listeners update the UI
 			ApplicationRequestHandler arh = new ApplicationRequestHandler();

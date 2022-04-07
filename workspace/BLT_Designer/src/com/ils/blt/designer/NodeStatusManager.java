@@ -13,7 +13,7 @@ import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.notification.NotificationChangeListener;
 import com.ils.blt.common.notification.NotificationKey;
-import com.ils.blt.designer.navtree.GeneralPurposeTreeNode;
+import com.ils.blt.designer.navtree.NavTreeFolder;
 import com.ils.blt.designer.navtree.NavTreeNodeInterface;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
@@ -101,7 +101,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 	 * WARNING: The root node has no associated project resources.
 	 * @param node of resource tree
 	 */
-	public void createRootResourceStatus(GeneralPurposeTreeNode rootNode) {
+	public void createRootResourceStatus(NavTreeFolder rootNode) {
 		log.tracef("%s.newRootResource",CLSS);
 		ProjectResourceId resourceId = rootNode.getResourceId();
 		StatusEntry se = statusByResourcePath.get(resourceId);

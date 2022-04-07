@@ -33,7 +33,7 @@ import com.ils.blt.common.ApplicationScriptFunctions;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.script.ScriptExtensionManager;
 import com.ils.blt.common.serializable.SerializableDiagram;
-import com.ils.blt.designer.navtree.GeneralPurposeTreeNode;
+import com.ils.blt.designer.navtree.NavTreeFolder;
 import com.ils.blt.designer.search.BLTSearchProvider;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
@@ -44,12 +44,15 @@ import com.ils.common.component.DiagramViewer;
 import com.ils.common.component.recmap.RecommendationMap;
 import com.inductiveautomation.factorypmi.designer.palette.model.DefaultPaletteItemGroup;
 import com.inductiveautomation.ignition.client.util.action.StateChangeAction;
-import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
 import com.inductiveautomation.ignition.common.BundleUtil;
+import com.inductiveautomation.ignition.common.StringPath;
 import com.inductiveautomation.ignition.common.gson.JsonElement;
 import com.inductiveautomation.ignition.common.licensing.LicenseState;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceBuilder;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
+import com.inductiveautomation.ignition.common.project.resource.ResourceNamingException;
+import com.inductiveautomation.ignition.common.project.resource.ResourcePath;
 import com.inductiveautomation.ignition.common.project.resource.ResourceType;
 import com.inductiveautomation.ignition.common.script.ScriptManager;
 import com.inductiveautomation.ignition.common.util.LogUtil;
@@ -63,6 +66,7 @@ import com.inductiveautomation.ignition.designer.model.menu.JMenuMerge;
 import com.inductiveautomation.ignition.designer.model.menu.MenuBarMerge;
 import com.inductiveautomation.ignition.designer.model.menu.WellKnownMenuConstants;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceNavTreeNode;
+import com.inductiveautomation.ignition.designer.project.DesignableProject;
 import com.inductiveautomation.vision.api.designer.VisionDesignerInterface;
 import com.inductiveautomation.vision.api.designer.palette.JavaBeanPaletteItem;
 import com.inductiveautomation.vision.api.designer.palette.Palette;
@@ -78,7 +82,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	public static String HOOK_BUNDLE_NAME   = "designer";      // Properties file is designer.properties
 	public static String PREFIX = BLTProperties.BUNDLE_PREFIX; // Properties is accessed by this prefix
 
-	private GeneralPurposeTreeNode rootNode = null;
+	private NavTreeFolder rootNode = null;
 	private static DesignerContext context = null;
 	private final LoggerEx log;
 	private DiagramWorkspace workspace = null;
@@ -208,7 +212,9 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		
 		// Setup the diagram workspace
 		workspace = new DiagramWorkspace(context);
-		rootNode = new GeneralPurposeTreeNode(context);
+		ProjectResource rootResource = findRootResource();
+		if( rootResource==null )  rootResource = createRootResource();
+		rootNode = new NavTreeFolder(context,rootResource);
 		context.getProjectBrowserRoot().addChild(rootNode);
 		context.registerResourceWorkspace(workspace);
 		nodeStatusManager.createRootResourceStatus(rootNode);
@@ -276,7 +282,6 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		else { 
 			return PREFIX+".Export.Generic.Category";   // Folders
 		}
-		
 	}
 	
 	@Override
@@ -390,7 +395,44 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		}
 		return ret;
 	}
+	/*
+	 * The root resource has an empty path and a blt.diagram type.
+	 * No need to add the module root as it will be created automatically.
+	 * This resource is paired with the root of the BLT nav tree.
+	 */
+	private ProjectResource createRootResource() {
+		ProjectResourceBuilder builder = ProjectResource.newBuilder();
+		ResourceType rtype = BLTProperties.DIAGRAM_RESOURCE_TYPE;   // blt.diagram
+		ProjectResourceId resourceId = new ProjectResourceId(context.getProjectName(),rtype,null);
+		builder.setResourceId(resourceId);
+		ResourcePath path = new ResourcePath(rtype,StringPath.ROOT);
+		builder.setResourcePath(path);
+		builder.setFolder(true);
+		builder.setProjectName(context.getProjectName());
+		ProjectResource pr = builder.build();
+		DesignableProject dp = context.getProject();
+		try {
+			dp.createResource(pr);
+		}
+		catch(ResourceNamingException rne) {
+			log.warnf("%s.createProjectResource: naming exception (%s)",CLSS,rne.getLocalizedMessage());
+		}
+		return pr;
+	}
 	
+	private ProjectResource findRootResource() {
+		ProjectResource root = null;
+		List<ProjectResource> resources = context.getProject().getResources();
+		for(ProjectResource pr:resources) {
+			ResourceType rt = pr.getResourceType();
+			if( rt.equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) &&
+				pr.getResourcePath().getFolderPath().isEmpty() ) {
+				root = pr;
+				break;
+			}
+		}
+		return root;
+	}
 	/*
 	 * For debugging - list the resources attributed to the current project
 	 */

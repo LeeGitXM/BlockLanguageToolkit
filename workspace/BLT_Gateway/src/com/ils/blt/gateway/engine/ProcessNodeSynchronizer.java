@@ -132,8 +132,7 @@ public class ProcessNodeSynchronizer {
     		List<ProjectResource> reslist = project.getResources();
     		for( ProjectResource res:reslist ) {
     			if(res.getResourceId().getResourceType().getModuleId().equalsIgnoreCase(BLTProperties.MODULE_ID)) {
-    				if( 	res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ||
-    						res.getResourceType().equals(BLTProperties.FOLDER_RESOURCE_TYPE)   ) {
+    				if( res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)  ) {
     					map.put(ResourceKey.keyForResource(res.getResourceId()),res);
     				}
     			}

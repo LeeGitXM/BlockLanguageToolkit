@@ -1,10 +1,5 @@
 package com.ils.blt.common.serializable;
 
-import com.ils.blt.common.BLTProperties;
-import com.inductiveautomation.ignition.common.project.resource.ResourceType;
-
-
-
 /**
  * This class is a stand-in for an Ignition folder resource.
  * Its purpose is to represent a node in the Application
@@ -18,11 +13,7 @@ public class SerializableFolder extends SerializableNode {
 	public SerializableFolder() {	
 		name="UNSET";
 	}
-	
-	public ResourceType getResourceType() {
-		return BLTProperties.FOLDER_RESOURCE_TYPE;
-	}
-	
+	public boolean isFolder() { return true; }
 	public void addDiagram(SerializableDiagram sdiag) {
 		SerializableDiagram[] extended = new SerializableDiagram[diagrams.length+1];
 	    extended[diagrams.length] = sdiag;

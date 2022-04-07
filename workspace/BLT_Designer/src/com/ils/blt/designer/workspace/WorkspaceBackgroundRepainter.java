@@ -1,10 +1,7 @@
 package com.ils.blt.designer.workspace;
 
-import java.awt.Color;
-
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.designer.BLTDesignerHook;
-import com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignableContainer;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
 /**

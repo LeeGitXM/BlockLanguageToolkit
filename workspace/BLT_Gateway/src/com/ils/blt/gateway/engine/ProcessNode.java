@@ -159,7 +159,7 @@ public class ProcessNode implements Serializable {
 		descriptor.setName(getName());
 		descriptor.setPath(resourceId.getResourcePath().getPath().toString());
 		descriptor.setProjectName(resourceId.getProjectName());
-		descriptor.setType(BLTProperties.FOLDER_RESOURCE_TYPE.getTypeId());
+		descriptor.setIsFolder(true);
 		return descriptor;
 	}
 	public GeneralPurposeDataContainer getAuxiliaryData() {return auxiliaryData;}

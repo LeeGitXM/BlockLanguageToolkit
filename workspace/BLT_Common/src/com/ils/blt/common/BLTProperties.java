@@ -1,5 +1,5 @@
 /**
- *   (c) 2014-2021 ILS Automation. All rights reserved.
+ *   (c) 2014-2022 ILS Automation. All rights reserved.
  *  
  */
 package com.ils.blt.common;
@@ -20,14 +20,13 @@ public interface BLTProperties   {
 	public final static String BLOCK_JAR_NAME = "block-definition";
 	/** This is the name of the package containing block class definitions */
 	public final static String BLOCK_PACKAGE_NAME = "com.ils.block";
+	public final static ResourceType DIAGRAM_RESOURCE_TYPE = new ResourceType(MODULE_ID,"blt.diagram");
 	
-	public final static ResourceType DIAGRAM_RESOURCE_TYPE       = new ResourceType(MODULE_ID,"blt.diagram");
-	public final static ResourceType FOLDER_RESOURCE_TYPE 		 = new ResourceType(MODULE_ID,"__folder");      // Compatible w/ Ignition 7
 	
 	public final static String DIAGRAM_SCRIPT_PACKAGE      = "system.ils.blt.diagram";
 	
 	/** This unique ID represents the root node in the project tree */
-	public static final String ROOT_FOLDER_NAME = "root";
+	public static final String ROOT_FOLDER_NAME = "Symbolic AI";
 	public final static String ROOT_HELP_PATH = "system/moduledocs/block/SymbolicAiUsersGuide_filtered.html";
 	
 	// This is the common prefix under which bundle files are identified/registered
