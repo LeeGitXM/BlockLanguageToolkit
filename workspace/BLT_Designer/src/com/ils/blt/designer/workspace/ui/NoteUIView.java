@@ -1,5 +1,5 @@
 /**
- *  Copyright (c) 2014  ILS Automation. All rights reserved. 
+ *  Copyright (c) 2014-2022  ILS Automation. All rights reserved. 
  */
 package com.ils.blt.designer.workspace.ui;
 
@@ -49,7 +49,7 @@ public class NoteUIView extends AbstractBlockUIView implements BlockViewUI, Chan
 	
 	private void initProperties() {
 		// Guarantee that the block has the required properties
-		Collection<BlockProperty> properties = block.getProperties(); 
+		Collection<BlockProperty> properties = block.getProperties();
 		boolean hasText  = false;
 		boolean hasWidth = false;
 		boolean hasHeight= false;
@@ -60,11 +60,16 @@ public class NoteUIView extends AbstractBlockUIView implements BlockViewUI, Chan
 			else if(property.getName().equals(BlockConstants.BLOCK_PROPERTY_HEIGHT)) hasHeight=true;
 			else if(property.getName().equals(BlockConstants.BLOCK_PROPERTY_BACKGROUND_COLOR))  hasBackgroundColor= true;
 		}
-		if(!hasText) properties.add(new BlockProperty(BlockConstants.BLOCK_PROPERTY_TEXT,"",PropertyType.STRING,true));
-		if(!hasWidth) properties.add(new BlockProperty(BlockConstants.BLOCK_PROPERTY_WIDTH,block.getPreferredWidth(),PropertyType.INTEGER,true));
-		if(!hasHeight) properties.add(new BlockProperty(BlockConstants.BLOCK_PROPERTY_HEIGHT,block.getPreferredHeight(),PropertyType.INTEGER,true));
-		if(!hasBackgroundColor) properties.add(new BlockProperty(BlockConstants.BLOCK_PROPERTY_BACKGROUND_COLOR,block.getBackgroundColor(),PropertyType.COLOR,true));
-	
+		if(!hasText) textProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TEXT,"",PropertyType.STRING,true);
+		if(!hasWidth) widthProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_WIDTH,block.getPreferredWidth(),PropertyType.INTEGER,true);
+		if(!hasHeight) heightProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_HEIGHT,block.getPreferredHeight(),PropertyType.INTEGER,true);
+		if(!hasBackgroundColor) backgroundColorProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_BACKGROUND_COLOR,block.getBackgroundColor(),PropertyType.COLOR,true);
+
+		if(!hasText) block.setProperty(textProperty);
+		if(!hasWidth) block.setProperty(widthProperty);
+		if(!hasHeight) block.setProperty(heightProperty);
+		if(!hasBackgroundColor) block.setProperty(backgroundColorProperty);
+		
 		// To save repeatedly picking through the property list (we already did it once), pull out
 		// the ones we are interested in. We listen for changes so we can promptly update the display
 		for(BlockProperty property: properties ) {
@@ -152,9 +157,11 @@ public class NoteUIView extends AbstractBlockUIView implements BlockViewUI, Chan
 
 	/** Set the visible box's size from the width and height block properties. */
 	private void setSizeFromProperties() {
-		int height = getHeightPropertyValue();
-		int width = getWidthPropertyValue();
-		blockComponent.setPreferredSize(new Dimension(width, height));
+		if( heightProperty!=null && widthProperty!=null ) {
+			int height = getHeightPropertyValue();
+			int width = getWidthPropertyValue();
+			blockComponent.setPreferredSize(new Dimension(width, height));
+		}
 	}
 
 }

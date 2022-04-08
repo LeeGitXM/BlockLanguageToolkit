@@ -160,7 +160,7 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 	// For debugging
 	@Override 
 	public void checkChildren() {
-		log.infof("%s.checkChildren: %s = %d",CLSS,getName(),(children==null?0:this.children.size()));
+		//log.infof("%s.checkChildren: %s = %d",CLSS,getName(),(children==null?0:this.children.size()));
 		super.checkChildren();
 	}
 
@@ -334,18 +334,19 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 	}
 	@Override 
 	public List<AbstractNavTreeNode> loadChildren() {
-		log.infof("%s.loadChildren: %s ..................",CLSS,getName());
+		String parentPath = getResourcePath().getFolderPath();
+		log.infof("%s.loadChildren: %s (%s) ..................",CLSS,getName(),getResourcePath().getFolderPath());
 		List<AbstractNavTreeNode> kids = new ArrayList<>();
 		List<ProjectResource> resources = context.getProject().getResources();
 		// Search for children of this node
 		for(ProjectResource pr:resources) {
-			log.infof("%s.loadChildren: resource %s vs %s",CLSS,this.resourceId.getResourcePath().getPath().toString(),
-					pr.getResourcePath().getParentPath());
-			if(isChildNode(pr)) {
-				kids.add(createChildNode(pr));
+			if( pr.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
+				log.infof("%s.loadChildren: resource %s vs %s",CLSS,pr.getResourcePath().getParentPath(),parentPath);
+				if(isChildNode(pr)) {
+					kids.add(createChildNode(pr));
+				}
 			}
 		}
-
 		return kids;
 	}
 	/**
@@ -1583,8 +1584,9 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 	 */
 	private boolean isChildNode(ProjectResource res) {
 		boolean result = false;
-		if( this.resourceId.getResourcePath().getParentPath()!=null && 
-			this.resourceId.getResourcePath().getPath().isParentOf(res.getResourcePath().getPath()) ) {
+		ResourcePath parentPath = getResourcePath();
+		ResourcePath path = res.getResourcePath();
+		if( parentPath.isParentOf(res.getResourcePath() )) {
 			result = true;
 		}
 		return result;
@@ -1600,8 +1602,8 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 	public void resourcesCreated(String projectName,List<ChangeOperation.CreateResourceOperation> ops) {
 		for(ChangeOperation.CreateResourceOperation op:ops ) {
 			ProjectResourceId id = op.getResourceId();
-			log.infof("%s.resourcesCreated.%s: %s(%s)",CLSS,op,getName(),id.getProjectName(),id.getResourcePath().getPath().toString());
-			ProjectResource res = op.getResource();
+		log.infof("%s.resourcesCreated.%s: %s(%s)",CLSS,op,getName(),id.getProjectName(),id.getResourcePath().getPath().toString());
+				ProjectResource res = op.getResource();
 			createChildNode(res);
 		}
 	}

@@ -114,7 +114,6 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 		this.statusText = "";
 		this.style = descriptor.getStyle();
 		this.badgeChar      = descriptor.getBadgeChar();
-
 		this.anchors = new HashMap<>();
 		int order = 0;
 		for( AnchorPrototype ap:descriptor.getAnchors() ) {
