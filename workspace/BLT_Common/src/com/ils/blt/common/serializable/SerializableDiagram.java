@@ -1,9 +1,13 @@
 package com.ils.blt.common.serializable;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.ils.blt.common.BLTProperties;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.ProcessBlock;
-import com.inductiveautomation.ignition.common.project.resource.ResourceType;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 
 
 
@@ -15,6 +19,8 @@ import com.inductiveautomation.ignition.common.project.resource.ResourceType;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SerializableDiagram extends SerializableNode {
+	private static final String CLSS = "SerializableDiagram";
+	private final static LoggerEx log = LogUtil.getLogger(SerializableDiagram.class.getPackageName());
 	private ProcessBlock[] attributeDisplays;
 	private SerializableBlock[] blocks;
 	private SerializableConnection[] connections;
@@ -24,6 +30,26 @@ public class SerializableDiagram extends SerializableNode {
 	public SerializableDiagram() {
 		blocks = new SerializableBlock[0];
 		connections= new SerializableConnection[0];
+	}
+	/**
+	 * Convert the resource data into a SerializableDiagram.
+	 * Note: Set the state from that stored in the NotificationStatusManager
+	 * @param res
+	 * @return
+	 */
+	public static SerializableDiagram deserializeDiagram(ProjectResource res) {
+		SerializableDiagram sd = null;
+		try{
+			byte[] bytes = res.getData();
+			ObjectMapper mapper = new ObjectMapper();
+			mapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL,true);
+			sd = mapper.readValue(new String(bytes), SerializableDiagram.class);
+			sd.setName(res.getResourceName());   // Sync the SerializableDiagram name w/ res
+		}
+		catch(Exception ex) {
+			log.warnf("%s.SerializableDiagram: Deserialization exception (%s)",CLSS,ex.getMessage());
+		}
+		return sd;
 	}
 	
 	public boolean isFolder() { return false; }
@@ -52,6 +78,7 @@ public class SerializableDiagram extends SerializableNode {
 		}
 		return null;
 	}
+	
 	/**
 	 * Add a connection to this diagram. Woe to any entity holding on to the old array.
 	 * @param newConnection the connection to add
@@ -106,5 +133,22 @@ public class SerializableDiagram extends SerializableNode {
 			index++;
 		}
 		this.connections = newConnections;
+	}
+	
+	/**
+	 *  Serialize a diagram into JSON. 
+	 * @param diagram to be serialized
+	 */ 
+	public String serialize() {
+		String json = "";
+		ObjectMapper mapper = new ObjectMapper();
+		try{ 
+			json = mapper.writeValueAsString(this);
+		}
+		catch(JsonProcessingException jpe) {
+			log.warnf("%s.serialize: Unable to serialize diagram (%s)",CLSS,jpe.getMessage());
+		}
+		//log.infof("%s.serialize: created json ... %s",CLSS,json);
+		return json;
 	}
 }

@@ -119,8 +119,8 @@ public class NodeStatusManager implements NotificationChangeListener   {
 	 * Delete a resource. Prepare the real node for deletion as well.
 	 * @param resourceId
 	 */
-	public void deleteResource(ProjectResourceId key ) {
-		log.debugf("%s.deleteResource(%s)",CLSS,key.getResourcePath().getPath().toString());
+	public void removeResource(ProjectResourceId key ) {
+		log.debugf("%s.removeResource(%s)",CLSS,key.getResourcePath().getPath().toString());
 		StatusEntry se = statusByResourcePath.get(key);
 		if( se!=null ) {
 			AbstractNavTreeNode antn = se.getParent();
@@ -131,7 +131,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 					children.remove(key);
 				}
 				children = childrenByResourcePath.get(key);
-				recursivelyDeleteChildren(children);
+				recursivelyRemoveChildren(children);
 				se.prepareToBeDeleted();
 			}
 
@@ -177,12 +177,12 @@ public class NodeStatusManager implements NotificationChangeListener   {
 		return node;
 	}
 	
-	private void recursivelyDeleteChildren(Set<ResourcePath> children) {
+	private void recursivelyRemoveChildren(Set<ResourcePath> children) {
 		if( children==null ) return;
 		for(ResourcePath child:children) {
 			Set<ResourcePath> grandchildren = childrenByResourcePath.get(child);
 			childrenByResourcePath.remove(child);
-			recursivelyDeleteChildren(grandchildren);
+			recursivelyRemoveChildren(grandchildren);
 		}
 	}
 	private boolean recursivelySearchForAlert(ResourcePath node) {

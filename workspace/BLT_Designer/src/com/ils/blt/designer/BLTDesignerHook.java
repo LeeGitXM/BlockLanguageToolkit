@@ -439,24 +439,24 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	private void listProjectResources() {
 		log.infof("%s.listProjectResources: ===========",CLSS);
 		List<ProjectResource> resources = context.getProject().getResources();
-			for(ProjectResource pr:resources) {
-				ResourceType rt = pr.getResourceType();
-				if( pr.getResourcePath().getPath()==null ) {
-					log.infof("    %s: null path type(%s,%s)",pr.getResourceName(),(rt==null?"":rt.getModuleId()),(rt==null?"":rt.getTypeId()));
-				}
-				else {
-					String parent = "null";
-					if(pr.getResourcePath().getParentPath()!=null ) parent = pr.getResourcePath().getParentPath();
-					log.infof("    %s:%s%s\t, parent=%s, type(%s,%s)",
+		for(ProjectResource pr:resources) {
+			ResourceType rt = pr.getResourceType();
+			if( pr.getResourcePath().getPath()==null ) {
+				log.infof("    %s: null path type(%s,%s)",pr.getResourceName(),(rt==null?"":rt.getModuleId()),(rt==null?"":rt.getTypeId()));
+			}
+			else {
+				String parent = "null";
+				if(pr.getResourcePath().getParentPath()!=null ) parent = pr.getResourcePath().getParentPath();
+				log.infof("    %s:%s%s\t, parent=%s, type(%s,%s)",
 						pr.getResourceName(),
 						pr.getResourcePath().getPath().toString(),
 						(pr.isFolder()?" (folder)":""),
 						parent,
 						(rt==null?"":rt.getModuleId()),(rt==null?"":rt.getTypeId()) );
-					Map<String,JsonElement> attributes = pr.getAttributes();
-					for(String key:attributes.keySet()) {
-						log.infof("        %s (%s)",key,attributes.get(key).toString());
-					}
+				Map<String,JsonElement> attributes = pr.getAttributes();
+				for(String key:attributes.keySet()) {
+					log.infof("        %s (%s)",key,attributes.get(key).toString());
+				}
 			}
 		}
 		log.infof("%s.listProjectResources: ===== Complete ======",CLSS);

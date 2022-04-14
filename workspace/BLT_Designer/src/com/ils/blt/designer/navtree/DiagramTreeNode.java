@@ -40,7 +40,6 @@ import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.NotificationHandler;
-import com.ils.blt.designer.ResourceCreateManager;
 import com.ils.blt.designer.ResourceDeleteManager;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
@@ -68,8 +67,7 @@ import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceN
 /**
  * A DiagramNode appears as leaf node in the BLT NavTree hierarchy.
  * It serves as a Nav-tree standin for a DiagramWorkspace. A DiagramNode
- * may have children - EncapsulatedDiagramNodes - which are standins for
- * sub-workspaces of EncapsulationBlocks. --- not implemented
+ * has no children.
  * 
  * The frame is responsible for rendering the diagram based on the model resource.
  * The model can exist without the frame, but not vice-versa.
@@ -332,7 +330,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		for(ChangeOperation.CreateResourceOperation op:ops ) {
 			ProjectResourceId id = op.getResourceId();
 			log.infof("%s.resourcesCreated.%s: %s(%s)",CLSS,op,getName(),id.getProjectName(),id.getResourcePath().getPath().toString());
-			executionEngine.executeOnce(new ResourceCreateManager(op.getResource()));
+			// executionEngine.executeOnce(new ResourceCreateManager(op.getResource()));
 		}
 	}
 	/**

@@ -5,7 +5,6 @@ package com.ils.blt.designer;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.locks.ReentrantLock;
 
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
@@ -38,7 +37,6 @@ public class ResourceUpdateManager implements Runnable {
 	private final byte[] bytes;
 	private ProjectResource resource;
 	private final DiagramWorkspace workspace;
-	private final ThreadCounter counter = ThreadCounter.getInstance();
 	private final ApplicationRequestHandler requestHandler;
 	
 	// DiagramWorkspace.onClose of a tab.
@@ -47,7 +45,6 @@ public class ResourceUpdateManager implements Runnable {
 		this.workspace = wksp;
 		this.resource = pr;
 		this.bytes = pr.getData();
-		this.counter.incrementCount();
 		this.requestHandler = new ApplicationRequestHandler();
 	}
 	
@@ -59,7 +56,6 @@ public class ResourceUpdateManager implements Runnable {
 		this.workspace = null;
 		this.resource = pr;
 		this.bytes = contents;
-		this.counter.incrementCount();
 		this.requestHandler = new ApplicationRequestHandler();
 	}
 	
@@ -76,7 +72,7 @@ public class ResourceUpdateManager implements Runnable {
 	 */
 	@Override
 	public void run() {
-
+		if( bytes.length==0 ) return;  // Resource has been deleted
 		synchronized(this) {
 			ProjectResourceBuilder builder = resource.toBuilder();
 			builder.clearData();
@@ -102,6 +98,5 @@ public class ResourceUpdateManager implements Runnable {
 			}
 		}
 		if(DEBUG) log.infof("%s.run(): complete",CLSS);
-		this.counter.decrementCount();
 	}
 }
