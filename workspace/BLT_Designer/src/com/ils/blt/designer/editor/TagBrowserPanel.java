@@ -77,6 +77,8 @@ public class TagBrowserPanel extends BasicEditPanel {
 				TreePath[] selectedPaths = tagTreeSelectionModel.getSelectionPaths();
 				if(selectedPaths.length == 1) {
 					// It's possible to select something that's not a node.
+					log.infof("TagBrowserPanel: selected = %s",selectedPaths[0].getClass().getCanonicalName());
+					log.infof("TagBrowserPanel: last component = %s",selectedPaths[0].getLastPathComponent().getClass().getCanonicalName());
 					if(selectedPaths[0].getLastPathComponent() instanceof TagTreeNode ) {
 						TagTreeNode node = (TagTreeNode)(selectedPaths[0].getLastPathComponent());
 						lastSelected = selectedPaths[0];

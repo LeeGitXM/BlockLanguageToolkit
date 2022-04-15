@@ -83,7 +83,7 @@ import net.miginfocom.swing.MigLayout;
  */
 public class PropertyPanel extends JPanel implements ChangeListener, FocusListener, NotificationChangeListener,TagChangeListener {
 	private static final long serialVersionUID = 2264535784255009984L;
-	private static final boolean DEBUG = false;
+	private static final boolean DEBUG = true;
 	private static SimpleDateFormat dateFormatter = new SimpleDateFormat(BlockConstants.TIMESTAMP_FORMAT);
 	private final NotificationHandler notificationHandler = NotificationHandler.getInstance();
 	private static UtilityFunctions fncs = new UtilityFunctions();

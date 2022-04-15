@@ -1267,7 +1267,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				return;
 			}
 			String json = new String(res.getData());
-			if( DEBUG ) log.infof("%s: open - diagram = %s",CLSS,json);
+			if( DEBUG ) log.infof("%s.open: diagram = %s",CLSS,json);
 			SerializableDiagram sd = null;
 			ObjectMapper mapper = new ObjectMapper();
 			mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);  //
@@ -1283,13 +1283,13 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				}
 			} 
 			catch (JsonParseException jpe) {
-				log.warnf("%s: open parse exception (%s)",CLSS,jpe.getLocalizedMessage());
+				log.warnf("%s.open: JSON parse exception (%s)",CLSS,jpe.getLocalizedMessage());
 			} 
 			catch (JsonMappingException jme) {
-				log.warnf("%s: open mapping exception (%s)",CLSS,jme.getLocalizedMessage());
+				log.warnf("%s.open: JSON mapping exception (%s)",CLSS,jme.getLocalizedMessage());
 			} 
 			catch (IOException ioe) {
-				log.warnf("%s: open io exception (%s)",CLSS,ioe.getLocalizedMessage());
+				log.warnf("%s.open: io exception (%s)",CLSS,ioe.getLocalizedMessage());
 			}
 			ProcessDiagramView diagram = new ProcessDiagramView(res.getResourceId(),sd, context);
 			for( Block blk:diagram.getBlocks()) {
@@ -1395,7 +1395,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		ResourcePath path = c.getResourcePath();
 		ProjectResourceId id = new ProjectResourceId(context.getProject().getName(),BLTProperties.DIAGRAM_RESOURCE_TYPE,path.getPath().toString());
 		Optional<ProjectResource> optional = context.getProject().getResource(id);
-		executionEngine.executeOnce(new ResourceUpdateManager(this,optional.get()));
+		executionEngine.executeOnce(new ResourceUpdateManager(optional.get()));
 		diagram.setClean();
 
 	}

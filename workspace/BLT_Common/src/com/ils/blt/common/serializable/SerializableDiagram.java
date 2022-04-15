@@ -136,10 +136,10 @@ public class SerializableDiagram extends SerializableNode {
 	}
 	
 	/**
-	 *  Serialize a diagram into JSON. 
+	 *  Serialize a diagram into a JSON byte array. 
 	 * @param diagram to be serialized
 	 */ 
-	public String serialize() {
+	public byte[] serialize() {
 		String json = "";
 		ObjectMapper mapper = new ObjectMapper();
 		try{ 
@@ -149,6 +149,6 @@ public class SerializableDiagram extends SerializableNode {
 			log.warnf("%s.serialize: Unable to serialize diagram (%s)",CLSS,jpe.getMessage());
 		}
 		//log.infof("%s.serialize: created json ... %s",CLSS,json);
-		return json;
+		return json.getBytes();
 	}
 }

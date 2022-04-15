@@ -36,13 +36,10 @@ public class ResourceUpdateManager implements Runnable {
 	private static NodeStatusManager statusManager = null;
 	private final byte[] bytes;
 	private ProjectResource resource;
-	private final DiagramWorkspace workspace;
 	private final ApplicationRequestHandler requestHandler;
 	
 	// DiagramWorkspace.onClose of a tab.
-	public ResourceUpdateManager(DiagramWorkspace wksp,ProjectResource pr) {
-		if(DEBUG) log.infof("%s.run: Creating a new ResourceUpdateManager for DiagramWorkspace %s...", CLSS, wksp.getName());
-		this.workspace = wksp;
+	public ResourceUpdateManager(ProjectResource pr) {
 		this.resource = pr;
 		this.bytes = pr.getData();
 		this.requestHandler = new ApplicationRequestHandler();
@@ -53,7 +50,6 @@ public class ResourceUpdateManager implements Runnable {
 	 * @param pr
 	 */
 	public ResourceUpdateManager(ProjectResource pr,byte[] contents) {
-		this.workspace = null;
 		this.resource = pr;
 		this.bytes = contents;
 		this.requestHandler = new ApplicationRequestHandler();
@@ -72,11 +68,19 @@ public class ResourceUpdateManager implements Runnable {
 	 */
 	@Override
 	public void run() {
-		if( bytes.length==0 ) return;  // Resource has been deleted
+		// Ignore any "system" resources
+		if( resource.getResourcePath().getParent()==null ) return;
+		
 		synchronized(this) {
 			ProjectResourceBuilder builder = resource.toBuilder();
 			builder.clearData();
-			builder.putData(bytes);
+			if( bytes==null || bytes.length==0 ) {
+				builder.setFolder(true);
+			}
+			else {
+				builder.setFolder(false);
+				builder.putData(bytes);
+			}
 			resource = builder.build();
 
 			try {

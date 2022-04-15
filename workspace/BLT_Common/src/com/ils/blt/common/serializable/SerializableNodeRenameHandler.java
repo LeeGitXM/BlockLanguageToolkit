@@ -14,8 +14,6 @@ import com.inductiveautomation.ignition.common.StringPath;
  *  in the special case of a diagram, handles  re-generating the UUIDs of the blocks within
  *  that diagram. When a UUID is replaced, the old UUID is 
  *  also retained for use in the Gateway to transfer state information.
- *   
- *  Do we reallyt serialize this? If not, put logger back.
  */
 public class SerializableNodeRenameHandler   {
 	private final static String CLSS = "SerializableNodeRenameHandler";
@@ -35,8 +33,7 @@ public class SerializableNodeRenameHandler   {
 	 * @param root
 	 * @param parent
 	 */
-	public void convertPaths(SerializableNode root,StringPath parent) {
-		root.setParentPath(parent);
+	public void convertPaths(SerializableNode root,String parent) {
 		
 		if(root.isFolder()) {
 			SerializableFolder folder = (SerializableFolder)root;
@@ -56,9 +53,9 @@ public class SerializableNodeRenameHandler   {
 	/**
 	 * Convert block UUIDs and create connections. There is no recursion.
 	 */
-	private void convertDiagramPaths(SerializableDiagram diagram,StringPath parent) {
+	private void convertDiagramPaths(SerializableDiagram diagram,String parent) {
 		blockLookup.clear();
-		diagram.setParentPath(parent);
+		diagram.setPath(parent.toString()+"/"+diagram.getName());
 		
 		// As we traverse the blocks, save off the UUIDs
 		// so that we can look them up when we convert the 

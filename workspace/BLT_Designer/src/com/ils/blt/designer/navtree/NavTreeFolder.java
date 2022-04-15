@@ -516,7 +516,7 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 			log.infof("%s.recursivelyDeserializeFolder: %s (%s)",CLSS,res.getResourceName(),res.getResourceId().getResourcePath().getPath().toString());
 			sfold = new SerializableFolder();
 			sfold.setName(res.getResourceName());
-			sfold.setParentPath(StringPath.parse(res.getFolderPath()));
+			sfold.setPath(res.getFolderPath()+"/"+res.getResourceName());
 			sfold.setFolders(new SerializableFolder[0]);
 			sfold.setDiagrams(new SerializableDiagram[0]);
 
@@ -648,7 +648,7 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 
 				SerializableDiagram sd = mapper.readValue(new String(bytes), SerializableDiagram.class);
 				if( sd!=null ) {
-					renameHandler.convertPaths(sd,res.getResourcePath().getPath());
+					renameHandler.convertPaths(sd,res.getFolderPath());
 					ProcessDiagramView diagram = new ProcessDiagramView(res.getResourceId(),sd, context);
 					for( Block blk:diagram.getBlocks()) {
 						ProcessBlockView pbv = (ProcessBlockView)blk;
@@ -671,7 +671,7 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 			else  {
 				SerializableFolder sf = mapper.readValue(new String(bytes), SerializableFolder.class);
 				if( sf!=null ) {
-					renameHandler.convertPaths(sf,res.getResourcePath().getPath());;
+					renameHandler.convertPaths(sf,res.getFolderPath());
 					json = mapper.writeValueAsString(sf);
 					resid = requestHandler.createResourceId(getResourceId().getProjectName(), sf.getPath().toString(), BLTProperties.DIAGRAM_RESOURCE_TYPE);
 				}
@@ -822,7 +822,7 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 									sd = mapper.readValue(new String(res.getData()), SerializableDiagram.class);
 									if( sd!=null ) {
 										ProcessDiagramView diagram = new ProcessDiagramView(res.getResourceId(),sd, context);
-										renameHandler.convertPaths(sd,res.getResourcePath().getPath());  // converted UUIDs are thrown away because later CopyChildren also does it
+										renameHandler.convertPaths(sd,res.getFolderPath());  // converted UUIDs are thrown away because later CopyChildren also does it
 										sd.setName(newName);
 										for( Block blk:diagram.getBlocks()) {
 											ProcessBlockView pbv = (ProcessBlockView)blk;
@@ -1001,12 +1001,11 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 				ProjectResourceId resid = requestHandler.createResourceId(currentNode.getResourceId().getProjectName(), currentNode.getResourcePath().getParentPath()+"/"+newName, BLTProperties.DIAGRAM_RESOURCE_TYPE);
 				SerializableDiagram sd = new SerializableDiagram();
 				sd.setName(newName);
-				sd.setParentPath(StringPath.parse(getResourcePath().getFolderPath()));
+				sd.setPath(currentNode.getResourcePath().getFolderPath()+"/"+newName);
 				sd.setDirty(false);
 				sd.setState(DiagramState.DISABLED);
-				String json = sd.serialize();
 				
-				byte[] bytes = json.getBytes();
+				byte[] bytes = sd.serialize();
 				log.infof("%s.DiagramCreateAction. create new %s(%s), %s (%d bytes)",CLSS,BLTProperties.DIAGRAM_RESOURCE_TYPE.getTypeId(),
 						newName,currentNode.getResourcePath().getParentPath()+"/"+newName,bytes.length);
 
@@ -1015,20 +1014,10 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 				builder.setNoun("diagram");
 				builder.setDefaultName(newName);
 				builder.setFolder(currentNode.getResourcePath());
-				builder.setResourceBuilder(b->b.setFolder(true).setApplicationScope(ApplicationScope.DESIGNER).putData(bytes));
+				builder.setResourceBuilder(b->b.setFolder(false).setApplicationScope(ApplicationScope.DESIGNER).putData(bytes));
 				builder.setTitle("New Dialog");
 				builder.buildAndDisplay();
 				currentNode.selectChild(new ResourcePath[] {resid.getResourcePath()} );
-				
-				/*
-				new ResourceCreateManager(getResourcePath().getFolderPath(),newName,bytes).run();	
-				
-				EventQueue.invokeLater(new Runnable() {
-					public void run() {
-						workspace.open(resid);
-					}
-				});
-				*/
 
 			} 
 			catch (Exception err) {
@@ -1086,14 +1075,14 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 										SerializableDiagram sd = mapper.readValue(new String(bytes), SerializableDiagram.class);
 										if( sd!=null ) {
 											log.infof("%s:ImportDiagramAction imported diagram:\n%s", CLSS,sd.getName());
-											renameHandler.convertPaths(sd,getResourcePath().getPath());
+											renameHandler.convertPaths(sd,getResourcePath().getFolderPath());
 											sd.setDirty(true);    // Dirty because gateway doesn't know about it yet
 											sd.setState(DiagramState.DISABLED);
 											String json = mapper.writeValueAsString(sd);
 
 											log.debugf("%s:ImportDiagramAction saved resource as:\n%s", CLSS,json);
 											ProjectResourceId resid = requestHandler.createResourceId(getResourceId().getProjectName(), getResourceId().getFolderPath(), BLTProperties.DIAGRAM_RESOURCE_TYPE);
-											new ResourceCreateManager(getResourcePath().getFolderPath(),sd.getName(),sd.serialize().getBytes()).run();	
+											new ResourceCreateManager(getResourcePath().getFolderPath(),sd.getName(),sd.serialize()).run();	
 											parentNode.selectChild(new ResourcePath[] {getResourcePath()} );
 											statusManager.setResourceState(resid, sd.getState());
 											setDirty(true);

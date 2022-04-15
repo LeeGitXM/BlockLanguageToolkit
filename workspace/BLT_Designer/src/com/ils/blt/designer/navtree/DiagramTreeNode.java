@@ -589,7 +589,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 				SerializableDiagram sd = null;
 				ObjectMapper mapper = new ObjectMapper();
 				sd = mapper.readValue(bytes,SerializableDiagram.class);
-				viewId = requestHandler.createResourceId(res.getProjectName(), sd.getResourcePath().getPath().toString(), BLTProperties.DIAGRAM_RESOURCE_TYPE);
+				viewId = requestHandler.createResourceId(res.getProjectName(), sd.getPath().toString(), BLTProperties.DIAGRAM_RESOURCE_TYPE);
 			}
 			// Inform the gateway of the state and let listeners update the UI
 			ApplicationRequestHandler arh = new ApplicationRequestHandler();

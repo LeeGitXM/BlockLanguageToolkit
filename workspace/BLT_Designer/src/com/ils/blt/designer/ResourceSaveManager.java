@@ -98,7 +98,7 @@ public class ResourceSaveManager implements Runnable {
 						if (view.isDirty()){
 							view.registerChangeListeners();     // The diagram may include new components
 							if( DEBUG ) log.infof("%s.saveModifiedResources: Saving %s...", CLSS, view.getName());
-							new ResourceUpdateManager(workspace, res).run();
+							new ResourceUpdateManager(res,view.createSerializableRepresentation().serialize()).run();
 						}
 						view.setClean();
 						workspace.setDiagramClean(view);
@@ -111,14 +111,14 @@ public class ResourceSaveManager implements Runnable {
 						DiagramState gwState = requestHandler.getDiagramState(res.getResourceId());
 						if( !designerState.equals(gwState)) {
 							requestHandler.setDiagramState(res.getResourceId(), designerState.name());
-							new ResourceUpdateManager(workspace,res).run();
+							new ResourceUpdateManager(res).run();
 						}
 					}
 				}
 				// We also need to save newly created resources of any type
 				else if(node.isItalic()) {
 					node.setItalic(false);
-					new ResourceUpdateManager(workspace,res).run();
+					new ResourceUpdateManager(res).run();
 
 				}
 			}

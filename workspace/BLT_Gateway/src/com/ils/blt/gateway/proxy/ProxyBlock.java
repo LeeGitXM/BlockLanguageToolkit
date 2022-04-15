@@ -147,7 +147,7 @@ public class ProxyBlock extends AbstractProcessBlock  {
 			if (mgr == null){
 				log.infof("********* BLT detected a null script manager ***********");
 				log.infof("%s", this.getClassName());
-				log.infof("%d", getProjectName());
+				log.infof("%s", getProjectName());
 				mgr = context.getScriptManager();
 			}
 			delegate.setBlockProperty(mgr,this,prop);

@@ -159,7 +159,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		ProcessBlock block = null;
 		try {
 			Class<?> clss = Class.forName(className);
-			Constructor<?> ctor = clss.getDeclaredConstructor(new Class[] {ExecutionController.class,UUID.class,UUID.class});
+			Constructor<?> ctor = clss.getDeclaredConstructor(new Class[] {ExecutionController.class,ProjectResourceId.class,UUID.class});
 			block = (ProcessBlock)ctor.newInstance(BlockExecutionController.getInstance(),parentId,blockId);
 		}
 		catch(InvocationTargetException ite ) {

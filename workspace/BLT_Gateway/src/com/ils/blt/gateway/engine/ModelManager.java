@@ -28,14 +28,12 @@ import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.gateway.BlockTagSynchronizer;
 import com.ils.common.persistence.ToolkitProperties;
 import com.ils.common.persistence.ToolkitRecordHandler;
-import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.ProjectListener;
 import com.inductiveautomation.ignition.common.project.RuntimeProject;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 import com.inductiveautomation.ignition.common.project.resource.ResourcePath;
-import com.inductiveautomation.ignition.common.project.resource.ResourceType;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
@@ -110,16 +108,14 @@ public class ModelManager implements ProjectListener  {
 	 */
 	public void analyzeResource(ProjectResource res,boolean startup) {
 		ProjectResourceId resourceId = res.getResourceId();
-		if( resourceId.getResourceType().getModuleId()!=null && resourceId.getResourceType().getModuleId().equalsIgnoreCase(BLTProperties.MODULE_ID)) {
-			ResourceType type = res.getResourceType();
+		if( resourceId.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
 			
 			if( res.isFolder() ) {
 				if(DEBUG) log.infof("%s.analyzeResource: adding a folder = %s %s", CLSS, res.getResourceName(), (startup?"(STARTUP)":""));
 				addModifyFolderResource(res);
 			}
 			else {
-				// Don't care
-				if(DEBUG) log.infof("%s.analyzeResource: Ignoring %s resource",CLSS,type);
+				addModifyDiagramResource(res,startup);
 			}
 		}
 	}
@@ -522,7 +518,11 @@ public class ModelManager implements ProjectListener  {
 	@Override
 	public void projectDeleted(String projectName) {
 		log.infof("%s.projectDeleted: (id=%s)",CLSS,projectName);
-		deleteProjectResources(projectName);
+		List<ProcessNode> nodes = root.allNodesForProject(projectName);
+		for(ProcessNode node:nodes) {
+			deleteResource(node.getResourceId());
+		}
+		root.removeProject(projectName);
 	}
 	/**
 	 * Handle project resource updates of type model. NOTE: The Ignition gateway interface does not
@@ -530,73 +530,40 @@ public class ModelManager implements ProjectListener  {
 	 * @param diff represents differences to the updated project. That is any updated, dirty or deleted resources.
 	 * @param vers a value of "Staging" means is a result of a "Save". A value of "Published" occurs when a 
 	 *        project is published. For our purposes both actions are equivalent(??).
-	 */
-	/* (non-Javadoc)
+	 *
 	 * @see com.inductiveautomation.ignition.gateway.project.ProjectListener#projectUpdated(com.inductiveautomation.ignition.common.project.Project, com.inductiveautomation.ignition.common.project.ProjectVersion)
 	 */
 	@Override
-
 	public void projectUpdated(String projectName) {
 		Optional<RuntimeProject> optional = context.getProjectManager().getProject(projectName);
-		Project diff = optional.get();
-		if(DEBUG) log.infof("%s.projectUpdated: %s",CLSS,diff.getName());
+		Project proj = optional.get();
+		if(DEBUG) log.infof("%s.projectUpdated: %s",CLSS,proj.getName());
 		
-		if( diff.isEnabled() ) {
-			int countOfInteresting = 0;
-			List<ProjectResource> resources = diff.getResources();
-			for( ProjectResource res:resources ) {
-				if( isBLTResource(res.getResourceType().getTypeId()) || res.getResourceType().getTypeId().equalsIgnoreCase("Window") ) {
-					if(DEBUG) log.infof("%s.projectUpdated: add/update resource %s.%s %s (%s) %s", CLSS,projectName,res.getResourceName(),
-							res.getResourcePath().getPath().toString(),
-							res.getResourceType().toString(),(res.isLocked()?"locked":"unlocked"));
-					analyzeResource(res,false);  // Not startup
-					countOfInteresting++;
-				}
-			}
-			if( countOfInteresting>0) {
-
-				new Thread(new Runnable() {
-					@Override
-					public void run() {
-						for( ProjectResource res:resources ) {
-							if( isBLTResource(res.getResourceType().getTypeId()) || res.getResourceType().getTypeId().equalsIgnoreCase("Window") ) {
-								if(DEBUG) log.infof("%s.projectUpdated: add/update resource %s.%s %s (%s) %s", CLSS,projectName,res.getResourceName(),
-										res.getResourcePath().getPath().toString(),
-										res.getResourceType().toString(),(res.isLocked()?"locked":"unlocked"));
-								analyzeResource(res,false);  // Not startup
-							}
+		List<ProjectResource> resources = proj.getResources();
+		if( proj.isEnabled() ) {
+			new Thread(new Runnable() {
+				@Override
+				public void run() {
+					for( ProjectResource res:resources ) {
+						if( res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
+							if(DEBUG) log.infof("%s.projectUpdated: update resource %s.%s %s (%s) %s", CLSS,projectName,res.getResourceName(),
+									res.getResourcePath().getPath().toString(),
+									res.getResourceType().toString(),(res.isLocked()?"locked":"unlocked"));
+							analyzeResource(res,false);  // Not startup
 						}
 					}
-				}).start(); 
-			}
-			
-			// If there haven't been any interesting resources, then we've probably
-			// just changed the enabled status of the project. Synchronize resources.
-			else  {
-
-				log.debug("============================== ENABLED =================================");
-				for( ProjectResource res: diff.getResources() ) {
-					if(DEBUG) log.infof("%s.projectUpdated: enabling %s:%s %s",CLSS,res.getResourceName(),res.getResourceId().getResourcePath().getPath().toString());
 				}
-
-				new Thread(new Runnable() {
-				    @Override
-				    public void run() {
-						for( ProjectResource res: diff.getResources() ) {
-							analyzeResource(res,false);
-						}
-				    }
-				}).start();  
-			}
+			}).start(); 
 		}
-		// Delete the BLT resources of projects that are disabled. There is nothing displayable in the Designer
+		// Delete the running resources of projects that are disabled. There is nothing displayable in the Designer
 		else {   
-			for( ProjectResource res: diff.getResources() ) {
-				if(DEBUG) log.infof("%s.projectUpdated: disabling %s:%s %s",CLSS,res.getResourceName(),res.getResourceId().getResourcePath().getPath().toString());
+			log.infof("%s: Project %s DISABLED, removing gateway resources",CLSS,proj.getName());
+			for( ProjectResource res: proj.getResources() ) {
+				if( res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
+					if(DEBUG) log.infof("%s.projectUpdated: disabling %s:%s %s",CLSS,res.getResourceName(),res.getResourceId().getResourcePath().getPath().toString());
+					deleteResource(res.getResourceId());
+				}
 			}
-			deleteProjectResources(projectName);
-			
-			log.info("============================== DISABLED =================================");
 		}
 	}
 	
@@ -811,16 +778,6 @@ public class ModelManager implements ProjectListener  {
 		}
 	}
 	
-	// Delete all process nodes for a given project.
-	private void deleteProjectResources(String projectName) {
-		if(DEBUG) log.infof("%s.deleteProjectResources: proj = %s",CLSS,projectName);
-		List<ProcessNode> nodes = root.allNodesForProject(projectName);
-		for(ProcessNode node:nodes) {
-			deleteResource(node.getResourceId());
-		}
-		root.removeProject(projectName);
-	}
-	
 	/**
 	 *  We've discovered a changed model resource. Deserialize and return.
 	 *  Note: We had difficulty with the Ignition XML serializer because it didn't handle Java generics;
@@ -862,16 +819,6 @@ public class ModelManager implements ProjectListener  {
 			log.warnf("%s.deserializeDiagramResource: resource (%s) has no data",CLSS,res.getResourceName());
 		}
 		return sd;
-	}
-
-
-	private boolean isBLTResource(String type) {
-		boolean isBLTType = false;
-		if( type!=null &&
-			type.equals(BLTProperties.DIAGRAM_RESOURCE_TYPE.getTypeId()) ) {
-				isBLTType = true;
-		}
-		return isBLTType;
 	}
 	
 	/**
