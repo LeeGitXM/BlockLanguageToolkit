@@ -233,11 +233,11 @@ public class ModelManager implements ProjectListener  {
 	
 	/**
 	 * Get a list of all diagram resource paths
-	 * @return a list of diagram resource paths. If none found, return null. 
+	 * @return a list of diagram resource paths. If none found, return empty list. 
 	 */
 	public synchronized List<SerializableResourceDescriptor> getDiagramDescriptors() {
-		if(DEBUG) log.infof("%s.getDiagramDescriptors", CLSS);
 		List<SerializableResourceDescriptor> result = new ArrayList<>();
+		int priorSize = 0;
 		List<String> projectNames = context.getProjectManager().getProjectNames();
 		for( String projectName: projectNames ) {
 			List<ProcessNode> nodes = root.allNodesForProject(projectName);
@@ -252,8 +252,9 @@ public class ModelManager implements ProjectListener  {
 					result.add(descriptor);
 				}
 			}
+			if(DEBUG) log.infof("%s.getDiagramDescriptors: found %d for project %s", CLSS,result.size() - priorSize,projectName);
+			priorSize = result.size();  // Used only for debugging
 		}
-		if(DEBUG) log.infof("%s.getDiagramDescriptors: found %d", CLSS,result.size());
 		return result;	
 	}
 

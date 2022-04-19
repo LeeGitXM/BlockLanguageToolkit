@@ -756,7 +756,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		// block binding to expressions for output
 		if( pblock.getClassName().equals(BlockConstants.BLOCK_CLASS_OUTPUT)    &&
 				prop.getName().equals(BlockConstants.BLOCK_PROPERTY_TAG_PATH) &&
-				tagProp != ExpressionType.None.getIntValue() ) {  // only update the tagpath property
+				tagProp!=null && tagProp != ExpressionType.None.getIntValue() ) {  // only update the tagpath property
 			msg = "Unable to bind expression tag to output";
 		}
 		// block binding of Input/Output to tags in correction folder

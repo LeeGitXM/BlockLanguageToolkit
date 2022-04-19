@@ -3,6 +3,11 @@
  */
 package com.ils.blt.designer.editor;
 
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -18,6 +23,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
+import javax.swing.DropMode;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
@@ -208,6 +214,8 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 			property.setBinding(binding);
 			bindingDisplayField.setText(binding);
 			bindingDisplayField.setVisible(true);
+			bindingDisplayField.setDropMode(DropMode.USE_SELECTION);
+			bindingDisplayField.setDropTarget(new TagDropTarget());
 			editButton.setVisible(true);
 		}
 		else {
@@ -221,7 +229,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 			notificationHandler.addNotificationChangeListener(valueKey,CLSS,this);
 		}
 		// The "plain" (NONE) properties can be changed by python scripting. Note: we do not want to update from Gateway
-		// yet, as there may have been local chenges in the designer
+		// yet, as there may have been local changes in the designer
 		else if(property.getBindingType().equals(BindingType.ENGINE) || property.getBindingType().equals(BindingType.NONE)) {
 			log.debugf("%s: adding %s",CLSS,valueKey);
 			notificationHandler.addNotificationChangeListener(valueKey,CLSS,this,false);
@@ -350,8 +358,11 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 				catch (IOException e) {
 					e.printStackTrace();
 				}
+				if( tagProp==null) return;    // Tag is empty
+				
 				// block binding to expressions for output
-				if (block.getClassName().equals(BlockConstants.BLOCK_CLASS_OUTPUT) && tagProp != ExpressionType.None.getIntValue()) {  // only update the tagpath property
+				if (block.getClassName().equals(BlockConstants.BLOCK_CLASS_OUTPUT) &&
+					tagProp!=ExpressionType.None.getIntValue()) {  // only update the tagpath property
 					msg = "Unable to bind expression tag to output";
 				} 
 				else {
@@ -851,5 +862,42 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 			// Tag or path is null
 			log.warnf("%s.tagChanged: Unknown tag (%s)",CLSS,(path==null?"null":path));
 		}
+	}
+	
+	public class TagDropTarget extends DropTarget {
+		private static final long serialVersionUID = 1L;
+
+		public TagDropTarget() {
+			this.setActive(true);
+		}
+
+		@Override
+		public void drop(DropTargetDropEvent event) {		
+			TagDropTarget source = (TagDropTarget)event.getSource();
+			if( bindingDisplayField.equals((source.getComponent())) ) {
+				log.infof("%s.drop: source is %s", CLSS,bindingDisplayField.getName());
+				event.acceptDrop(DnDConstants.ACTION_COPY);
+			String data = null;
+			try {
+				data = (String)event.getTransferable().getTransferData(DataFlavor.stringFlavor);
+				log.infof("%s.drop: data is %s", CLSS,data);
+				// Data is JSON. Do simple cuts to get tag path.
+				String target = "tagPath\":\"";
+				int pos = data.indexOf(target);
+				if( pos>0 ) {
+					data = data.substring(pos+target.length());
+					pos = data.indexOf("\"");
+					if( pos > 0 ) {
+						data = data.substring(0,pos);
+						bindingChange(bindingDisplayField.getName(),data);
+					}
+				}	
+			} 
+			catch (Exception ex) {
+				log.infof("%s.drop: Exception with drop %s", CLSS,ex.getLocalizedMessage());
+			}
+			}
+		}
+		
 	}
 }

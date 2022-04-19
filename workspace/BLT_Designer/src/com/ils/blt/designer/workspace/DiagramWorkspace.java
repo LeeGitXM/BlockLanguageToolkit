@@ -95,6 +95,7 @@ import com.inductiveautomation.ignition.client.designable.DesignableContainer;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.client.tags.model.ClientTagManager;
 import com.inductiveautomation.ignition.client.tags.tree.node.BrowseTreeNode;
+import com.inductiveautomation.ignition.client.tags.tree.node.TagTreeNode;
 import com.inductiveautomation.ignition.client.util.LocalObjectTransferable;
 import com.inductiveautomation.ignition.client.util.action.BaseAction;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
@@ -104,11 +105,11 @@ import com.inductiveautomation.ignition.common.config.PropertySet;
 import com.inductiveautomation.ignition.common.execution.ExecutionManager;
 import com.inductiveautomation.ignition.common.execution.impl.BasicExecutionEngine;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
-import com.inductiveautomation.ignition.common.project.resource.ProjectResourceBuilder;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 import com.inductiveautomation.ignition.common.project.resource.ResourcePath;
 import com.inductiveautomation.ignition.common.sqltags.model.TagProp;
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
+import com.inductiveautomation.ignition.common.tags.browsing.NodeBrowseInfo;
 import com.inductiveautomation.ignition.common.tags.config.TagConfigurationModel;
 import com.inductiveautomation.ignition.common.tags.config.properties.WellKnownTagProps;
 import com.inductiveautomation.ignition.common.tags.config.types.TagObjectType;
@@ -144,7 +145,6 @@ import com.inductiveautomation.ignition.designer.model.menu.MenuBarMerge;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractNavTreeNode;
 import com.inductiveautomation.ignition.designer.navtree.model.ProjectBrowserRoot;
 import com.inductiveautomation.ignition.designer.tags.tree.dnd.NodeListTransferable;
-import com.inductiveautomation.ignition.designer.tags.tree.node.TagTreeNode;
 import com.jidesoft.action.CommandBar;
 import com.jidesoft.action.DockableBarManager;
 import com.jidesoft.docking.DockContext;
@@ -732,10 +732,10 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				if (node instanceof ArrayList && ((List<?>) node).size() == 1) {
 					ArrayList<?> tagNodeArr = (ArrayList<?>)node;
 					// NOTE: This will fail (properly) if tag type is a dataset
-					if (tagNodeArr.get(0) instanceof TagTreeNode) {  // That's the thing we want!
+					if (tagNodeArr.get(0) instanceof NodeBrowseInfo) {  // That's the thing we want!
 						BlockDesignableContainer container = getSelectedContainer();
 						ProcessDiagramView diagram = (ProcessDiagramView)container.getModel();
-						TagTreeNode tnode = (TagTreeNode) tagNodeArr.get(0);
+						NodeBrowseInfo tnode = (NodeBrowseInfo) tagNodeArr.get(0);
 						int dropx = event.getLocation().x;
 						int dropy = event.getLocation().y;
 						int thewidth = getActiveDiagram().getDiagramSize().width;
@@ -743,7 +743,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 
 						if( getSelectedContainer()!=null ) {
 							ProcessBlockView block = null;
-							TagPath tp = tnode.getTagPath();
+							TagPath tp = tnode.getFullPath();
 							boolean isStandardFolder = BusinessRules.isStandardConnectionsFolder(tp);
 							BlockDescriptor desc = new BlockDescriptor();
 							// Sinks to right,sources to the left
@@ -757,7 +757,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 									desc.setCtypeEditable(true);
 									block = new ProcessBlockView(desc);
 									block.setName(nameFromTagTree(tnode));
-									updatePropertiesForTagPath(block,tnode.getTagPath().toStringFull());
+									updatePropertiesForTagPath(block,tnode.getFullPath().toStringFull());
 									addNameDisplay(block,dropx,dropy);
 								}
 								else {
@@ -769,7 +769,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 									desc.setCtypeEditable(true);
 									block = new ProcessBlockView(desc);
 									block.setName(enforceUniqueName(nameFromTagTree(tnode),diagram));
-									updatePropertiesForTagPath(block,tnode.getTagPath().toStringFull());
+									updatePropertiesForTagPath(block,tnode.getFullPath().toStringFull());
 									addNameDisplay(block,dropx,dropy);
 									
 								}
@@ -778,7 +778,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 								block.addAnchor(output);
 								// Properties are the same for Inputs and Sources
 								// This property causes the engine to start a subscription.
-								BlockProperty tagPathProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH,tnode.getTagPath().toStringFull(),PropertyType.OBJECT,true);
+								BlockProperty tagPathProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH,tnode.getFullPath().toStringFull(),PropertyType.OBJECT,true);
 								tagPathProperty.setBinding(tnode.getName());
 								tagPathProperty.setBindingType(BindingType.TAG_READ);
 								block.setProperty(tagPathProperty);
@@ -820,7 +820,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 								// Properties are the same for Outputs and Sinks
 								BlockProperty pathProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH,"",PropertyType.STRING,true);
 								pathProperty.setBindingType(BindingType.TAG_WRITE);
-								pathProperty.setBinding(tnode.getTagPath().toStringFull());
+								pathProperty.setBinding(tnode.getFullPath().toStringFull());
 								block.setProperty( pathProperty);
 								BlockProperty valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,"",PropertyType.OBJECT,false);
 								valueProperty.setBindingType(BindingType.ENGINE);
@@ -846,7 +846,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 								this.getActiveDiagram().addBlock(block);
 								DataType type = DataType.Boolean;
 								List<TagPath> paths = new ArrayList<>();
-								paths.add(tnode.getTagPath());
+								paths.add(tnode.getFullPath());
 								ClientTagManager tmgr = context.getTagManager();
 								CompletableFuture<List<TagConfigurationModel>> futures = tmgr.getTagConfigsAsync(paths,false,true);
 								try {
@@ -855,7 +855,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 									type = (DataType)config.getOrDefault(WellKnownTagProps.DataType);
 								}
 								catch(Exception ex) {
-									log.infof("%s.handleDiagramDrop: failed to get tag info for %s %s (%s)",CLSS,block.getClassName(),tnode.getTagPath().toStringFull(),
+									log.infof("%s.handleDiagramDrop: failed to get tag info for %s %s (%s)",CLSS,block.getClassName(),tnode.getFullPath().toStringFull(),
 											ex.getMessage());
 								}
 
@@ -863,7 +863,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 								Collection<BlockProperty> props = block.getProperties();
 								for (BlockProperty property:props) {
 									if( BlockConstants.BLOCK_PROPERTY_TAG_PATH.equalsIgnoreCase(property.getName())) {
-										property.setBinding(tnode.getTagPath().toStringFull());}
+										property.setBinding(tnode.getFullPath().toStringFull());}
 									block.modifyConnectionForTagChange(property, type);
 								}
 								this.getActiveDiagram().setDirty();
@@ -904,12 +904,12 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				Object node = event.getTransferable().getTransferData(flava);
 				if (node instanceof ArrayList && ((ArrayList<?>) node).size() == 1) {
 					ArrayList<?> tagNodeArr = (ArrayList<?>)node;
-					if (tagNodeArr.get(0) instanceof TagTreeNode) {  // That's the thing we want!
+					if (tagNodeArr.get(0) instanceof NodeBrowseInfo) {  // That's the thing we want!
 						BlockDesignableContainer container = getSelectedContainer();
 						ProcessDiagramView diagram = (ProcessDiagramView)container.getModel();
-						TagTreeNode tnode = (TagTreeNode) tagNodeArr.get(0);
-						log.infof("%s.handleTagOnBlockDrop: tag data: %s",CLSS,tnode.getName());
-						TagPath tp = tnode.getTagPath();
+						NodeBrowseInfo tnode = (NodeBrowseInfo) tagNodeArr.get(0);
+						log.infof("%s.handleTagOnBlockDrop: tag data: %s",CLSS,tnode.getFullPath());
+						TagPath tp = tnode.getFullPath();
 
 						Block targetBlock = ((BlockComponent)droppedOn).getBlock();
 						if(targetBlock instanceof ProcessBlockView)  {
@@ -933,13 +933,13 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 								exprType = (Integer) config.get(TagProp.ExpressionType);
 							}
 							catch(Exception ex) {
-								log.infof("%s.handleDiagramDrop: failed to get tag info for %s (%s)",CLSS,tnode.getTagPath().toStringFull(),
+								log.infof("%s.handleDiagramDrop: failed to get tag info for %s (%s)",CLSS,tnode.getFullPath().toStringFull(),
 										ex.getMessage());
 							}
 							String connectionMessage = diagram.isValidBindingChange(pblock, prop, tp.toStringFull(), tagType,exprType);
 							
 							if( connectionMessage==null ) {
-								prop.setBinding(tnode.getTagPath().toStringFull());
+								prop.setBinding(tnode.getFullPath().toStringFull());
 								setSelectedItems((JComponent)null);  // hack to get the property panel to refresh
 								setSelectedItems((JComponent)droppedOn);
 								pblock.setName(nameFromTagTree(tnode));
@@ -1025,20 +1025,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		return name;
 	}
 	
-	private String nameFromTagTree(TagTreeNode tnode) {
+	private String nameFromTagTree(NodeBrowseInfo tnode) {
 		String name = tnode.getName();
-		 
-		while(! tnode.getTagType().equals(TagObjectType.AtomicTag)) {
-			BrowseTreeNode tptn = tnode.getParent();
-			if( tptn instanceof TagTreeNode) {
-				tnode = (TagTreeNode)tptn;
-				name = tnode.getName();
-			}
-			else {
-				name = tptn.getName();
-				break;
-			}
-		}
 		return name;
 	}
 
