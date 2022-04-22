@@ -31,6 +31,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
+import javax.swing.SwingUtilities;
 import javax.swing.tree.TreePath;
 
 import com.fasterxml.jackson.core.JsonParseException;
@@ -58,7 +59,6 @@ import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.client.util.action.BaseAction;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
 import com.inductiveautomation.ignition.common.BundleUtil;
-import com.inductiveautomation.ignition.common.StringPath;
 import com.inductiveautomation.ignition.common.model.ApplicationScope;
 import com.inductiveautomation.ignition.common.project.ChangeOperation;
 import com.inductiveautomation.ignition.common.project.ProjectResourceListener;
@@ -151,7 +151,7 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 		openIcon = IconUtil.getIcon("folder"); 
 		diagramIcon = iconFromPath("Block/icons/navtree/diagram.png");
 		setIcon(closedIcon);
-		setDirty(true);
+		statusManager.createResourceStatus(this, resourceId);
 	}
 
 	// For debugging
@@ -284,6 +284,7 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 			log.infof("%s.onEdit: alterName from %s to %s",CLSS,oldName,newTextValue);
 			alterName(newTextValue);
 			workspace.saveOpenDiagram(resourceId);
+			statusManager.nameChange(resourceId);
 		}
 		catch (IllegalArgumentException ex) {
 			ErrorUtil.showError(CLSS+".onEdit: "+ex.getMessage());
@@ -360,7 +361,7 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 		if( !context.getProject().isEnabled()) return null;
 		AbstractResourceNavTreeNode node = statusManager.findNode(res.getResourceId());
 		if( node==null ) {
-			if (  res.isFolder() )       {
+			if ( res.isFolder() )       {
 				node = new NavTreeFolder(context, res);
 				log.tracef("%s.createChildNode: (%s) %s->%s",CLSS,rtype,this.getName(),node.getName());
 			}
@@ -368,7 +369,6 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 				node = new DiagramTreeNode(context,res,workspace);
 				log.tracef("%s.createChildDiagram: %s->%s",CLSS,this.getName(),node.getName());
 			} 
-			statusManager.createResourceStatus(node,resourceId, res.getResourceId());
 		}
 		else {
 			log.debugf("%s.createChildNode: REUSE %s->%s",CLSS,this.getName(),node.getName());
@@ -1085,7 +1085,6 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 											new ResourceCreateManager(getResourcePath().getFolderPath(),sd.getName(),sd.serialize()).run();	
 											parentNode.selectChild(new ResourcePath[] {getResourcePath()} );
 											statusManager.setResourceState(resid, sd.getState());
-											setDirty(true);
 										}
 										else {
 											ErrorUtil.showWarning(String.format("Failed to deserialize file (%s)",input.getAbsolutePath()),POPUP_TITLE);
@@ -1315,26 +1314,23 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 	}
 	
 	// ************************ NavTreeNodeInterface **************************
-	// These methods are used by the NodeStatusManager
-	@Override
-	public ProjectResourceId getResourceId() { return this.resourceId; }
-	// Dirtiness refers to internal state, independent of children.
-	@Override
-	public boolean isDirty() { return this.dirty; }
-	public void setDirty(boolean flag) { this.dirty = flag; }
-	// Unsubscribe as a project change listener
+	// These methods are called by the NodeStatusManager
 	@Override
 	public void prepareForDeletion() { uninstall(); }
+	
 	/**
-	 * Either our state or the state of another node changed, annotate our state. 
-	 * Dirtiness for a nav tree node means that one or more of its descendent diagrams
-	 * is dirty.
+	 * Update the node italic/plain in background.
 	 * Note: This method should ONLY be called from the node status manager.
 	 */
 	@Override
 	public void updateUI(boolean dty) {
 		log.infof("%s.updateUI: %s dirty = %s",CLSS,resourceId.getResourcePath().getPath().toString(),(dty?"true":"false"));
-		setItalic(dty);   // NOTE: italic system may be broken ?
-		refresh();  // Update the UI
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				setItalic(dty);
+				refresh();
+			}
+		});
 	}
 }

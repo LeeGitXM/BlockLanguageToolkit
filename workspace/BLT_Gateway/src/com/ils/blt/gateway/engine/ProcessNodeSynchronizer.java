@@ -12,6 +12,7 @@ import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.RuntimeProject;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
+import com.inductiveautomation.ignition.common.project.resource.ResourcePath;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.project.DesignableProject;
@@ -28,7 +29,7 @@ public class ProcessNodeSynchronizer {
     private final LoggerEx log;
     private final ModelManager modelManager;
     private final List<ProjectResource> resourcesDelete;
-    private Map<String,ProjectResource> resourceMap;
+    private Map<ResourcePath,ProjectResource> resourceMap;
     /**
      * Constructor.
      */
@@ -45,8 +46,8 @@ public class ProcessNodeSynchronizer {
      */
     public void createMissingResources() {
     	log.infof("%s.createMissingResources ========================== Create Missing Resources ==================================", CLSS);
-    	Map<String,ProcessNode> nodeMap = modelManager.getNodesById();
-    	for(String key:resourceMap.keySet()) {
+    	Map<ResourcePath,ProcessNode> nodeMap = modelManager.getNodesByResourcePath();
+    	for(ResourcePath key:resourceMap.keySet()) {
     		if( nodeMap.get(key)==null) {
     			log.infof("%s.createMissingResources: ADDING node %s (project resource not represented)", CLSS,key);
     			modelManager.analyzeResource(resourceMap.get(key),true);
@@ -87,7 +88,7 @@ public class ProcessNodeSynchronizer {
     public void removeOrphans() {
     	log.infof("%s.removeOrphans ======================== Removing Orphans ================================", CLSS);
     	resourcesDelete.clear();
-    	Map<String,ProcessNode> nodesByKey = modelManager.getNodesById();
+    	Map<ResourcePath,ProcessNode> nodesByKey = modelManager.getNodesByResourcePath();
     	Collection<ProcessNode> nodes = nodesByKey.values();
     	RootNode root = modelManager.getRootNode();
     	for( ProcessNode child:nodes) {
@@ -120,10 +121,10 @@ public class ProcessNodeSynchronizer {
     }
 
     // Create 
-    private Map<String,ProjectResource> createResourceMap(GatewayContext context) {
+    private Map<ResourcePath,ProjectResource> createResourceMap(GatewayContext context) {
     	// We need to pass something serializable to the panel, thus the list of resources
     	// We also need to make sure this is up-to-date.
-    	Map<String,ProjectResource> map = new HashMap<>();
+    	Map<ResourcePath,ProjectResource> map = new HashMap<>();
     	List<String> projectNames = context.getProjectManager().getProjectNames();
     	for( String name:projectNames ) {
     		Optional<RuntimeProject> optional = context.getProjectManager().getProject(name);
@@ -133,7 +134,7 @@ public class ProcessNodeSynchronizer {
     		for( ProjectResource res:reslist ) {
     			if(res.getResourceId().getResourceType().getModuleId().equalsIgnoreCase(BLTProperties.MODULE_ID)) {
     				if( res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)  ) {
-    					map.put(ResourceKey.keyForResource(res.getResourceId()),res);
+    					map.put(res.getResourceId().getResourcePath(),res);
     				}
     			}
     		}

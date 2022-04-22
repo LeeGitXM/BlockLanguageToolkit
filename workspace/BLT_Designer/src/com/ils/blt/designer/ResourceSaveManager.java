@@ -87,7 +87,6 @@ public class ResourceSaveManager implements Runnable {
 		if(option.isPresent()) {
 			ProjectResource res = option.get();
 			ProcessDiagramView view = null;
-			node.setItalic(false);
 
 			if( res!=null ) {
 				if(res.getResourcePath().getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {	

@@ -19,14 +19,10 @@ import com.ils.blt.common.ProcessBlock;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.connection.Connection;
-import com.ils.blt.common.script.Script;
-import com.ils.blt.common.script.ScriptConstants;
-import com.ils.blt.common.script.ScriptExtensionManager;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.gateway.BlockTagSynchronizer;
-import com.ils.common.persistence.ToolkitProperties;
 import com.ils.common.persistence.ToolkitRecordHandler;
 import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.ProjectListener;
@@ -58,12 +54,9 @@ public class ModelManager implements ProjectListener  {
 	private final GatewayContext context;
 	private final LoggerEx log;
 	private RootNode root;
-	private final Map<String,ProcessNode> nodesByResourceId; 
 	private final Map<ResourcePath,ProcessNode> orphansByResourcePath;
 	private final Map<ResourcePath,ProcessNode> nodesByResourcePath;
 	private final BlockExecutionController controller = BlockExecutionController.getInstance();
-	private final ScriptExtensionManager extensionManager = ScriptExtensionManager.getInstance();
-	private final ToolkitRecordHandler toolkitHandler;
 	
 	/**
 	 * Initially we query the gateway context to discover what resources exists. After that
@@ -75,9 +68,7 @@ public class ModelManager implements ProjectListener  {
 	public ModelManager(GatewayContext ctx) { 
 		this.context = ctx;
 		this.log = LogUtil.getLogger(getClass().getPackage().getName());
-		this.toolkitHandler = new ToolkitRecordHandler(context);
 		
-		nodesByResourceId = new HashMap<>();
 		orphansByResourcePath = new HashMap<>();
 		nodesByResourcePath = new HashMap<>();
 		ProjectResourceId resourceId = new ProjectResourceId(BLTProperties.UNDEFINED,BLTProperties.DIAGRAM_RESOURCE_TYPE,BLTProperties.ROOT_FOLDER_NAME);
@@ -124,7 +115,7 @@ public class ModelManager implements ProjectListener  {
 	 */
 	public List<ProcessDiagram> getDiagrams() {
 		List<ProcessDiagram> diagrams = new ArrayList<>();
-		for(ProcessNode node:nodesByResourceId.values()) {
+		for(ProcessNode node:nodesByResourcePath.values()) {
 			if( node instanceof ProcessDiagram ) diagrams.add((ProcessDiagram)node);
 		}
 		return diagrams;
@@ -171,8 +162,20 @@ public class ModelManager implements ProjectListener  {
 		return cxn;
 	}
 	public GatewayContext getContext() { return this.context; }
+	/**
+	 * Get a specified diagram given projectId and resourceId. 
+	 * @param projectId
+	 * @param resourceId
+
+	 * @return the specified diagram. If not found, return null. 
+	 */
+	public ProcessDiagram getDiagram(ProjectResourceId resourceId) {
+		ProcessDiagram diagram = null;
+		ProcessNode node = nodesByResourcePath.get(resourceId.getResourcePath());
+		if( node instanceof ProcessDiagram ) diagram = (ProcessDiagram)node;
+		return diagram;
+	}
 	
-	public Map<String,ProcessNode> getNodesById() { return nodesByResourceId; }
 	public Map<ResourcePath,ProcessNode> getNodesByResourcePath() { return nodesByResourcePath; }
 	
 	/**
@@ -185,21 +188,6 @@ public class ModelManager implements ProjectListener  {
 		ProcessNode node = nodesByResourcePath.get(nodeId.getResourcePath());
 		return node;
 	}
-	
-	/**
-	 * Get a specified diagram given projectId and resourceId. 
-	 * @param projectId
-	 * @param resourceId
-
-	 * @return the specified diagram. If not found, return null. 
-	 */
-	public ProcessDiagram getDiagram(ProjectResourceId resourceId) {
-		ProcessDiagram diagram = null;
-		ProcessNode node = nodesByResourceId.get(ResourceKey.keyForResource(resourceId));
-		if( node instanceof ProcessDiagram ) diagram = (ProcessDiagram)node;
-		return diagram;
-	}
-	
 
 	/**
 	 * Get a list of diagram tree paths known to the specified project. 
@@ -452,7 +440,6 @@ public class ModelManager implements ProjectListener  {
 		for(ProcessNode child:children) {
 			root.removeChild(child);
 		}
-		nodesByResourceId.clear();
 		orphansByResourcePath.clear();
 		nodesByResourcePath.clear();
 		nodesByResourcePath.put(root.getResourceId().getResourcePath(), root);
@@ -463,7 +450,7 @@ public class ModelManager implements ProjectListener  {
 	 * DISABLED, its blocks are started. It's just that their results are not propagated.
 	 */
 	public void startBlocks() {
-		for( ProcessNode node:nodesByResourceId.values() ) {
+		for( ProcessNode node:nodesByResourcePath.values() ) {
 			if( node instanceof ProcessDiagram ) {
 				ProcessDiagram diagram = (ProcessDiagram)node;
 				// Start in two passes - input blocks come last
@@ -482,7 +469,7 @@ public class ModelManager implements ProjectListener  {
 	 * been stopped.
 	 */
 	public void stopBlocks() {
-		for( ProcessNode node:nodesByResourceId.values() ) {
+		for( ProcessNode node:nodesByResourcePath.values() ) {
 			if( node instanceof ProcessDiagram) {
 				ProcessDiagram diagram = (ProcessDiagram)node;
 				for( ProcessBlock pb:diagram.getProcessBlocks()) {
@@ -594,7 +581,7 @@ public class ModelManager implements ProjectListener  {
 				diagram = new ProcessDiagram(sd,res.getResourcePath().getParent(),res.getProjectName());
 
 				// Add the new diagram to our hierarchy
-				nodesByResourceId.put(ResourceKey.keyForResource(diagram.getResourceId()),diagram);
+				nodesByResourcePath.put(diagram.getResourceId().getResourcePath(),diagram);
 				addToHierarchy(diagram);
 				diagram.createBlocks(sd.getBlocks());
 				diagram.updateConnections(sd.getConnections());
@@ -635,16 +622,6 @@ public class ModelManager implements ProjectListener  {
 					}
 				}
 			}
-			// Invoke extension script for the diagram itself
-			// The SAVE script is smart enough to do an insert if diagram is new.
-			if( !startup ) {
-				String provider = (diagram.getState().equals(DiagramState.ACTIVE) ? 
-						toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER):
-						toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER));
-				Script script = extensionManager.createExtensionScript(ScriptConstants.DIAGRAM_CLASS_NAME, ScriptConstants.SAVE_OPERATION, provider);
-				extensionManager.runScript(context.getProjectManager().getProjectScriptManager(diagram.getProjectName()), 
-						script, diagram.getPath());
-			}
 		}
 		else {
 			log.warnf("%s.addModifyDiagramResource - Failed to create diagram from resource (%s)",CLSS,res.getResourceName());
@@ -663,9 +640,9 @@ public class ModelManager implements ProjectListener  {
 		ProcessNode node = nodesByResourcePath.get(resId.getResourcePath());
 		if( node==null ) {
 			try {
-				node = new ProcessNode(res.getResourceName(),resId.getResourcePath().getParent(),resId);
+				node = new ProcessNode(resId,res.getResourceName());
 				// Add in the new Folder
-				nodesByResourceId.put(ResourceKey.keyForResource(node.getResourceId()),node);
+				nodesByResourcePath.put(node.getResourceId().getResourcePath(),node);
 				addToHierarchy(node);
 			}
 			catch( IllegalStateException ise ) {
@@ -690,21 +667,20 @@ public class ModelManager implements ProjectListener  {
 		
 		// If the parent is null, then we're the top of the chain for our project
 		// Add the node to the root.
-		if( node.getParentPath()==null )  {
+		if( node.getResourceId().getResourcePath().getParent()==null )  {
 			root.addChild(node);
 			if(DEBUG) log.infof("%s.addToHierarchy: %s is a ROOT (null parent)",CLSS,node.getName());
 		}
-		else if( node.getParentPath().isModuleFolder() )  {
+		else if( node.getResourceId().getResourcePath().getParent().isModuleFolder() )  {
 			root.addChild(node);
 			if(DEBUG) log.infof("%s.addToHierarchy: %s is a ROOT (parent is root folder)",CLSS,node.getName());
 		}
 		else {
 			// If the parent is already in the tree, simply add the node as a child
 			// Otherwise add to our list of orphans
-			ProcessNode parent = nodesByResourcePath.get(node.getParentPath());
-	
+			ProcessNode parent = nodesByResourcePath.get(node.getResourceId().getResourcePath());
 			if(parent==null ) {
-				if(DEBUG) log.infof("%s.addToHierarchy: %s is an ORPHAN (parent is %s)",CLSS,node.getName(),node.getParentPath().toString());
+				if(DEBUG) log.infof("%s.addToHierarchy: %s is an ORPHAN (parent is %s)",CLSS,node.getName(),node.getResourceId().getFolderPath());
 				orphansByResourcePath.put(self.getResourcePath(), node);
 			}
 			else {
@@ -725,15 +701,13 @@ public class ModelManager implements ProjectListener  {
 	public void deleteResource(ProjectResourceId resourceId) {
 		if(DEBUG) log.infof("%s.deleteResource: %s:%s",CLSS,resourceId.getProjectName(),resourceId.getResourcePath().getPath());
 
-		ProcessNode head = nodesByResourceId.get(ResourceKey.keyForResource(resourceId));
-		DiagramState nodeState = DiagramState.ACTIVE;
+		ProcessNode head = nodesByResourcePath.get(resourceId.getResourcePath());
 		if( head!=null ) {
 			List<ProcessNode> nodesToDelete = new ArrayList<>();
 			head.collectDescendants(nodesToDelete);  // "head" is in the list
 			for(ProcessNode node:nodesToDelete ) {
 				if( node instanceof ProcessDiagram ) {
 					ProcessDiagram diagram = (ProcessDiagram)node;
-					nodeState = diagram.getState();
 
 					for(ProcessBlock block:diagram.getProcessBlocks()) {
 						block.stop();
@@ -748,10 +722,10 @@ public class ModelManager implements ProjectListener  {
 						}
 					}
 				}
-				nodesByResourceId.remove(ResourceKey.keyForResource(resourceId));
+				nodesByResourcePath.remove(resourceId.getResourcePath());
 				
-				if( node.getParentPath()!=null ) {
-					ProcessNode parent = nodesByResourcePath.get(node.getParentPath());
+				if( node.getResourceId()!=null && node.getResourceId().getResourcePath()!=null ) {
+					ProcessNode parent = nodesByResourcePath.get(node.getResourceId().getResourcePath());
 					if( parent!=null ) {
 						parent.removeChild(node);
 						if( parent.getResourceId().equals(root.getResourceId())) {
@@ -761,20 +735,6 @@ public class ModelManager implements ProjectListener  {
 				}
 				// Finally remove from the node maps
 				nodesByResourcePath.remove(node.getResourceId().getResourcePath());
-				// Invoke the proper extension function on a delete
-				// NOTE: Need to use keys for class names
-				String classKey = ScriptConstants.DIAGRAM_CLASS_NAME;
-							
-				// Invoke extension script for the delete
-				// Execute for BOTH production and isolation
-				if( node!=null ) {
-					Script script = extensionManager.createExtensionScript(classKey, ScriptConstants.DELETE_OPERATION, toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER));
-					extensionManager.runScript(context.getProjectManager().getProjectScriptManager(node.getProjectName()), 
-							script, node.getResourceId().getResourcePath().getPath(),node.getAuxiliaryData());
-					script = extensionManager.createExtensionScript(classKey, ScriptConstants.DELETE_OPERATION, toolkitHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER));
-					extensionManager.runScript(context.getProjectManager().getProjectScriptManager(node.getProjectName()), 
-					script, node.getResourceId().getResourcePath().getPath(),node.getAuxiliaryData());
-				}
 			}
 		}
 	}
@@ -831,7 +791,7 @@ public class ModelManager implements ProjectListener  {
 	private void resolveOrphans() {
 		List<ProcessNode> reconciledOrphans = new ArrayList<ProcessNode>();
 		for( ProcessNode orphan:orphansByResourcePath.values()) {
-			ProcessNode parent = nodesByResourcePath.get(orphan.getParentPath());
+			ProcessNode parent = nodesByResourcePath.get(orphan.getResourceId().getResourcePath());
 			// If is now resolved, remove node from orphan list and
 			// add as child of parent. Recurse it's children.
 			if(parent!=null ) {
@@ -843,7 +803,7 @@ public class ModelManager implements ProjectListener  {
 			}
 		}
 		for( ProcessNode orphan:reconciledOrphans) {
-			ProcessNode parent = nodesByResourcePath.get(orphan.getParentPath());
+			ProcessNode parent = nodesByResourcePath.get(orphan.getResourceId().getResourcePath());
 			parent.addChild(orphan);
 			orphansByResourcePath.remove(orphan.getResourceId().getResourcePath());
 		}

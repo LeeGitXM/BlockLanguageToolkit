@@ -8,7 +8,6 @@ import java.util.Map;
 
 import com.ils.blt.common.ApplicationScriptFunctions;
 import com.ils.blt.common.BLTProperties;
-import com.ils.blt.common.script.ScriptExtensionManager;
 import com.inductiveautomation.ignition.client.model.ClientContext;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.expressions.ExpressionFunctionManager;
@@ -55,14 +54,10 @@ public class BLTClientHook implements ClientModuleHook {
 
 	@Override
 	public void startup(ClientContext ctx, LicenseState arg1) throws Exception {
-		// Make sure the extension script manager knows about context
-		ScriptExtensionManager.getInstance().setContext(ctx);
 	}
 	
 	@Override
 	public void configureFunctionFactory(ExpressionFunctionManager factory) {
-
-		
 	}
 
 }

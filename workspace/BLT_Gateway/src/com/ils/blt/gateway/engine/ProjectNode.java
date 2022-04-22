@@ -1,13 +1,11 @@
 /**
- *   (c) 2014-2021  ILS Automation. All rights reserved. 
+ *   (c) 2014-2022  ILS Automation. All rights reserved. 
  */
 package com.ils.blt.gateway.engine;
 
 import java.util.Collection;
-import java.util.Map;
 
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
-import com.inductiveautomation.ignition.common.project.resource.ResourcePath;
 
 /**
  * A project node is a construction solely for the use of the status panel
@@ -25,7 +23,7 @@ public class ProjectNode extends ProcessNode {
 	 * @param projName the project
 	 */
 	public ProjectNode(RootNode rootNode, ProjectResourceId me) { 
-		super(me.getProjectName(),rootNode.getResourceId().getResourcePath(),me);
+		super(me,rootNode.getName());
 		this.root = rootNode;
 	}
 
@@ -41,15 +39,7 @@ public class ProjectNode extends ProcessNode {
 	public void setProjectName(String name) {
 		throw new UnsupportedOperationException();
 	}
-
-	/**
-	 * Normally the tree path does not include the project, so is not appropriate here.
-	 * @return
-	 */
-	@Override
-	public String getTreePath(Map<ResourcePath,ProcessNode> nodesByPath) {
-		throw new UnsupportedOperationException();
-	} 
+ 
 	@Override
 	public void removeChild(ProcessNode child) { 
 		throw new UnsupportedOperationException();

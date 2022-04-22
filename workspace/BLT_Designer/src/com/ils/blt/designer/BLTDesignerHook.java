@@ -31,7 +31,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.ApplicationScriptFunctions;
 import com.ils.blt.common.BLTProperties;
-import com.ils.blt.common.script.ScriptExtensionManager;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.designer.navtree.NavTreeFolder;
 import com.ils.blt.designer.search.BLTSearchProvider;
@@ -158,7 +157,6 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		context = ctx;
 		appRequestHandler = new ApplicationRequestHandler();
 		nodeStatusManager = new NodeStatusManager(context,appRequestHandler);
-		ScriptExtensionManager.getInstance().setContext(context);
 		ResourceCreateManager.setContext(ctx);
 		ResourceDeleteManager.setContext(ctx);
 		ResourceUpdateManager.setContext(ctx);
@@ -239,11 +237,9 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	public void notifyProjectSaveStart(SaveContext save) {
 		log.infof("%s.notifyProjectSaveStart --------",CLSS);
 		
-		// check if problems with save, just notify for now.  Can do save.abort() if it's serious
-		StringBuffer msg = new StringBuffer();
 		ResourceSaveManager saver = new ResourceSaveManager(getWorkspace(),rootNode);
 		saver.saveSynchronously();
-		nodeStatusManager.updateAll();
+		nodeStatusManager.markAllClean();
 	}
 	
 	

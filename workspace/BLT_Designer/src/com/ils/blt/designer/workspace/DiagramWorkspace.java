@@ -348,11 +348,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				// None of the following apply to an attribute display
 				if(!pbv.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_ATTRIBUTE) ) {
 					// Do not allow editing when the diagram is disabled
-					if(pbv.getEditorClass() !=null && pbv.getEditorClass().length() > 0 &&
-							!getActiveDiagram().getState().equals(DiagramState.DISABLED)) {
-						CustomEditAction cea = new CustomEditAction(this,pbv);
-						menu.add(cea);
-					}
 					if( !getActiveDiagram().getState().equals(DiagramState.DISABLED)) {
 						PropertyDisplayAction cea = new PropertyDisplayAction(getActiveDiagram(),pbv, this);
 						menu.add(cea);
@@ -1607,62 +1602,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		}
 	}
 
-	/**
-	 * Post a custom editor for the block. This action is expected to
-	 * apply to only a few block types. The action should be invoked only
-	 * if an editor class has been specified. 
-	 */
-	private class CustomEditAction extends BaseAction {
-		private static final long serialVersionUID = 1L;
-		private final ProcessBlockView block;
-		private final DiagramWorkspace workspace;
-		public CustomEditAction(DiagramWorkspace wksp,ProcessBlockView blk)  {
-			super(PREFIX+".ConfigureProperties");
-			this.workspace = wksp;
-			this.block = blk;
-		}
-		
-		// Display the custom editor
-		public void actionPerformed(final ActionEvent e) {
-			// Apparently this only works if the class is in the same package (??)
-			try{
-				Class<?> clss = Class.forName(block.getEditorClass());
-				Constructor<?> ctor = clss.getDeclaredConstructor(new Class[] {DiagramWorkspace.class,ProcessDiagramView.class,ProcessBlockView.class});
-				ProcessDiagramView pdv = getActiveDiagram();
-				final JDialog edtr = (JDialog)ctor.newInstance(workspace,pdv,block); 
-				Object source = e.getSource();
-				if( source instanceof Component) {
-					edtr.setLocationRelativeTo((Component)source);
-				}
-				edtr.pack();
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
-						if( source instanceof Component) {
-							edtr.setLocationRelativeTo((Component)source);
-						} else {
-							edtr.setLocation(100,100);
-						}
-						edtr.setVisible(true);
-					}
-				}); 
-			}
-			catch(InvocationTargetException ite ) {
-				log.info(CLSS+".customEditAction: Invocation failed for "+block.getEditorClass(),ite); 
-			}
-			catch(NoSuchMethodException nsme ) {
-				log.info(CLSS+".customEditAction: Constructor taking diagram and block not found for "+block.getEditorClass(),nsme); 
-			}
-			catch(ClassNotFoundException cnfe) {
-				log.info(CLSS+".customEditAction: Custom editor class "+block.getEditorClass()+" not found",cnfe);
-			}
-			catch( InstantiationException ie ) {
-				log.info(CLSS+".customEditAction: Error instantiating "+block.getEditorClass(),ie); 
-			}
-			catch( IllegalAccessException iae ) {
-				log.info(CLSS+".customEditAction: Security exception creating "+block.getEditorClass(),iae); 
-			}
-		}
-	}
 
 	public void alignLeft() {
 		Collection<BlockComponent> selections = getSelectedBlocks();

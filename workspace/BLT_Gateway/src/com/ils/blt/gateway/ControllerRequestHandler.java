@@ -41,7 +41,6 @@ import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.BroadcastNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.notification.Signal;
-import com.ils.blt.common.script.ScriptExtensionManager;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
@@ -90,7 +89,6 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	private GatewayContext context = null;
 	private static ControllerRequestHandler instance = null;
 	private final BlockExecutionController controller = BlockExecutionController.getInstance();
-	private final ScriptExtensionManager extensionManager = ScriptExtensionManager.getInstance();
 	private final PythonRequestHandler pyHandler;
 	private ToolkitProjectRecordHandler toolkitProjectRecordHandler;
 	private ToolkitRecordHandler toolkitRecordHandler;

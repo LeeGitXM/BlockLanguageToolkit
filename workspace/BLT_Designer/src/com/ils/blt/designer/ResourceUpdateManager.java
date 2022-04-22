@@ -91,6 +91,7 @@ public class ResourceUpdateManager implements Runnable {
 				ops.add(co);
 				gw.pushProject(ops);
 				requestHandler.triggerStatusNotifications(context.getProjectName());
+				statusManager.markResourceClean(resource.getResourceId());
 			}
 			catch(ResourceNotFoundException rnf) {
 				log.warnf("%s.run: Project resource not found %s:%s (%s)",CLSS,resource.getResourceId().getProjectName(),

@@ -13,7 +13,6 @@ import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
 
 import com.ils.common.component.PrefuseViewerComponent;
 import com.inductiveautomation.factorypmi.designer.workspace.WindowWorkspace;

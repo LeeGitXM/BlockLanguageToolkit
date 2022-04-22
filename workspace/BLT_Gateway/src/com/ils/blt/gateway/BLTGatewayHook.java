@@ -1,5 +1,5 @@
 /**
- *   (c) 2014-2021  ILS Automation. All rights reserved. 
+ *   (c) 2014-2022  ILS Automation. All rights reserved. 
  */
 package com.ils.blt.gateway;
 
@@ -11,7 +11,6 @@ import java.util.Optional;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 
 import com.ils.blt.common.BLTProperties;
-import com.ils.blt.common.script.ScriptExtensionManager;
 import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.blt.gateway.engine.ModelManager;
 import com.ils.blt.gateway.persistence.ToolkitRecordListener;
@@ -78,8 +77,6 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 		dispatcher = new GatewayRpcDispatcher(context);
 		recordListener = new ToolkitRecordListener(context);
 		
-		// Set context in the ScriptManager instance
-		ScriptExtensionManager.getInstance().setContext(context);
 		// Register the ToolkitRecord making sure that the table exists
 		try {
 			context.getSchemaUpdater().updatePersistentRecords(ToolkitProjectRecord.META);

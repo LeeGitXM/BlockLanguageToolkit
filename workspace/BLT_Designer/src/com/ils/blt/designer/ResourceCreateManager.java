@@ -3,14 +3,9 @@ package com.ils.blt.designer;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.BLTProperties;
-import com.ils.blt.common.DiagramState;
-import com.ils.blt.common.serializable.SerializableDiagram;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayInterface;
-import com.inductiveautomation.ignition.common.StringPath;
 import com.inductiveautomation.ignition.common.model.ApplicationScope;
 import com.inductiveautomation.ignition.common.project.ChangeOperation;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;

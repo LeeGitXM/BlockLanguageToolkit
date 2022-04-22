@@ -1,5 +1,5 @@
 /**
-d *   (c) 2014-2021  ILS Automation. All rights reserved. 
+ *   (c) 2014-2022  ILS Automation. All rights reserved. 
  */
 package com.ils.blt.gateway.engine;
 
@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.gateway.ControllerRequestHandler;
 import com.ils.common.GeneralPurposeDataContainer;
@@ -20,18 +19,16 @@ import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 
 /**
- * A process node is a container of type: application, family, folder, or diagram.
+ * A process node is a container of type: folder, or diagram.
  * We require the hierarchy in the gateway for purposes of routing conclusions
  * to the proper destination.
  */
 public class ProcessNode implements Serializable {
 	private static final long serialVersionUID = 6280701183405134254L;
-	private final static String PATH_SEPARATOR = ":";
-	private final Map<ProjectResourceId,ProcessNode> children;   // Key by resourceId
+	private final Map<ResourcePath,ProcessNode> children;   // Key by resourceId
 	protected final LoggerEx log;
 	private String name;
 	protected final ControllerRequestHandler requestHandler;
-	protected ResourcePath parent;
 	protected ProjectResourceId resourceId;   // Resource set when serialized.
 	private final String CLSS = "ProcessNode";
 	private GeneralPurposeDataContainer auxiliaryData;
@@ -44,12 +41,11 @@ public class ProcessNode implements Serializable {
 	 * @param path string path to this resource
 	 * @param type resource type as a string 
 	 */
-	public ProcessNode(String nam, ResourcePath parent, String projectName,String type) { 
+	public ProcessNode(ResourcePath parent,String projectName,String nam,String type) { 
 		requestHandler = ControllerRequestHandler.getInstance();
 		this.name = nam;
-		this.parent = parent;
-		StringPath path = StringPath.extend(parent.getPath(), nam);
-		this.resourceId = requestHandler.createResourceId(projectName, path.toString(),type);
+		String path = StringPath.extend(parent.getPath(), nam).toString();
+		this.resourceId = requestHandler.createResourceId(projectName, path,type);
 		this.auxiliaryData = new GeneralPurposeDataContainer();
 		this.children = new HashMap<>();
 		this.log = LogUtil.getLogger(getClass().getPackageName());
@@ -57,14 +53,12 @@ public class ProcessNode implements Serializable {
 	
 	/**
 	 * Constructor: 
+	 * @param me resourceId of this node.
 	 * @param nam of the node
-	 * @param parent resourece path of the parent of this node.
-	 * @param me UUID of this node 
 	 */
-	public ProcessNode(String nam, ResourcePath parent, ProjectResourceId me) { 
+	public ProcessNode(ProjectResourceId me,String nam) { 
 		requestHandler = ControllerRequestHandler.getInstance();
 		this.resourceId = me;
-		this.parent = parent;
 		this.name = nam;
 		this.auxiliaryData = new GeneralPurposeDataContainer();
 		this.children = new HashMap<>();
@@ -72,7 +66,7 @@ public class ProcessNode implements Serializable {
 	}
 
 	public void addChild(ProcessNode child)    { 
-		children.put(child.getResourceId(),child);
+		children.put(child.getResourceId().getResourcePath(),child);
 		log.debugf("%s.addChild: %s[%s]",CLSS,getName(),child.getName());
 	}
 
@@ -102,14 +96,8 @@ public class ProcessNode implements Serializable {
 	}
 	public Collection<ProcessNode> getChildren() { return children.values(); }
 	public String getName() {return name;}
-	/**
-	 * @return the resource path of the parent of this node.
-	 *         The parent of the root node is null.
-	 */
-	public ResourcePath getParentPath() { return this.parent; }
 	public ProjectResourceId getResourceId() { return this.resourceId; }
 	public String getProjectName() {return resourceId.getProjectName();}
-	public void setParent(ResourcePath p) { this.parent = p; }
 	
 	/**
 	 * Create a list of descendants by recursing through the children. Add
@@ -123,30 +111,10 @@ public class ProcessNode implements Serializable {
 	}
 
 	/**
-	 * Create a string path from the nade name and parent path
+	 * Create a string path from resourceId
 	 */
-	public String getPath() {
-		String path = String.format("%s/%s", parent.getPath().toString(),name);
-		return path;
-	}
-	/**
-	 * Traverse the parentage prepending names to produce a tree path.
-	 * The full path does NOT include the project name.
-	 * Use nodesByUUID to help converting our UUIDs to objects
-	 * @return
-	 */
-	public String getTreePath(Map<ResourcePath,ProcessNode> nodesByPath) {
-		StringBuffer buf = new StringBuffer(name);
-		ProcessNode parentNode = nodesByPath.get(getParentPath());
-		while(parentNode!=null) {
-			buf.insert(0,PATH_SEPARATOR);
-			buf.insert(0,parentNode.getName());
-			if( parentNode.getParentPath()==null) break;
-			parentNode = nodesByPath.get(parentNode.getParentPath());
-		}
-		buf.insert(0,PATH_SEPARATOR);  // Leading colon
-		return buf.toString();
-	}
+	public String getPath() {return resourceId.getFolderPath();}
+
 	@Override
 	public int hashCode() {
 		return this.getResourceId().hashCode();
@@ -157,7 +125,7 @@ public class ProcessNode implements Serializable {
 	public SerializableResourceDescriptor toResourceDescriptor() {
 		SerializableResourceDescriptor descriptor = new SerializableResourceDescriptor();
 		descriptor.setName(getName());
-		descriptor.setPath(resourceId.getResourcePath().getPath().toString());
+		descriptor.setPath(getPath());
 		descriptor.setProjectName(resourceId.getProjectName());
 		descriptor.setIsFolder(true);
 		return descriptor;

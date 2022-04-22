@@ -19,7 +19,7 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
 
 /**
  * Scripts are initiated by a Java class in either Gateway or Client/Designer scopes.
- * Each script is independently compiled and cached (via the ScriptExtensionManager).
+ * Each script is independently compiled and cached.
  * Different script managers can be used to execute the same script (not in parallel).
  * The standard pattern for execution is: 
  *    if( script.compileScript() ) {

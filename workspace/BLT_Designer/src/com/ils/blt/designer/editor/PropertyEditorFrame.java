@@ -111,12 +111,7 @@ public class PropertyEditorFrame extends DockableFrame implements ResourceWorksp
 					BlockComponent bc = ( BlockComponent)selection;
 
 					ProcessBlockView blk = (ProcessBlockView)bc.getBlock();
-					if( blk.getClassName().contains("FinalDiagnosis")) {
-						newEditor = new FinalDiagnosisPropertyEditor(context,workspace,blk);
-					}
-					else {
-						newEditor = new BlockPropertyEditor(context,workspace,blk);
-					}
+					newEditor = new BlockPropertyEditor(context,workspace,blk);
 				}
 				// There may be a connection selected
 				else {

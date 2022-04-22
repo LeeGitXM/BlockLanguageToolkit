@@ -33,7 +33,7 @@ public class RootNode extends ProcessNode {
 	 * @param ctx Gateway context 
 	 */
 	public RootNode(GatewayContext ctx,ProjectResourceId id) { 
-		super(BLTProperties.ROOT_FOLDER_NAME,ResourcePath.createModuleRoot(BLTProperties.MODULE_ID),id);
+		super(id,BLTProperties.ROOT_FOLDER_NAME);
 		this.context = ctx;
 		this.childrenByProjectName = new HashMap<>();
 	}

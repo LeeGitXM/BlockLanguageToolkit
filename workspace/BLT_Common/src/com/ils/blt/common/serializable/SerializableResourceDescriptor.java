@@ -30,7 +30,7 @@ public class SerializableResourceDescriptor implements Serializable {
 		folder = false;
 		path = "";
 		projectName = Project.GLOBAL_PROJECT_NAME;
-		rtype = BLTProperties.DIAGRAM_RESOURCE_TYPE;;
+		rtype = BLTProperties.DIAGRAM_RESOURCE_TYPE;
 	}
 	
 	public String getClassName() {return className;}
@@ -48,7 +48,7 @@ public class SerializableResourceDescriptor implements Serializable {
 	public ResourceType getType() {return rtype;}
 	
 	public void setClassName(String className) {this.className = className;}
-	public void setIsFolder(boolean flag) { this.setIsFolder(this.folder = flag); }
+	public void setIsFolder(boolean flag) { this.folder = flag; }
 	public void setName(String nam) { if(nam!=null) name=nam; }
 	public void setPath(String p) { if(p!=null) path=p; }
 	public void setProjectName(String name) {this.projectName = name;}

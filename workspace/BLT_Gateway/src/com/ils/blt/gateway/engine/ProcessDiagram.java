@@ -68,7 +68,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 	 * @param parent 
 	 */
 	public ProcessDiagram(SerializableDiagram diagm,ResourcePath parent,String projectName) { 
-		super(diagm.getName(),parent,projectName,BLTProperties.DIAGRAM_RESOURCE_TYPE.getTypeId());
+		super(parent,projectName,diagm.getName(),BLTProperties.DIAGRAM_RESOURCE_TYPE.getTypeId());
 		this.state = diagm.getState();
 		blocks = new HashMap<UUID,ProcessBlock>();
 		connectionMap = new HashMap<ConnectionKey,ProcessConnection>();

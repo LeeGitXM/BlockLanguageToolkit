@@ -76,7 +76,6 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	private static final String CLSS = "DiagramTreeNode";
 	private static final String PREFIX = BLTProperties.BUNDLE_PREFIX;  // Required for some defaults
 	private boolean dirty = false;     
-	protected final ProjectResourceId resourceId;
 	private final ApplicationRequestHandler requestHandler;
 	private final ExecutionManager executionEngine;
 	protected final DiagramWorkspace workspace;
@@ -103,7 +102,6 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	public DiagramTreeNode(DesignerContext context,ProjectResource resource,DiagramWorkspace ws) {
 		super(context,resource.getResourcePath());
 		this.executionEngine = new BasicExecutionEngine(1,CLSS);
-		this.resourceId = resource.getResourceId();
 		this.workspace = ws;
 		this.executor = new BasicExecutionEngine();
 		this.requestHandler = new ApplicationRequestHandler();
@@ -121,11 +119,16 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		openRestrictedIcon = iconFromPath("Block/icons/navtree/diagram_isolated.png");
 		closedRestrictedIcon = iconFromPath("Block/icons/navtree/diagram_closed_isolated.png");
 		setIcon( closedIcon);
-//		setItalic(context.getProject().isResourceDirty(resource));  // EREIAM JH - Disabled until italic system fixed
 		context.getProject().addProjectResourceListener(this);
 		
 		NotificationHandler notificationHandler = NotificationHandler.getInstance();
 		notificationHandler.addNotificationChangeListener(NotificationKey.keyForDiagram(resourceId), CLSS, this);
+		statusManager.createResourceStatus(this, resourceId);
+	}
+	
+	@Override
+	public void setName(String name) {
+		super.setName(name);
 	}
 	@Override
 	public void uninstall() {
@@ -236,10 +239,6 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	public void setDirty(boolean flag) { this.dirty = flag; }
 	@Override 
 	public void setIcon(Icon icon) { super.setIcon(icon); }  // Make public
-	
-	@Override
-	public ProjectResourceId getResourceId() { return this.resourceId; }
-	
 
 	/**
 	 * Return an icon appropriate to the diagram state and whether or not it is displayed.
@@ -309,6 +308,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 					tab.setName(newTextValue);
 				}
 			}
+			statusManager.nameChange(resourceId);
 		}
 		catch (IllegalArgumentException ex) {
 			ErrorUtil.showError(CLSS+".onEdit: "+ex.getMessage());
@@ -669,15 +669,19 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	}
 	
 	/**
-	 * Update our appearance depending on whether the underlying diagram is dirty,
-	 * that is structurally different than what is being shown in the designer UI.
+	 * Note: This method should ONLY be called from the node status manager.
 	 */
-	public void updateUI(boolean drty) {
-		log.debugf("%s.setDirty: dirty = %s",CLSS,(drty?"true":"false"));
-//		setItalic(drty);     // EREIAM JH - Disabled until italic system fixed
-		refresh();
+	@Override
+	public void updateUI(boolean dty) {
+		log.infof("%s.updateUI: %s dirty = %s",CLSS,resourceId.getResourcePath().getPath().toString(),(dty?"true":"false"));
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				setItalic(dty);
+				refresh();
+			}
+		});
 	}
-
 	/**
 	 * This method allows us to have children. Children are always EncapsulatedDiagramNodes.
 	 * As of yet we do not support encapsulated diagrams. 
