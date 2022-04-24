@@ -97,7 +97,6 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 	private static final int OFFSET = 100;
 	private static final String PREFIX = BLTProperties.BUNDLE_PREFIX;  // Required for some defaults
 	private final static LoggerEx log = LogUtil.getLogger(NavTreeFolder.class.getPackageName());
-	private boolean dirty = false;
 	private final DesignerContext context;
 	private DiagramState state = DiagramState.ACTIVE;  // Used for Applications and Families
 	private final CopyAction copyBranchAction;
@@ -284,7 +283,7 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 			log.infof("%s.onEdit: alterName from %s to %s",CLSS,oldName,newTextValue);
 			alterName(newTextValue);
 			workspace.saveOpenDiagram(resourceId);
-			statusManager.nameChange(resourceId);
+			statusManager.nameChange(resourceId,newTextValue);
 		}
 		catch (IllegalArgumentException ex) {
 			ErrorUtil.showError(CLSS+".onEdit: "+ex.getMessage());
@@ -355,23 +354,21 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 	 */
 	@Override
 	protected AbstractNavTreeNode createChildNode(ProjectResource res) {
-		ResourceType rtype = res.getResourceType();
-		log.infof("%s.createChildNode: %s (%s) type:%s, depth=%d", CLSS,res.getResourceName(),res.getResourcePath().getPath().toString(),rtype,getDepth());
+		log.infof("%s.createChildNode: %s (%s) type:%s, depth=%d", CLSS,res.getResourceName(),res.getResourcePath().getPath().toString(),
+				(res.isFolder()?"folder":"diagram"),getDepth());
 		// If the project is disabled, then don't do anything
 		if( !context.getProject().isEnabled()) return null;
 		AbstractResourceNavTreeNode node = statusManager.findNode(res.getResourceId());
 		if( node==null ) {
 			if ( res.isFolder() )       {
 				node = new NavTreeFolder(context, res);
-				log.tracef("%s.createChildNode: (%s) %s->%s",CLSS,rtype,this.getName(),node.getName());
 			}
 			else  {
 				node = new DiagramTreeNode(context,res,workspace);
-				log.tracef("%s.createChildDiagram: %s->%s",CLSS,this.getName(),node.getName());
 			} 
 		}
 		else {
-			log.debugf("%s.createChildNode: REUSE %s->%s",CLSS,this.getName(),node.getName());
+			log.infof("%s.createChildNode: REUSE %s->%s",CLSS,this.getName(),node.getName());
 			if( node instanceof DiagramTreeNode ) context.getProject().addProjectResourceListener((DiagramTreeNode)node);
 		}
 		node.install(this);
@@ -1269,8 +1266,8 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 	private boolean isChildNode(ProjectResource res) {
 		boolean result = false;
 		ResourcePath parentPath = getResourcePath();
-		ResourcePath path = res.getResourcePath();
-		if( parentPath.isParentOf(res.getResourcePath() )) {
+		ResourcePath rp = res.getResourcePath();
+		if( parentPath.isParentOf(rp)) {
 			result = true;
 		}
 		return result;

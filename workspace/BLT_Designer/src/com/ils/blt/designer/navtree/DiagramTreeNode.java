@@ -308,7 +308,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 					tab.setName(newTextValue);
 				}
 			}
-			statusManager.nameChange(resourceId);
+			statusManager.nameChange(resourceId,newTextValue);
 		}
 		catch (IllegalArgumentException ex) {
 			ErrorUtil.showError(CLSS+".onEdit: "+ex.getMessage());

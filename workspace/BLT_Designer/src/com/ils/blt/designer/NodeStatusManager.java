@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
@@ -24,7 +23,6 @@ import com.inductiveautomation.ignition.common.project.resource.ResourcePath;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
-import com.inductiveautomation.ignition.designer.navtree.model.AbstractNavTreeNode;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceNavTreeNode;
 
 
@@ -52,7 +50,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 	public final DesignerContext context;
 	private final ApplicationRequestHandler handler;
 	private final NotificationHandler notificationHandler;
-	private final Map<ResourcePath,StatusEntry> statusByResourcePath;
+	private final Map<String,StatusEntry> statusByPath;
 	
 
 	/**
@@ -63,10 +61,8 @@ public class NodeStatusManager implements NotificationChangeListener   {
 		this.context = ctx;
 		this.handler = h;
 		this.notificationHandler = NotificationHandler.getInstance();
-		statusByResourcePath = new HashMap<>();
+		statusByPath = new HashMap<>();
 	}
-	
-
 	
 	/**
 	 * Define status for the root of the resource tree. 
@@ -76,10 +72,10 @@ public class NodeStatusManager implements NotificationChangeListener   {
 	public void createRootResourceStatus(NavTreeFolder rootNode) {
 		log.tracef("%s.newRootResource",CLSS);
 		ProjectResourceId resourceId = rootNode.getResourceId();
-		StatusEntry se = statusByResourcePath.get(resourceId.getResourcePath());
+		StatusEntry se = statusByPath.get(resourceId.getFolderPath());
 		if( se == null ) {
 			se = new StatusEntry(rootNode,DiagramState.ACTIVE);  
-			statusByResourcePath.put(resourceId.getResourcePath(),se);
+			statusByPath.put(resourceId.getFolderPath(),se);
 		}
 	}
 	/**
@@ -89,13 +85,13 @@ public class NodeStatusManager implements NotificationChangeListener   {
 	 */
 	public void createResourceStatus(AbstractResourceNavTreeNode node,ProjectResourceId resourceId) {
 		if(node.getProjectResource()==null) throw new IllegalArgumentException("No project resource");
-		StatusEntry se = statusByResourcePath.get(resourceId.getResourcePath());
+		StatusEntry se = statusByPath.get(resourceId.getFolderPath());
 		if( se == null ) {
 			DiagramState s = handler.getDiagramState(resourceId);
 			se = new StatusEntry(node,s);
 			se.setAlerting(handler.isAlerting(resourceId));
 			notificationHandler.addNotificationChangeListener(NotificationKey.keyForAlert(resourceId), CLSS, this);
-			statusByResourcePath.put(resourceId.getResourcePath(),se);
+			statusByPath.put(resourceId.getFolderPath(),se);
 		}
 		log.debugf("%s.createResourceStatus: %s (%s) %s",CLSS,node.getName(),resourceId.getFolderPath(),
 				                                           (se.getState()==null?"":se.getState().name()));
@@ -106,11 +102,11 @@ public class NodeStatusManager implements NotificationChangeListener   {
 	 */
 	public void removeResource(ProjectResourceId resourceId ) {
 		log.debugf("%s.removeResource(%s)",CLSS,resourceId.getResourcePath().getPath().toString());
-		List<ResourcePath> pathsToDelete = nodeDescendants(resourceId);
-		for(ResourcePath rp:pathsToDelete) {
-			StatusEntry se = statusByResourcePath.get(rp);
+		List<String> pathsToDelete = nodeDescendants(resourceId);
+		for(String rp:pathsToDelete) {
+			StatusEntry se = statusByPath.get(rp);
 			se.prepareToBeDeleted();
-			statusByResourcePath.remove(se);
+			statusByPath.remove(rp);
 		}
 	}
 	/**
@@ -131,11 +127,11 @@ public class NodeStatusManager implements NotificationChangeListener   {
 	 */
 	public DiagramState getResourceState(ProjectResourceId resourceId) {
 		DiagramState result = DiagramState.UNSET;
-		StatusEntry se = statusByResourcePath.get(resourceId.getResourcePath());
+		StatusEntry se = statusByPath.get(resourceId.getFolderPath());
 		if( se!=null ) {
 			result = se.getState();
 		}
-		log.tracef("%s.getResourceState: %s(%s) = %s",CLSS,(se==null?"null":se.getName()),resourceId.getResourcePath().getPath().toString(),result.name());
+		log.tracef("%s.getResourceState: %s(%s) = %s",CLSS,(se==null?"null":resourceId.getResourcePath().getName()),resourceId.getResourcePath().getPath().toString(),result.name());
 		return result;
 	}
 	
@@ -147,7 +143,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 	public AbstractResourceNavTreeNode findNode(ProjectResourceId resourceId) {
 		log.debugf("%s.findNode(%s)",CLSS,resourceId.getResourcePath().getPath().toString());
 		AbstractResourceNavTreeNode node = null;
-		StatusEntry se = statusByResourcePath.get(resourceId.getResourcePath());
+		StatusEntry se = statusByPath.get(resourceId.getFolderPath());
 		if( se!=null ) node=se.getNode();
 		return node;
 	}
@@ -158,12 +154,12 @@ public class NodeStatusManager implements NotificationChangeListener   {
 	 * @param root
 	 * @return
 	 */
-	private List<ResourcePath> nodeDescendants(ProjectResourceId resourceId) {
-		List<ResourcePath> children = new ArrayList<>();
+	private List<String> nodeDescendants(ProjectResourceId resourceId) {
+		List<String> children = new ArrayList<>();
 		String rootPath = resourceId.getFolderPath();
-		children.add(resourceId.getResourcePath());
-		for(ResourcePath path: statusByResourcePath.keySet()) {
-			if( path.getFolderPath().startsWith(rootPath)) children.add(path);
+		children.add(resourceId.getFolderPath());
+		for(String path: statusByPath.keySet()) {
+			if( path.startsWith(rootPath)) children.add(path);
 		}
 		return children;
 	}
@@ -173,9 +169,9 @@ public class NodeStatusManager implements NotificationChangeListener   {
 		boolean isAlerting = false;
 		if( path!=null ) {
 			String rootPath = path.getFolderPath();
-			for(ResourcePath rp: statusByResourcePath.keySet()) {
+			for(String rp: statusByPath.keySet()) {
 				if( path.getFolderPath().startsWith(rootPath)) {
-					StatusEntry se = statusByResourcePath.get(rp);
+					StatusEntry se = statusByPath.get(rp);
 					if( se.alerting ) {
 						isAlerting = true;
 						break;
@@ -189,19 +185,20 @@ public class NodeStatusManager implements NotificationChangeListener   {
 	 * An edit has changed the node name in the nav tree. The node is dirty if the name
 	 * differs from the resource name.
      */
-	public void nameChange(ProjectResourceId resourceId) {
-		StatusEntry se = statusByResourcePath.get(resourceId.getResourcePath());
+	public void nameChange(ProjectResourceId resourceId,String newName) {
+		StatusEntry se = statusByPath.get(resourceId.getFolderPath());
 		if( se!=null ) {
+			se.setPendingName(newName);
 			se.reportDirtyState();
 		}
 	}
 	/**	
 	 * Synchronize StatusEntry to current state of resource.
      */
-	public void markResourceClean(ProjectResourceId resourceId) {
-		StatusEntry se = statusByResourcePath.get(resourceId.getResourcePath());
+	public void commit(ProjectResourceId resourceId) {
+		StatusEntry se = statusByPath.get(resourceId.getFolderPath());
 		if( se!=null ) {
-			se.setClean();
+			se.commit();
 			se.reportDirtyState();
 		}
 	}
@@ -212,9 +209,9 @@ public class NodeStatusManager implements NotificationChangeListener   {
 	 */
 	public void markAllClean() {
 		log.debugf("%s.markAllClean()",CLSS);
-		for(ResourcePath key:statusByResourcePath.keySet()) {
-			StatusEntry se = statusByResourcePath.get(key);
-			se.setClean();
+		for(String key:statusByPath.keySet()) {
+			StatusEntry se = statusByPath.get(key);
+			se.commit();
 			se.reportDirtyState();
 		}
 	}
@@ -222,7 +219,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 	 * A state change. If the state differs from the gateway, then the node is set to dirty.
      */
 	public void setResourceState(ProjectResourceId resourceId,DiagramState ds) {
-		StatusEntry se = statusByResourcePath.get(resourceId.getResourcePath());
+		StatusEntry se = statusByPath.get(resourceId.getFolderPath());
 		if( se!=null ) {
 			se.setState(ds);
 			se.reportDirtyState();
@@ -235,6 +232,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 	private class StatusEntry {
 		private boolean alerting = false;
 		private DiagramState state;
+		private String pendingName;
 		private final AbstractResourceNavTreeNode node;
 		/**
 		 * Constructor:
@@ -244,14 +242,15 @@ public class NodeStatusManager implements NotificationChangeListener   {
 		public StatusEntry(AbstractResourceNavTreeNode antn,DiagramState s)  {
 			this.state = s;
 			this.node = antn;
+			//Set the pending name to the current
+			this.pendingName = node.getName();
 		}
 		
 		public boolean isAlerting() { return alerting; }
 		public void setAlerting(boolean flag) { alerting = flag; }
-		public String getName() { return (node==null?"":node.getName()); }
 		public AbstractResourceNavTreeNode getNode() { return node; }
-		public void setState(DiagramState st) { this.state = st; }
-		//public AbstractNavTreeNode getParent() { return (node==null?null:node.getParent()); } 
+		public void setPendingName(String name) { this.pendingName = name; }
+		public void setState(DiagramState st) { this.state = st; } 
 		public DiagramState getState() { return state; }
 
 		public void prepareToBeDeleted() {
@@ -261,38 +260,37 @@ public class NodeStatusManager implements NotificationChangeListener   {
 		}
 		/**
 		 * The node is dirty if there is either a name or state mismatch.
+		 * For the name change, we just compare the pending change with the current.
+		 * For the state comparison, check local name against the gateway version.
 		 */
 		public void reportDirtyState() {
 			boolean isDirty = false;
 			ProjectResourceId resourceId = node.getResourceId();
-			DiagramState gwstate = handler.getDiagramState(resourceId);
-			SerializableResourceDescriptor desc = handler.getDiagram(resourceId);
-			if( !node.getName().equals(desc.getName())) {
+			if( !resourceId.getResourcePath().getName().equals(pendingName)) {
 				isDirty = true;
 			}
-			else if(!getState().equals(gwstate) ) {
-				isDirty = true;
+			else  {
+				DiagramState gwstate = handler.getDiagramState(resourceId);
+				if( !state.equals(gwstate)) {
+					isDirty = true;
+				}
 			}
 			if( node instanceof NavTreeNodeInterface) {
 				((NavTreeNodeInterface)this.node).updateUI(isDirty);
 			}
 		}
 		// Mark node as being in-sync with the gateway
-		public void setClean() {
+		public void commit() {
 			ProjectResourceId resourceId = node.getResourceId();
 			state = handler.getDiagramState(resourceId);
-			SerializableResourceDescriptor desc = handler.getDiagram(resourceId);
 			if( node instanceof NavTreeNodeInterface && node.getName()!=BLTProperties.ROOT_FOLDER_NAME) {
-				((NavTreeFolder)this.node).setName(desc.getName());
-			}
-			else if( node instanceof DiagramTreeNode && node.getName()!=BLTProperties.ROOT_FOLDER_NAME) {
-				((DiagramTreeNode)this.node).setName(desc.getName());
+				((NavTreeNodeInterface)this.node).setName(pendingName);
 			}
 		}
 		@Override
 		public String toString() {
 			ProjectResourceId resourceId = node.getResourceId();
-			String dump = String.format("%s(%s) %s",getName(),resourceId.getFolderPath(),state.name());
+			String dump = String.format("%s(%s) %s",pendingName,resourceId.getFolderPath(),state.name());
 			return dump;
 		}
 	}
@@ -300,7 +298,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 // ================================ Notification Change Listener =========================================
 @Override
 public void diagramStateChange(String path, String state) {
-	StatusEntry se = statusByResourcePath.get(path);
+	StatusEntry se = statusByPath.get(path);
 	se.setAlerting(state.equalsIgnoreCase("true"));
 	AbstractResourceNavTreeNode node = se.getNode();
 	node.reload();

@@ -20,6 +20,10 @@ public interface NavTreeNodeInterface  {
 	 */
 	public void prepareForDeletion();
 	/**
+	 * Handle a node rename
+	 */
+	public void setName(String name);
+	/**
 	 * Notify the node if it is in/out of sync with the gateway 
 	 * @param flag true if the node is out-of-sync with the gateway 
 	 */
