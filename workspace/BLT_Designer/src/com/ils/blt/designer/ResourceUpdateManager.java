@@ -8,12 +8,15 @@ import java.util.List;
 
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
-import com.ils.blt.designer.workspace.DiagramWorkspace;
+import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayInterface;
+import com.inductiveautomation.ignition.common.StringPath;
 import com.inductiveautomation.ignition.common.project.ChangeOperation;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceBuilder;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
+import com.inductiveautomation.ignition.common.project.resource.ResourcePath;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
@@ -24,8 +27,6 @@ import com.inductiveautomation.ignition.designer.project.ResourceNotFoundExcepti
  * Update the single specified resource.
  * 
  * Use ExecutionManager.executeOnce() to invoke this in the background.
- * 
- * @author chuckc
  *
  */
 public class ResourceUpdateManager implements Runnable {
@@ -33,26 +34,26 @@ public class ResourceUpdateManager implements Runnable {
 	private static final LoggerEx log = LogUtil.getLogger(ResourceUpdateManager.class.getPackage().getName());
 	private static final boolean DEBUG = true;
 	private static DesignerContext context = null;
-	private static NodeStatusManager statusManager = null;
-	private final byte[] bytes;
+	private final ProcessDiagramView view;
 	private ProjectResource resource;
-	private final ApplicationRequestHandler requestHandler;
+
 	
-	// DiagramWorkspace.onClose of a tab.
+	/**
+	 * Use this form for a folder resource (no data). 
+	 * @param pr
+	 */
 	public ResourceUpdateManager(ProjectResource pr) {
 		this.resource = pr;
-		this.bytes = pr.getData();
-		this.requestHandler = new ApplicationRequestHandler();
+		this.view = null;
 	}
 	
 	/**
-	 * This constructor is not valid for diagram updates
+	 * This constructor is used for diagram resources.
 	 * @param pr
 	 */
-	public ResourceUpdateManager(ProjectResource pr,byte[] contents) {
+	public ResourceUpdateManager(ProjectResource pr,ProcessDiagramView pdv) {
 		this.resource = pr;
-		this.bytes = contents;
-		this.requestHandler = new ApplicationRequestHandler();
+		this.view = pdv;
 	}
 	
 	/**
@@ -61,25 +62,40 @@ public class ResourceUpdateManager implements Runnable {
 	 */
 	public static void setContext(DesignerContext ctx) {
 		context = ctx;
-		statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
 	}
 	/**
 	 *  Now save the resource, as it is.
 	 */
 	@Override
 	public void run() {
-		// Ignore any "system" resources
-		if( resource.getResourcePath().getParent()==null ) return;
+		ProjectResourceId resid = resource.getResourceId();
+		ResourcePath respath = resid.getResourcePath();
+		if( respath.getParent()==null ) return;  // Ignore "system" resources
+		
+		NodeStatusManager statusManager = NodeStatusManager.getInstance();
+		if( !statusManager.getDirtyState(resid)) return;  // Not dirty
+		String pendingName = statusManager.getPendingName(resid);
+		ApplicationRequestHandler requestHandler = new ApplicationRequestHandler();
 		
 		synchronized(this) {
 			ProjectResourceBuilder builder = resource.toBuilder();
 			builder.clearData();
-			if( bytes==null || bytes.length==0 ) {
+			
+			if( view==null ) {
 				builder.setFolder(true);
 			}
 			else {
 				builder.setFolder(false);
+				view.setState(statusManager.getPendingState(resid));
+				byte[] bytes = view.createSerializableRepresentation().serialize();
 				builder.putData(bytes);
+			}
+			StringPath sp = respath.getPath();
+			String name = sp.getLastPathComponent();
+			if(!name.equalsIgnoreCase(pendingName)) {
+				sp = StringPath.extend(sp.getParentPath(),pendingName);
+				respath = new ResourcePath(BLTProperties.DIAGRAM_RESOURCE_TYPE,sp);
+				builder.setResourcePath(respath);
 			}
 			resource = builder.build();
 

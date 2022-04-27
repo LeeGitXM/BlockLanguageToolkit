@@ -3,15 +3,20 @@
  */
 package com.ils.blt.designer;
 
+import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Optional;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.ApplicationRequestHandler;
-import com.ils.blt.common.BLTProperties;
-import com.ils.blt.common.DiagramState;
+import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignableContainer;
@@ -24,10 +29,6 @@ import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceN
  * Close them and save them along with any dirty nodes to the project and gateway.
  * Use ExecutionManager.executeOnce() to invoke this in the background.
  * Do not re-execute the same instance.
- * 
- * NOTE: There is a lot of dead code here. I believe only saveSynchronously() is ever used.
- * 
- * @author chuckc
  *
  */
 public class ResourceSaveManager implements Runnable {
@@ -37,14 +38,18 @@ public class ResourceSaveManager implements Runnable {
 	private static DesignerContext context = null;
 	private final AbstractResourceNavTreeNode root;	      // Root of our save.
 	private final DiagramWorkspace workspace;
+	private final ObjectMapper mapper;
 	private final ApplicationRequestHandler requestHandler;
-	private static NodeStatusManager statusManager;
+	private final NodeStatusManager statusManager;
 	
 	public ResourceSaveManager(DiagramWorkspace wksp,AbstractResourceNavTreeNode node) {
 		this.log = LogUtil.getLogger(getClass().getPackageName());
 		this.root = node;
 		this.workspace = wksp;
 		this.requestHandler = new ApplicationRequestHandler();
+		this.statusManager = NodeStatusManager.getInstance();
+		this.mapper = new ObjectMapper();
+		mapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL,true);
 	}
 	
 	/**
@@ -53,7 +58,6 @@ public class ResourceSaveManager implements Runnable {
 	 */
 	public static void setContext(DesignerContext ctx) {
 		context = ctx;
-		statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
 	}
 	
 
@@ -65,13 +69,13 @@ public class ResourceSaveManager implements Runnable {
 	 */
 	public void saveSynchronously() {
 		if( DEBUG ) log.infof("%s.saveSynchronously()", CLSS);
-		saveModifiedResources(root);
+		saveModifiedResource(root);
 	}
 	
 	@Override
 	public void run() {
 		if( DEBUG ) log.infof("%s.run()", CLSS);
-		saveModifiedResources(root);
+		saveModifiedResource(root);
 	}
 
 	/**
@@ -79,46 +83,57 @@ public class ResourceSaveManager implements Runnable {
 	 *  These are the cases:
 	 *  1) Any diagram that is open and "dirty". (Only open diagrams can be dirty).
 	 *  2) Diagrams that are in a different state than the gateway version
-	 *  3) Either a folder or digram that is new (i.e. never edited)
+	 *  3) A folder or diagram that has been renamed
+	 *  4) Either a folder or diagram that is new (i.e. never edited)
 	 */
-
-	private void saveModifiedResources(AbstractResourceNavTreeNode node) {
+	private void saveModifiedResource(AbstractResourceNavTreeNode node) {
 		Optional<ProjectResource>option = node.getProjectResource();
 		if(option.isPresent()) {
 			ProjectResource res = option.get();
-			ProcessDiagramView view = null;
-
-			if( res!=null ) {
-				if(res.getResourcePath().getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {	
-					BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(res.getResourcePath());
-					if( tab!=null ) {
-						view = (ProcessDiagramView)tab.getModel();
-						if( DEBUG ) log.infof("%s.saveModifiedResources, %s (%s)", CLSS, view.getName(), (view.isDirty()?"DIRTY":"CLEAN"));
-						if (view.isDirty()){
-							view.registerChangeListeners();     // The diagram may include new components
-							if( DEBUG ) log.infof("%s.saveModifiedResources: Saving %s...", CLSS, view.getName());
-							new ResourceUpdateManager(res,view.createSerializableRepresentation().serialize()).run();
-						}
-						view.setClean();
-						workspace.setDiagramClean(view);
-
+			if( res!=null && !res.getResourcePath().getPath().isRoot()) {
+				ProjectResourceId resid = res.getResourceId();
+				if( statusManager.getDirtyState(resid)) {
+					if( res.isFolder()) {
+						if( DEBUG ) log.infof("%s.saveModifiedResources: Saving %s...", CLSS, res.getResourceName());
+						new ResourceUpdateManager(res).run();
 					}
-					// The resource is also dirty if the state does not match its counterpart in the gateway
-					// If there is a mismatch, simply set the correct state directly into the gateway
-					DiagramState designerState = statusManager.getResourceState(res.getResourceId());
-					if(designerState!=null ) {
-						DiagramState gwState = requestHandler.getDiagramState(res.getResourceId());
-						if( !designerState.equals(gwState)) {
-							requestHandler.setDiagramState(res.getResourceId(), designerState.name());
-							new ResourceUpdateManager(res).run();
+					// Diagram
+					else {
+						BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(res.getResourcePath());
+						if( tab!=null ) {
+							ProcessDiagramView view = (ProcessDiagramView)tab.getModel();
+							view = (ProcessDiagramView)tab.getModel();
+							if( DEBUG ) log.infof("%s.saveModifiedResources, %s (%s)", CLSS, view.getName(), (view.isDirty()?"DIRTY":"CLEAN"));
+							if (view.isDirty()){
+								view.registerChangeListeners();     // The diagram may include new components
+								if( DEBUG ) log.infof("%s.saveModifiedResource: Saving %s...", CLSS, view.getName());
+								new ResourceUpdateManager(res,view).run();
+							}
+							view.setClean();
+							workspace.setDiagramClean(view);
+						}
+						// Diagram is closed, but still dirty
+						else {
+							byte[] bytes = res.getData();
+							try {
+								SerializableDiagram sd = mapper.readValue(new String(bytes), SerializableDiagram.class);
+								if( sd!=null ) {
+									ProcessDiagramView view = new ProcessDiagramView(res.getResourceId(),sd, context);
+									if( DEBUG ) log.infof("%s.saveModifiedResource: Saving %s...", CLSS, view.getName());
+									new ResourceUpdateManager(res,view).run();
+								}
+							}
+							catch(JsonParseException jpe) {
+								log.warnf("%s.saveModifiedResource: Parse exception saving %s...(%s)", CLSS, res.getResourceName(),jpe.getLocalizedMessage());
+							}
+							catch(JsonMappingException jme) {
+								log.warnf("%s.saveModifiedResource: Mapping exception saving %s...(%s)", CLSS, res.getResourceName(),jme.getLocalizedMessage());
+							}
+							catch(IOException ioe) {
+								log.warnf("%s.saveModifiedResource: IO exception saving %s...(%s)", CLSS, res.getResourceName(),ioe.getLocalizedMessage());
+							}
 						}
 					}
-				}
-				// We also need to save newly created resources of any type
-				else if(node.isItalic()) {
-					node.setItalic(false);
-					new ResourceUpdateManager(res).run();
-
 				}
 			}
 
@@ -126,7 +141,7 @@ public class ResourceSaveManager implements Runnable {
 			Enumeration walker = node.children();
 			while(walker.hasMoreElements()) {
 				Object child = walker.nextElement();
-				saveModifiedResources((AbstractResourceNavTreeNode)child);
+				saveModifiedResource((AbstractResourceNavTreeNode)child);
 			}
 		}
 	}

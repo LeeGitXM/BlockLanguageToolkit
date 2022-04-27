@@ -198,7 +198,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		this.addMouseListener(rightClickHandler);
 		this.propertyEditorFrame = new PropertyEditorFrame(context,this);
 		requestHandler = new ApplicationRequestHandler();
-		statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
+		statusManager = NodeStatusManager.getInstance();
 		initialize();
 		setBackground(Color.red);
 		this.requestHandler = new ApplicationRequestHandler();
@@ -1221,8 +1221,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 
 	@Override
 	protected void setStatusMessage(String msg) {
-		// TODO Auto-generated method stub
-		
+		// TODO Auto-generated method stub	
 	}
 
 	/**
@@ -1259,8 +1258,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				sd = mapper.readValue(json,SerializableDiagram.class);
 				// Synchronize names as the resource may have been re-named and/or
 				// state changed since it was serialized
-				sd.setName(res.getResourceName());
-				sd.setState(statusManager.getResourceState(res.getResourceId()));
+				sd.setName(statusManager.getPendingName(res.getResourceId()));
+				sd.setState(statusManager.getPendingState(res.getResourceId()));
 				for(SerializableBlock sb:sd.getBlocks()) {
 					if( DEBUG ) log.infof("%s: %s block, name = %s",CLSS,sb.getClassName(),sb.getName());
 				}
@@ -1285,7 +1284,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			// Inform the gateway of the state and let listeners update the UI
 			ApplicationRequestHandler arh = new ApplicationRequestHandler();
 			arh.setDiagramState(diagram.getResourceId(), diagram.getState().name());
-			statusManager.setResourceState(diagram.getResourceId(),diagram.getState());
+			statusManager.setPendingState(diagram.getResourceId(),diagram.getState());
 			diagram.setClean();  // Newly opened from a serialized resource, should be in-sync.
 			// In the probable case that the designer is opened after the diagram has started
 			// running in the gateway, obtain any updates
@@ -1312,7 +1311,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		if( DEBUG ) log.infof("%s: onClose",CLSS);
 		BlockDesignableContainer container = (BlockDesignableContainer)c;
 		ProcessDiagramView diagram = (ProcessDiagramView)container.getModel();
-		if( diagram.isDirty()  ) {
+		// In addition to the workspace being dirty it can be renamed or had state changed
+		if( diagram.isDirty() || statusManager.getDirtyState(diagram.getResourceId()) ) {
 			Object[] options = {BundleUtil.get().getString(PREFIX+".CloseDiagram.Save"),BundleUtil.get().getString(PREFIX+".CloseDiagram.Revert")};
 			int n = JOptionPane.showOptionDialog(null,
 					BundleUtil.get().getString(PREFIX+".CloseDiagram.Question"),
@@ -1323,21 +1323,11 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 					options,      // titles of buttons
 					options[0]);  //default button title
 			if( n==0 ) {
-				// Yes, save -- need to serialize the diagram
-				SerializableDiagram sd = diagram.createSerializableRepresentation();
-				ObjectMapper mapper = new ObjectMapper();
-				try {
-					byte[] bytes = mapper.writeValueAsBytes(sd);
-					Optional<ProjectResource> optional = context.getProject().getResource(diagram.getResourceId());
-					executionEngine.executeOnce(new ResourceUpdateManager(optional.get(), bytes));
-					saveDiagramResource(container);
-				}
-				catch(JsonProcessingException jpe) {
-					log.warnf("%s.onClose: serialization exception (%s)",CLSS, jpe.getLocalizedMessage());
-				}
+				saveDiagramResource(container);
 			}
 			else {
-				// Mark diagram as clean, since we reverted changes
+				// Mark diagram as clean, since we closed window without
+				// reporting changes to gateway
 				setDiagramClean(diagram);
 			}
 		}
@@ -1375,12 +1365,9 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		log.infof("%s.saveDiagramResource - %s ...",CLSS,diagram.getDiagramName());
 		diagram.registerChangeListeners();     // The diagram may include new components
 		diagram.refresh();
-		ResourcePath path = c.getResourcePath();
-		ProjectResourceId id = new ProjectResourceId(context.getProject().getName(),BLTProperties.DIAGRAM_RESOURCE_TYPE,path.getPath().toString());
-		Optional<ProjectResource> optional = context.getProject().getResource(id);
-		executionEngine.executeOnce(new ResourceUpdateManager(optional.get()));
+		Optional<ProjectResource> optional = context.getProject().getResource(diagram.getResourceId());
+		executionEngine.executeOnce(new ResourceUpdateManager(optional.get(), diagram));
 		diagram.setClean();
-
 	}
 	/**
 	 * Display the open diagram as clean, presumeably after a recent save of the project resource.

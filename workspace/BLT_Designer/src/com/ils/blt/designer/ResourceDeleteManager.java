@@ -42,7 +42,7 @@ public class ResourceDeleteManager implements Runnable {
 	 */
 	public static void setContext(DesignerContext ctx) {
 		context = ctx;
-		statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
+		statusManager = NodeStatusManager.getInstance();
 	}
 
 	public void acquireResourcesToDelete() {

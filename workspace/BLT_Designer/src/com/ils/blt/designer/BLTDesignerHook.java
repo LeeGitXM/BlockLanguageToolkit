@@ -86,7 +86,6 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	private final LoggerEx log;
 	private DiagramWorkspace workspace = null;
 	private ApplicationRequestHandler appRequestHandler = null;
-	private NodeStatusManager nodeStatusManager = null;
 	private BLTSearchProvider searchProvider = null;
 	private boolean diagramsAttached = true;
 	
@@ -156,7 +155,6 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	public void startup(DesignerContext ctx, LicenseState activationState) throws Exception {
 		context = ctx;
 		appRequestHandler = new ApplicationRequestHandler();
-		nodeStatusManager = new NodeStatusManager(context,appRequestHandler);
 		ResourceCreateManager.setContext(ctx);
 		ResourceDeleteManager.setContext(ctx);
 		ResourceUpdateManager.setContext(ctx);
@@ -215,7 +213,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		rootNode = new NavTreeFolder(context,rootResource);
 		context.getProjectBrowserRoot().addChild(rootNode);
 		context.registerResourceWorkspace(workspace);
-		nodeStatusManager.createRootResourceStatus(rootNode);
+		NodeStatusManager.getInstance().createRootResourceStatus(rootNode);
 		// Instantiate the notification handler so that we have notifications
 		// ready when diagrams are displayed. The constructor is sufficient.
 		NotificationHandler.getInstance().setHook(this);
@@ -227,8 +225,6 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		listProjectResources();
 	}
 	
-	public NodeStatusManager getNavTreeStatusManager() { return nodeStatusManager; }
-	
 	public DiagramWorkspace getWorkspace() { return workspace; }
 
 	// Before the massive save, make sure that all dirty nodes have been
@@ -239,7 +235,6 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		
 		ResourceSaveManager saver = new ResourceSaveManager(getWorkspace(),rootNode);
 		saver.saveSynchronously();
-		nodeStatusManager.markAllClean();
 	}
 	
 	

@@ -74,8 +74,7 @@ import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceN
  */
 public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavTreeNodeInterface,NotificationChangeListener,ProjectResourceListener  {
 	private static final String CLSS = "DiagramTreeNode";
-	private static final String PREFIX = BLTProperties.BUNDLE_PREFIX;  // Required for some defaults
-	private boolean dirty = false;     
+	private static final String PREFIX = BLTProperties.BUNDLE_PREFIX;  // Required for some defaults     
 	private final ApplicationRequestHandler requestHandler;
 	private final ExecutionManager executionEngine;
 	protected final DiagramWorkspace workspace;
@@ -105,7 +104,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		this.workspace = ws;
 		this.executor = new BasicExecutionEngine();
 		this.requestHandler = new ApplicationRequestHandler();
-		statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
+		statusManager = NodeStatusManager.getInstance();
 		setName(resource.getResourceName());
 		setText(resource.getResourceName());
 		
@@ -156,10 +155,10 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		DebugDiagramAction debugAction = new DebugDiagramAction();
 		ResetDiagramAction resetAction = new ResetDiagramAction();
 		resetAction.setEnabled(cleanView);
-		renameAction.setEnabled(cleanView);
+		renameAction.setEnabled(true);
 		
 		// States are: ACTIVE, DISABLED, ISOLATED
-		DiagramState state = statusManager.getResourceState(resourceId);
+		DiagramState state = statusManager.getPendingState(resourceId);
 		copyDiagramAction = new CopyAction(this);
 //		cutDiagramAction = new CutAction(this);
 		SetStateAction ssaActive = new SetStateAction(DiagramState.ACTIVE);
@@ -176,7 +175,6 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		menu.add(setStateMenu);
 		menu.addSeparator();
 		menu.add(copyDiagramAction);
-//		menu.add(cutDiagramAction);
 //		menu.add(duplicateAction);
 		menu.add(renameAction);
         menu.add(diagramDeleteAction);
@@ -235,8 +233,6 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		return result;
 	}
 
-	public boolean isDirty() { return dirty; }
-	public void setDirty(boolean flag) { this.dirty = flag; }
 	@Override 
 	public void setIcon(Icon icon) { super.setIcon(icon); }  // Make public
 
@@ -247,7 +243,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	@Override
 	public Icon getIcon() {	
 		icon = closedIcon;
-		DiagramState ds = statusManager.getResourceState(resourceId);
+		DiagramState ds = statusManager.getPendingState(resourceId);
 		if( workspace.isOpen(resourceId.getResourcePath()) ) {
 			icon = openIcon;
 			if( ds.equals(DiagramState.DISABLED))      icon = openDisabledIcon;
@@ -271,7 +267,6 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	public boolean isEditActionHandler() {return true;}
 	@Override
 	public boolean isEditable() {return true;}
-	
 	
 	@Override
 	public void onDoubleClick() {
@@ -300,15 +295,13 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		try {
 			log.infof("%s.onEdit: alterName from %s to %s",CLSS,oldName,newTextValue);
 			alterName( newTextValue);
-			workspace.saveOpenDiagram(resourceId);
-			// If it's open, change its name. Otherwise we sync on opening.
+			statusManager.setPendingName(resourceId, name);
 			if(workspace.isOpen(resourceId.getResourcePath()) ) {
 				BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resourceId.getResourcePath());
 				if(tab!=null) {
 					tab.setName(newTextValue);
 				}
 			}
-			statusManager.nameChange(resourceId,newTextValue);
 		}
 		catch (IllegalArgumentException ex) {
 			ErrorUtil.showError(CLSS+".onEdit: "+ex.getMessage());
@@ -594,8 +587,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 			// Inform the gateway of the state and let listeners update the UI
 			ApplicationRequestHandler arh = new ApplicationRequestHandler();
 			arh.setDiagramState(viewId, state.name());
-			statusManager.setResourceState(resourceId,state);
-			setDirty(false);
+			statusManager.setPendingState(resourceId,state);
 			setIcon(getIcon());
 			refresh();
 		} 
@@ -699,7 +691,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	public void diagramStateChange(String path, String state) {
 		try {
 			DiagramState ds = DiagramState.valueOf(state);
-			statusManager.setResourceState(resourceId, ds);
+			statusManager.setPendingState(resourceId, ds);
 			// Force repaints of both NavTree and workspace
 			refresh();
 			BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resourceId.getResourcePath());
@@ -743,7 +735,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 				sb.setName(pbv.getName());
 			}
 		}
-		//  update the name now so it doens't cause duplicate name problems on save
+		//  update the name now so it doesn't cause duplicate name problems on save
 		return success;
 	}
 	
