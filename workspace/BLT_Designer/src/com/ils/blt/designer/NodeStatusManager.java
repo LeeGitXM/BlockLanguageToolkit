@@ -20,7 +20,6 @@ import com.inductiveautomation.ignition.common.project.resource.ProjectResourceI
 import com.inductiveautomation.ignition.common.project.resource.ResourcePath;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
-import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceNavTreeNode;
 
 
@@ -49,6 +48,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 	private final LoggerEx log;
 	private final ApplicationRequestHandler handler;
 	private final NotificationHandler notificationHandler;
+	private final List<ResourcePath> unsavedNodes;
 	private final Map<String,StatusEntry> statusByPath;
 	
 
@@ -60,6 +60,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 		this.handler = new ApplicationRequestHandler();
 		this.notificationHandler = NotificationHandler.getInstance();
 		statusByPath = new HashMap<>();
+		unsavedNodes = new ArrayList<>();
 	}
 	
 	/**
@@ -74,6 +75,14 @@ public class NodeStatusManager implements NotificationChangeListener   {
 		return instance;
 	}
 
+	/**
+	 * The "unsavedNodes" are those nodes that have been created as a 
+	 * result of user action, but never written to the gateway.
+	 * This should be rendered as "dirty"
+	 */
+	public void addToUnsavedList(ResourcePath path) {
+		unsavedNodes.add(path);
+	}
 	/**
 	 * Define status for the root of the resource tree. 
 	 * WARNING: The root node has no associated project resources.
@@ -117,6 +126,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 			StatusEntry se = statusByPath.get(rp);
 			se.prepareToBeDeleted();
 			statusByPath.remove(rp);
+			unsavedNodes.remove(rp);
 		}
 	}
 	/**
@@ -157,6 +167,14 @@ public class NodeStatusManager implements NotificationChangeListener   {
 		if( se!=null ) node=se.getNode();
 		return node;
 	}
+	
+	public void reportDirtyState(ProjectResourceId resourceId) {
+		boolean dirty = getDirtyState(resourceId);
+		StatusEntry se = statusByPath.get(resourceId.getFolderPath());
+		if( se!=null && se.getNode() instanceof NavTreeNodeInterface) {
+			((NavTreeNodeInterface)se.getNode()).updateUI(se.isDirty());
+		}
+    }
 	
 	/**
 	 * Return a list of resource paths for descendants of the node representing the specified resourceId.
@@ -226,6 +244,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 			if( se.getNode() instanceof NavTreeNodeInterface) {
 				((NavTreeNodeInterface)se.getNode()).updateUI(se.isDirty());
 			}
+			unsavedNodes.remove(resourceId.getResourcePath());
 		}
 	}
 	
@@ -234,15 +253,17 @@ public class NodeStatusManager implements NotificationChangeListener   {
 	 */
 	public boolean getDirtyState(ProjectResourceId resourceId) {
 		boolean dirty = true;
-		StatusEntry se = statusByPath.get(resourceId.getFolderPath());
-		if( se!=null ) {
-			dirty = se.isDirty();
+		if( !unsavedNodes.contains(resourceId.getResourcePath())) {
+			StatusEntry se = statusByPath.get(resourceId.getFolderPath());
+			if( se!=null ) {
+				dirty = se.isDirty();
+			}
 		}
 		return dirty;
 	}
 	/**
 	 * Called after a save from the main menu. Update the status
-	 * of the nav-tree nodes.
+	 * of the nav-tree nodes. All nodes have been saved
 	 */
 	public void markAllClean() {
 		log.debugf("%s.markAllClean()",CLSS);
@@ -253,6 +274,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 				((NavTreeNodeInterface)se.getNode()).updateUI(se.isDirty());
 			}
 		}
+		unsavedNodes.clear();
 	}
 	/**	
 	 * A state change. If the state differs from the gateway, then the node is set to dirty.
@@ -272,7 +294,6 @@ public class NodeStatusManager implements NotificationChangeListener   {
 	 */
 	private class StatusEntry {
 		private boolean alerting = false;
-		private int editCount;
 		private DiagramState pendingState;
 		private String pendingName;
 		private final AbstractResourceNavTreeNode node;
@@ -286,7 +307,6 @@ public class NodeStatusManager implements NotificationChangeListener   {
 			this.node = antn;
 			//Set the pending name to the current
 			this.pendingName = node.getName();
-			this.editCount = 0;
 		}
 		public String getPendingName() { return this.pendingName; }
 		public boolean isAlerting() { return alerting; }
@@ -305,14 +325,12 @@ public class NodeStatusManager implements NotificationChangeListener   {
 		 * The node is dirty if there is either a name or state mismatch.
 		 * For the name change, we just compare the pending change with the current.
 		 * For the state comparison, check local name against the gateway version.
+		 * We do not check the state of a newly created node here.
 		 */
 		public boolean isDirty() {
 			boolean dirty = false;
 			ProjectResourceId resourceId = node.getResourceId();
-			if( editCount==0) {
-				dirty = true;
-			}
-			else if( !resourceId.getResourcePath().getName().equals(pendingName)) {
+			if( !resourceId.getResourcePath().getName().equals(pendingName)) {
 				dirty = true;
 			}
 			else  {
@@ -329,7 +347,6 @@ public class NodeStatusManager implements NotificationChangeListener   {
 			ProjectResourceId resourceId = node.getResourceId();
 			pendingState = handler.getDiagramState(resourceId);
 			pendingName = resourceId.getResourcePath().getName();
-			editCount = editCount + 1;
 		}
 		@Override
 		public String toString() {

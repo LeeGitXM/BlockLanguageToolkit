@@ -322,8 +322,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	public void resourcesCreated(String projectName,List<ChangeOperation.CreateResourceOperation> ops) {
 		for(ChangeOperation.CreateResourceOperation op:ops ) {
 			ProjectResourceId id = op.getResourceId();
-			log.infof("%s.resourcesCreated.%s: %s(%s)",CLSS,op,getName(),id.getProjectName(),id.getResourcePath().getPath().toString());
-			// executionEngine.executeOnce(new ResourceCreateManager(op.getResource()));
+			log.infof("%s.resourcesCreated: %s ",CLSS,id.getFolderPath());
 		}
 	}
 	/**
@@ -343,17 +342,13 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	public void resourcesModified(String projectName,List<ChangeOperation.ModifyResourceOperation> ops) {
 		for(ChangeOperation.ModifyResourceOperation op:ops ) {
 			if( op.getResourceId().equals(resourceId) ) {
-				log.infof("%s.resourcesModified.%s: %s(%s)",CLSS,op,getName(),resourceId.getProjectName(),resourceId.getResourcePath().getPath().toString());
+				log.infof("%s.resourcesModified: %s",CLSS,resourceId.getFolderPath());
 				ProjectResource res = op.getResource();
 				if( res.getResourceName()==null || !res.getResourceName().equals(getName()) ) {
 					alterName(res.getResourceName());
 					setText(res.getResourceName());
 				}
 			}
-		}
-		if (getResourceId() == resourceId) {
-			
-			
 		}
 	}
 
@@ -675,8 +670,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		});
 	}
 	/**
-	 * This method allows us to have children. Children are always EncapsulatedDiagramNodes.
-	 * As of yet we do not support encapsulated diagrams. 
+	 * This method allows us to have children, but a diagram has no children. 
 	 * @param arg0
 	 * @return
 	 */

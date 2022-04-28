@@ -364,10 +364,10 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 			} 
 		}
 		else {
-			log.infof("%s.createChildNode: REUSE %s->%s",CLSS,res.getResourceName(),node.getName());
 			if( node instanceof DiagramTreeNode ) context.getProject().addProjectResourceListener((DiagramTreeNode)node);
 		}
 		node.install(this);
+		statusManager.reportDirtyState(resourceId);
 		if( node.getParent()==null) {
 			log.errorf("%s.createChildNode: ERROR parent is null %s(%d)",CLSS,node.getName(),res.getResourceId());
 		}
@@ -1008,8 +1008,6 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 				builder.setResourceBuilder(b->b.setFolder(false).setApplicationScope(ApplicationScope.DESIGNER).putData(bytes));
 				builder.setTitle("New Dialog");
 				builder.buildAndDisplay();
-				currentNode.selectChild(new ResourcePath[] {resid.getResourcePath()} );
-
 			} 
 			catch (Exception err) {
 				ErrorUtil.showError(CLSS+" Exception creating diagram",err);
@@ -1018,13 +1016,11 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 	}
 
 	
-	// From the root node, create a folder for diagrams belonging to a family
+	// Create a folder child of the current node
 	private class FolderCreateAction extends NewFolderAction {
 		private static final long serialVersionUID = 1L;
-		private final AbstractResourceNavTreeNode currentNode;
 		public FolderCreateAction(NavTreeFolder parentNode)  {
 			super(parentNode.getContext(),BLTProperties.DIAGRAM_RESOURCE_TYPE,parentNode.getResourceScope(),(ProjectResource)getProjectResource().orElse(null),parentNode);
-			currentNode = parentNode;
 		}
 	}
 
@@ -1268,18 +1264,17 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 	}
     // ************************ ProjectResourceListener *****************************
 	/**
-	 * The updates that we are interested in are:
-	 *    1) Name changes to this resource
-	 * We can ignore deletions because we delete the model resource
-	 * by deleting the panel resource.
+	 * We get here due to:
+	 *    1) Name changes to resource
+	 *    2) New resource from menu selection
+	 * In either case, we mark these "unsaved"
 	 */
 	@Override
 	public void resourcesCreated(String projectName,List<ChangeOperation.CreateResourceOperation> ops) {
 		for(ChangeOperation.CreateResourceOperation op:ops ) {
 			ProjectResourceId id = op.getResourceId();
-		log.infof("%s.resourcesCreated.%s: %s(%s)",CLSS,op,getName(),id.getProjectName(),id.getResourcePath().getPath().toString());
-				ProjectResource res = op.getResource();
-			createChildNode(res);
+			log.infof("%s.resourcesCreated: %s",CLSS,id.getFolderPath());
+			statusManager.addToUnsavedList(id.getResourcePath());
 		}
 	}
 	/**
@@ -1297,7 +1292,7 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 		// Take care of any special status before invoking the super-class method.
 		for(ChangeOperation.ModifyResourceOperation op:changes ) {
 			if( op.getResourceId().equals(resourceId) ) {
-				log.infof("%s.resourcesModified.%s: %s(%s)",CLSS,op,getName(),resourceId.getProjectName(),resourceId.getResourcePath().getPath().toString());
+				log.infof("%s.resourcesModified: %s",CLSS,op,getName(),resourceId.getFolderPath());
 				ProjectResource res = op.getResource();
 				super.onResourceModified(res);
 			}
