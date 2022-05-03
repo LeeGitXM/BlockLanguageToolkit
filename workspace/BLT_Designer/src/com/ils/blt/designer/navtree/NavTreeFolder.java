@@ -158,7 +158,6 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 		//log.infof("%s.checkChildren: %s, count = %d",CLSS,getName(),(children==null?0:this.children.size()));
 		super.checkChildren();
 	}
-	
 	@Override
 	public boolean confirmDelete(List<? extends AbstractNavTreeNode> selections) {
 		// We only care about the first
@@ -292,24 +291,11 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 		}
 	}
 	
-	// If an application or family is selected, then display editing panel in the PropertyEditor
+	// Update the status of the NavTree node
 	@Override
 	public synchronized void onSelected() {
 		UndoManager.getInstance().setSelectedContext(NavTreeFolder.class);
-		Optional<ProjectResource> optional = context.getProject().getResource(resourceId);
-		ProjectResource resource = null;
-		try {
-			resource = optional.get();
-		}
-		catch(NoSuchElementException nsee) {
-			log.infof("%s.onSelected: no such element (%s)",CLSS,nsee.getMessage());
-		}
-		if( resource==null || resource.getResourceId()==null ||resource.getResourceId().getResourceType()==null ) {
-			log.infof("%s.onSelected:(%s) - null resource",CLSS,getName());
-		}
-		else {
-			log.infof("%s.onSelected:(%s)",CLSS,getName());
-		}
+		statusManager.reportDirtyState(getResourceId());
 	}
 	
 	// Rename the NavTree node. NOTE: This does not yet rename the
@@ -367,7 +353,6 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 			if( node instanceof DiagramTreeNode ) context.getProject().addProjectResourceListener((DiagramTreeNode)node);
 		}
 		node.install(this);
-		statusManager.reportDirtyState(resourceId);
 		if( node.getParent()==null) {
 			log.errorf("%s.createChildNode: ERROR parent is null %s(%d)",CLSS,node.getName(),res.getResourceId());
 		}
@@ -649,7 +634,6 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 							continue;
 						}
 					}
-					sd.setDirty(true);    // Dirty because gateway doesn't know about it yet
 					sd.setState(DiagramState.DISABLED);
 					json = mapper.writeValueAsString(sd);
 					resid = requestHandler.createResourceId(getResourceId().getProjectName(), sd.getPath().toString(), BLTProperties.DIAGRAM_RESOURCE_TYPE);
@@ -822,7 +806,6 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 												continue;
 											}
 										}										
-										sd.setDirty(true);    // Dirty because gateway doesn't know about it yet
 										sd.setState(DiagramState.DISABLED);
 										json = mapper.writeValueAsString(sd);
 										statusManager.setPendingState(node.getResourceId(), sd.getState());
@@ -993,7 +976,6 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 				SerializableDiagram sd = new SerializableDiagram();
 				sd.setName(newName);
 				sd.setPath(currentNode.getResourcePath().getFolderPath()+"/"+newName);
-				sd.setDirty(false);
 				sd.setState(DiagramState.DISABLED);
 				
 				byte[] bytes = sd.serialize();
@@ -1063,7 +1045,6 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 										if( sd!=null ) {
 											log.infof("%s:ImportDiagramAction imported diagram:\n%s", CLSS,sd.getName());
 											renameHandler.convertPaths(sd,getResourcePath().getFolderPath());
-											sd.setDirty(true);    // Dirty because gateway doesn't know about it yet
 											sd.setState(DiagramState.DISABLED);
 											String json = mapper.writeValueAsString(sd);
 
@@ -1071,6 +1052,7 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 											ProjectResourceId resid = requestHandler.createResourceId(getResourceId().getProjectName(), getResourceId().getFolderPath(), BLTProperties.DIAGRAM_RESOURCE_TYPE);
 											new ResourceCreateManager(getResourcePath().getFolderPath(),sd.getName(),sd.serialize()).run();	
 											parentNode.selectChild(new ResourcePath[] {getResourcePath()} );
+											statusManager.addToUnsavedList(getResourcePath());
 											statusManager.setPendingState(resid, sd.getState());
 										}
 										else {
@@ -1275,6 +1257,7 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 			ProjectResourceId id = op.getResourceId();
 			log.infof("%s.resourcesCreated: %s",CLSS,id.getFolderPath());
 			statusManager.addToUnsavedList(id.getResourcePath());
+			statusManager.reportDirtyState(id);
 		}
 	}
 	/**

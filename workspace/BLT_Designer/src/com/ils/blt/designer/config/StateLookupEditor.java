@@ -126,7 +126,7 @@ public class StateLookupEditor extends JDialog {
 				for(BlockProperty prop:block.getProperties()) {
 					if( prop.getName().equals(BlockConstants.BLOCK_PROPERTY_NAME_VALUES)) {
 						prop.setValue(nameValues.toString());
-						diagram.setDirty();
+						diagram.setChanged(true);
 						break;
 					}
 				}

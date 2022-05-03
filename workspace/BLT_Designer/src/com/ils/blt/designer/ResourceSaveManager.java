@@ -103,13 +103,12 @@ public class ResourceSaveManager implements Runnable {
 						if( tab!=null ) {
 							ProcessDiagramView view = (ProcessDiagramView)tab.getModel();
 							view = (ProcessDiagramView)tab.getModel();
-							if( DEBUG ) log.infof("%s.saveModifiedResources, %s (%s)", CLSS, view.getName(), (view.isDirty()?"DIRTY":"CLEAN"));
-							if (view.isDirty()){
+							if( DEBUG ) log.infof("%s.saveModifiedResources, %s (%s)", CLSS, view.getName(), (view.isChanged()?"CHANGED":"UNCHANGED"));
+							if (view.isChanged()){
 								view.registerChangeListeners();     // The diagram may include new components
 								if( DEBUG ) log.infof("%s.saveModifiedResource: Saving %s...", CLSS, view.getName());
 								new ResourceUpdateManager(res,view).run();
 							}
-							view.setClean();
 							workspace.setDiagramClean(view);
 						}
 						// Diagram is closed, but still dirty

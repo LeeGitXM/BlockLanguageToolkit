@@ -145,12 +145,11 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resourceId.getResourcePath());
 		if( tab!=null ) {
 			ProcessDiagramView view = (ProcessDiagramView)tab.getModel();
-			cleanView = !view.isDirty();
+			cleanView = !view.isChanged();
 		}
 		ExportDiagramAction exportAction = new ExportDiagramAction(menu.getRootPane(),resourceId, this);
 		exportAction.setEnabled(cleanView);
 		menu.add(exportAction);
-//		DuplicateDiagramAction duplicateAction = new DuplicateDiagramAction(this);
 		DeleteDiagramAction diagramDeleteAction = new DeleteDiagramAction(this);
 		DebugDiagramAction debugAction = new DebugDiagramAction();
 		ResetDiagramAction resetAction = new ResetDiagramAction();
@@ -160,7 +159,6 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		// States are: ACTIVE, DISABLED, ISOLATED
 		DiagramState state = statusManager.getPendingState(resourceId);
 		copyDiagramAction = new CopyAction(this);
-//		cutDiagramAction = new CutAction(this);
 		SetStateAction ssaActive = new SetStateAction(DiagramState.ACTIVE);
 		ssaActive.setEnabled(!state.equals(DiagramState.ACTIVE));
 		SetStateAction ssaDisable = new SetStateAction(DiagramState.DISABLED);
@@ -175,7 +173,6 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		menu.add(setStateMenu);
 		menu.addSeparator();
 		menu.add(copyDiagramAction);
-//		menu.add(duplicateAction);
 		menu.add(renameAction);
         menu.add(diagramDeleteAction);
         menu.addSeparator();

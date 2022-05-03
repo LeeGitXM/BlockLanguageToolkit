@@ -172,7 +172,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 		boolean dirty = getDirtyState(resourceId);
 		StatusEntry se = statusByPath.get(resourceId.getFolderPath());
 		if( se!=null && se.getNode() instanceof NavTreeNodeInterface) {
-			((NavTreeNodeInterface)se.getNode()).updateUI(se.isDirty());
+			((NavTreeNodeInterface)se.getNode()).updateUI(dirty);
 		}
     }
 	
@@ -240,11 +240,12 @@ public class NodeStatusManager implements NotificationChangeListener   {
 	public void commit(ProjectResourceId resourceId) {
 		StatusEntry se = statusByPath.get(resourceId.getFolderPath());
 		if( se!=null ) {
+			unsavedNodes.remove(resourceId.getResourcePath());
 			se.commit();
 			if( se.getNode() instanceof NavTreeNodeInterface) {
-				((NavTreeNodeInterface)se.getNode()).updateUI(se.isDirty());
+				((NavTreeNodeInterface)se.getNode()).updateUI(false);
 			}
-			unsavedNodes.remove(resourceId.getResourcePath());
+			
 		}
 	}
 	
@@ -259,6 +260,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 				dirty = se.isDirty();
 			}
 		}
+		log.infof("%s.getDirtyState: %s = %s",CLSS,resourceId.getFolderPath(),(dirty?"dirty":"clean"));
 		return dirty;
 	}
 	/**
@@ -266,7 +268,8 @@ public class NodeStatusManager implements NotificationChangeListener   {
 	 * of the nav-tree nodes. All nodes have been saved
 	 */
 	public void markAllClean() {
-		log.debugf("%s.markAllClean()",CLSS);
+		log.infof("%s.markAllClean()",CLSS);
+		unsavedNodes.clear();
 		for(String key:statusByPath.keySet()) {
 			StatusEntry se = statusByPath.get(key);
 			se.commit();
@@ -274,7 +277,6 @@ public class NodeStatusManager implements NotificationChangeListener   {
 				((NavTreeNodeInterface)se.getNode()).updateUI(se.isDirty());
 			}
 		}
-		unsavedNodes.clear();
 	}
 	/**	
 	 * A state change. If the state differs from the gateway, then the node is set to dirty.
@@ -330,7 +332,10 @@ public class NodeStatusManager implements NotificationChangeListener   {
 		public boolean isDirty() {
 			boolean dirty = false;
 			ProjectResourceId resourceId = node.getResourceId();
-			if( !resourceId.getResourcePath().getName().equals(pendingName)) {
+			if( resourceId.getResourcePath().getFolderPath().isEmpty()) {
+				dirty = false;
+			}
+			else if( !resourceId.getResourcePath().getName().equals(pendingName)) {
 				dirty = true;
 			}
 			else  {

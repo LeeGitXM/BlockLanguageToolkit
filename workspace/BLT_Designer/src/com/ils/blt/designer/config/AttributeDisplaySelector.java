@@ -164,11 +164,10 @@ public class AttributeDisplaySelector extends JDialog implements TableModelListe
 					
 					bav.startListener();
 					diagram.addBlock(bav);
-					bav.setDirty(true);
 				}
 				// CASE II - checked box, but display already exists. Do nothing, just use it.
 				else if(newValue && (bav!=null) ) {
-					bav.setDirty(true);
+					;
 				}
 				// CASE III - unchecked box and there is display. Delete it.
 				else if ( !newValue && (bav!=null)) {
@@ -179,7 +178,7 @@ public class AttributeDisplaySelector extends JDialog implements TableModelListe
 				}
 			}
 			arrangeDisplays();
-			diagram.setDirty();
+			diagram.setChanged(true);
 		}
 	}
 

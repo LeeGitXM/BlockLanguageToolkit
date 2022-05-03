@@ -29,6 +29,7 @@ import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableConnection;
 import com.ils.blt.common.serializable.SerializableDiagram;
+import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.NotificationHandler;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
@@ -56,6 +57,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	// Use TAG as the "source" identifier when registering for notifications from Gateway
 	private static final String CLSS = "ProcessDiagramView";
 	private final ApplicationRequestHandler appRequestHandler;
+	private final NodeStatusManager statusManager;
 	private final Map<UUID,ProcessBlockView> blockMap = new HashMap<>();
 	private List<Connection> connections = new ArrayList<>();
 	private static final int MIN_WIDTH = 200;
@@ -67,7 +69,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	private final ProjectResourceId resourceId;
 	private DiagramState state = DiagramState.ACTIVE;
 	private DesignerContext context;
-	private boolean dirty = false;   // A newly created diagram is "clean" because it matches the gateway version
+	private boolean changed = false;   // A newly created diagram is "clean" because it matches the gateway version
 	private boolean suppressStateChangeNotification = false;
 	private String watermark = "";
 	
@@ -81,6 +83,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		this.resourceId = resid;
 		this.name = diagram.getName();
 		this.appRequestHandler = new ApplicationRequestHandler();
+		this.statusManager = NodeStatusManager.getInstance();
 		if( DEBUG ) log.infof("%s.ProcessDiagramView: for diagram %s", CLSS, diagram.getName());
 		this.state = diagram.getState();
 		this.watermark = diagram.getWatermark();
@@ -134,7 +137,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		
 		// Do this at the end to override state change on adding blocks/connectors.
 		// Note this shouldn't represent a change for parents
-		this.dirty = diagram.isDirty();
+		this.changed = false;
 		// Compute diagram size to include all blocks
 		// We do this initially. From then on it's whatever the user leaves it at.
 		double maxX = MIN_WIDTH;
@@ -170,6 +173,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		this.resourceId = resid;
 		this.name = nam;
 		this.appRequestHandler = new ApplicationRequestHandler();
+		this.statusManager = NodeStatusManager.getInstance();
 	}
 	
 	/** 
@@ -339,7 +343,6 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		SerializableDiagram diagram = new SerializableDiagram();
 		diagram.setName(name);
 		diagram.setState(state);
-		diagram.setDirty(dirty);
 		diagram.setWatermark(watermark);
 		List<SerializableBlock> sblocks = new ArrayList<SerializableBlock>();
 		for( ProcessBlockView blk:blockMap.values()) {
@@ -459,7 +462,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		for(UUID uuid:displaysToDelete) {
 			blockMap.remove(uuid);
 		}
-		setDirty();
+		changed = true;
 		fireStateChanged();
 	}
 	
@@ -496,8 +499,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		if( !designerState.equals(DiagramState.DISABLED)) {
 			result = BLTProperties.DIAGRAM_ACTIVE_BACKGROUND;
 			if( designerState.equals(DiagramState.ISOLATED)) result = BLTProperties.DIAGRAM_ISOLATED_BACKGROUND;
-			if( isDirty() || 
-				!designerState.equals(appRequestHandler.getDiagramState(resourceId))) {
+			if( statusManager.getDirtyState(getResourceId()) ) {
 				result = BLTProperties.DIAGRAM_DIRTY_BACKGROUND;
 			}
 		}
@@ -558,15 +560,10 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	 * in the gateway. The difference can be as trivial as position.
 	 * @return true if the diagram does not represent what is actually running.
 	 */
-	public boolean isDirty() {return dirty;}
+	public boolean isChanged() {return changed;}
 	
-	public void setClean() {
-		this.dirty = false;
-		fireStateChanged();
-	}
-	
-	public void setDirty() {
-		this.dirty = true;
+	public void setChanged(boolean flag) {
+		this.changed = flag;
 		fireStateChanged();
 	}
 	
@@ -778,7 +775,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	}
 	
 	/**
-	 * We are about to saving the diagram. Update the notification handler to reflect new values,
+	 * We are about to save the diagram. Update the notification handler to reflect new values,
 	 * in particular block name and property changes. After this, if we open the diagram view in the designer,
 	 * it will reflect the saved updates.
 	 * @param diagram

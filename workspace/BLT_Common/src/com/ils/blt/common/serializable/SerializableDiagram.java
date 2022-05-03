@@ -25,7 +25,6 @@ public class SerializableDiagram extends SerializableNode {
 	private SerializableBlock[] blocks;
 	private SerializableConnection[] connections;
 	private String watermark = "";
-	private boolean dirty = false;
 
 	public SerializableDiagram() {
 		blocks = new SerializableBlock[0];
@@ -59,11 +58,9 @@ public class SerializableDiagram extends SerializableNode {
 	public SerializableBlock[] getBlocks() { return blocks; }
 	public SerializableConnection[] getConnections() { return connections; }
 	public String getWatermark() {return watermark;}
-	public boolean isDirty() {return dirty;}
 	
 	public void setBlocks(SerializableBlock[] list) { blocks=list; }
 	public void setConnections(SerializableConnection[] list) { connections=list; }
-	public void setDirty(boolean dirty) {this.dirty = dirty;}
 	public void setWatermark(String mark) { this.watermark = mark; }
 	
 	/**

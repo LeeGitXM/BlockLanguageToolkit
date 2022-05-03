@@ -861,7 +861,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 										property.setBinding(tnode.getFullPath().toStringFull());}
 									block.modifyConnectionForTagChange(property, type);
 								}
-								this.getActiveDiagram().setDirty();
+								this.getActiveDiagram().setChanged(true);
 								// Create the process editor for the new block
 								BlockPropertyEditor editor = new BlockPropertyEditor(context,this,block);
 								PropertyEditorFrame peframe = getPropertyEditorFrame();
@@ -1285,7 +1285,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			ApplicationRequestHandler arh = new ApplicationRequestHandler();
 			arh.setDiagramState(diagram.getResourceId(), diagram.getState().name());
 			statusManager.setPendingState(diagram.getResourceId(),diagram.getState());
-			diagram.setClean();  // Newly opened from a serialized resource, should be in-sync.
+			diagram.setChanged(false);  // Newly opened from a serialized resource, should be in-sync.
 			// In the probable case that the designer is opened after the diagram has started
 			// running in the gateway, obtain any updates
 			diagram.registerChangeListeners();
@@ -1293,8 +1293,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 
 			BlockDesignableContainer tab = (BlockDesignableContainer)findDesignableContainer(resourceId.getResourcePath());
 			tab.setBackground(diagram.getBackgroundColorForState());
-			
 			SwingUtilities.invokeLater(new WorkspaceRepainter());
+			statusManager.reportDirtyState(diagram.getResourceId());  // Update the nav tree node
 		}
 	}
 	
@@ -1312,7 +1312,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		BlockDesignableContainer container = (BlockDesignableContainer)c;
 		ProcessDiagramView diagram = (ProcessDiagramView)container.getModel();
 		// In addition to the workspace being dirty it can be renamed or had state changed
-		if( diagram.isDirty() || statusManager.getDirtyState(diagram.getResourceId()) ) {
+		if( diagram.isChanged() || statusManager.getDirtyState(diagram.getResourceId()) ) {
 			Object[] options = {BundleUtil.get().getString(PREFIX+".CloseDiagram.Save"),BundleUtil.get().getString(PREFIX+".CloseDiagram.Revert")};
 			int n = JOptionPane.showOptionDialog(null,
 					BundleUtil.get().getString(PREFIX+".CloseDiagram.Question"),
@@ -1367,13 +1367,14 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		diagram.refresh();
 		Optional<ProjectResource> optional = context.getProject().getResource(diagram.getResourceId());
 		executionEngine.executeOnce(new ResourceUpdateManager(optional.get(), diagram));
-		diagram.setClean();
+		diagram.setChanged(false);
+		statusManager.commit(diagram.getResourceId());
 	}
 	/**
 	 * Display the open diagram as clean, presumeably after a recent save of the project resource.
 	 */
 	public void setDiagramClean(ProcessDiagramView diagram) {
-		diagram.setClean();
+		diagram.setChanged(false);
 		updateBackgroundForDiagramState();
 	}
 	/**
@@ -1381,7 +1382,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	 * Update the notification handler to save its dirty state.
 	 */
 	public void setDiagramDirty(ProcessDiagramView diagram) {
-		diagram.setDirty();
+		diagram.setChanged(true);
 		diagram.updateNotificationHandlerForSave();
 		updateBackgroundForDiagramState();
 	}
@@ -1935,7 +1936,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 
 		public void actionPerformed(ActionEvent e) {
 			block.setLocked(true);
-			if( !diagram.isDirty()) {
+			if( !diagram.isChanged()) {
 				BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(diagram.getResourceId().getResourcePath());
 				if( tab!=null ) workspace.saveDiagramResource(tab);
 			}
@@ -2061,6 +2062,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 
 	/**
 	 * Configure the block to show the generic signal connection stub.
+	 * This option is not available once the diagram has been saved
 	 */
 	private class HideSignalAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
@@ -2076,7 +2078,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 
 		public void actionPerformed(ActionEvent e) {
 			block.setSignalAnchorDisplayed(false);
-			if( !diagram.isDirty()) {
+			if( !diagram.isChanged()) {
 				BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(diagram.getResourcePath());
 				if( tab!=null ) workspace.saveDiagramResource(tab);
 			}
@@ -2103,7 +2105,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 
 		public void actionPerformed(ActionEvent e) {
 			block.setSignalAnchorDisplayed(true);
-			if( !diagram.isDirty()) {
+			if( !diagram.isChanged()) {
 				BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(diagram.getResourceId().getResourcePath());
 				if( tab!=null ) workspace.saveDiagramResource(tab);
 			}
@@ -2129,7 +2131,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 
 		public void actionPerformed(ActionEvent e) {
 			block.setLocked(false);
-			if( !diagram.isDirty()) {
+			if( !diagram.isChanged()) {
 				BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(diagram.getResourceId().getResourcePath());
 				if( tab!=null ) workspace.saveDiagramResource(tab);
 			}
