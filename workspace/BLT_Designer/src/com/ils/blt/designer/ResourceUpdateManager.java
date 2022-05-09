@@ -102,7 +102,9 @@ public class ResourceUpdateManager implements Runnable {
 			try {
 				context.getProject().modifyResource(resource);
 				GatewayInterface gw = GatewayConnectionManager.getInstance().getGatewayInterface();
-				ChangeOperation.ModifyResourceOperation co = ChangeOperation.ModifyResourceOperation.newModifyOp(resource,resource.getResourceSignature());
+				//ChangeOperation.ModifyResourceOperation co = ChangeOperation.ModifyResourceOperation.newModifyOp(resource,resource.getResourceSignature());
+				ChangeOperation.ResourceChangeOperation co = ChangeOperation.ResourceChangeOperation.newModifyOp(resource,resource.getResourceSignature());
+				
 				List<ChangeOperation> ops = new ArrayList<>();
 				ops.add(co);
 				gw.pushProject(ops);
