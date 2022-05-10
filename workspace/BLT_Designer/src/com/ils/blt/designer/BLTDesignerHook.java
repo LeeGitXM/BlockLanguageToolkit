@@ -123,9 +123,6 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
     			SwingUtilities.invokeLater(new SetupDialogRunner());
     		}
     	};
-    	if( !menuExists(context.getFrame(),INTERFACE_MENU_TITLE) ) {
-    		toolsMenu.add(setupAction);
-    	}
 
     	StateChangeAction attachAction = new StateChangeAction(BLTProperties.BUNDLE_PREFIX+".Menu.Tools.Attach") {
     		private static final long serialVersionUID = 5374556367733312464L; 
@@ -234,7 +231,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		log.infof("%s.notifyProjectSaveStart --------",CLSS);
 		
 		ResourceSaveManager saver = new ResourceSaveManager(getWorkspace(),rootNode);
-		saver.saveSynchronously();
+		//saver.saveSynchronously();
 	}
 	
 	
@@ -278,43 +275,6 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	@Override
 	public void shutdown() {
 		super.shutdown();
-	}
-	// Search the menu tree to see if the same menu has been added by another module
-	//
-	//	TODO EREIAM JH - Why does this always return false?????????????
-	//
-	private boolean menuExists(Frame frame,String title) {
-		for(Component c:context.getFrame().getComponents() ) {
-    		if( c instanceof JRootPane ) {
-    			JRootPane root = (JRootPane)c;
-    			JMenuBar bar = root.getJMenuBar();
-    			if( bar!=null ) {
-    				int count = bar.getMenuCount();
-    				int index = 0;
-    				while( index<count) {
-    					JMenu menu = bar.getMenu(index);
-    					if( menu.getName().equalsIgnoreCase(WellKnownMenuConstants.TOOLS_MENU_NAME)) {
-    						int nitems = menu.getItemCount();
-    						int jndex = 0;
-    						log.tracef("%s: found VIEW menu",CLSS);
-    						while(jndex<nitems ) {
-    							JMenuItem item = menu.getItem(jndex);
-    							if( item!=null ) {
-    								String name = item.getText();
-        							log.tracef("%s: found %s",CLSS,name);
-        							if( title.equalsIgnoreCase(name)) return true;
-    							}
-    							jndex++;
-    						}
-    						break;
-    					}
-    					index++;
-    				}
-    			}
-    		}
-    	}
-		
-		return false;
 	}
 
 

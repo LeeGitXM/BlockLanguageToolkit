@@ -168,7 +168,7 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 		}
 		return result;
 	}
-	
+
 	public DesignerContext getContext() { return this.context; }
 	
 	@Override

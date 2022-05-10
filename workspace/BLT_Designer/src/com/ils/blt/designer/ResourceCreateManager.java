@@ -72,7 +72,7 @@ public class ResourceCreateManager implements Runnable {
 		catch(ResourceNamingException rne) {
 			log.warnf("%s.createProjectResource: naming exception (%s)",CLSS,rne.getLocalizedMessage());
 		}
-		return builder.build();
+		return pr;
 	}
 	// Create a diagram resource and add it to the project. The data is a JSON representation
 	// of the resource.

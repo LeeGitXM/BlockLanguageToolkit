@@ -80,6 +80,7 @@ import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.designer.BLTDesignerHook;
+import com.ils.blt.designer.DiagramSaveTask;
 import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.NotificationHandler;
 import com.ils.blt.designer.ResourceUpdateManager;
@@ -182,7 +183,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	private JPopupMenu zoomPopup;
 	private JComboBox<String> zoomCombo;
 	private CommandBar alignBar = null;
-	private ApplicationRequestHandler  requestHandler;
+	private ApplicationRequestHandler requestHandler;
 
 	/**
 	 * Constructor:
@@ -1298,11 +1299,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		}
 	}
 	
-	public void close (ProjectResourceId resourceId) {
-		log.infof("%s: close resource %d",CLSS,resourceId);
-		super.close(findDesignableContainer(resourceId.getResourcePath()));
-	}
-	
 	// On close we can save the container, no questions asked with a
 	// call to: saveDiagram((BlockDesignableContainer)container);
 	// As it is ... a dialog pops up.
@@ -1345,7 +1341,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	 * is open, then save it.
 	 */
 	public void saveOpenDiagram(ProjectResourceId resourceId) {
-		if( DEBUG ) log.infof("%s: saveOpenDiagram()",CLSS);
+		if( DEBUG ) log.infof("%s.saveOpenDiagrams ...",CLSS);
 		ResourcePath path = resourceId.getResourcePath();
 		for(DesignableContainer dc:openContainers.keySet()) {
 			BlockDesignableContainer bdc = (BlockDesignableContainer)dc;
@@ -1366,9 +1362,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		diagram.registerChangeListeners();     // The diagram may include new components
 		diagram.refresh();
 		Optional<ProjectResource> optional = context.getProject().getResource(diagram.getResourceId());
-		executionEngine.executeOnce(new ResourceUpdateManager(optional.get(), diagram));
-		diagram.setChanged(false);
-		statusManager.commit(diagram.getResourceId());
+		DiagramSaveTask task = new DiagramSaveTask(context,optional.get(),diagram);
+		task.run();
 	}
 	/**
 	 * Display the open diagram as clean, presumeably after a recent save of the project resource.
@@ -1397,6 +1392,11 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			container.setBackground(view.getBackgroundColorForState());
 			SwingUtilities.invokeLater(new WorkspaceRepainter());
 		}
+	}
+	
+	public void close (ProjectResourceId resourceId) {
+		log.infof("%s: close resource %s",CLSS,resourceId.getFolderPath());
+		super.close(findDesignableContainer(resourceId.getResourcePath()));
 	}
 	
 	// =========================== DesignableWorkspaceListener ===========================

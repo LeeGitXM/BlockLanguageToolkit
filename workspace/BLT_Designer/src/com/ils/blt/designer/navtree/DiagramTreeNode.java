@@ -179,8 +179,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
         menu.add(debugAction);
         menu.add(resetAction);
 	}
-
-
+	
 	/**
 	 *  Called when the parent folder is deleted.
 	 *  If we're closing and committing, then it's fair to
