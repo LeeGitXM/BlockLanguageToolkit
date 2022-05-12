@@ -79,13 +79,8 @@ public class DiagramSaveTask implements Runnable {
 		}
 		resource = builder.build();
 		
-		
-
 		try {
-			//GatewayInterface gw = GatewayConnectionManager.getInstance().getGatewayInterface();
-			//ChangeOperation.CreateResourceOperation co = ChangeOperation.newCreateOp(resource);
 			ChangeOperation.ResourceChangeOperation co = ChangeOperation.ResourceChangeOperation.newModifyOp(resource,resource.getResourceSignature());
-
 			List<ChangeOperation> ops = new ArrayList<>();
 			ops.add(co);
 			ProjectDiff diff = ProjectDiff.AbsoluteDiff.newAbsoluteDiff(resid.getProjectName(), ops);
@@ -96,6 +91,7 @@ public class DiagramSaveTask implements Runnable {
 			DesignerProjectTreeImpl project = context.getProject();
 			project.applyChange(change);
 			project.createOrModify(resource);
+			project.notifyPushComplete(ops);
 			requestHandler.triggerStatusNotifications(context.getProjectName());
 			statusManager.commit(resource.getResourceId());
 		}
