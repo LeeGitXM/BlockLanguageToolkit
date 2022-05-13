@@ -924,12 +924,14 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 				deleter.acquireResourcesToDelete();
 				if( execute() ) {
 					UndoManager.getInstance().add(this,NavTreeFolder.class);
-					
+	
 					if( p instanceof NavTreeFolder )  {
 						NavTreeFolder parentNode = (NavTreeFolder)p;
+						parentNode.doDelete(selected, AbstractNavTreeNode.DeleteReason.Cut);
 						parentNode.recreate();
 						parentNode.expand();
 					}
+					
 					deleter.run();
 				}
 				else {

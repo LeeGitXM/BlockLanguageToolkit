@@ -9,9 +9,9 @@ import java.util.List;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
-import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
-import com.inductiveautomation.ignition.client.gateway_interface.GatewayInterface;
+import com.inductiveautomation.ignition.client.gateway_interface.GatewayException;
 import com.inductiveautomation.ignition.common.StringPath;
+import com.inductiveautomation.ignition.common.modules.ModuleInfo;
 import com.inductiveautomation.ignition.common.project.ChangeOperation;
 import com.inductiveautomation.ignition.common.project.ProjectDiff;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
@@ -21,7 +21,9 @@ import com.inductiveautomation.ignition.common.project.resource.ResourcePath;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.DesignerContextImpl;
+import com.inductiveautomation.ignition.designer.gateway.DTGatewayInterface;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
+import com.inductiveautomation.ignition.designer.model.DesignerModuleHook;
 import com.inductiveautomation.ignition.designer.project.DesignerProjectTreeImpl;
 import com.inductiveautomation.ignition.designer.project.ProjectChange;
 
@@ -78,6 +80,7 @@ public class DiagramSaveTask implements Runnable {
 			builder.setResourcePath(respath);
 		}
 		resource = builder.build();
+		DesignerProjectTreeImpl project = context.getProject();
 		
 		try {
 			ChangeOperation.ResourceChangeOperation co = ChangeOperation.ResourceChangeOperation.newModifyOp(resource,resource.getResourceSignature());
@@ -88,12 +91,30 @@ public class DiagramSaveTask implements Runnable {
 			diffs.add(diff);
 			ProjectChange change = new ProjectChange(diffs);
 			change.putChoice(co, ProjectChange.ConflictChoice.useLocal());
-			DesignerProjectTreeImpl project = context.getProject();
+			
 			project.applyChange(change);
 			project.createOrModify(resource);
 			project.notifyPushComplete(ops);
 			requestHandler.triggerStatusNotifications(context.getProjectName());
 			statusManager.commit(resource.getResourceId());
+			
+			List<ProjectResource> resources = new ArrayList<>();
+			for(ProjectResource res:project.getAllResources().values() ) {  // Includes from parent projects, if any
+				if( res.getProjectName().equals(project.getName())) resources.add(res);
+				
+			}
+			//DTGatewayInterface.getInstance().saveProjectAs(context.getFrame(), null, project.getManifest(),resources);
+			DTGatewayInterface.getInstance().createProject(context.getFrame(), null, project.getManifest(),resources);
+			
+			context.getResourceEditManager().onDesignerUpdateComplete();
+			List<ModuleInfo> infos = context.getModules();
+			for(ModuleInfo info:infos) {
+				Object moduleHook = context.getModule(info.getId());
+				 ((DesignerModuleHook) moduleHook).notifyProjectSaveDone();
+			}
+		}
+		catch(GatewayException gex) {
+			log.warn(String.format("%s.run: Exception saving project %s (%s)",CLSS,project.getName(),gex.getMessage()),gex);
 		}
 		catch(Exception ex) {
 			log.warn(String.format("%s.run: Exception modifying resource %s:%s (%s)",CLSS,resource.getResourceId().getProjectName(),
