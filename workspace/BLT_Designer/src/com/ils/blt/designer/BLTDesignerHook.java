@@ -148,7 +148,6 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		appRequestHandler = new ApplicationRequestHandler();
 		ResourceCreateManager.setContext(ctx);
 		ResourceUpdateManager.setContext(ctx);
-		ResourceSaveManager.setContext(ctx);
 		WorkspaceBackgroundRepainter.setContext(ctx);
 		WorkspaceRepainter.setContext(ctx);
 		context.addBeanInfoSearchPath("com.ils.blt.designer.component.beaninfos");
@@ -217,14 +216,17 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	
 	public DiagramWorkspace getWorkspace() { return workspace; }
 
-	// Before the massive save, make sure that all dirty nodes have been
-	// serialized into project resources.
+	/**
+	 *  Before the project save, make sure that all dirty nodes have been
+	 * updated in the gateway and marked clean in the UI. Complete this before
+	 * the standard designer project save takes place.
+	 */
 	@Override
 	public void notifyProjectSaveStart(SaveContext save) {
 		log.infof("%s.notifyProjectSaveStart --------",CLSS);
 		
-		ResourceSaveManager saver = new ResourceSaveManager(getWorkspace(),rootNode);
-		saver.saveSynchronously();
+		ResourceSaveManager saver = new ResourceSaveManager(context,getWorkspace());
+		saver.execute();
 	}
 	
 	

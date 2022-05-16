@@ -634,19 +634,21 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	}
 	
 	/**
+	 * Update the node name italic/plain in nav tree.
 	 * Note: This method should ONLY be called from the node status manager.
 	 */
 	@Override
-	public void updateUI(boolean dty) {
-		log.infof("%s.updateUI: %s dirty = %s",CLSS,resourceId.getResourcePath().getPath().toString(),(dty?"true":"false"));
+	public void updateUI(boolean saved) {
+		log.infof("%s.updateUI: %s saved = %s",CLSS,resourceId.getResourcePath().getPath().toString(),(saved?"true":"false"));
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
-				setItalic(dty);
+				setItalic(!saved);
 				refresh();
 			}
 		});
 	}
+	
 	/**
 	 * This method allows us to have children, but a diagram has no children. 
 	 * @param arg0

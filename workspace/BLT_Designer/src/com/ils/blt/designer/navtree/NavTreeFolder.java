@@ -1241,16 +1241,16 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 	public void prepareForDeletion() { uninstall(); }
 	
 	/**
-	 * Update the node italic/plain in background.
+	 * Update the node name italic/plain in nav tree.
 	 * Note: This method should ONLY be called from the node status manager.
 	 */
 	@Override
-	public void updateUI(boolean dty) {
-		log.infof("%s.updateUI: %s dirty = %s",CLSS,resourceId.getResourcePath().getPath().toString(),(dty?"true":"false"));
+	public void updateUI(boolean saved) {
+		log.infof("%s.updateUI: %s saved = %s",CLSS,resourceId.getResourcePath().getPath().toString(),(saved?"true":"false"));
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
-				setItalic(dty);
+				setItalic(!saved);
 				refresh();
 			}
 		});
