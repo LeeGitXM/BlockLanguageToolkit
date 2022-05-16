@@ -37,10 +37,8 @@ import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
-import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.NotificationHandler;
-import com.ils.blt.designer.ResourceDeleteManager;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
@@ -63,6 +61,7 @@ import com.inductiveautomation.ignition.designer.gui.IconUtil;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractNavTreeNode;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceNavTreeNode;
+import com.inductiveautomation.ignition.designer.navtree.model.ResourceDeleteAction;
 
 /**
  * A DiagramNode appears as leaf node in the BLT NavTree hierarchy.
@@ -150,7 +149,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		ExportDiagramAction exportAction = new ExportDiagramAction(menu.getRootPane(),resourceId, this);
 		exportAction.setEnabled(cleanView);
 		menu.add(exportAction);
-		DeleteDiagramAction diagramDeleteAction = new DeleteDiagramAction(this);
+		DeleteDiagramAction deleteAction = new DeleteDiagramAction(this);
 		DebugDiagramAction debugAction = new DebugDiagramAction();
 		ResetDiagramAction resetAction = new ResetDiagramAction();
 		resetAction.setEnabled(cleanView);
@@ -174,7 +173,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		menu.addSeparator();
 		menu.add(copyDiagramAction);
 		menu.add(renameAction);
-        menu.add(diagramDeleteAction);
+        menu.add(deleteAction);
         menu.addSeparator();
         menu.add(debugAction);
         menu.add(resetAction);
@@ -327,7 +326,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	 */
 	@Override
 	public void resourcesDeleted(String projectName,List<ChangeOperation.DeleteResourceOperation> ops) {
-		log.debug(CLSS+".resourcesDeleted (ignore)");
+		log.info(CLSS+".resourcesDeleted (ignore)");
 	}
 	
 	/**
@@ -478,37 +477,20 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
     }
     private class DeleteDiagramAction extends BaseAction {
     	private static final long serialVersionUID = 1L;
-    	private final ResourceDeleteManager deleter;
-		private String bundleString;
-    	private final DiagramTreeNode node;
+    	private String noun;
+    	private final AbstractResourceNavTreeNode node;
     	
-	    public DeleteDiagramAction(DiagramTreeNode treeNode)  {
+	    public DeleteDiagramAction(AbstractResourceNavTreeNode tnode)  {
 	    	super(PREFIX+".DeleteDiagram",IconUtil.getIcon("delete")); 
-	    	node = treeNode;
-	    	this.bundleString = PREFIX+".DiagramNoun";
-	    	this.deleter = new ResourceDeleteManager(node);
+	    	this.node = tnode;
+	    	this.noun = PREFIX+".DiagramNoun";
 	    }
-
 	    public void actionPerformed(ActionEvent e) {
-	    	closeAndCommit();
-
-	    	List<AbstractResourceNavTreeNode>selected = new ArrayList<>();
-	    	selected.add(node);
-	    	if(confirmDelete(selected)) {
-	    		deleter.acquireResourcesToDelete();
-	    		executionEngine.executeOnce(deleter);
-
-	    		AbstractNavTreeNode p = node.getParent();
-	    			if( p instanceof NavTreeFolder )  {
-	    				NavTreeFolder parentNode = (NavTreeFolder)p;
-	    				parentNode.expand();
-	    			}
-	    		}
-	    		else {
-	    			ErrorUtil.showInfo(workspace, CLSS+"Delete failed", "Delete Action");
-	    		}
-
-	    	}
+	    	List<AbstractResourceNavTreeNode> nodes = new ArrayList<>();
+	    	nodes.add(node);
+	    	ResourceDeleteAction deleter = new ResourceDeleteAction(context,nodes,noun);
+	    	deleter.execute();
+	    }
 	}
 	
 	private class ResetDiagramAction extends BaseAction {

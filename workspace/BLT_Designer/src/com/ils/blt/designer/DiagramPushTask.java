@@ -9,9 +9,7 @@ import java.util.List;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
-import com.inductiveautomation.ignition.client.gateway_interface.GatewayException;
 import com.inductiveautomation.ignition.common.StringPath;
-import com.inductiveautomation.ignition.common.modules.ModuleInfo;
 import com.inductiveautomation.ignition.common.project.ChangeOperation;
 import com.inductiveautomation.ignition.common.project.ProjectDiff;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
@@ -21,22 +19,19 @@ import com.inductiveautomation.ignition.common.project.resource.ResourcePath;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.DesignerContextImpl;
-import com.inductiveautomation.ignition.designer.gateway.DTGatewayInterface;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
-import com.inductiveautomation.ignition.designer.model.DesignerModuleHook;
 import com.inductiveautomation.ignition.designer.project.DesignerProjectTreeImpl;
 import com.inductiveautomation.ignition.designer.project.ProjectChange;
 
 
 /**
- * Update the single specified diagram. We assume it is dirty.
- * 
+ * Push changes to the Gateway for the the single specified diagram. We assume it is dirty.
  */
-public class DiagramSaveTask implements Runnable {
-	private static final String CLSS = "DiagramSaveTask";
-	private static final LoggerEx log = LogUtil.getLogger(DiagramSaveTask.class.getPackage().getName());
+public class DiagramPushTask implements Runnable {
+	private static final String CLSS = "DiagramPushTask";
+	private static final LoggerEx log = LogUtil.getLogger(DiagramPushTask.class.getPackage().getName());
 	private static final boolean DEBUG = true;
-	private static DesignerContextImpl context = null;
+	private DesignerContextImpl context = null;
 	private final ProcessDiagramView view;
 	private ProjectResource resource;
 	
@@ -44,7 +39,7 @@ public class DiagramSaveTask implements Runnable {
 	 * This constructor is used for diagram resources.
 	 * @param pr
 	 */
-	public DiagramSaveTask(DesignerContext ctx,ProjectResource pr,ProcessDiagramView pdv) {
+	public DiagramPushTask(DesignerContext ctx,ProjectResource pr,ProcessDiagramView pdv) {
 		this.context = (DesignerContextImpl)ctx;
 		this.resource = pr;
 		this.view = pdv;
@@ -103,18 +98,6 @@ public class DiagramSaveTask implements Runnable {
 				if( res.getProjectName().equals(project.getName())) resources.add(res);
 				
 			}
-			//DTGatewayInterface.getInstance().saveProjectAs(context.getFrame(), null, project.getManifest(),resources);
-			DTGatewayInterface.getInstance().createProject(context.getFrame(), null, project.getManifest(),resources);
-			
-			context.getResourceEditManager().onDesignerUpdateComplete();
-			List<ModuleInfo> infos = context.getModules();
-			for(ModuleInfo info:infos) {
-				Object moduleHook = context.getModule(info.getId());
-				 ((DesignerModuleHook) moduleHook).notifyProjectSaveDone();
-			}
-		}
-		catch(GatewayException gex) {
-			log.warn(String.format("%s.run: Exception saving project %s (%s)",CLSS,project.getName(),gex.getMessage()),gex);
 		}
 		catch(Exception ex) {
 			log.warn(String.format("%s.run: Exception modifying resource %s:%s (%s)",CLSS,resource.getResourceId().getProjectName(),

@@ -30,11 +30,13 @@ import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceN
  *  It is a central reporting point for the current status of each node.
  *  This class is implemented as a singleton.
  *  
- *  The nodes themselves have no dirty state. "dirtiness" refers to
- *  a change in state for the node.  We keep track of the state 
- *  (DISABLED,ISOLATION,ACTIVE) of child diagrams. When we set the state,
- *  it is in designer scope only. We do not change the state in the
- *  gateway until a project save.
+ *  The nodes themselves track saved state. "dirtiness" refers to
+ *  inconsistencies between a diagram in the designer and in the gateway. 
+ *  When we set the state, it is immediately pushed to the gateway, so it does
+ *  not cause the diagram to become dirty, just "unsaved". We do not change the state
+ *  on disk until a project save.
+ *  
+ *  Note that a name change does not make a node dirty, just "unsaved".
  *  
  *  "Alerting" is completely independent of dirtiness. It refers to
  *  the state something inside a diagram. A node is alerting if any of its
@@ -48,7 +50,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 	private final LoggerEx log;
 	private final ApplicationRequestHandler handler;
 	private final NotificationHandler notificationHandler;
-	private final List<ResourcePath> unsavedNodes;
+	private final List<String> unsavedNodes;    // String version of resource path
 	private final Map<String,StatusEntry> statusByPath;
 	
 
@@ -76,12 +78,12 @@ public class NodeStatusManager implements NotificationChangeListener   {
 	}
 
 	/**
-	 * The "unsavedNodes" are those nodes that have been created as a 
-	 * result of user action, but never written to the gateway.
-	 * This should be rendered as "dirty"
+	 * "unsavedNodes" are those nodes where the gateway version
+	 * does not match the version saved on disk.
+	 * These should be rendered as "italic"
 	 */
 	public void addToUnsavedList(ResourcePath path) {
-		unsavedNodes.add(path);
+		unsavedNodes.add(path.getFolderPath());
 	}
 	/**
 	 * Define status for the root of the resource tree. 
@@ -221,7 +223,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 		return pendingName;
 	}
 	/**	
-	 * An edit has changed the node name in the nav tree. The node is dirty if the name
+	 * An edit has changed the node name in the nav tree. The node is unsaved if the name
 	 * differs from the resource name.
      */
 	public void setPendingName(ProjectResourceId resourceId,String newName) {
@@ -235,12 +237,12 @@ public class NodeStatusManager implements NotificationChangeListener   {
 	}
 	/**	
 	 * Synchronize StatusEntry to current state of resource. The resource name
-	 * is set to the pending name and tbe state set to the state of the gateway.
+	 * is set to the pending name and the state set to the state of the gateway.
      */
 	public void commit(ProjectResourceId resourceId) {
 		StatusEntry se = statusByPath.get(resourceId.getFolderPath());
 		if( se!=null ) {
-			unsavedNodes.remove(resourceId.getResourcePath());
+			unsavedNodes.remove(resourceId.getResourcePath().getFolderPath());
 			se.commit();
 			if( se.getNode() instanceof NavTreeNodeInterface) {
 				((NavTreeNodeInterface)se.getNode()).updateUI(false);
@@ -254,7 +256,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 	 */
 	public boolean getDirtyState(ProjectResourceId resourceId) {
 		boolean dirty = true;
-		if( !unsavedNodes.contains(resourceId.getResourcePath())) {
+		if( !unsavedNodes.contains(resourceId.getResourcePath().getFolderPath())) {
 			StatusEntry se = statusByPath.get(resourceId.getFolderPath());
 			if( se!=null ) {
 				dirty = se.isDirty();
@@ -265,10 +267,10 @@ public class NodeStatusManager implements NotificationChangeListener   {
 	}
 	/**
 	 * Called after a save from the main menu. Update the status
-	 * of the nav-tree nodes. All nodes have been saved
+	 * of the nav-tree nodes. All nodes have been saved.
 	 */
-	public void markAllClean() {
-		log.infof("%s.markAllClean()",CLSS);
+	public void markAllSaved() {
+		log.infof("%s.markAllSaved()",CLSS);
 		unsavedNodes.clear();
 		for(String key:statusByPath.keySet()) {
 			StatusEntry se = statusByPath.get(key);

@@ -80,7 +80,7 @@ import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.designer.BLTDesignerHook;
-import com.ils.blt.designer.DiagramSaveTask;
+import com.ils.blt.designer.DiagramPushTask;
 import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.NotificationHandler;
 import com.ils.blt.designer.ResourceUpdateManager;
@@ -1362,8 +1362,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		diagram.registerChangeListeners();     // The diagram may include new components
 		diagram.refresh();
 		Optional<ProjectResource> optional = context.getProject().getResource(diagram.getResourceId());
-		DiagramSaveTask task = new DiagramSaveTask(context,optional.get(),diagram);
-		task.run();
+		DiagramPushTask task = new DiagramPushTask(context,optional.get(),diagram);
+		executionEngine.executeOnce(task);
 	}
 	/**
 	 * Display the open diagram as clean, presumeably after a recent save of the project resource.

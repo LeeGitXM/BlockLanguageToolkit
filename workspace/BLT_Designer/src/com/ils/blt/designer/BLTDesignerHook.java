@@ -4,8 +4,6 @@
 package com.ils.blt.designer;
 
 
-import java.awt.Component;
-import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.io.IOException;
@@ -16,10 +14,6 @@ import java.util.Optional;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JRootPane;
 import javax.swing.SwingUtilities;
 
 import org.apache.log4j.Logger;
@@ -153,7 +147,6 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		context = ctx;
 		appRequestHandler = new ApplicationRequestHandler();
 		ResourceCreateManager.setContext(ctx);
-		ResourceDeleteManager.setContext(ctx);
 		ResourceUpdateManager.setContext(ctx);
 		ResourceSaveManager.setContext(ctx);
 		WorkspaceBackgroundRepainter.setContext(ctx);
@@ -231,7 +224,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		log.infof("%s.notifyProjectSaveStart --------",CLSS);
 		
 		ResourceSaveManager saver = new ResourceSaveManager(getWorkspace(),rootNode);
-		//saver.saveSynchronously();
+		saver.saveSynchronously();
 	}
 	
 	

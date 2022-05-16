@@ -75,6 +75,7 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractNavTreeNode;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceNavTreeNode;
 import com.inductiveautomation.ignition.designer.navtree.model.FolderNode;
+import com.inductiveautomation.ignition.designer.navtree.model.ResourceDeleteAction;
 import com.inductiveautomation.ignition.designer.project.CreateResourceDialog;
 import com.inductiveautomation.ignition.designer.project.CreateResourceDialog.CreateResourceDialogBuilder;
 import com.inductiveautomation.ignition.designer.project.ResourceNotFoundException;
@@ -310,7 +311,7 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 	@Override
 	protected void addEditActions(JPopupMenu menu) {
 		menu.add(renameAction);
-		menu.add(new DeleteNodeAction(this));
+		menu.add(new DeleteFolderAction(this));
 	}
 	
 	@Override 
@@ -893,72 +894,22 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 		}
 	}
 
-	// Delete the this node and all its descendants. 
-	// Note: On a "save" action, the descendants are removed also.
-	private class DeleteNodeAction extends BaseAction implements UndoManager.UndoAction {
-		private static final long serialVersionUID = 1L;
-		private final AbstractResourceNavTreeNode node; 
-		ResourceDeleteManager deleter;
-		private String bundleString;
-		private ProjectResourceId resid = null;    // for the root
-
-		public DeleteNodeAction(NavTreeFolder resourceNode)  {
-			super(PREFIX+".DeleteNode",IconUtil.getIcon("delete"));
-			this.node = resourceNode;
-			this.bundleString = PREFIX+".NodeNoun";
-			this.deleter = new ResourceDeleteManager(node);
-		}
-
-		public void actionPerformed(ActionEvent e) {
-			AbstractNavTreeNode p = node.getParent();
-			Optional<ProjectResource> optional = node.getProjectResource();
-			ProjectResource res = optional.get();
-			resid = res.getResourceId();
-			log.infof("%s.DeleteNodeAction: %s, resource %s.",CLSS,node.getName(),resid.getFolderPath());
-			List<AbstractResourceNavTreeNode>selected = new ArrayList<>();
-			selected.add(node);
-			if(confirmDelete(selected)) {
-				if( res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
-					bundleString = PREFIX+".FolderNoun";
-				}
-				deleter.acquireResourcesToDelete();
-				if( execute() ) {
-					UndoManager.getInstance().add(this,NavTreeFolder.class);
-	
-					if( p instanceof NavTreeFolder )  {
-						NavTreeFolder parentNode = (NavTreeFolder)p;
-						parentNode.doDelete(selected, AbstractNavTreeNode.DeleteReason.Cut);
-						parentNode.recreate();
-						parentNode.expand();
-					}
-					
-					deleter.run();
-				}
-				else {
-					ErrorUtil.showError("Node locked, delete failed");
-				}
-			}
-		}
-
-		// Marks the project resources for deletion.
-		@Override
-		public boolean execute() {
-			deleter.run();
-			return true;
-		}
-
-		@Override
-		public boolean isGroupSequenceIndependent() {return false;}
-
-		@Override
-		public boolean undo() {
-			deleter.run();
-			return true;
-		}
-
-		@Override
-		public String getDescription() { return new String(BundleUtil.get().getStringLenient(bundleString) + " delete"); }
-
+    private class DeleteFolderAction extends BaseAction {
+    	private static final long serialVersionUID = 1L;
+    	private String noun;
+    	private final AbstractResourceNavTreeNode node;
+    	
+	    public DeleteFolderAction(AbstractResourceNavTreeNode tnode)  {
+	    	super(PREFIX+".DeleteNode",IconUtil.getIcon("delete")); 
+	    	this.node = tnode;
+	    	this.noun = PREFIX+".DiagramNoun";
+	    }
+	    public void actionPerformed(ActionEvent e) {
+	    	List<AbstractResourceNavTreeNode> nodes = new ArrayList<>();
+	    	nodes.add(node);
+	    	ResourceDeleteAction deleter = new ResourceDeleteAction(context,nodes,noun);
+	    	deleter.execute();
+	    }
 	}
 
 	// Create a new diagram
