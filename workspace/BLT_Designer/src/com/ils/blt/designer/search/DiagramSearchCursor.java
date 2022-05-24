@@ -91,7 +91,7 @@ public class DiagramSearchCursor extends SearchObjectCursor {
 		catch (IOException ioe) {
 			log.warnf("%s: open io exception (%s)",CLSS,ioe.getLocalizedMessage());
 		}
-		ProcessDiagramView dgm = new ProcessDiagramView(res.getResourceId(),sd, context);
+		ProcessDiagramView dgm = new ProcessDiagramView(context,res.getResourceId(),sd);
 		return dgm;
 	}
 }

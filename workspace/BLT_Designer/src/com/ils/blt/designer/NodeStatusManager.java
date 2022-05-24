@@ -11,11 +11,10 @@ import java.util.Map;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagramState;
-import com.ils.blt.common.notification.NotificationChangeListener;
 import com.ils.blt.common.notification.NotificationKey;
 import com.ils.blt.designer.navtree.NavTreeFolder;
 import com.ils.blt.designer.navtree.NavTreeNodeInterface;
-import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
+import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 import com.inductiveautomation.ignition.common.project.resource.ResourcePath;
 import com.inductiveautomation.ignition.common.util.LogUtil;
@@ -44,13 +43,11 @@ import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceN
  *  
  *  The resourceId is known to both the view code and the nav tree.
  */
-public class NodeStatusManager implements NotificationChangeListener   {
+public class NodeStatusManager   {
 	private static String CLSS = "NodeStatusManager";
 	private static NodeStatusManager instance = null;
 	private final LoggerEx log;
 	private final ApplicationRequestHandler handler;
-	private final NotificationHandler notificationHandler;
-	private final List<String> unsavedNodes;    // String version of resource path
 	private final Map<String,StatusEntry> statusByPath;
 	
 
@@ -60,9 +57,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 	private NodeStatusManager() {
 		this.log = LogUtil.getLogger(getClass().getPackage().getName());
 		this.handler = new ApplicationRequestHandler();
-		this.notificationHandler = NotificationHandler.getInstance();
 		statusByPath = new HashMap<>();
-		unsavedNodes = new ArrayList<>();
 	}
 	
 	/**
@@ -84,9 +79,9 @@ public class NodeStatusManager implements NotificationChangeListener   {
 	public void commit(ProjectResourceId resourceId) {
 		StatusEntry se = statusByPath.get(resourceId.getFolderPath());
 		if( se!=null ) {
-			unsavedNodes.remove(resourceId.getResourcePath().getFolderPath());
+			se.commit();
 			if( se.getNode() instanceof NavTreeNodeInterface) {
-				((NavTreeNodeInterface)se.getNode()).updateUI(true);
+				((NavTreeNodeInterface)se.getNode()).updateUI(false);
 			}
 		}
 	}
@@ -105,8 +100,21 @@ public class NodeStatusManager implements NotificationChangeListener   {
 			statusByPath.put(resourceId.getFolderPath(),se);
 		}
 	}
+	
 	/**
-	 * Define status for a new nav tree node. Initially we get the node state from the gateway
+	 * @return the count of nodes with changes
+	 */
+	public int getModificationCount() {
+		int count = 0;
+		for(StatusEntry se:statusByPath.values()) {
+			if(se.pendingView!=null || se.pendingState!=null || se.pendingName!=null) {
+				count++;
+			}
+		}
+		return count;
+	}
+	/**
+	 * Define status for a new nav tree node. Initially we get the node state from the gateway.
 	 * @param node
 	 * @param resourceId
 	 */
@@ -116,7 +124,6 @@ public class NodeStatusManager implements NotificationChangeListener   {
 		if( se == null ) {
 			se = new StatusEntry((NavTreeNodeInterface)node);
 			se.setAlerting(handler.isAlerting(resourceId));
-			notificationHandler.addNotificationChangeListener(NotificationKey.keyForAlert(resourceId), CLSS, this);
 			statusByPath.put(resourceId.getFolderPath(),se);
 		}
 		log.debugf("%s.createResourceStatus: %s (%s)",CLSS,node.getName(),resourceId.getFolderPath());
@@ -132,7 +139,6 @@ public class NodeStatusManager implements NotificationChangeListener   {
 			StatusEntry se = statusByPath.get(rp);
 			se.prepareToBeDeleted();
 			statusByPath.remove(rp);
-			unsavedNodes.remove(rp);
 		}
 	}
 	/**
@@ -193,7 +199,8 @@ public class NodeStatusManager implements NotificationChangeListener   {
 		return isAlerting;
 	}
 	/**	
-	 * When it is time to save the resource, get the intended name
+	 * When it is time to save the resource, get the intended name.
+	 * A null implies no change.
      */
 	public String getPendingName(ProjectResourceId resourceId) {
 		String pendingName = null;
@@ -204,8 +211,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 		return pendingName;
 	}
 	/**	
-	 * An edit has changed the node name in the nav tree. The node is unsaved if the name
-	 * differs from the resource name.
+	 * An edit has changed the node name in the nav tree. REcord the new name for when the node is saved.
      */
 	public void setPendingName(ProjectResourceId resourceId,String newName) {
 		StatusEntry se = statusByPath.get(resourceId.getFolderPath());
@@ -213,35 +219,75 @@ public class NodeStatusManager implements NotificationChangeListener   {
 			se.setPendingName(newName);
 		}
 	}
+	/**	
+	 * Get the changed state, if any
+     */
+	public DiagramState getPendingState(ProjectResourceId resourceId) {
+		DiagramState pendingState = null;
+		StatusEntry se = statusByPath.get(resourceId.getFolderPath());
+		if( se!=null ) {
+			pendingState = se.getPendingState();
+		}
+		return pendingState;
+	}
+	/**	
+	 * An edit has changed the node name in the nav tree. The node is unsaved if the name
+	 * differs from the resource name.
+     */
+	public void setPendingState(ProjectResourceId resourceId,DiagramState newState) {
+		StatusEntry se = statusByPath.get(resourceId.getFolderPath());
+		if( se!=null ) {
+			se.setPendingState(newState);
+		}
+	}
+	/**	
+	 * When it is time to save the resource, get the intended view
+     */
+	public ProcessDiagramView getPendingView(ProjectResourceId resourceId) {
+		ProcessDiagramView pendingView = null;
+		StatusEntry se = statusByPath.get(resourceId.getFolderPath());
+		if( se!=null ) {
+			pendingView = se.getPendingView();
+		}
+		return pendingView;
+	}
+	/**	
+	 * An edit has changed the node name in the nav tree. The node is unsaved if the name
+	 * differs from the resource name.
+     */
+	public void setPendingView(ProjectResourceId resourceId,ProcessDiagramView newView) {
+		StatusEntry se = statusByPath.get(resourceId.getFolderPath());
+		if( se!=null ) {
+			se.setPendingView(newView);
+		}
+	}
 
 	
 	/**
-	 * @return the dirty state of the indicated node
+	 * @return the dirty state of the indicated node. The node is dirty if it has
+	 *     a pendingView, a pendingState or pendingName.
 	 */
-	public boolean isSaved(ProjectResourceId resourceId) {
-		boolean saved = true;
-		if( unsavedNodes.contains(resourceId.getResourcePath().getFolderPath())) {
-			saved = false;
+	public boolean isModified(ProjectResourceId resourceId) {
+		boolean modified = true;
+		StatusEntry se = statusByPath.get(resourceId.getFolderPath());
+		if( se!=null ) {
+			if( se.getPendingName()==null && se.getPendingState()==null && se.getPendingView()==null) {
+				modified = false;
+			}
 		}
-		log.infof("%s.isSaved: %s = %s",CLSS,resourceId.getFolderPath(),(saved?"saved":"un-saved"));
-		return saved;
+		log.infof("%s.isModified: %s (%s)",CLSS,resourceId.getFolderPath(),(modified?"modified":"clean"));
+		return modified;
 	}
 
 	/**
-	 * "unsavedNodes" are those nodes where the gateway version
-	 * does not match the version saved on disk.
-	 * These should be rendered as "italic"
+	 * Update the node text for the specified resourceId
 	 */
-	public void setSaved(ResourcePath path,boolean flag) {
-		if( flag ) {
-			unsavedNodes.remove(path.getFolderPath());
-		}
-		else {
-			unsavedNodes.add(path.getFolderPath());
+	public void updateUI(ProjectResourceId resourceId) {
+		StatusEntry se = statusByPath.get(resourceId.getFolderPath());
+		if( se!=null ) {
+			se.node.updateUI(se.isModified());
 		}
 	}
-
-
 	/**
 	 * Hold status information for a node in the nav tree.
 	 * The pending is simply the last name change made on the node.
@@ -250,6 +296,8 @@ public class NodeStatusManager implements NotificationChangeListener   {
 	private class StatusEntry {
 		private boolean alerting = false;
 		private String pendingName;
+		private DiagramState pendingState;
+		private ProcessDiagramView pendingView;
 		private final NavTreeNodeInterface node;
 		/**
 		 * Constructor:
@@ -258,19 +306,38 @@ public class NodeStatusManager implements NotificationChangeListener   {
 		 */
 		public StatusEntry(NavTreeNodeInterface antn)  {
 			this.node = antn;
-			//Set the pending name to the current
-			this.pendingName = node.getName();
+			// Set pending vaules to null, meaning that there are no
+			// changes yet
+			this.pendingName = null;
+			this.pendingState = null;
+			this.pendingView = null;
 		}
 		public String getPendingName() { return this.pendingName; }
+		public void setPendingName(String name) { this.pendingName = name; }
+		public DiagramState getPendingState() { return this.pendingState; }
+		public void setPendingState(DiagramState state) { this.pendingState = state; }
+		public ProcessDiagramView getPendingView() { return this.pendingView; }
+		public void setPendingView(ProcessDiagramView view) { this.pendingView = view; }
 		public boolean isAlerting() { return alerting; }
 		public void setAlerting(boolean flag) { alerting = flag; }
 		public NavTreeNodeInterface getNode() { return node; }
-		public void setPendingName(String name) { this.pendingName = name; }
-
+		
+		public void commit() {
+			this.pendingName = null;
+			this.pendingState = null;
+			this.pendingView = null;
+		}
 		public void prepareToBeDeleted() {
 			if( node.getName()!=BLTProperties.ROOT_FOLDER_NAME) {
 				node.prepareForDeletion();
 			}
+		}
+		public boolean isModified() {
+			boolean result = false;
+			if( pendingName!=null || pendingState!=null || pendingView!=null ) {
+				result = true;
+			}
+			return result;
 		}
 
 		@Override
@@ -280,25 +347,5 @@ public class NodeStatusManager implements NotificationChangeListener   {
 			return dump;
 		}
 	}
-
-// ================================ Notification Change Listener =========================================
-@Override
-public void diagramStateChange(String path, String state) {
-	StatusEntry se = statusByPath.get(path);
-	se.setAlerting(state.equalsIgnoreCase("true"));
-	NavTreeNodeInterface node = se.getNode();
-	node.reload();
-}
-
-@Override
-public void bindingChange(String pname,String binding) {}
-@Override
-public void nameChange(String name) {}
-@Override
-public void propertyChange(String pname,Object value) {}
-@Override
-public void valueChange(QualifiedValue value) {}
-@Override
-public void watermarkChange(String newWatermark) {}
 	
 }

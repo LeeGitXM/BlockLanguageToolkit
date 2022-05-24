@@ -24,7 +24,6 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import javax.swing.Icon;
@@ -51,7 +50,6 @@ import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.ResourceCreateManager;
-import com.ils.blt.designer.ResourceDeleteManager;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
@@ -296,7 +294,7 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 	@Override
 	public synchronized void onSelected() {
 		UndoManager.getInstance().setSelectedContext(NavTreeFolder.class);
-		statusManager.reportDirtyState(getResourceId());
+		updateUI(statusManager.isModified(getResourceId()));
 	}
 	
 	// Rename the NavTree node. NOTE: This does not yet rename the
@@ -341,23 +339,27 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 				(res.isFolder()?"folder":"diagram"),getDepth());
 		// If the project is disabled, then don't do anything
 		if( !context.getProject().isEnabled()) return null;
-		AbstractResourceNavTreeNode node = statusManager.findNode(res.getResourceId());
+		NavTreeNodeInterface node = statusManager.findNode(res.getResourceId());
+		AbstractNavTreeNode tnode = null;
 		if( node==null ) {
 			if ( res.isFolder() )       {
-				node = new NavTreeFolder(context, res);
+				tnode = new NavTreeFolder(context, res);
 			}
 			else  {
-				node = new DiagramTreeNode(context,res,workspace);
+				tnode = new DiagramTreeNode(context,res,workspace);
 			} 
 		}
 		else {
-			if( node instanceof DiagramTreeNode ) context.getProject().addProjectResourceListener((DiagramTreeNode)node);
+			if( node instanceof DiagramTreeNode ) {
+				tnode = (AbstractNavTreeNode)node;
+				context.getProject().addProjectResourceListener((DiagramTreeNode)node);
+			}
 		}
-		node.install(this);
-		if( node.getParent()==null) {
+		tnode.install(this);
+		if( tnode.getParent()==null) {
 			log.errorf("%s.createChildNode: ERROR parent is null %s(%d)",CLSS,node.getName(),res.getResourceId());
 		}
-		return node;
+		return tnode;
 	}
 
 
@@ -626,7 +628,7 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 				SerializableDiagram sd = mapper.readValue(new String(bytes), SerializableDiagram.class);
 				if( sd!=null ) {
 					renameHandler.convertPaths(sd,res.getFolderPath());
-					ProcessDiagramView diagram = new ProcessDiagramView(res.getResourceId(),sd, context);
+					ProcessDiagramView diagram = new ProcessDiagramView(context,res.getResourceId(),sd);
 					for( Block blk:diagram.getBlocks()) {
 						ProcessBlockView pbv = (ProcessBlockView)blk;
 						if (pbv.isDiagnosis()) {
@@ -797,7 +799,7 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 										parentNode.getResourcePath().getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)  )) {
 									sd = mapper.readValue(new String(res.getData()), SerializableDiagram.class);
 									if( sd!=null ) {
-										ProcessDiagramView diagram = new ProcessDiagramView(res.getResourceId(),sd, context);
+										ProcessDiagramView diagram = new ProcessDiagramView(context,res.getResourceId(),sd);
 										renameHandler.convertPaths(sd,res.getFolderPath());  // converted UUIDs are thrown away because later CopyChildren also does it
 										sd.setName(newName);
 										for( Block blk:diagram.getBlocks()) {
@@ -839,19 +841,20 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 							builder.setApplicationScope(res.getApplicationScope());
 
 
-							AbstractResourceNavTreeNode node = statusManager.findNode(res.getResourceId());  // so basically starting over here
+							NavTreeNodeInterface node = statusManager.findNode(res.getResourceId());  // so basically starting over here
 							ProjectResource resource = builder.build();
-							//							Copies children and assigns new ResourcePaths
+							/*							Copies children and assigns new ResourcePaths
 							if (copyChildren(node) && deleteOriginal) { // copy children will rename diagnosis blocks
 								ResourceDeleteManager deleter;
 								deleter = new ResourceDeleteManager(node);
 								deleter.acquireResourcesToDelete();
 								deleter.run();
 							}
+							*/
 
 							// Finally display the parent node
 							//new ResourceCreateManager(resource,resource.getResourceName()).run();
-							AbstractResourceNavTreeNode newNode = statusManager.findNode(resource.getResourceId());  // so basically starting over here
+							NavTreeNodeInterface newNode = statusManager.findNode(resource.getResourceId());  // so basically starting over here
 
 							UndoManager.getInstance().add(PasteAction.this,AbstractNavTreeNode.class);
 							pasted = resource;
@@ -1005,7 +1008,6 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 											ProjectResourceId resid = requestHandler.createResourceId(getResourceId().getProjectName(), getResourceId().getFolderPath(), BLTProperties.DIAGRAM_RESOURCE_TYPE);
 											new ResourceCreateManager(getResourcePath().getFolderPath(),sd.getName(),sd.serialize()).run();	
 											parentNode.selectChild(new ResourcePath[] {getResourcePath()} );
-											statusManager.addToUnsavedList(getResourcePath());
 											statusManager.setPendingState(resid, sd.getState());
 										}
 										else {
@@ -1137,7 +1139,7 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 				
 				// For a small number of blocks on Pete's system, we've removed the name attribute and re-instated.
 				// The correct name may be in the property
-				ProcessDiagramView diagram = new ProcessDiagramView(res.getResourceId(),sd, context);
+				ProcessDiagramView diagram = new ProcessDiagramView(context,res.getResourceId(),sd);
 				for( Block blk:diagram.getBlocks()) {
 					ProcessBlockView pbv = (ProcessBlockView)blk;
 					// Re-instate name from property, if necessary
@@ -1209,8 +1211,7 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 		for(ChangeOperation.CreateResourceOperation op:ops ) {
 			ProjectResourceId id = op.getResourceId();
 			log.infof("%s.resourcesCreated: %s",CLSS,id.getFolderPath());
-			statusManager.addToUnsavedList(id.getResourcePath());
-			statusManager.reportDirtyState(id);
+			updateUI(statusManager.isModified(id));
 		}
 	}
 	/**
@@ -1245,12 +1246,12 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 	 * Note: This method should ONLY be called from the node status manager.
 	 */
 	@Override
-	public void updateUI(boolean saved) {
-		log.infof("%s.updateUI: %s saved = %s",CLSS,resourceId.getResourcePath().getPath().toString(),(saved?"true":"false"));
+	public void updateUI(boolean modified) {
+		log.infof("%s.updateUI: %s modified = %s",CLSS,resourceId.getResourcePath().getPath().toString(),(modified?"true":"false"));
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
-				setItalic(!saved);
+				setItalic(modified);
 				refresh();
 			}
 		});

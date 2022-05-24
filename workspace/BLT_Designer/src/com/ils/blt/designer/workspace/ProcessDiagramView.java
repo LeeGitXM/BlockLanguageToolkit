@@ -79,7 +79,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	 * @param resid
 	 * @param diagram
 	 */
-	public ProcessDiagramView (ProjectResourceId resid,SerializableDiagram diagram, DesignerContext context) {
+	public ProcessDiagramView (DesignerContext context,ProjectResourceId resid,SerializableDiagram diagram) {
 		this.resourceId = resid;
 		this.name = diagram.getName();
 		this.appRequestHandler = new ApplicationRequestHandler();
@@ -490,18 +490,21 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	}
 	/**
 	 * @return a background color appropriate for the current state
-	 *         of the diagram
+	 *         of the diagram. If it or its attributes have changed, then
+	 *         a muddy mustard background is rendered.
 	 */
 	public Color getBackgroundColorForState() {
 		// Dirty trumps active and isolated but not disabled
 		Color result = BLTProperties.DIAGRAM_DISABLED_BACKGROUND;
 		DiagramState designerState = getState();
-		if( !designerState.equals(DiagramState.DISABLED)) {
+		if( statusManager.isModified(getResourceId()) ) {
+			result = BLTProperties.DIAGRAM_DIRTY_BACKGROUND;
+		}
+		else if(designerState.equals(DiagramState.ACTIVE)) {
 			result = BLTProperties.DIAGRAM_ACTIVE_BACKGROUND;
-			if( designerState.equals(DiagramState.ISOLATED)) result = BLTProperties.DIAGRAM_ISOLATED_BACKGROUND;
-			if( statusManager.getDirtyState(getResourceId()) ) {
-				result = BLTProperties.DIAGRAM_DIRTY_BACKGROUND;
-			}
+		}
+		else if(designerState.equals(DiagramState.ISOLATED)) {
+			result = BLTProperties.DIAGRAM_ISOLATED_BACKGROUND;
 		}
 		return result;
 	}

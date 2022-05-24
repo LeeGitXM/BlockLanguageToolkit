@@ -75,7 +75,6 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	private static final String CLSS = "DiagramTreeNode";
 	private static final String PREFIX = BLTProperties.BUNDLE_PREFIX;  // Required for some defaults     
 	private final ApplicationRequestHandler requestHandler;
-	private final ExecutionManager executionEngine;
 	protected final DiagramWorkspace workspace;
 	protected final ExecutionManager executor;
 	protected final NodeStatusManager statusManager;
@@ -99,7 +98,6 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	 */
 	public DiagramTreeNode(DesignerContext context,ProjectResource resource,DiagramWorkspace ws) {
 		super(context,resource.getResourcePath());
-		this.executionEngine = new BasicExecutionEngine(1,CLSS);
 		this.workspace = ws;
 		this.executor = new BasicExecutionEngine();
 		this.requestHandler = new ApplicationRequestHandler();

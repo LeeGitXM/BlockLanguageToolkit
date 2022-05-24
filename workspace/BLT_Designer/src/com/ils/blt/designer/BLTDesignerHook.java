@@ -146,8 +146,6 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	public void startup(DesignerContext ctx, LicenseState activationState) throws Exception {
 		context = ctx;
 		appRequestHandler = new ApplicationRequestHandler();
-		ResourceCreateManager.setContext(ctx);
-		ResourceUpdateManager.setContext(ctx);
 		WorkspaceBackgroundRepainter.setContext(ctx);
 		WorkspaceRepainter.setContext(ctx);
 		context.addBeanInfoSearchPath("com.ils.blt.designer.component.beaninfos");
@@ -226,7 +224,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		log.infof("%s.notifyProjectSaveStart --------",CLSS);
 		
 		ResourceSaveManager saver = new ResourceSaveManager(context,getWorkspace());
-		saver.execute();
+		saver.execute(save);
 	}
 	
 	
@@ -322,7 +320,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 			catch (IOException ioe) {
 				log.warnf("%s: open io exception (%s)",CLSS,ioe.getLocalizedMessage());
 			}
-			ProcessDiagramView diagram = new ProcessDiagramView(res.getResourceId(),sd, context);
+			ProcessDiagramView diagram = new ProcessDiagramView(context,res.getResourceId(),sd);
 			for( Block blk:diagram.getBlocks()) {
 				ProcessBlockView pbv = (ProcessBlockView)blk;
 				if (pbv.isDiagnosis()) {

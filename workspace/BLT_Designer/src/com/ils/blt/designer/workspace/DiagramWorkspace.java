@@ -25,8 +25,6 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.Path2D;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -79,11 +77,9 @@ import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
-import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.DiagramPushTask;
 import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.NotificationHandler;
-import com.ils.blt.designer.ResourceUpdateManager;
 import com.ils.blt.designer.config.AttributeDisplaySelector;
 import com.ils.blt.designer.config.BlockExplanationViewer;
 import com.ils.blt.designer.config.BlockInternalsViewer;
@@ -95,8 +91,6 @@ import com.ils.blt.designer.navtree.DiagramTreeNode;
 import com.inductiveautomation.ignition.client.designable.DesignableContainer;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.client.tags.model.ClientTagManager;
-import com.inductiveautomation.ignition.client.tags.tree.node.BrowseTreeNode;
-import com.inductiveautomation.ignition.client.tags.tree.node.TagTreeNode;
 import com.inductiveautomation.ignition.client.util.LocalObjectTransferable;
 import com.inductiveautomation.ignition.client.util.action.BaseAction;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
@@ -113,7 +107,6 @@ import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 import com.inductiveautomation.ignition.common.tags.browsing.NodeBrowseInfo;
 import com.inductiveautomation.ignition.common.tags.config.TagConfigurationModel;
 import com.inductiveautomation.ignition.common.tags.config.properties.WellKnownTagProps;
-import com.inductiveautomation.ignition.common.tags.config.types.TagObjectType;
 import com.inductiveautomation.ignition.common.tags.model.TagPath;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -1274,7 +1267,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			catch (IOException ioe) {
 				log.warnf("%s.open: io exception (%s)",CLSS,ioe.getLocalizedMessage());
 			}
-			ProcessDiagramView diagram = new ProcessDiagramView(res.getResourceId(),sd, context);
+			ProcessDiagramView diagram = new ProcessDiagramView(context,res.getResourceId(),sd);
 			for( Block blk:diagram.getBlocks()) {
 				ProcessBlockView pbv = (ProcessBlockView)blk;
 				diagram.initBlockProperties(pbv);
@@ -1295,7 +1288,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			BlockDesignableContainer tab = (BlockDesignableContainer)findDesignableContainer(resourceId.getResourcePath());
 			tab.setBackground(diagram.getBackgroundColorForState());
 			SwingUtilities.invokeLater(new WorkspaceRepainter());
-			statusManager.reportDirtyState(diagram.getResourceId());  // Update the nav tree node
+			statusManager.updateUI(diagram.getResourceId());
 		}
 	}
 	
@@ -1308,7 +1301,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		BlockDesignableContainer container = (BlockDesignableContainer)c;
 		ProcessDiagramView diagram = (ProcessDiagramView)container.getModel();
 		// In addition to the workspace being dirty it can be renamed or had state changed
-		if( diagram.isChanged() || statusManager.getDirtyState(diagram.getResourceId()) ) {
+		if( diagram.isChanged() || statusManager.isModified(diagram.getResourceId()) ) {
 			Object[] options = {BundleUtil.get().getString(PREFIX+".CloseDiagram.Save"),BundleUtil.get().getString(PREFIX+".CloseDiagram.Revert")};
 			int n = JOptionPane.showOptionDialog(null,
 					BundleUtil.get().getString(PREFIX+".CloseDiagram.Question"),

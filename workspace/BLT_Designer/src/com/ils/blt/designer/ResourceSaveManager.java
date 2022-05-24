@@ -4,24 +4,30 @@
 package com.ils.blt.designer;
 
 import java.io.IOException;
-import java.util.Enumeration;
-import java.util.Optional;
+import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.ApplicationRequestHandler;
+import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
+import com.inductiveautomation.ignition.common.StringPath;
+import com.inductiveautomation.ignition.common.model.ApplicationScope;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceBuilder;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
+import com.inductiveautomation.ignition.common.project.resource.ResourcePath;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignableContainer;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
-import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceNavTreeNode;
+import com.inductiveautomation.ignition.designer.model.SaveContext;
+import com.inductiveautomation.ignition.designer.project.DesignableProject;
 
 
 /**
@@ -31,20 +37,19 @@ import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceN
  * Do not re-execute the same instance.
  *
  */
-public class ResourceSaveManager implements Runnable {
+public class ResourceSaveManager {
 	private static final String CLSS = "ResourceSaveManager";
 	private final LoggerEx log;
 	private static final boolean DEBUG = true;
-	private static DesignerContext context = null;
-	private final AbstractResourceNavTreeNode root;	      // Root of our save.
+	private final DesignerContext context;
 	private final DiagramWorkspace workspace;
 	private final ObjectMapper mapper;
 	private final ApplicationRequestHandler requestHandler;
 	private final NodeStatusManager statusManager;
 	
-	public ResourceSaveManager(DiagramWorkspace wksp,AbstractResourceNavTreeNode node) {
+	public ResourceSaveManager(DesignerContext ctx,DiagramWorkspace wksp) {
 		this.log = LogUtil.getLogger(getClass().getPackageName());
-		this.root = node;
+		this.context = ctx;
 		this.workspace = wksp;
 		this.requestHandler = new ApplicationRequestHandler();
 		this.statusManager = NodeStatusManager.getInstance();
@@ -52,96 +57,97 @@ public class ResourceSaveManager implements Runnable {
 		mapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL,true);
 	}
 	
-	/**
-	 * Call this method from the hook as soon as the context is established.
-	 * @param ctx designer context
-	 */
-	public static void setContext(DesignerContext ctx) {
-		context = ctx;
-	}
-	
 
 	/**
 	 * Traverse the entire node hierarchy looking for diagrams that need saving.
 	 * When found, serialize into the project resource. This is in anticipation
 	 * of a top-level save. This method is called from the designer hook and 
-	 * runs in the foreground,
+	 * runs in the foreground.
 	 */
-	public void saveSynchronously() {
-		if( DEBUG ) log.infof("%s.saveSynchronously()", CLSS);
-		saveModifiedResource(root);
-	}
-	
-	@Override
-	public void run() {
-		if( DEBUG ) log.infof("%s.run()", CLSS);
-		saveModifiedResource(root);
+	public void execute(SaveContext saveContext) {
+		if( DEBUG ) log.infof("%s.execute()", CLSS);
+		saveModifiedResources(saveContext);
 	}
 
 	/**
 	 *  Recursively descend the node tree, looking for resources in need of saving.
 	 *  These are the cases:
-	 *  1) Any diagram that is open and "dirty". (Only open diagrams can be dirty).
+	 *  1) Any diagram that is "dirty".
 	 *  2) Diagrams that are in a different state than the gateway version
 	 *  3) A folder or diagram that has been renamed
 	 *  4) Either a folder or diagram that is new (i.e. never edited)
 	 */
-	private void saveModifiedResource(AbstractResourceNavTreeNode node) {
-		Optional<ProjectResource>option = node.getProjectResource();
-		if(option.isPresent()) {
-			ProjectResource res = option.get();
-			if( res!=null && !res.getResourcePath().getPath().isRoot()) {
-				ProjectResourceId resid = res.getResourceId();
-				if( statusManager.getDirtyState(resid)) {
-					if( res.isFolder()) {
-						if( DEBUG ) log.infof("%s.saveModifiedResources: Saving %s...", CLSS, res.getResourceName());
-						new ResourceUpdateManager(res).run();
-					}
-					// Diagram
-					else {
-						BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(res.getResourcePath());
-						if( tab!=null ) {
-							ProcessDiagramView view = (ProcessDiagramView)tab.getModel();
-							view = (ProcessDiagramView)tab.getModel();
-							if( DEBUG ) log.infof("%s.saveModifiedResources, %s (%s)", CLSS, view.getName(), (view.isChanged()?"CHANGED":"UNCHANGED"));
-							if (view.isChanged()){
-								view.registerChangeListeners();     // The diagram may include new components
-								if( DEBUG ) log.infof("%s.saveModifiedResource: Saving %s...", CLSS, view.getName());
-								new ResourceUpdateManager(res,view).run();
-							}
-							workspace.setDiagramClean(view);
-						}
-						// Diagram is closed, but still dirty
-						else {
-							byte[] bytes = res.getData();
-							try {
-								SerializableDiagram sd = mapper.readValue(new String(bytes), SerializableDiagram.class);
-								if( sd!=null ) {
-									ProcessDiagramView view = new ProcessDiagramView(res.getResourceId(),sd, context);
-									if( DEBUG ) log.infof("%s.saveModifiedResource: Saving %s...", CLSS, view.getName());
-									new ResourceUpdateManager(res,view).run();
-								}
-							}
-							catch(JsonParseException jpe) {
-								log.warnf("%s.saveModifiedResource: Parse exception saving %s...(%s)", CLSS, res.getResourceName(),jpe.getLocalizedMessage());
-							}
-							catch(JsonMappingException jme) {
-								log.warnf("%s.saveModifiedResource: Mapping exception saving %s...(%s)", CLSS, res.getResourceName(),jme.getLocalizedMessage());
-							}
-							catch(IOException ioe) {
-								log.warnf("%s.saveModifiedResource: IO exception saving %s...(%s)", CLSS, res.getResourceName(),ioe.getLocalizedMessage());
-							}
-						}
-					}
+	private void saveModifiedResources(SaveContext saveContext) {
+		int count = statusManager.getModificationCount();
+		int index = 0;
+		DesignableProject project = context.getProject();
+		Map<ProjectResourceId,ProjectResource> map = context.getProject().getAllResources();
+		for(ProjectResourceId resid:map.keySet()) {
+			if( statusManager.isModified(resid)) {
+				saveContext.setProgress(index++/count);
+				ProjectResource res = map.get(resid);  // This is the "clean" copy
+				ResourcePath respath = resid.getResourcePath();
+				StringPath stringPath = respath.getPath();
+				String name = stringPath.getLastPathComponent();
+				
+				ProjectResourceBuilder builder = res.toBuilder();
+				builder.clearData();
+				builder.setApplicationScope(ApplicationScope.GATEWAY);
+				if( res.isFolder()) {      // Folder
+					builder.setFolder(true);
 				}
-			}
-
-			@SuppressWarnings("rawtypes")
-			Enumeration walker = node.children();
-			while(walker.hasMoreElements()) {
-				Object child = walker.nextElement();
-				saveModifiedResource((AbstractResourceNavTreeNode)child);
+				else {                     // Diagram
+					// If the resource is open in the workspace and dirty, move it to the status manager
+					BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(res.getResourcePath());
+					if( tab!=null ) {
+						ProcessDiagramView view = (ProcessDiagramView)tab.getModel();
+						if( DEBUG ) log.infof("%s.saveModifiedResources, %s (%s)", CLSS, view.getName(), (view.isChanged()?"CHANGED":"UNCHANGED"));
+						if( view.isChanged() ) {
+							statusManager.setPendingView(resid, view);
+							view.registerChangeListeners();     // The diagram may include new components
+							if( DEBUG ) log.infof("%s.saveModifiedResource: Saving modified %s...", CLSS, view.getName());
+						}
+					}
+					ProcessDiagramView view = statusManager.getPendingView(resid);
+					if( view==null) {
+						// Serialize from the resource
+						byte[] bytes = res.getData();
+						try {
+							SerializableDiagram sd = mapper.readValue(new String(bytes), SerializableDiagram.class);
+							if( sd!=null ) {
+								view = new ProcessDiagramView(context,resid,sd);
+							}
+						}
+						catch(JsonParseException jpe) {
+							saveContext.abort(jpe);
+							log.warnf("%s.saveModifiedResource: Parse exception saving %s...(%s)", CLSS, res.getResourceName(),jpe.getLocalizedMessage());
+						}
+						catch(JsonMappingException jme) {
+							saveContext.abort(jme);
+							log.warnf("%s.saveModifiedResource: Mapping exception saving %s...(%s)", CLSS, res.getResourceName(),jme.getLocalizedMessage());
+						}
+						catch(IOException ioe) {
+							saveContext.abort(ioe);
+							log.warnf("%s.saveModifiedResource: IO exception saving %s...(%s)", CLSS, res.getResourceName(),ioe.getLocalizedMessage());
+						}
+					}
+					DiagramState state = statusManager.getPendingState(resid);
+					if( state!=null) view.setState(state);
+					String pendingName = statusManager.getPendingName(resid);
+					if( pendingName!=null && !pendingName.equalsIgnoreCase(name)) {
+						stringPath = StringPath.extend(stringPath.getParentPath(),pendingName);
+						respath = new ResourcePath(BLTProperties.DIAGRAM_RESOURCE_TYPE,stringPath);
+						builder.setResourcePath(respath);
+					}
+					res = builder.build();
+					project.createOrModify(res);
+					
+					requestHandler.triggerStatusNotifications(context.getProjectName());
+					
+				}
+				statusManager.commit(resid);
 			}
 		}
+
 	}
 }
