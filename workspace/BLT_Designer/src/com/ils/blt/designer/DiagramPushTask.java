@@ -63,7 +63,7 @@ public class DiagramPushTask implements Runnable {
 
 		builder.setFolder(false);
 		view.setChanged(false);
-		view.setState(statusManager.getPendingState(resid));
+		//view.setState(statusManager.getPendingState(resid));
 		byte[] bytes = view.createSerializableRepresentation().serialize();
 		builder.putData(bytes);
 

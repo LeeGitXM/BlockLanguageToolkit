@@ -581,7 +581,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	public void setState(DiagramState ds) { 
 		this.state = ds;
 	}
-	
+
 	/**
 	 * There are a few situations (like deserialization) where we want to suppress the dirty propagation.
 	 * This method is called because we've messed up the diagram with a structural change.

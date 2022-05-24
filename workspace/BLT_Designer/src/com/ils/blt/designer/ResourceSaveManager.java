@@ -79,6 +79,7 @@ public class ResourceSaveManager {
 	 */
 	private void saveModifiedResources(SaveContext saveContext) {
 		int count = statusManager.getModificationCount();
+		if( count==0 ) count = 1;
 		int index = 0;
 		DesignableProject project = context.getProject();
 		Map<ProjectResourceId,ProjectResource> map = context.getProject().getAllResources();
@@ -133,6 +134,7 @@ public class ResourceSaveManager {
 					}
 					DiagramState state = statusManager.getPendingState(resid);
 					if( state!=null) view.setState(state);
+					else view.setState(requestHandler.getDiagramState(resid));
 					String pendingName = statusManager.getPendingName(resid);
 					if( pendingName!=null && !pendingName.equalsIgnoreCase(name)) {
 						stringPath = StringPath.extend(stringPath.getParentPath(),pendingName);
@@ -148,6 +150,5 @@ public class ResourceSaveManager {
 				statusManager.commit(resid);
 			}
 		}
-
 	}
 }

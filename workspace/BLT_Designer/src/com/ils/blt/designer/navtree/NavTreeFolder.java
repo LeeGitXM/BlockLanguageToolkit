@@ -350,8 +350,8 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 			} 
 		}
 		else {
+			tnode = (AbstractNavTreeNode)node;
 			if( node instanceof DiagramTreeNode ) {
-				tnode = (AbstractNavTreeNode)node;
 				context.getProject().addProjectResourceListener((DiagramTreeNode)node);
 			}
 		}

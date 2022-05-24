@@ -155,6 +155,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		
 		// States are: ACTIVE, DISABLED, ISOLATED
 		DiagramState state = statusManager.getPendingState(resourceId);
+		if( state==null) state = requestHandler.getDiagramState(resourceId);
 		copyDiagramAction = new CopyAction(this);
 		SetStateAction ssaActive = new SetStateAction(DiagramState.ACTIVE);
 		ssaActive.setEnabled(!state.equals(DiagramState.ACTIVE));
@@ -231,12 +232,14 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 
 	/**
 	 * Return an icon appropriate to the diagram state and whether or not it is displayed.
+	 * If there is a pending state, use it. Otherwise get the state from the Gateway.
 	 * As far as we can tell getExpandedIcon is never called.
 	 */
 	@Override
 	public Icon getIcon() {	
 		icon = closedIcon;
 		DiagramState ds = statusManager.getPendingState(resourceId);
+		if( ds==null) ds = requestHandler.getDiagramState(resourceId);
 		if( workspace.isOpen(resourceId.getResourcePath()) ) {
 			icon = openIcon;
 			if( ds.equals(DiagramState.DISABLED))      icon = openDisabledIcon;

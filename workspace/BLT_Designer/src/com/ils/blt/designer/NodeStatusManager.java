@@ -107,7 +107,7 @@ public class NodeStatusManager   {
 	public int getModificationCount() {
 		int count = 0;
 		for(StatusEntry se:statusByPath.values()) {
-			if(se.pendingView!=null || se.pendingState!=null || se.pendingName!=null) {
+			if(se.isModified()) {
 				count++;
 			}
 		}
