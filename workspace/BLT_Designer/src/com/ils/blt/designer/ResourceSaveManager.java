@@ -84,7 +84,7 @@ public class ResourceSaveManager {
 		DesignableProject project = context.getProject();
 		Map<ProjectResourceId,ProjectResource> map = context.getProject().getAllResources();
 		for(ProjectResourceId resid:map.keySet()) {
-			if( statusManager.isModified(resid)) {
+			if( resid.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) && statusManager.isModified(resid)) {
 				saveContext.setProgress(index++/count);
 				ProjectResource res = map.get(resid);  // This is the "clean" copy
 				ResourcePath respath = resid.getResourcePath();

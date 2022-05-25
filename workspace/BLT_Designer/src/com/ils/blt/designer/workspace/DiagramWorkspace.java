@@ -163,7 +163,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	public static final String key = "BlockDiagramWorkspace";
 	private static String OS = System.getProperty("os.name").toLowerCase();
 	public static final String PREFIX = BLTProperties.BLOCK_PREFIX; 
-	private final ApplicationRequestHandler handler = new ApplicationRequestHandler();
+	private final ApplicationRequestHandler requestHandler;
 	private final DesignerContext context;
 	private final EditActionHandler editActionHandler;
 	private final ExecutionManager executionEngine;
@@ -176,7 +176,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	private JPopupMenu zoomPopup;
 	private JComboBox<String> zoomCombo;
 	private CommandBar alignBar = null;
-	private ApplicationRequestHandler requestHandler;
 
 	/**
 	 * Constructor:
@@ -191,11 +190,10 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		this.rightClickHandler = new PopupListener();
 		this.addMouseListener(rightClickHandler);
 		this.propertyEditorFrame = new PropertyEditorFrame(context,this);
-		requestHandler = new ApplicationRequestHandler();
+		this.requestHandler = new ApplicationRequestHandler();
 		statusManager = NodeStatusManager.getInstance();
 		initialize();
 		setBackground(Color.red);
-		this.requestHandler = new ApplicationRequestHandler();
 	}
 
 
@@ -313,9 +311,9 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 					JMenu linkSinkMenu = new JMenu(BundleUtil.get().getString(PREFIX+".FollowConnection.Name"));
 					linkSinkMenu.setToolTipText(BundleUtil.get().getString(PREFIX+".FollowConnection.Desc"));
 					ProjectResourceId diagramId = getActiveDiagram().getResourceId();
-					List<SerializableBlockStateDescriptor> descriptors = handler.listSourcesForSink(diagramId, pbv.getId().toString());
+					List<SerializableBlockStateDescriptor> descriptors = requestHandler.listSourcesForSink(diagramId, pbv.getId().toString());
 					for(SerializableBlockStateDescriptor desc:descriptors) {
-						SerializableResourceDescriptor rd = handler.getDiagramForBlock(desc.getIdString());
+						SerializableResourceDescriptor rd = requestHandler.getDiagramForBlock(desc.getIdString());
 						if( rd==null ) continue;
 						ShowDiagramAction action = new ShowDiagramAction(rd,desc.getName());
 						linkSinkMenu.add(action);
@@ -328,9 +326,9 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 					linkSourceMenu.setToolTipText(BundleUtil.get().getString(PREFIX+".FollowConnection.Desc"));
 					
 					ProjectResourceId diagramId = getActiveDiagram().getResourceId();
-					List<SerializableBlockStateDescriptor> descriptors = handler.listSinksForSource(diagramId, pbv.getId().toString());
+					List<SerializableBlockStateDescriptor> descriptors = requestHandler.listSinksForSource(diagramId, pbv.getId().toString());
 					for(SerializableBlockStateDescriptor desc:descriptors) {
-						SerializableResourceDescriptor rd = handler.getDiagramForBlock(desc.getIdString());
+						SerializableResourceDescriptor rd = requestHandler.getDiagramForBlock(desc.getIdString());
 						if( rd==null ) continue;
 						ShowDiagramAction action = new ShowDiagramAction(rd,desc.getName());
 						linkSourceMenu.add(action);
@@ -356,7 +354,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 					}
 					// Display an explanation if the block is currently TRUE or FALSE
 
-					String currentState = handler.getBlockState(getActiveDiagram().getResourceId(),pbv.getName());
+					String currentState = requestHandler.getBlockState(getActiveDiagram().getResourceId(),pbv.getName());
 					if( currentState!=null && (currentState.equalsIgnoreCase("true")|| currentState.equalsIgnoreCase("false"))) {
 						ExplanationAction act = new ExplanationAction(getActiveDiagram(),pbv);
 						menu.add(act);
@@ -685,7 +683,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 						else if(block.getClassName().equals(BlockConstants.BLOCK_CLASS_SOURCE)) {
 							addNameDisplay(block,dropPoint.x,dropPoint.y);
 						}
-						setDiagramDirty(getActiveDiagram());
+						setDiagramChanged(getActiveDiagram());
 						// Create the process editor for the new block
 						BlockPropertyEditor editor = new BlockPropertyEditor(context,this,block);
 						PropertyEditorFrame peframe = getPropertyEditorFrame();
@@ -866,7 +864,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 								log.infof("%s.handleTagDrop: drop of %s out-of-bounds",CLSS,block.getClassName());
 							}
 						}
-						setDiagramDirty(this.getActiveDiagram());
+						setDiagramChanged(this.getActiveDiagram());
 					}
 				}
 			} 
@@ -934,7 +932,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 								pblock.setName(nameFromTagTree(tnode));
 								pblock.setCtypeEditable(true);
 								pblock.modifyConnectionForTagChange(prop, tagType);
-								setDiagramDirty(this.getActiveDiagram());
+								setDiagramChanged(this.getActiveDiagram());
 							} 
 							else {
 								JOptionPane.showMessageDialog(null, connectionMessage, "Warning", JOptionPane.INFORMATION_MESSAGE);
@@ -1229,6 +1227,13 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		return view; 
 	}
 	
+	/**
+	 * On open, use in this order:
+	 * 1) The diagram already displayed
+	 * 2) The "dirty" diagram saved in the status manager
+	 * 3) The diaram deserialized from the project resource
+	 * @param resourceId
+	 */
 	public void open (ProjectResourceId resourceId) {
 		if( DEBUG ) log.infof("%s: open - already open (%s)",CLSS,(isOpen(resourceId.getResourcePath())?"true":"false"));
 		if(isOpen(resourceId.getResourcePath()) ) {
@@ -1236,48 +1241,54 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			open(tab);  // Brings tab to front
 		}
 		else {
-			Optional<ProjectResource> option = context.getProject().getResource(resourceId);
-			ProjectResource res = option.get();
-			if( res==null ) {
-				log.warnf("%s.open - resource is null (%s)",CLSS,resourceId.getResourcePath().getFolderPath());
-				return;
+			ProcessDiagramView diagram = null;
+			if(statusManager.getPendingView(resourceId)!=null ) {
+				diagram = statusManager.getPendingView(resourceId);
 			}
-			String json = new String(res.getData());
-			if( DEBUG ) log.infof("%s.open: diagram = %s",CLSS,json);
-			SerializableDiagram sd = null;
-			ObjectMapper mapper = new ObjectMapper();
-			mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);  //
-			mapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL,true); // Allows obsolete enum values to pass
-			try {
-				sd = mapper.readValue(json,SerializableDiagram.class);
-				// Synchronize names as the resource may have been re-named and/or
-				// state changed since it was serialized
-				sd.setName(statusManager.getPendingName(res.getResourceId()));
-				sd.setState(statusManager.getPendingState(res.getResourceId()));
-				for(SerializableBlock sb:sd.getBlocks()) {
-					if( DEBUG ) log.infof("%s: %s block, name = %s",CLSS,sb.getClassName(),sb.getName());
+			else {
+				Optional<ProjectResource> option = context.getProject().getResource(resourceId);
+				ProjectResource res = option.get();
+				if( res==null || res.getData()==null ) {
+					log.warnf("%s.open - resource is null or has no data (%s)",CLSS,resourceId.getResourcePath().getFolderPath());
+					return;
 				}
-			} 
-			catch (JsonParseException jpe) {
-				log.warnf("%s.open: JSON parse exception (%s)",CLSS,jpe.getLocalizedMessage());
-			} 
-			catch (JsonMappingException jme) {
-				log.warnf("%s.open: JSON mapping exception (%s)",CLSS,jme.getLocalizedMessage());
-			} 
-			catch (IOException ioe) {
-				log.warnf("%s.open: io exception (%s)",CLSS,ioe.getLocalizedMessage());
+				String json = new String(res.getData());
+				if( DEBUG ) log.infof("%s.open: diagram = %s",CLSS,json);
+				SerializableDiagram sd = null;
+				ObjectMapper mapper = new ObjectMapper();
+				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);  //
+				mapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL,true); // Allows obsolete enum values to pass
+				try {
+					sd = mapper.readValue(json,SerializableDiagram.class);
+					// Synchronize names as the resource may have been re-named and/or
+					// state changed since it was serialized. Nulls are ignored.
+					sd.setName(statusManager.getPendingName(res.getResourceId()));
+					sd.setState(statusManager.getPendingState(res.getResourceId()));
+					for(SerializableBlock sb:sd.getBlocks()) {
+						if( DEBUG ) log.infof("%s: %s block, name = %s",CLSS,sb.getClassName(),sb.getName());
+					}
+				} 
+				catch (JsonParseException jpe) {
+					log.warnf("%s.open: JSON parse exception (%s)",CLSS,jpe.getLocalizedMessage());
+				} 
+				catch (JsonMappingException jme) {
+					log.warnf("%s.open: JSON mapping exception (%s)",CLSS,jme.getLocalizedMessage());
+				} 
+				catch (IOException ioe) {
+					log.warnf("%s.open: io exception (%s)",CLSS,ioe.getLocalizedMessage());
+				}
+				diagram = new ProcessDiagramView(context,res.getResourceId(),sd);
 			}
-			ProcessDiagramView diagram = new ProcessDiagramView(context,res.getResourceId(),sd);
+			// Now we have the view, display it -------------------------------
 			for( Block blk:diagram.getBlocks()) {
 				ProcessBlockView pbv = (ProcessBlockView)blk;
 				diagram.initBlockProperties(pbv);
 			}
-			
+
 			super.open(diagram);
 			//saveOpenDiagram(resourceId);  // Shouldn't have to save a newly opened diagram, unless there is another user
 			// Inform the gateway of the state and let listeners update the UI
-			ApplicationRequestHandler arh = new ApplicationRequestHandler();
-			arh.setDiagramState(diagram.getResourceId(), diagram.getState().name());
+			requestHandler.setDiagramState(diagram.getResourceId(), diagram.getState().name());
 			statusManager.setPendingState(diagram.getResourceId(),diagram.getState());
 			diagram.setChanged(false);  // Newly opened from a serialized resource, should be in-sync.
 			// In the probable case that the designer is opened after the diagram has started
@@ -1301,24 +1312,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		BlockDesignableContainer container = (BlockDesignableContainer)c;
 		ProcessDiagramView diagram = (ProcessDiagramView)container.getModel();
 		// In addition to the workspace being dirty it can be renamed or had state changed
-		if( diagram.isChanged() || statusManager.isModified(diagram.getResourceId()) ) {
-			Object[] options = {BundleUtil.get().getString(PREFIX+".CloseDiagram.Save"),BundleUtil.get().getString(PREFIX+".CloseDiagram.Revert")};
-			int n = JOptionPane.showOptionDialog(null,
-					BundleUtil.get().getString(PREFIX+".CloseDiagram.Question"),
-					String.format(BundleUtil.get().getString(PREFIX+".CloseDiagram.Title"), diagram.getName()),
-					JOptionPane.YES_NO_OPTION,
-					JOptionPane.QUESTION_MESSAGE,
-					null,         // icon
-					options,      // titles of buttons
-					options[0]);  //default button title
-			if( n==0 ) {
-				saveDiagramResource(container);
-			}
-			else {
-				// Mark diagram as clean, since we closed window without
-				// reporting changes to gateway
-				setDiagramClean(diagram);
-			}
+		if( diagram.isChanged() ) {
+			statusManager.setPendingView(diagram.getResourceId(), diagram);
 		}
 		DiagramTreeNode node = (DiagramTreeNode)statusManager.findNode(diagram.getResourceId());
 		if( node!=null ) {
@@ -1369,7 +1364,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	 * Display the open diagram as dirty and in need of a save.
 	 * Update the notification handler to save its dirty state.
 	 */
-	public void setDiagramDirty(ProcessDiagramView diagram) {
+	public void setDiagramChanged(ProcessDiagramView diagram) {
 		diagram.setChanged(true);
 		diagram.updateNotificationHandlerForSave();
 		updateBackgroundForDiagramState();
@@ -1577,9 +1572,9 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				if( anchor.getDisplay().equalsIgnoreCase(BlockConstants.RECEIVER_PORT_NAME)) continue;
 				anchors.add(block.convertAnchorToSerializable((ProcessAnchorDescriptor)anchor));
 			}
-			handler.updateBlockAnchors(diagram.getResourceId(),block.getId().toString(),anchors); // update gateway. 
+			requestHandler.updateBlockAnchors(diagram.getResourceId(),block.getId().toString(),anchors); // update gateway. 
 			diagram.updateConnectionTypes(block,connectionType);
-			setDiagramDirty(getActiveDiagram());
+			setDiagramChanged(getActiveDiagram());
 		}
 	}
 
@@ -1595,7 +1590,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			block.getBlock().setLocation(new Point(topLeft.x, loc.y));
 		}
 		UndoManager.getInstance().add(new UndoMoveBlocks(undoMap));
-		setDiagramDirty(getActiveDiagram());
+		setDiagramChanged(getActiveDiagram());
 	}
 	
 	public void alignRight() {
@@ -1609,7 +1604,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			block.getBlock().setLocation(new Point(bottomRight.x-block.getWidth(), loc.y));
 		}
 		UndoManager.getInstance().add(new UndoMoveBlocks(undoMap));
-		setDiagramDirty(getActiveDiagram());
+		setDiagramChanged(getActiveDiagram());
 	}
 
 	public void alignWidthCenter() {
@@ -1625,7 +1620,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			block.getBlock().setLocation(new Point(bottomRight.x-block.getWidth()-adjust, loc.y));
 		}
 		UndoManager.getInstance().add(new UndoMoveBlocks(undoMap));
-		setDiagramDirty(getActiveDiagram());
+		setDiagramChanged(getActiveDiagram());
 	}
 
 	public void alignHeightCenter() {
@@ -1641,7 +1636,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			block.getBlock().setLocation(new Point(loc.x, topLeft.y + adjust));
 		}
 		UndoManager.getInstance().add(new UndoMoveBlocks(undoMap));
-		setDiagramDirty(getActiveDiagram());
+		setDiagramChanged(getActiveDiagram());
 	}
 
 	public void alignTop() {
@@ -1655,7 +1650,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			block.getBlock().setLocation(new Point(loc.x, topLeft.y));
 		}
 		UndoManager.getInstance().add(new UndoMoveBlocks(undoMap));
-		setDiagramDirty(getActiveDiagram());
+		setDiagramChanged(getActiveDiagram());
 	}
 
 	public void alignBottom() {
@@ -1669,7 +1664,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			block.getBlock().setLocation(new Point(loc.x, bottomRight.y-block.getHeight()));
 		}
 		UndoManager.getInstance().add(new UndoMoveBlocks(undoMap));
-		setDiagramDirty(getActiveDiagram());
+		setDiagramChanged(getActiveDiagram());
 	}
 	
 	
@@ -1687,7 +1682,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 
 		public void actionPerformed(ActionEvent e) {
 			ProcessDiagramView pdv = getActiveDiagram();
-			handler.propagateBlockState(pdv.getResourceId(),block.getId().toString());
+			requestHandler.propagateBlockState(pdv.getResourceId(),block.getId().toString());
 		}
 	}
 	/**
@@ -1708,7 +1703,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				AnchorPoint ap = cxn.getTerminus();
 				if( ap.getBlock().getId().equals(block.getId())) {
 					Block origin = cxn.getOrigin().getBlock();
-					handler.propagateBlockState(pdv.getResourceId(),origin.getId().toString());
+					requestHandler.propagateBlockState(pdv.getResourceId(),origin.getId().toString());
 				}
 			}
 		}
@@ -1790,7 +1785,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		// Thus we use the script instead of desktop.browse.
 		public void actionPerformed(final ActionEvent e) {
 			Desktop desktop=Desktop.getDesktop();
-			String hostname = handler.getGatewayHostname();
+			String hostname = requestHandler.getGatewayHostname();
 			String address = String.format("http:/%s:8088/main/%s#%s",hostname,BLTProperties.ROOT_HELP_PATH,block.getClassName());
 			try {
 				if( OS.indexOf("win")>=0) {
@@ -1950,7 +1945,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		 */
 		public void actionPerformed(ActionEvent e) {
 			ProcessDiagramView pdv = getActiveDiagram();
-			handler.resetBlock(pdv.getResourceId(),block.getName());
+			requestHandler.resetBlock(pdv.getResourceId(),block.getName());
 		}
 	}
 	/**
@@ -1968,7 +1963,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		public void actionPerformed(ActionEvent e) {
 			log.info("DiagramWorkspace: SAVE BLOCK");
 			ProcessDiagramView pdv = getActiveDiagram();
-			handler.setBlockProperties(pdv.getResourceId(),block.getId(), block.getProperties());
+			requestHandler.setBlockProperties(pdv.getResourceId(),block.getId(), block.getProperties());
 			block.setDirty(false);
 		}
 	}
@@ -1989,7 +1984,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		
 		// List paths to all connected diagrams
 		public void actionPerformed(ActionEvent e) {
-			String path = handler.pathForBlock(diagram.getResourceId(), bname);
+			String path = requestHandler.pathForBlock(diagram.getResourceId(), bname);
 			int pos = path.lastIndexOf(":");    // Strip off block name
 			if( pos>0 ) path = path.substring(0, pos);
 			ProjectBrowserRoot project = context.getProjectBrowserRoot();

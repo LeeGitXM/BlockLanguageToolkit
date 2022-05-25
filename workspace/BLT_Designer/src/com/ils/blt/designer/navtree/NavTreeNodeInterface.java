@@ -20,10 +20,6 @@ public interface NavTreeNodeInterface  {
 	 */
 	public ProjectResourceId getResourceId();
 	/**
-	 * Clean up any linkages in preparation for the node being deleted.
-	 */
-	public void prepareForDeletion();
-	/**
 	 * Refresh the UI
 	 */
 	public void reload();

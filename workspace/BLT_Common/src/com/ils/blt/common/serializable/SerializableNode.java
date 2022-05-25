@@ -12,7 +12,6 @@ import com.ils.blt.common.DiagramState;;
 public abstract class SerializableNode {
 	protected String path;
 	protected String name;
-
 	protected DiagramState state = DiagramState.ACTIVE;
 	
 	public SerializableNode() {	
@@ -28,5 +27,5 @@ public abstract class SerializableNode {
 	
 	public void setPath(String p) {this.path = p;}
 	public void setName(String nam) { if(nam!=null) name=nam; }
-	public void setState(DiagramState state) {this.state = state;}
+	public void setState(DiagramState ds) { if( ds!=null ) this.state = ds;}
 }

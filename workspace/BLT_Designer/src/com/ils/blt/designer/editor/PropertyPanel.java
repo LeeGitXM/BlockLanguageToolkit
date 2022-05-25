@@ -465,7 +465,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 						if( !prop.getValue().toString().equalsIgnoreCase(selxn)) {
 							prop.setValue(selxn);
 							notificationHandler.initializePropertyValueNotification(valueKey, selxn);
-							workspace.setDiagramDirty(workspace.getActiveDiagram());
+							workspace.setDiagramChanged(workspace.getActiveDiagram());
 						}
 						if(DEBUG) log.infof("%s.valueCombo: selected %s=%s",CLSS,prop.getName(),selxn);
 					}
@@ -739,7 +739,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 				// Update the notification handler with the new value
 				if(DEBUG) log.infof("%s.updatePropertyForField: property %s value= %s",CLSS,prop.getName(),fieldValue.toString());	
 				notificationHandler.initializePropertyValueNotification(valueKey, fieldValue);
-				workspace.setDiagramDirty(workspace.getActiveDiagram());
+				workspace.setDiagramChanged(workspace.getActiveDiagram());
 			}
 			else {
 				log.tracef("%s.updatePropertyForField: No Change was %s, is %s", CLSS,prop.getValue().toString(),fieldValue);
@@ -752,7 +752,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 				if( DEBUG ) log.infof("%s.updatePropertyForField: Adjusting %s to %s", CLSS,prop.getBinding(),tagPath);
 				prop.setBinding(tagPath);
 				subscribeToTagPath(tagPath);
-				workspace.setDiagramDirty(workspace.getActiveDiagram());
+				workspace.setDiagramChanged(workspace.getActiveDiagram());
 			}
 		}
 	}

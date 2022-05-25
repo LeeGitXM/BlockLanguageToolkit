@@ -479,9 +479,9 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
     private class DeleteDiagramAction extends BaseAction {
     	private static final long serialVersionUID = 1L;
     	private String noun;
-    	private final AbstractResourceNavTreeNode node;
+    	private final DiagramTreeNode node;
     	
-	    public DeleteDiagramAction(AbstractResourceNavTreeNode tnode)  {
+	    public DeleteDiagramAction(DiagramTreeNode tnode)  {
 	    	super(PREFIX+".DeleteDiagram",IconUtil.getIcon("delete")); 
 	    	this.node = tnode;
 	    	this.noun = PREFIX+".DiagramNoun";
@@ -489,6 +489,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	    public void actionPerformed(ActionEvent e) {
 	    	List<AbstractResourceNavTreeNode> nodes = new ArrayList<>();
 	    	nodes.add(node);
+	    	node.closeAndCommit();
 	    	ResourceDeleteAction deleter = new ResourceDeleteAction(context,nodes,noun);
 	    	deleter.execute();
 	    }
@@ -501,13 +502,12 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	    }
 	    
 		public void actionPerformed(ActionEvent e) {
-			ApplicationRequestHandler handler = new ApplicationRequestHandler();
 			// Get the diagramId from the resource. We have to search the list of diagrams for a resource match.
 			String projectName = context.getProject().getName();
-			List<SerializableResourceDescriptor> diagramDescriptors = handler.listDiagramDescriptors(projectName);
+			List<SerializableResourceDescriptor> diagramDescriptors = requestHandler.listDiagramDescriptors(projectName);
 			for(SerializableResourceDescriptor srd:diagramDescriptors ) {
 				if( srd.getResourceId()==resourceId ) {
-					handler.resetDiagram(resourceId);
+					requestHandler.resetDiagram(resourceId);
 					break;
 				}
 			}
@@ -559,8 +559,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 				viewId = requestHandler.createResourceId(res.getProjectName(), sd.getPath().toString(), BLTProperties.DIAGRAM_RESOURCE_TYPE);
 			}
 			// Inform the gateway of the state and let listeners update the UI
-			ApplicationRequestHandler arh = new ApplicationRequestHandler();
-			arh.setDiagramState(viewId, state.name());
+			requestHandler.setDiagramState(viewId, state.name());
 			statusManager.setPendingState(resourceId,state);
 			setIcon(getIcon());
 			refresh();
@@ -652,10 +651,10 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	
 	/**
 	 * This method allows us to have children, but a diagram has no children. 
-	 * @param arg0
+	 * @param pr
 	 * @return
 	 */
-	protected AbstractNavTreeNode createChildNode(ProjectResource arg0) {
+	protected AbstractNavTreeNode createChildNode(ProjectResource pr) {
 		return null;
 	}
 	

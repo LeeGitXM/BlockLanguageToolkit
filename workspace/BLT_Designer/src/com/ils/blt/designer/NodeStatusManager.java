@@ -118,15 +118,16 @@ public class NodeStatusManager   {
 	 * @param node
 	 * @param resourceId
 	 */
-	public void createResourceStatus(AbstractResourceNavTreeNode node,ProjectResourceId resourceId) {
+	public StatusEntry createResourceStatus(AbstractResourceNavTreeNode node,ProjectResourceId resourceId) {
 		if(node.getProjectResource()==null) throw new IllegalArgumentException("No project resource");
 		StatusEntry se = statusByPath.get(resourceId.getFolderPath());
 		if( se == null ) {
-			se = new StatusEntry((NavTreeNodeInterface)node);
+			se = new StatusEntry(node);
 			se.setAlerting(handler.isAlerting(resourceId));
 			statusByPath.put(resourceId.getFolderPath(),se);
 		}
 		log.debugf("%s.createResourceStatus: %s (%s)",CLSS,node.getName(),resourceId.getFolderPath());
+		return se;
 	}
 	/**
 	 * Delete a status entry and all its children. Prepare the real associated nodes for deletion as well.
@@ -137,7 +138,6 @@ public class NodeStatusManager   {
 		List<String> pathsToDelete = nodeDescendants(resourceId);
 		for(String rp:pathsToDelete) {
 			StatusEntry se = statusByPath.get(rp);
-			se.prepareToBeDeleted();
 			statusByPath.remove(rp);
 		}
 	}
@@ -157,9 +157,9 @@ public class NodeStatusManager   {
 	 * @param resourceId
 	 * @return the AbstractResourceNavTreeNode associated with the specified resourceId.
 	 */
-	public NavTreeNodeInterface findNode(ProjectResourceId resourceId) {
+	public AbstractResourceNavTreeNode findNode(ProjectResourceId resourceId) {
 		log.debugf("%s.findNode(%s)",CLSS,resourceId.getResourcePath().getPath().toString());
-		NavTreeNodeInterface node = null;
+		AbstractResourceNavTreeNode node = null;
 		StatusEntry se = statusByPath.get(resourceId.getFolderPath());
 		if( se!=null ) node=se.getNode();
 		return node;
@@ -265,7 +265,8 @@ public class NodeStatusManager   {
 	
 	/**
 	 * @return the dirty state of the indicated node. The node is dirty if it has
-	 *     a pendingView, a pendingState or pendingName.
+	 *     a pendingView, a pendingState or pendingName. If not found, we assume it is
+	 *     new and, therefore, modified..
 	 */
 	public boolean isModified(ProjectResourceId resourceId) {
 		boolean modified = true;
@@ -284,8 +285,8 @@ public class NodeStatusManager   {
 	 */
 	public void updateUI(ProjectResourceId resourceId) {
 		StatusEntry se = statusByPath.get(resourceId.getFolderPath());
-		if( se!=null ) {
-			se.node.updateUI(se.isModified());
+		if( se!=null && se.node instanceof NavTreeNodeInterface ) {
+			((NavTreeNodeInterface)se.node).updateUI(se.isModified());
 		}
 	}
 	/**
@@ -298,13 +299,13 @@ public class NodeStatusManager   {
 		private String pendingName;
 		private DiagramState pendingState;
 		private ProcessDiagramView pendingView;
-		private final NavTreeNodeInterface node;
+		private final AbstractResourceNavTreeNode node;
 		/**
 		 * Constructor:
 		 * @param antn
 		 * @param s
 		 */
-		public StatusEntry(NavTreeNodeInterface antn)  {
+		public StatusEntry(AbstractResourceNavTreeNode antn)  {
 			this.node = antn;
 			// Set pending vaules to null, meaning that there are no
 			// changes yet
@@ -320,18 +321,14 @@ public class NodeStatusManager   {
 		public void setPendingView(ProcessDiagramView view) { this.pendingView = view; }
 		public boolean isAlerting() { return alerting; }
 		public void setAlerting(boolean flag) { alerting = flag; }
-		public NavTreeNodeInterface getNode() { return node; }
+		public AbstractResourceNavTreeNode getNode() { return node; }
 		
 		public void commit() {
 			this.pendingName = null;
 			this.pendingState = null;
 			this.pendingView = null;
 		}
-		public void prepareToBeDeleted() {
-			if( node.getName()!=BLTProperties.ROOT_FOLDER_NAME) {
-				node.prepareForDeletion();
-			}
-		}
+
 		public boolean isModified() {
 			boolean result = false;
 			if( pendingName!=null || pendingState!=null || pendingView!=null ) {
