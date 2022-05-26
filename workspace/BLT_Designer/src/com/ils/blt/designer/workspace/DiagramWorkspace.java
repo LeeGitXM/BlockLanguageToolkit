@@ -1394,6 +1394,9 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		BlockDesignableContainer container = (BlockDesignableContainer)c;
 		ProcessDiagramView view = (ProcessDiagramView)(container.getModel());
 		view.removeChangeListener(this);
+		if( statusManager.isModified(view.getResourceId())) {
+			statusManager.setPendingView(view.getResourceId(), view);
+		}
 		container.removeAll();
 	}
 	/**

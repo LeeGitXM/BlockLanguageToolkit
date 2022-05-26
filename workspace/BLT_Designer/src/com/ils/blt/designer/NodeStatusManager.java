@@ -9,9 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.ils.blt.common.ApplicationRequestHandler;
-import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagramState;
-import com.ils.blt.common.notification.NotificationKey;
 import com.ils.blt.designer.navtree.NavTreeFolder;
 import com.ils.blt.designer.navtree.NavTreeNodeInterface;
 import com.ils.blt.designer.workspace.ProcessDiagramView;

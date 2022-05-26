@@ -29,13 +29,12 @@ import com.inductiveautomation.ignition.client.util.gui.ValidatedTextField;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceBuilder;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 import com.inductiveautomation.ignition.common.project.resource.ResourceNamingException;
 import com.inductiveautomation.ignition.common.project.resource.ResourcePath;
 import com.inductiveautomation.ignition.common.util.ResourceUtil;
 import com.inductiveautomation.ignition.designer.gui.CommonUI;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
-import com.inductiveautomation.ignition.designer.navtree.model.AbstractNavTreeNode;
-import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceNavTreeNode;
 import com.inductiveautomation.ignition.designer.project.DesignableProject;
 
 import net.miginfocom.swing.MigLayout;
@@ -43,22 +42,21 @@ import net.miginfocom.swing.MigLayout;
 public class NewResourceDialog extends JDialog {
 	private static final long serialVersionUID = 5360156442933696991L;
 	private final DesignerContext context;
-	private final AbstractNavTreeNode node;
 	private final ValidatedTextField name;
 	private final CreateAction createAction;
 	private final ResourcePath folder;
 	private final Consumer<ProjectResourceBuilder> builderConsumer;
-	private final Consumer<ResourcePath> onAfterCreated;
+	private final Consumer<ProjectResourceId> onAfterCreated;
 
-	public NewResourceDialog(final DesignerContext context, final AbstractNavTreeNode currentNode,final ResourcePath folder, Consumer<ProjectResourceBuilder> builderConsumer, String title, String defaultName, String actionText, final Predicate<String> namePredicate, Consumer<ResourcePath> onAfterCreated, JComponent extraComponent) {
+	public NewResourceDialog(final DesignerContext context,final ResourcePath folder, Consumer<ProjectResourceBuilder> builderConsumer, String title, String defaultName, String actionText, final Predicate<String> namePredicate, Consumer<ProjectResourceId> onAfterCreated, JComponent extraComponent) {
 		super(context.getFrame(), title);
 		setDefaultCloseOperation(2);
 
 		this.context = context;
-		this.node = currentNode;
 		this.folder = folder;
 		this.builderConsumer = builderConsumer;
 		this.onAfterCreated = onAfterCreated;
+		this.setName("New Resource");
 
 		this.createAction = new CreateAction(actionText);
 
@@ -116,7 +114,9 @@ public class NewResourceDialog extends JDialog {
 	}
 
 
-	private void updateEnabled() { this.createAction.setEnabled(this.name.isDataValid()); }
+	private void updateEnabled() { 
+		this.createAction.setEnabled(this.name.isDataValid()); 
+	}
 	
 	
 	/**
@@ -136,7 +136,6 @@ public class NewResourceDialog extends JDialog {
 				DesignableProject project = context.getProject();
 
 				ResourcePath newPath = NewResourceDialog.this.folder.getChild(new String[] { NewResourceDialog.this.name.getField().getText() });
-
 				ProjectResourceBuilder builder = ProjectResource.newBuilder();
 
 				NewResourceDialog.this.builderConsumer.accept(builder);
@@ -146,9 +145,7 @@ public class NewResourceDialog extends JDialog {
 
 				ProjectResource newResource = builder.build();
 				project.createResource(newResource);
-				NodeStatusManager statusManager = NodeStatusManager.getInstance();
-				statusManager.setPendingName(newResource.getResourceId(), project.getName());
-				EventQueue.invokeLater(() -> NewResourceDialog.this.onAfterCreated.accept(newPath));
+				EventQueue.invokeLater(() -> NewResourceDialog.this.onAfterCreated.accept(newResource.getResourceId()));
 				NewResourceDialog.this.close();
 			} 
 			catch (ResourceNamingException|RuntimeException ex) {
@@ -176,14 +173,16 @@ public class NewResourceDialog extends JDialog {
 	{
 		private DesignerContext context;
 		private ResourcePath folder;
-		private AbstractResourceNavTreeNode node;
 		private Consumer<ProjectResourceBuilder> builderConsumer;
 		private String title = "New Resource";
 		private String actionText = "Create Resource";
 		private String defaultName = "New Resource";
 		private Predicate<String> namePredicate = ResourceUtil::isLegalName;
-		private Consumer<ResourcePath> onAfterCreated = path -> {
-
+		// When done update the node for "changed"
+		private Consumer<ProjectResourceId> onAfterCreated = id -> {
+			NodeStatusManager statusManager = NodeStatusManager.getInstance();
+			statusManager.setPendingName(id, id.getResourcePath().getName());
+			statusManager.updateUI(id);
 		};
 		JComponent extraComponent = null;
 
@@ -196,18 +195,13 @@ public class NewResourceDialog extends JDialog {
 			this.folder = folder;
 			return this;
 		}
-		
-		public NewResourceDialogBuilder setNode(AbstractResourceNavTreeNode node) {
-			this.node = node;
-			return this;
-		}
 
 		public NewResourceDialogBuilder setResourceBuilder(Consumer<ProjectResourceBuilder> builderConsumer) {
 			this.builderConsumer = builderConsumer;
 			return this;
 		}
 
-		public NewResourceDialogBuilder setOnAfterCreated(Consumer<ResourcePath> onAfterCreated) {
+		public NewResourceDialogBuilder setOnAfterCreated(Consumer<ProjectResourceId> onAfterCreated) {
 			this.onAfterCreated = onAfterCreated;
 			return this;
 		}
@@ -249,7 +243,7 @@ public class NewResourceDialog extends JDialog {
 			Preconditions.checkNotNull(this.folder);
 			Preconditions.checkNotNull(this.builderConsumer);
 
-			NewResourceDialog dialog = new NewResourceDialog(this.context, this.node, this.folder, this.builderConsumer, this.title, this.defaultName, this.actionText, this.namePredicate, this.onAfterCreated, this.extraComponent);
+			NewResourceDialog dialog = new NewResourceDialog(this.context, this.folder, this.builderConsumer, this.title, this.defaultName, this.actionText, this.namePredicate, this.onAfterCreated, this.extraComponent);
 
 			dialog.open();
 		}

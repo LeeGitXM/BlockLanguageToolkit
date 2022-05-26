@@ -638,12 +638,12 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	 * Note: This method should ONLY be called from the node status manager.
 	 */
 	@Override
-	public void updateUI(boolean saved) {
-		log.infof("%s.updateUI: %s saved = %s",CLSS,resourceId.getResourcePath().getPath().toString(),(saved?"true":"false"));
+	public void updateUI(boolean modified) {
+		log.infof("%s.updateUI: %s modified = %s",CLSS,resourceId.getResourcePath().getPath().toString(),(modified?"true":"false"));
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
-				setItalic(!saved);
+				setItalic(modified);
 				refresh();
 			}
 		});

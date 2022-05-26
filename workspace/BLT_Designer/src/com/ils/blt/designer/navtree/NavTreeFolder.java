@@ -961,7 +961,6 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 				builder.setNoun("Diagram");
 				builder.setDefaultName(newName);
 				builder.setFolder(parentNode.getResourcePath());
-				builder.setNode(parentNode);
 				builder.setResourceBuilder(b->b.setFolder(false).setApplicationScope(ApplicationScope.DESIGNER).putData(bytes));
 				builder.setTitle("New Dialog");
 				builder.buildAndDisplay();
@@ -990,7 +989,6 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 			Objects.requireNonNull(parentNode);
 			NewResourceDialog.NewResourceDialogBuilder builder = NewResourceDialog.newBuilder();
 			builder.setContext(context);
-			builder.setNode(parentNode);
 			builder.setNoun("Folder");
 			builder.setDefaultName(newName);
 			builder.setFolder(parentNode.getResourcePath());
@@ -1243,7 +1241,7 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 	 * We get here due to:
 	 *    1) Name changes to resource
 	 *    2) New resource from menu selection
-	 * In either case, we mark these "unsaved"
+	 * This is triggered by modification to a project.
 	 */
 	@Override
 	public void resourcesCreated(String projectName,List<ChangeOperation.CreateResourceOperation> ops) {
@@ -1267,11 +1265,9 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 	public void resourcesModified(String projectName, List<ChangeOperation.ModifyResourceOperation> changes) {
 		// Take care of any special status before invoking the super-class method.
 		for(ChangeOperation.ModifyResourceOperation op:changes ) {
-			if( op.getResourceId().equals(resourceId) ) {
-				log.infof("%s.resourcesModified: %s",CLSS,op,getName(),resourceId.getFolderPath());
-				ProjectResource res = op.getResource();
-				super.onResourceModified(res);
-			}
+			ProjectResourceId id = op.getResourceId();
+			log.infof("%s.resourcesModified: %s",CLSS,id.getFolderPath());
+			updateUI(statusManager.isModified(id));
 		}
 	}
 	
