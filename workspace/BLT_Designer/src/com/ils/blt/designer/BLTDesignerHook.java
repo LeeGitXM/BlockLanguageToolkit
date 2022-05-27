@@ -4,6 +4,8 @@
 package com.ils.blt.designer;
 
 
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.io.IOException;
@@ -192,7 +194,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 			}
 			
 		}
-		
+
 		// Setup the diagram workspace
 		workspace = new DiagramWorkspace(context);
 		ProjectResource rootResource = findRootResource();

@@ -7,6 +7,7 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Desktop;
+import java.awt.EventQueue;
 import java.awt.Frame;
 import java.awt.Graphics2D;
 import java.awt.Image;
@@ -193,7 +194,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		this.requestHandler = new ApplicationRequestHandler();
 		statusManager = NodeStatusManager.getInstance();
 		initialize();
-		setBackground(Color.red);
 	}
 
 
@@ -1236,6 +1236,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	 */
 	public void open (ProjectResourceId resourceId) {
 		if( DEBUG ) log.infof("%s: open - already open (%s)",CLSS,(isOpen(resourceId.getResourcePath())?"true":"false"));
+		
 		if(isOpen(resourceId.getResourcePath()) ) {
 			BlockDesignableContainer tab = (BlockDesignableContainer)findDesignableContainer(resourceId.getResourcePath());
 			open(tab);  // Brings tab to front
@@ -1278,6 +1279,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 					log.warnf("%s.open: io exception (%s)",CLSS,ioe.getLocalizedMessage());
 				}
 				diagram = new ProcessDiagramView(context,res.getResourceId(),sd);
+				diagram.setChanged(false);  // Newly opened from a serialized resource, should be in-sync.
 			}
 			// Now we have the view, display it -------------------------------
 			for( Block blk:diagram.getBlocks()) {
@@ -1286,11 +1288,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			}
 
 			super.open(diagram);
-			//saveOpenDiagram(resourceId);  // Shouldn't have to save a newly opened diagram, unless there is another user
 			// Inform the gateway of the state and let listeners update the UI
 			requestHandler.setDiagramState(diagram.getResourceId(), diagram.getState().name());
-			statusManager.setPendingState(diagram.getResourceId(),diagram.getState());
-			diagram.setChanged(false);  // Newly opened from a serialized resource, should be in-sync.
 			// In the probable case that the designer is opened after the diagram has started
 			// running in the gateway, obtain any updates
 			diagram.registerChangeListeners();
@@ -1298,6 +1297,14 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 
 			BlockDesignableContainer tab = (BlockDesignableContainer)findDesignableContainer(resourceId.getResourcePath());
 			tab.setBackground(diagram.getBackgroundColorForState());
+			// For some unknown reason, the viewport comes up with a red border. Make it gray
+			log.infof("%s.open %s is %s",CLSS,tab.getParent().getParent().getParent().getClass().getCanonicalName(),tab.getParent().getParent().getParent().getBackground());
+			SwingUtilities.invokeLater(new Runnable() {
+			    public void run() {
+			     tab.getParent().getParent().getParent().setBackground(Color.GRAY);
+			     log.infof("%s.open %s is %s",CLSS,tab.getParent().getParent().getParent().getClass().getCanonicalName(),tab.getParent().getParent().getParent().getBackground());
+			    }
+			  });
 			SwingUtilities.invokeLater(new WorkspaceRepainter());
 			statusManager.updateUI(diagram.getResourceId());
 		}
