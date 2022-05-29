@@ -43,6 +43,7 @@ import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceN
  */
 public class NodeStatusManager   {
 	private static String CLSS = "NodeStatusManager";
+	private static final boolean DEBUG = true;
 	private static NodeStatusManager instance = null;
 	private final LoggerEx log;
 	private final ApplicationRequestHandler handler;
@@ -81,6 +82,7 @@ public class NodeStatusManager   {
 			if( se.getNode() instanceof NavTreeNodeInterface) {
 				((NavTreeNodeInterface)se.getNode()).updateUI(false);
 			}
+			if(DEBUG) log.infof("%s.commit: %s -----------------------------------------",CLSS,resourceId.getFolderPath());
 		}
 	}
 	
@@ -225,6 +227,7 @@ public class NodeStatusManager   {
 		StatusEntry se = statusByPath.get(resourceId.getFolderPath());
 		if( se!=null ) {
 			pendingState = se.getPendingState();
+			if(DEBUG) log.infof("%s.getPendingState: %s (%s)",CLSS,resourceId.getFolderPath(),(pendingState==null?"null":pendingState.name()));
 		}
 		return pendingState;
 	}
@@ -236,8 +239,10 @@ public class NodeStatusManager   {
 		StatusEntry se = statusByPath.get(resourceId.getFolderPath());
 		if( se!=null ) {
 			se.setPendingState(newState);
+			if(DEBUG) log.infof("%s.setPendingState: %s (%s)",CLSS,resourceId.getFolderPath(),(newState==null?"null":newState.name()));
 		}
 	}
+		
 	/**	
 	 * When it is time to save the resource, get the intended view
      */
@@ -246,6 +251,7 @@ public class NodeStatusManager   {
 		StatusEntry se = statusByPath.get(resourceId.getFolderPath());
 		if( se!=null ) {
 			pendingView = se.getPendingView();
+			if(DEBUG) log.infof("%s.getPendingView: %s (%s)",CLSS,resourceId.getFolderPath(),(pendingView==null?"null":pendingView.getName()));
 		}
 		return pendingView;
 	}
@@ -257,6 +263,7 @@ public class NodeStatusManager   {
 		StatusEntry se = statusByPath.get(resourceId.getFolderPath());
 		if( se!=null ) {
 			se.setPendingView(newView);
+			if(DEBUG) log.infof("%s.setPendingView: %s (%s)",CLSS,resourceId.getFolderPath(),(newView==null?"null":newView.getName()));
 		}
 	}
 
@@ -340,6 +347,28 @@ public class NodeStatusManager   {
 			ProjectResourceId resourceId = node.getResourceId();
 			String dump = String.format("%s(%s)",pendingName,resourceId.getFolderPath());
 			return dump;
+		}
+
+		// Determine equality based soley on the node.
+		@Override
+		public int hashCode() { 
+			return node.hashCode()+42;
+		}
+
+		//Compare on node only
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			else if (obj == null)
+				return false;
+			else if (getClass() != obj.getClass())
+				return false;
+			
+			StatusEntry other = (StatusEntry) obj;
+			if(this.node != other.getNode())
+				return false;
+			return true;
 		}
 	}
 	

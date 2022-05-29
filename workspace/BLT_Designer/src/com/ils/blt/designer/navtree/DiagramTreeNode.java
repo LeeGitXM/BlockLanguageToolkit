@@ -528,39 +528,25 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	}
 	/**
 	 * Provide public access for the action of setting the state of a diagram.
-	 * In particular this is used when recursively setting state from the application
-	 * level. This is the canonical way to change diagram state.
+	 * In particular this is used when recursively setting state from a folder
+	 * node. This is the canonical way to change diagram state.
 	 * 
-	 *  
+	 * The actual change occurs during a save. At this point all we do is set
+	 * a pending state.
+	 * 
 	 * @param state
 	 */
 	public void setDiagramState(DiagramState state) {
 		try {
-			// Even if the diagram is showing, we need to do a save to change the state.
-			// (That's why this selection is disabled when the view is dirty)
+			// If the diagram is showing, we need to make it show dirty.
 			DiagramState oldState = null;
-			Optional<ProjectResource> option = getProjectResource();
-			ProjectResource res = option.get();
 			BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resourceId.getResourcePath());
-			ProjectResourceId viewId = null;
+			statusManager.setPendingState(resourceId,state);
 			if( tab!=null ) {
 				log.infof("%s.setDiagramState: %s now %s (open)",CLSS, tab.getName(),state.name());
 				ProcessDiagramView view = (ProcessDiagramView)(tab.getModel());
-				view.setState(state);		// Simply sets the view state
 				tab.setBackground(view.getBackgroundColorForState());
-				viewId = view.getResourceId();
 			}
-			// Otherwise we need to de-serialize and get the path
-			else {
-				byte[]bytes = res.getData();
-				SerializableDiagram sd = null;
-				ObjectMapper mapper = new ObjectMapper();
-				sd = mapper.readValue(bytes,SerializableDiagram.class);
-				viewId = requestHandler.createResourceId(res.getProjectName(), sd.getPath().toString(), BLTProperties.DIAGRAM_RESOURCE_TYPE);
-			}
-			// Inform the gateway of the state and let listeners update the UI
-			requestHandler.setDiagramState(viewId, state.name());
-			statusManager.setPendingState(resourceId,state);
 			setIcon(getIcon());
 			refresh();
 		} 
@@ -665,7 +651,6 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	public void diagramStateChange(String path, String state) {
 		try {
 			DiagramState ds = DiagramState.valueOf(state);
-			statusManager.setPendingState(resourceId, ds);
 			// Force repaints of both NavTree and workspace
 			refresh();
 			BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resourceId.getResourcePath());

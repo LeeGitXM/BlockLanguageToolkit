@@ -1244,6 +1244,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		else {
 			ProcessDiagramView diagram = null;
 			if(statusManager.getPendingView(resourceId)!=null ) {
+				// This is a changed version, do not update from gateway
 				diagram = statusManager.getPendingView(resourceId);
 			}
 			else {
@@ -1280,20 +1281,17 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				}
 				diagram = new ProcessDiagramView(context,res.getResourceId(),sd);
 				diagram.setChanged(false);  // Newly opened from a serialized resource, should be in-sync.
+				// We are looking at the live version running in the gateway, obtain any updates
+				for( Block blk:diagram.getBlocks()) {
+					ProcessBlockView pbv = (ProcessBlockView)blk;
+					diagram.initBlockProperties(pbv);
+				}
+				diagram.registerChangeListeners();
+				requestHandler.triggerStatusNotifications(diagram.getResourceId().getProjectName());
 			}
+			
 			// Now we have the view, display it -------------------------------
-			for( Block blk:diagram.getBlocks()) {
-				ProcessBlockView pbv = (ProcessBlockView)blk;
-				diagram.initBlockProperties(pbv);
-			}
-
 			super.open(diagram);
-			// Inform the gateway of the state and let listeners update the UI
-			requestHandler.setDiagramState(diagram.getResourceId(), diagram.getState().name());
-			// In the probable case that the designer is opened after the diagram has started
-			// running in the gateway, obtain any updates
-			diagram.registerChangeListeners();
-			diagram.refresh();
 
 			BlockDesignableContainer tab = (BlockDesignableContainer)findDesignableContainer(resourceId.getResourcePath());
 			tab.setBackground(diagram.getBackgroundColorForState());
@@ -1401,7 +1399,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		BlockDesignableContainer container = (BlockDesignableContainer)c;
 		ProcessDiagramView view = (ProcessDiagramView)(container.getModel());
 		view.removeChangeListener(this);
-		if( statusManager.isModified(view.getResourceId())) {
+		if( view.isChanged()) {
 			statusManager.setPendingView(view.getResourceId(), view);
 		}
 		container.removeAll();
@@ -1498,7 +1496,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	 */
 	@Override
 	public void stateChanged(ChangeEvent event) {
-		//log.infof("%s.stateChanged: source = %s",CLSS,event.getSource().getClass().getCanonicalName());
+		log.infof("%s.stateChanged: source = %s",CLSS,event.getSource().getClass().getCanonicalName());
 		updateBackgroundForDiagramState();
 	}
 	

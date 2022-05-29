@@ -145,12 +145,10 @@ public class ResourceSaveManager {
 					SerializableDiagram sd = view.createSerializableRepresentation();
 					builder.putData(sd.serialize());
 					res = builder.build();
-					project.createOrModify(res);
-					
-					requestHandler.triggerStatusNotifications(context.getProjectName());
-					
+					project.createOrModify(res);	
 				}
 				statusManager.commit(resid);
+				requestHandler.triggerStatusNotifications(context.getProjectName());
 			}
 		}
 	}

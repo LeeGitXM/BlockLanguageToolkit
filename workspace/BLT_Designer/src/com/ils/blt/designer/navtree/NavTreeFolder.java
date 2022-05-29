@@ -194,13 +194,6 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 		return DiagramWorkspace.key;
 	}
 
-	// Use the state for Applications and Families to remember whether to 
-	// configure production or isolation databases
-	public DiagramState getState() { return this.state; }
-	public void setState(DiagramState ds) { 
-		this.state = ds;
-		statusManager.setPendingState(resourceId, ds);
-	}
 	@Override
 	public boolean isEditActionHandler() {return true;}
 	
@@ -810,8 +803,7 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 										}										
 										sd.setState(DiagramState.DISABLED);
 										json = mapper.writeValueAsString(sd);
-										statusManager.setPendingState(node.getResourceId(), sd.getState());
-
+										statusManager.setPendingView(res.getResourceId(), diagram);
 									}
 									else {
 										ErrorUtil.showWarning(String.format("Failed to deserialize diagram (%s)",res.getResourceName()),"Paste Diagram");
@@ -1045,7 +1037,7 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 											ProjectResourceId resid = requestHandler.createResourceId(getResourceId().getProjectName(), getResourceId().getFolderPath(), BLTProperties.DIAGRAM_RESOURCE_TYPE);
 											new ResourceCreateManager(getResourcePath().getFolderPath(),sd.getName(),sd.serialize()).run();	
 											parentNode.selectChild(new ResourcePath[] {getResourcePath()} );
-											statusManager.setPendingState(resid, sd.getState());
+											statusManager.setPendingView(resid, new ProcessDiagramView(context,resid,sd));
 										}
 										else {
 											ErrorUtil.showWarning(String.format("Failed to deserialize file (%s)",input.getAbsolutePath()),POPUP_TITLE);
