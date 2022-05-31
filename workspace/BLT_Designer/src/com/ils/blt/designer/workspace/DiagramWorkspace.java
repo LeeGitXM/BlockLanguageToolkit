@@ -1295,6 +1295,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 
 			BlockDesignableContainer tab = (BlockDesignableContainer)findDesignableContainer(resourceId.getResourcePath());
 			tab.setBackground(diagram.getBackgroundColorForState());
+			tab.setName(diagram.getDiagramName());
 			// For some unknown reason, the viewport comes up with a red border. Make it gray
 			log.infof("%s.open %s is %s",CLSS,tab.getParent().getParent().getParent().getClass().getCanonicalName(),tab.getParent().getParent().getParent().getBackground());
 			SwingUtilities.invokeLater(new Runnable() {

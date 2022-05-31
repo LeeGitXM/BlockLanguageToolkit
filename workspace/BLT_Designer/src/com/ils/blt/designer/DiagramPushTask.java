@@ -91,7 +91,7 @@ public class DiagramPushTask implements Runnable {
 			project.createOrModify(resource);
 			project.notifyPushComplete(ops);
 			requestHandler.triggerStatusNotifications(context.getProjectName());
-			statusManager.commit(resource.getResourceId());
+			statusManager.clearChangeMarkers(resource.getResourceId());
 			
 			List<ProjectResource> resources = new ArrayList<>();
 			for(ProjectResource res:project.getAllResources().values() ) {  // Includes from parent projects, if any

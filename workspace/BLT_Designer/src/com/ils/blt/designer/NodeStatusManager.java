@@ -75,10 +75,10 @@ public class NodeStatusManager   {
 	 * Synchronize StatusEntries to current state of the resource. The resource name
 	 * is set to the pending name and the resource removed from the "unsaved" list.
      */
-	public void commit(ProjectResourceId resourceId) {
+	public void clearChangeMarkers(ProjectResourceId resourceId) {
 		StatusEntry se = statusByPath.get(resourceId.getFolderPath());
 		if( se!=null ) {
-			se.commit();
+			se.clearChanges();
 			if( se.getNode() instanceof NavTreeNodeInterface) {
 				((NavTreeNodeInterface)se.getNode()).updateUI(false);
 			}
@@ -207,6 +207,7 @@ public class NodeStatusManager   {
 		StatusEntry se = statusByPath.get(resourceId.getFolderPath());
 		if( se!=null ) {
 			pendingName = se.getPendingName();
+			if(DEBUG) log.infof("%s.getPendingName: %s (%s)",CLSS,resourceId.getFolderPath(),(pendingName==null?"null":pendingName));
 		}
 		return pendingName;
 	}
@@ -217,6 +218,7 @@ public class NodeStatusManager   {
 		StatusEntry se = statusByPath.get(resourceId.getFolderPath());
 		if( se!=null ) {
 			se.setPendingName(newName);
+			if(DEBUG) log.infof("%s.setPendingName: %s (%s)",CLSS,resourceId.getFolderPath(),(newName==null?"null":newName));
 		}
 	}
 	/**	
@@ -328,7 +330,7 @@ public class NodeStatusManager   {
 		public void setAlerting(boolean flag) { alerting = flag; }
 		public AbstractResourceNavTreeNode getNode() { return node; }
 		
-		public void commit() {
+		public void clearChanges() {
 			this.pendingName = null;
 			this.pendingState = null;
 			this.pendingView = null;

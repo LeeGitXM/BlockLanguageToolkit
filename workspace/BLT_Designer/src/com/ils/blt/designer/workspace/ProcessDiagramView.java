@@ -529,7 +529,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	}
 
 	@Override
-	public String getDiagramName() {return name;}
+	public String getDiagramName() {return name;}     // Method required by BlockDiagramModel
 	public void setDiagramName(String nam) { this.name = nam; }
 
 	@Override

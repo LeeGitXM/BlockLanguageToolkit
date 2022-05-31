@@ -27,7 +27,6 @@ import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 import javax.swing.tree.TreePath;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagramState;
@@ -36,7 +35,6 @@ import com.ils.blt.common.notification.NotificationKey;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableDiagram;
-import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.NotificationHandler;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
@@ -151,12 +149,12 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		DebugDiagramAction debugAction = new DebugDiagramAction();
 		ResetDiagramAction resetAction = new ResetDiagramAction();
 		resetAction.setEnabled(cleanView);
-		renameAction.setEnabled(true);
 		
 		// States are: ACTIVE, DISABLED, ISOLATED
 		DiagramState state = statusManager.getPendingState(resourceId);
 		if( state==null) state = requestHandler.getDiagramState(resourceId);
 		copyDiagramAction = new CopyAction(this);
+		RevertDiagramAction revertAction = new RevertDiagramAction();
 		SetStateAction ssaActive = new SetStateAction(DiagramState.ACTIVE);
 		ssaActive.setEnabled(!state.equals(DiagramState.ACTIVE));
 		SetStateAction ssaDisable = new SetStateAction(DiagramState.DISABLED);
@@ -173,6 +171,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		menu.add(copyDiagramAction);
 		menu.add(renameAction);
         menu.add(deleteAction);
+        menu.add(revertAction);
         menu.addSeparator();
         menu.add(debugAction);
         menu.add(resetAction);
@@ -256,8 +255,21 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	}
 	
 	@Override
+	public String getName() {
+		String n = statusManager.getPendingName(resourceId);
+		if( n==null ) n = super.getName();
+		return n;
+	}
+	
+	@Override
 	public String getWorkspaceName() {
 		return DiagramWorkspace.key;
+	}
+	@Override
+	public boolean isChanged() {
+		boolean changed =  statusManager.isModified(resourceId);
+		log.infof("%s.isChanged: %s modified = %s",CLSS,resourceId.getResourcePath().getPath().toString(),(changed?"true":"false"));
+		return changed;
 	}
 	@Override
 	public boolean isEditActionHandler() {return true;}
@@ -274,9 +286,8 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	}
 	
 	/**
-	 *  Note: We ignore locking, as it basically implies that the diagram is showing
-	 *        on an open tab. We take care of re-naming the tab.
-	 *        Attempt to keep the collapsed state as it was
+	 * This is called on completion of the user entering a new name. The node is shown
+	 * as altered and the name change takes place on the next save.
 	 */
 	@Override
 	public void onEdit(String newTextValue) {
@@ -290,14 +301,16 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		String oldName = res.getResourceName();
 		try {
 			log.infof("%s.onEdit: alterName from %s to %s",CLSS,oldName,newTextValue);
-			alterName( newTextValue);
-			statusManager.setPendingName(resourceId, name);
+
 			if(workspace.isOpen(resourceId.getResourcePath()) ) {
 				BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resourceId.getResourcePath());
 				if(tab!=null) {
 					tab.setName(newTextValue);
 				}
 			}
+			alterName(newTextValue);
+			statusManager.setPendingName(resourceId, newTextValue);
+			statusManager.updateUI(resourceId);
 		}
 		catch (IllegalArgumentException ex) {
 			ErrorUtil.showError(CLSS+".onEdit: "+ex.getMessage());
@@ -502,15 +515,18 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	    }
 	    
 		public void actionPerformed(ActionEvent e) {
-			// Get the diagramId from the resource. We have to search the list of diagrams for a resource match.
-			String projectName = context.getProject().getName();
-			List<SerializableResourceDescriptor> diagramDescriptors = requestHandler.listDiagramDescriptors(projectName);
-			for(SerializableResourceDescriptor srd:diagramDescriptors ) {
-				if( srd.getResourceId()==resourceId ) {
-					requestHandler.resetDiagram(resourceId);
-					break;
-				}
-			}
+			requestHandler.resetDiagram(resourceId);
+		}
+	}
+	
+	private class RevertDiagramAction extends BaseAction {
+    	private static final long serialVersionUID = 1L;
+	    public RevertDiagramAction()  {
+	    	super(PREFIX+".RevertDiagram",IconUtil.getIcon("check2")); 
+	    }
+	    
+		public void actionPerformed(ActionEvent e) {
+			requestHandler.resetDiagram(resourceId);
 		}
 	}
 
@@ -539,7 +555,6 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	public void setDiagramState(DiagramState state) {
 		try {
 			// If the diagram is showing, we need to make it show dirty.
-			DiagramState oldState = null;
 			BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resourceId.getResourcePath());
 			statusManager.setPendingState(resourceId,state);
 			if( tab!=null ) {
@@ -634,6 +649,12 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 			}
 		});
 	}
+	@Override
+	public void refresh() {
+		setItalic(isChanged());
+		super.refresh();
+	}
+
 	
 	/**
 	 * This method allows us to have children, but a diagram has no children. 

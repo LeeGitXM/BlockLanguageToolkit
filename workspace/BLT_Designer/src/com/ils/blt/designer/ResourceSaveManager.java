@@ -147,7 +147,7 @@ public class ResourceSaveManager {
 					res = builder.build();
 					project.createOrModify(res);	
 				}
-				statusManager.commit(resid);
+				statusManager.clearChangeMarkers(resid);
 				requestHandler.triggerStatusNotifications(context.getProjectName());
 			}
 		}
