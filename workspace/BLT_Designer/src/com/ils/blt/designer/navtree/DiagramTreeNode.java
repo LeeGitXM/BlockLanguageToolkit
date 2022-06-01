@@ -583,7 +583,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 				tab.setBackground(view.getBackgroundColorForState());
 			}
 			setIcon(getIcon());
-			refresh();
+			updateUI(statusManager.isModified(resourceId));
 		} 
 		catch (Exception ex) {
 			log.warn(String.format("%s.setStateAction: ERROR: %s",CLSS,ex.getMessage()),ex);
