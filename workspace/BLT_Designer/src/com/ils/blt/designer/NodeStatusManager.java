@@ -9,12 +9,14 @@ import java.util.List;
 import java.util.Map;
 
 import com.ils.blt.common.ApplicationRequestHandler;
+import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagramState;
 import com.ils.blt.designer.navtree.NavTreeFolder;
 import com.ils.blt.designer.navtree.NavTreeNodeInterface;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 import com.inductiveautomation.ignition.common.project.resource.ResourcePath;
+import com.inductiveautomation.ignition.common.project.resource.ResourceType;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceNavTreeNode;
@@ -212,13 +214,21 @@ public class NodeStatusManager   {
 		return pendingName;
 	}
 	/**	
-	 * An edit has changed the node name in the nav tree. REcord the new name for when the node is saved.
+	 * An edit has changed the node name in the nav tree. Record the new name for when the node is saved.
+	 * This requires us to replicate the status entry under the new name. 
      */
 	public void setPendingName(ProjectResourceId resourceId,String newName) {
 		StatusEntry se = statusByPath.get(resourceId.getFolderPath());
 		if( se!=null ) {
 			se.setPendingName(newName);
 			if(DEBUG) log.infof("%s.setPendingName: %s (%s)",CLSS,resourceId.getFolderPath(),(newName==null?"null":newName));
+			String path = resourceId.getFolderPath();
+			int index = path.lastIndexOf("/");
+			path = path.substring(index+1);
+			path = path + newName;
+			ProjectResourceId rid = new ProjectResourceId(resourceId.getProjectName(),resourceId.getResourceType(),path); 
+			StatusEntry clone = createResourceStatus(se.getNode(),rid);
+			clone.setPendingName(newName);
 		}
 	}
 	/**	

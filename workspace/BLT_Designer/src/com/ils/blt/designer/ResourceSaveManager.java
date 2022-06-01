@@ -38,7 +38,7 @@ import com.inductiveautomation.ignition.designer.project.DesignableProject;
  *
  */
 public class ResourceSaveManager {
-	private static final String CLSS = "ResourceSaveManager";
+	private final String CLSS = "ResourceSaveManager";
 	private final LoggerEx log;
 	private static final boolean DEBUG = true;
 	private final DesignerContext context;

@@ -148,13 +148,14 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		DeleteDiagramAction deleteAction = new DeleteDiagramAction(this);
 		DebugDiagramAction debugAction = new DebugDiagramAction();
 		ResetDiagramAction resetAction = new ResetDiagramAction();
+		RevertDiagramAction revertAction = new RevertDiagramAction(this.getProjectResource());
 		resetAction.setEnabled(cleanView);
+		revertAction.setEnabled(isChanged());
 		
 		// States are: ACTIVE, DISABLED, ISOLATED
 		DiagramState state = statusManager.getPendingState(resourceId);
 		if( state==null) state = requestHandler.getDiagramState(resourceId);
 		copyDiagramAction = new CopyAction(this);
-		RevertDiagramAction revertAction = new RevertDiagramAction();
 		SetStateAction ssaActive = new SetStateAction(DiagramState.ACTIVE);
 		ssaActive.setEnabled(!state.equals(DiagramState.ACTIVE));
 		SetStateAction ssaDisable = new SetStateAction(DiagramState.DISABLED);
@@ -515,18 +516,25 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	    }
 	    
 		public void actionPerformed(ActionEvent e) {
-			requestHandler.resetDiagram(resourceId);
+			statusManager.clearChangeMarkers(resourceId);
+			// If the diagram is open, we need to re-display.
 		}
 	}
 	
 	private class RevertDiagramAction extends BaseAction {
     	private static final long serialVersionUID = 1L;
-	    public RevertDiagramAction()  {
-	    	super(PREFIX+".RevertDiagram",IconUtil.getIcon("check2")); 
+    	private final ProjectResource res;
+	    public RevertDiagramAction(Optional<ProjectResource> pr)  {
+	    	super(PREFIX+".RevertDiagram",IconUtil.getIcon("eraser")); 
+	    	this.res = pr.get();
 	    }
 	    
 		public void actionPerformed(ActionEvent e) {
-			requestHandler.resetDiagram(resourceId);
+			ProjectResourceId resid = res.getResourceId();
+			BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(res.getResourcePath());
+			if( tab!=null) workspace.close(resid);
+			statusManager.clearChangeMarkers(resid);
+			if(tab!=null) workspace.open(resid);
 		}
 	}
 
@@ -649,12 +657,13 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 			}
 		});
 	}
+
 	@Override
 	public void refresh() {
-		setItalic(isChanged());
+		boolean changed = isChanged();
 		super.refresh();
+		log.infof("%s.refresh: %s modified/italic = %s",CLSS,resourceId.getResourcePath().getPath().toString(),(changed?"true":"false"),(isItalic()?"true":"false"));
 	}
-
 	
 	/**
 	 * This method allows us to have children, but a diagram has no children. 
