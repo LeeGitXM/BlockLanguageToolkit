@@ -46,6 +46,7 @@ import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.client.util.action.BaseAction;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
 import com.inductiveautomation.ignition.common.BundleUtil;
+import com.inductiveautomation.ignition.common.StringPath;
 import com.inductiveautomation.ignition.common.execution.ExecutionManager;
 import com.inductiveautomation.ignition.common.execution.impl.BasicExecutionEngine;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
@@ -53,6 +54,8 @@ import com.inductiveautomation.ignition.common.project.ChangeOperation;
 import com.inductiveautomation.ignition.common.project.ProjectResourceListener;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
+import com.inductiveautomation.ignition.common.project.resource.ResourceNamingException;
+import com.inductiveautomation.ignition.common.project.resource.ResourcePath;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignableContainer;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
 import com.inductiveautomation.ignition.designer.gui.IconUtil;
@@ -309,9 +312,18 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 					tab.setName(newTextValue);
 				}
 			}
-			alterName(newTextValue);
+			// Before we rename the resource, prepare for a corresponding nav tree node
+			ResourcePath newPath = res.getResourcePath();
+			StringPath newStringPath = StringPath.extend(newPath.getPath().getParentPath(),newTextValue);
+			ProjectResourceId newProjectResourceId = new ProjectResourceId(res.getProjectName(),res.getResourceType(),newStringPath.toString());
+			statusManager.createResourceStatus(this, newProjectResourceId);
+			statusManager.setPendingName(newProjectResourceId, newTextValue);
+			context.getProject().renameResource(res.getResourceId(),newTextValue);
 			statusManager.setPendingName(resourceId, newTextValue);
 			statusManager.updateUI(resourceId);
+		}
+		catch (ResourceNamingException rne) {
+			ErrorUtil.showError(CLSS+".onEdit: "+rne.getMessage());
 		}
 		catch (IllegalArgumentException ex) {
 			ErrorUtil.showError(CLSS+".onEdit: "+ex.getMessage());
@@ -662,7 +674,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	public void refresh() {
 		boolean changed = isChanged();
 		super.refresh();
-		log.infof("%s.refresh: %s modified/italic = %s",CLSS,resourceId.getResourcePath().getPath().toString(),(changed?"true":"false"),(isItalic()?"true":"false"));
+		log.infof("%s.refresh: %s modified/italic = %s/%s",CLSS,resourceId.getResourcePath().getPath().toString(),(changed?"true":"false"),(isItalic()?"true":"false"));
 	}
 	
 	/**
