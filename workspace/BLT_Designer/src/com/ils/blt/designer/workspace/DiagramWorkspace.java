@@ -1263,7 +1263,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 					sd = mapper.readValue(json,SerializableDiagram.class);
 					// Synchronize names as the resource may have been re-named and/or
 					// state changed since it was serialized. Nulls are ignored.
-					sd.setName(statusManager.getPendingName(res.getResourceId()));
+					sd.setName(resourceId.getResourcePath().getName());
+					sd.setName(statusManager.getPendingName(res.getResourceId()));   // If null will not override
 					sd.setState(statusManager.getPendingState(res.getResourceId()));
 					for(SerializableBlock sb:sd.getBlocks()) {
 						if( DEBUG ) log.infof("%s: %s block, name = %s",CLSS,sb.getClassName(),sb.getName());
