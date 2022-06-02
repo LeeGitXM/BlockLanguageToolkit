@@ -19,14 +19,7 @@ public interface NavTreeNodeInterface  {
 	 * @return the resourceId identified with the node when it was created.
 	 */
 	public ProjectResourceId getResourceId();
-	/**
-	 * Refresh the UI
-	 */
-	public void reload();
-	/**
-	 * Handle a node rename
-	 */
-	public void setName(String name);
+
 	/**
 	 * Paint the name with italics, or not, to indicate if the node needs saving.
 	 * @param flag true if the node is in a saved state

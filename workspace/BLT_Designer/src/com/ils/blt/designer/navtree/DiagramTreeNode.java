@@ -103,8 +103,6 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		this.executor = new BasicExecutionEngine();
 		this.requestHandler = new ApplicationRequestHandler();
 		statusManager = NodeStatusManager.getInstance();
-		setName(resource.getResourceName());
-		setText(resource.getResourceName());
 		
 		alertBadge =iconFromPath("Block/icons/badges/bell.png");
 		defaultIcon = IconUtil.getIcon("unknown");
@@ -121,12 +119,17 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		NotificationHandler notificationHandler = NotificationHandler.getInstance();
 		notificationHandler.addNotificationChangeListener(NotificationKey.keyForDiagram(resourceId), CLSS, this);
 		statusManager.createResourceStatus(this, resourceId);
+		String pendingName = statusManager.getPendingName(resourceId);
+		if(pendingName==null) {
+			setName(resource.getResourceName());
+			setText(resource.getResourceName());
+		}
+		else {
+			setName(pendingName);
+			setText(pendingName);
+		}
 	}
 	
-	@Override
-	public void setName(String name) {
-		super.setName(name);
-	}
 	@Override
 	public void uninstall() {
 		context.getProject().removeProjectResourceListener(this);     // (This is what FolderNode does)
@@ -312,6 +315,9 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 					tab.setName(newTextValue);
 				}
 			}
+			setName(newTextValue);
+			setText(newTextValue);
+			/*
 			// Before we rename the resource, prepare for a corresponding nav tree node
 			ResourcePath newPath = res.getResourcePath();
 			StringPath newStringPath = StringPath.extend(newPath.getPath().getParentPath(),newTextValue);
@@ -319,12 +325,15 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 			statusManager.createResourceStatus(this, newProjectResourceId);
 			statusManager.setPendingName(newProjectResourceId, newTextValue);
 			context.getProject().renameResource(res.getResourceId(),newTextValue);
+			*/
 			statusManager.setPendingName(resourceId, newTextValue);
 			statusManager.updateUI(resourceId);
 		}
+		/*
 		catch (ResourceNamingException rne) {
 			ErrorUtil.showError(CLSS+".onEdit: "+rne.getMessage());
 		}
+		*/
 		catch (IllegalArgumentException ex) {
 			ErrorUtil.showError(CLSS+".onEdit: "+ex.getMessage());
 		}
