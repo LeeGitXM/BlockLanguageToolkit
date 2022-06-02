@@ -56,6 +56,7 @@ import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 import com.inductiveautomation.ignition.common.project.resource.ResourceNamingException;
 import com.inductiveautomation.ignition.common.project.resource.ResourcePath;
+import com.inductiveautomation.ignition.designer.UndoManager;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignableContainer;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
 import com.inductiveautomation.ignition.designer.gui.IconUtil;
@@ -72,7 +73,7 @@ import com.inductiveautomation.ignition.designer.navtree.model.ResourceDeleteAct
  * The frame is responsible for rendering the diagram based on the model resource.
  * The model can exist without the frame, but not vice-versa.
  */
-public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavTreeNodeInterface,NotificationChangeListener,ProjectResourceListener  {
+public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NotificationChangeListener,ProjectResourceListener  {
 	private static final String CLSS = "DiagramTreeNode";
 	private static final String PREFIX = BLTProperties.BUNDLE_PREFIX;  // Required for some defaults     
 	private final ApplicationRequestHandler requestHandler;
@@ -202,25 +203,6 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		setIcon(getIcon());
 		refresh();
 	}
-	
-	/**
-	 *  If the diagram associated with this node is open, save its state.
-	 */
-	public void saveOpenDiagram() {
-		log.infof("%s.saveOpenDiagram: res %d",CLSS,resourceId);
-		// If the diagram is open on a tab, call the workspace method to update the project resource
-		// from the diagram view. This method handles re-paint of the background.
-
-		BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resourceId.getResourcePath());
-		if( tab!=null ) {
-			ProcessDiagramView view = (ProcessDiagramView)tab.getModel();
-			for( Block blk:view.getBlocks()) {
-				ProcessBlockView pbv = (ProcessBlockView)blk;
-				pbv.setDirty(false);  // Suppresses the popup?
-			}
-			workspace.saveOpenDiagram(resourceId);
-		}
-	}
 
 	@Override
 	public boolean confirmDelete(List<? extends AbstractNavTreeNode> selections) {
@@ -261,20 +243,11 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		return icon;
 	}
 	
-
-	/*
-	@Override
-	public String getName() {
-		String n = statusManager.getPendingName(resourceId);
-		if( n==null ) n = super.getName();
-		return n;
-	}
-	*/
-	
 	@Override
 	public String getWorkspaceName() {
 		return DiagramWorkspace.key;
 	}
+	
 	@Override
 	public boolean isChanged() {
 		boolean changed =  statusManager.isModified(resourceId);
@@ -301,7 +274,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	 */
 	@Override
 	public void onEdit(String newTextValue) {
-		// Sanitize name
+		// Guarantee name is valid
 		if (!isValid(newTextValue)) {
 			ErrorUtil.showError(BundleUtil.get().getString(PREFIX+".InvalidName", newTextValue));
 			return;
@@ -321,11 +294,18 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 			setName(newTextValue);
 			setText(newTextValue);
 			statusManager.setPendingName(resourceId, newTextValue);
-			statusManager.updateUI(resourceId);
+			updateUI();
 		}
 		catch (IllegalArgumentException ex) {
 			ErrorUtil.showError(CLSS+".onEdit: "+ex.getMessage());
 		}
+	}
+	
+	// Update the status of the NavTree node
+	@Override
+	public synchronized void onSelected() {
+		UndoManager.getInstance().setSelectedContext(NavTreeFolder.class);
+		updateUI();
 	}
 	
 	// We're not a listener on anything. But we do need to
@@ -336,13 +316,16 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 
 	// ----------------------- Project Resource Listener -------------------------------
 	/**
-	 * This creates the actual resource when a new diagram node is created
+	 * This creates the actual resource when a new diagram node is created.
+	 * We give it a pending name just to make it dirty.
 	 */
 	@Override
 	public void resourcesCreated(String projectName,List<ChangeOperation.CreateResourceOperation> ops) {
 		for(ChangeOperation.CreateResourceOperation op:ops ) {
 			ProjectResourceId id = op.getResourceId();
 			log.infof("%s.resourcesCreated: %s ",CLSS,id.getFolderPath());
+			statusManager.setPendingName(id, id.getResourcePath().getName());
+			updateUI();
 		}
 	}
 	/**
@@ -525,9 +508,8 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	    	super(PREFIX+".ResetDiagram",IconUtil.getIcon("check2")); 
 	    }
 	    
+	    // TODO: Implement.
 		public void actionPerformed(ActionEvent e) {
-			statusManager.clearChangeMarkers(resourceId);
-			// If the diagram is open, we need to re-display.
 		}
 	}
 	
@@ -545,6 +527,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 			if( tab!=null) workspace.close(resid);
 			statusManager.clearChangeMarkers(resid);
 			if(tab!=null) workspace.open(resid);
+			updateUI();
 		}
 	}
 
@@ -581,7 +564,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 				tab.setBackground(view.getBackgroundColorForState());
 			}
 			setIcon(getIcon());
-			updateUI(statusManager.isModified(resourceId));
+			updateUI();
 		} 
 		catch (Exception ex) {
 			log.warn(String.format("%s.setStateAction: ERROR: %s",CLSS,ex.getMessage()),ex);
@@ -656,8 +639,8 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	 * Update the node name italic/plain in nav tree.
 	 * Note: This method should ONLY be called from the node status manager.
 	 */
-	@Override
-	public void updateUI(boolean modified) {
+	public void updateUI() {
+		boolean modified = isChanged();
 		log.infof("%s.updateUI: %s modified = %s",CLSS,resourceId.getResourcePath().getPath().toString(),(modified?"true":"false"));
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
@@ -666,13 +649,6 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 				refresh();
 			}
 		});
-	}
-
-	@Override
-	public void refresh() {
-		boolean changed = isChanged();
-		super.refresh();
-		log.infof("%s.refresh: %s modified/italic = %s/%s",CLSS,resourceId.getResourcePath().getPath().toString(),(changed?"true":"false"),(isItalic()?"true":"false"));
 	}
 	
 	/**

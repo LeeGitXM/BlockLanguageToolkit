@@ -88,7 +88,7 @@ import com.inductiveautomation.ignition.designer.project.ResourceNotFoundExcepti
  * Leaf nodes are of type DiagramNode. 
  * Note that a FolderNode is an AbstractResourceNavTreeNode
  */
-public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, ProjectResourceListener {
+public class NavTreeFolder extends FolderNode implements ProjectResourceListener {
 	private static final String CLSS = "NavTreeFolder";
 	public static final String BLT_CUT_OPERATION = "BLTCUT";
 	public static final String BLT_COPY_OPERATION = "BLTCOPY";
@@ -287,15 +287,9 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 	@Override
 	public synchronized void onSelected() {
 		UndoManager.getInstance().setSelectedContext(NavTreeFolder.class);
-		updateUI(statusManager.isModified(getResourceId()));
+		updateUI();
 	}
 	
-	// Rename the NavTree node. NOTE: This does not yet rename the
-	// underlying resource. Calls setText() to set the display.
-	@Override
-	public void setName(String name) {
-		super.setName(name);
-	}
 	/**
 	 * Exclude cut and paste which are currently not supported.
 	 */
@@ -332,7 +326,7 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 				(res.isFolder()?"folder":"diagram"),getDepth());
 		// If the project is disabled, then don't do anything
 		if( !context.getProject().isEnabled()) return null;
-		AbstractResourceNavTreeNode node = statusManager.findNode(res.getResourceId());
+		AbstractResourceNavTreeNode node = statusManager.getNode(res.getResourceId());
 		if( node==null ) {
 			if ( res.isFolder() )       {
 				node = new NavTreeFolder(context, res);
@@ -832,7 +826,7 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 							builder.setApplicationScope(res.getApplicationScope());
 
 
-							AbstractResourceNavTreeNode node = statusManager.findNode(res.getResourceId());  // so basically starting over here
+							AbstractResourceNavTreeNode node = statusManager.getNode(res.getResourceId());  // so basically starting over here
 							ProjectResource resource = builder.build();
 							/*							Copies children and assigns new ResourcePaths
 							if (copyChildren(node) && deleteOriginal) { // copy children will rename diagnosis blocks
@@ -845,7 +839,7 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 
 							// Finally display the parent node
 							//new ResourceCreateManager(resource,resource.getResourceName()).run();
-							AbstractResourceNavTreeNode newNode = statusManager.findNode(resource.getResourceId());  // so basically starting over here
+							AbstractResourceNavTreeNode newNode = statusManager.getNode(resource.getResourceId());  // so basically starting over here
 
 							UndoManager.getInstance().add(PasteAction.this,AbstractNavTreeNode.class);
 							pasted = resource;
@@ -1213,7 +1207,12 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 			}
 		}
 	}
-
+	@Override
+	public boolean isChanged() {
+		boolean changed =  statusManager.isModified(resourceId);
+		log.infof("%s.isChanged: %s modified = %s",CLSS,resourceId.getResourcePath().getPath().toString(),(changed?"true":"false"));
+		return changed;
+	}
 
 	/**
 	 * @param res
@@ -1239,8 +1238,9 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 	public void resourcesCreated(String projectName,List<ChangeOperation.CreateResourceOperation> ops) {
 		for(ChangeOperation.CreateResourceOperation op:ops ) {
 			ProjectResourceId id = op.getResourceId();
-			log.infof("%s.resourcesCreated: %s",CLSS,id.getFolderPath());
-			updateUI(statusManager.isModified(id));
+			log.infof("%s.resourcesCreated: %s (%s)",CLSS,id.getFolderPath(),id.getResourcePath().getName());
+			statusManager.setPendingName(id, id.getResourcePath().getName());
+			updateUI();
 		}
 	}
 	/**
@@ -1259,7 +1259,7 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 		for(ChangeOperation.ModifyResourceOperation op:changes ) {
 			ProjectResourceId id = op.getResourceId();
 			log.infof("%s.resourcesModified: %s",CLSS,id.getFolderPath());
-			updateUI(statusManager.isModified(id));
+			updateUI();
 		}
 	}
 	
@@ -1270,8 +1270,8 @@ public class NavTreeFolder extends FolderNode implements NavTreeNodeInterface, P
 	 * Update the node name italic/plain in nav tree.
 	 * Note: This method should ONLY be called from the node status manager.
 	 */
-	@Override
-	public void updateUI(boolean modified) {
+	public void updateUI() {
+		boolean modified = isChanged();
 		log.infof("%s.updateUI: %s modified = %s",CLSS,resourceId.getResourcePath().getPath().toString(),(modified?"true":"false"));
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override

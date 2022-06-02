@@ -182,7 +182,7 @@ public class NewResourceDialog extends JDialog {
 		private Consumer<ProjectResourceId> onAfterCreated = id -> {
 			NodeStatusManager statusManager = NodeStatusManager.getInstance();
 			statusManager.setPendingName(id, id.getResourcePath().getName());
-			statusManager.updateUI(id);
+			statusManager.getNode(id).select();
 		};
 		JComponent extraComponent = null;
 

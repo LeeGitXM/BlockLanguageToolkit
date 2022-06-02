@@ -78,7 +78,6 @@ import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
-import com.ils.blt.designer.DiagramPushTask;
 import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.NotificationHandler;
 import com.ils.blt.designer.config.AttributeDisplaySelector;
@@ -1305,7 +1304,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			    }
 			  });
 			SwingUtilities.invokeLater(new WorkspaceRepainter());
-			statusManager.updateUI(diagram.getResourceId());
 		}
 	}
 	
@@ -1321,7 +1319,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		if( diagram.isChanged() ) {
 			statusManager.setPendingView(diagram.getResourceId(), diagram);
 		}
-		DiagramTreeNode node = (DiagramTreeNode)statusManager.findNode(diagram.getResourceId());
+		DiagramTreeNode node = (DiagramTreeNode)statusManager.getNode(diagram.getResourceId());
 		if( node!=null ) {
 			node.setIcon(node.getIcon());
 			node.refresh();
@@ -1329,36 +1327,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		diagram.unregisterChangeListeners();
 		
 	}
-	/**
-	 * This is called as a result of a user "Save" selection on
-	 * the main menu. If the diagram indicated by the resourceId
-	 * is open, then save it.
-	 */
-	public void saveOpenDiagram(ProjectResourceId resourceId) {
-		if( DEBUG ) log.infof("%s.saveOpenDiagrams ...",CLSS);
-		ResourcePath path = resourceId.getResourcePath();
-		for(DesignableContainer dc:openContainers.keySet()) {
-			BlockDesignableContainer bdc = (BlockDesignableContainer)dc;
-			if( bdc.getResourcePath().equals(path) ) {
-				saveDiagramResource((BlockDesignableContainer)dc);
-			}
-		}
-	}
 
-	/**
-	 * This method obtains the project resourceId from the container and then 
-	 * saves the project resource. We assume that the resource has been updated.
-	 * @param c the tab
-	 */
-	private void saveDiagramResource(BlockDesignableContainer c) {
-		ProcessDiagramView diagram = (ProcessDiagramView)c.getModel();
-		log.infof("%s.saveDiagramResource - %s ...",CLSS,diagram.getDiagramName());
-		diagram.registerChangeListeners();     // The diagram may include new components
-		diagram.refresh();
-		Optional<ProjectResource> optional = context.getProject().getResource(diagram.getResourceId());
-		DiagramPushTask task = new DiagramPushTask(context,optional.get(),diagram);
-		executionEngine.executeOnce(task);
-	}
 	/**
 	 * Display the open diagram as clean, presumeably after a recent save of the project resource.
 	 */
@@ -1930,13 +1899,10 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			this.diagram = diag;
 			this.block = blk;
 		}
-
+		
+		// TODO: lock the block in the gateway ...
 		public void actionPerformed(ActionEvent e) {
 			block.setLocked(true);
-			if( !diagram.isChanged()) {
-				BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(diagram.getResourceId().getResourcePath());
-				if( tab!=null ) workspace.saveDiagramResource(tab);
-			}
 		}
 	}
 	/**
@@ -2073,12 +2039,9 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			this.block = blk;
 		}
 
+		// TO DO : set value in gateway?
 		public void actionPerformed(ActionEvent e) {
 			block.setSignalAnchorDisplayed(false);
-			if( !diagram.isChanged()) {
-				BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(diagram.getResourcePath());
-				if( tab!=null ) workspace.saveDiagramResource(tab);
-			}
 			block.fireStateChanged();
 			// Repaint to update the stub
 			SwingUtilities.invokeLater(new WorkspaceRepainter());
@@ -2100,12 +2063,9 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			this.block = blk;
 		}
 
+		// TO: Set diagram dirty ...
 		public void actionPerformed(ActionEvent e) {
 			block.setSignalAnchorDisplayed(true);
-			if( !diagram.isChanged()) {
-				BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(diagram.getResourceId().getResourcePath());
-				if( tab!=null ) workspace.saveDiagramResource(tab);
-			}
 			block.fireStateChanged();
 			// Repaint to update the stub
 			SwingUtilities.invokeLater(new WorkspaceRepainter());
@@ -2126,12 +2086,9 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			this.block = blk;
 		}
 
+		// TO DO: Set diagram dirty.
 		public void actionPerformed(ActionEvent e) {
 			block.setLocked(false);
-			if( !diagram.isChanged()) {
-				BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(diagram.getResourceId().getResourcePath());
-				if( tab!=null ) workspace.saveDiagramResource(tab);
-			}
 		}
 	}
 

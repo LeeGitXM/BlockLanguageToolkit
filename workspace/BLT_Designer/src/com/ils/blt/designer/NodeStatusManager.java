@@ -12,7 +12,6 @@ import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagramState;
 import com.ils.blt.designer.navtree.NavTreeFolder;
-import com.ils.blt.designer.navtree.NavTreeNodeInterface;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 import com.inductiveautomation.ignition.common.project.resource.ResourcePath;
@@ -81,9 +80,6 @@ public class NodeStatusManager   {
 		StatusEntry se = statusByPath.get(resourceId.getFolderPath());
 		if( se!=null ) {
 			se.clearChanges();
-			if( se.getNode() instanceof NavTreeNodeInterface) {
-				((NavTreeNodeInterface)se.getNode()).updateUI(false);
-			}
 			if(DEBUG) log.infof("%s.commit: %s -----------------------------------------",CLSS,resourceId.getFolderPath());
 		}
 	}
@@ -159,7 +155,7 @@ public class NodeStatusManager   {
 	 * @param resourceId
 	 * @return the AbstractResourceNavTreeNode associated with the specified resourceId.
 	 */
-	public AbstractResourceNavTreeNode findNode(ProjectResourceId resourceId) {
+	public AbstractResourceNavTreeNode getNode(ProjectResourceId resourceId) {
 		log.debugf("%s.findNode(%s)",CLSS,resourceId.getResourcePath().getPath().toString());
 		AbstractResourceNavTreeNode node = null;
 		StatusEntry se = statusByPath.get(resourceId.getFolderPath());
@@ -296,16 +292,17 @@ public class NodeStatusManager   {
 		log.infof("%s.isModified: %s (%s)",CLSS,resourceId.getFolderPath(),(modified?"modified":"clean"));
 		return modified;
 	}
-
 	/**
 	 * Update the node text for the specified resourceId
 	 */
+	/*
 	public void updateUI(ProjectResourceId resourceId) {
 		StatusEntry se = statusByPath.get(resourceId.getFolderPath());
-		if( se!=null && se.node instanceof NavTreeNodeInterface ) {
-			((NavTreeNodeInterface)se.node).updateUI(se.isModified());
+		if( se!=null  ) {
+			se.node.onSelected();
 		}
 	}
+	*/
 	/**
 	 * Hold status information for a node in the nav tree.
 	 * The pending is simply the last name change made on the node.
