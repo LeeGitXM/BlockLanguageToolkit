@@ -1468,6 +1468,10 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	@Override
 	public void stateChanged(ChangeEvent event) {
 		log.infof("%s.stateChanged: source = %s",CLSS,event.getSource().getClass().getCanonicalName());
+		if( event.getSource() instanceof ProcessDiagramView ) {
+			ProcessDiagramView diagram = (ProcessDiagramView)event.getSource();
+			statusManager.setPendingView(diagram.getResourceId(), diagram);
+		}
 		updateBackgroundForDiagramState();
 	}
 	
