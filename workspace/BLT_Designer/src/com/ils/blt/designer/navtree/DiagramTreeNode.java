@@ -261,12 +261,15 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		return icon;
 	}
 	
+
+	/*
 	@Override
 	public String getName() {
 		String n = statusManager.getPendingName(resourceId);
 		if( n==null ) n = super.getName();
 		return n;
 	}
+	*/
 	
 	@Override
 	public String getWorkspaceName() {
@@ -317,23 +320,9 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 			}
 			setName(newTextValue);
 			setText(newTextValue);
-			/*
-			// Before we rename the resource, prepare for a corresponding nav tree node
-			ResourcePath newPath = res.getResourcePath();
-			StringPath newStringPath = StringPath.extend(newPath.getPath().getParentPath(),newTextValue);
-			ProjectResourceId newProjectResourceId = new ProjectResourceId(res.getProjectName(),res.getResourceType(),newStringPath.toString());
-			statusManager.createResourceStatus(this, newProjectResourceId);
-			statusManager.setPendingName(newProjectResourceId, newTextValue);
-			context.getProject().renameResource(res.getResourceId(),newTextValue);
-			*/
 			statusManager.setPendingName(resourceId, newTextValue);
 			statusManager.updateUI(resourceId);
 		}
-		/*
-		catch (ResourceNamingException rne) {
-			ErrorUtil.showError(CLSS+".onEdit: "+rne.getMessage());
-		}
-		*/
 		catch (IllegalArgumentException ex) {
 			ErrorUtil.showError(CLSS+".onEdit: "+ex.getMessage());
 		}

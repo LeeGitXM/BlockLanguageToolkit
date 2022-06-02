@@ -21,6 +21,7 @@ import com.inductiveautomation.ignition.common.model.ApplicationScope;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceBuilder;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
+import com.inductiveautomation.ignition.common.project.resource.ResourceNamingException;
 import com.inductiveautomation.ignition.common.project.resource.ResourcePath;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -94,6 +95,16 @@ public class ResourceSaveManager {
 				ProjectResourceBuilder builder = res.toBuilder();
 				builder.clearData();
 				builder.setApplicationScope(ApplicationScope.GATEWAY);
+				// If there has been a re-name, update the project resource now
+				String pendingName = statusManager.getPendingName(resid);
+				if(pendingName!=null) {
+					try {
+						project.renameResource(resid, pendingName);
+					}
+					catch(ResourceNamingException rne) {
+						log.warnf("%s.saveModifiedResources: Naming exception for %s->%s (%s)", CLSS,res.getResourceName(),pendingName,rne.getLocalizedMessage());
+					}
+				}
 				if( res.isFolder()) {      // Folder
 					builder.setFolder(true);
 				}
@@ -136,7 +147,7 @@ public class ResourceSaveManager {
 					DiagramState state = statusManager.getPendingState(resid);
 					if( state!=null) view.setState(state);
 					else view.setState(requestHandler.getDiagramState(resid));
-					String pendingName = statusManager.getPendingName(resid);
+
 					if( pendingName!=null && !pendingName.equalsIgnoreCase(name)) {
 						stringPath = StringPath.extend(stringPath.getParentPath(),pendingName);
 						respath = new ResourcePath(BLTProperties.DIAGRAM_RESOURCE_TYPE,stringPath);
@@ -147,9 +158,9 @@ public class ResourceSaveManager {
 					res = builder.build();
 					project.createOrModify(res);	
 				}
-				statusManager.clearChangeMarkers(resid);
 				requestHandler.triggerStatusNotifications(context.getProjectName());
 			}
+			statusManager.clearChangeMarkers(resid);
 		}
 	}
 }
