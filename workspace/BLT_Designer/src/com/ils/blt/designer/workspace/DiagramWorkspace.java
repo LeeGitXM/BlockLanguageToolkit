@@ -682,7 +682,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 						else if(block.getClassName().equals(BlockConstants.BLOCK_CLASS_SOURCE)) {
 							addNameDisplay(block,dropPoint.x,dropPoint.y);
 						}
-						setDiagramChanged(getActiveDiagram());
 						// Create the process editor for the new block
 						BlockPropertyEditor editor = new BlockPropertyEditor(context,this,block);
 						PropertyEditorFrame peframe = getPropertyEditorFrame();
@@ -852,7 +851,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 										property.setBinding(tnode.getFullPath().toStringFull());}
 									block.modifyConnectionForTagChange(property, type);
 								}
-								this.getActiveDiagram().setChanged(true);
+								
 								// Create the process editor for the new block
 								BlockPropertyEditor editor = new BlockPropertyEditor(context,this,block);
 								PropertyEditorFrame peframe = getPropertyEditorFrame();
@@ -863,7 +862,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 								log.infof("%s.handleTagDrop: drop of %s out-of-bounds",CLSS,block.getClassName());
 							}
 						}
-						setDiagramChanged(this.getActiveDiagram());
+						getActiveDiagram().fireStateChanged();
 					}
 				}
 			} 
@@ -931,7 +930,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 								pblock.setName(nameFromTagTree(tnode));
 								pblock.setCtypeEditable(true);
 								pblock.modifyConnectionForTagChange(prop, tagType);
-								setDiagramChanged(this.getActiveDiagram());
+								getActiveDiagram().fireStateChanged();
 							} 
 							else {
 								JOptionPane.showMessageDialog(null, connectionMessage, "Warning", JOptionPane.INFORMATION_MESSAGE);
@@ -1280,7 +1279,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 					log.warnf("%s.open: io exception (%s)",CLSS,ioe.getLocalizedMessage());
 				}
 				diagram = new ProcessDiagramView(context,res.getResourceId(),sd);
-				diagram.setChanged(false);  // Newly opened from a serialized resource, should be in-sync.
 				// We are looking at the live version running in the gateway, obtain any updates
 				for( Block blk:diagram.getBlocks()) {
 					ProcessBlockView pbv = (ProcessBlockView)blk;
@@ -1316,10 +1314,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		if( DEBUG ) log.infof("%s: onClose",CLSS);
 		BlockDesignableContainer container = (BlockDesignableContainer)c;
 		ProcessDiagramView diagram = (ProcessDiagramView)container.getModel();
-		// In addition to the workspace being dirty it can be renamed or had state changed
-		if( diagram.isChanged() ) {
-			statusManager.setPendingView(diagram.getResourceId(), diagram);
-		}
 		DiagramTreeNode node = (DiagramTreeNode)statusManager.getNode(diagram.getResourceId());
 		if( node!=null ) {
 			node.setIcon(node.getIcon());
@@ -1328,32 +1322,17 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		diagram.unregisterChangeListeners();
 		
 	}
-
 	/**
-	 * Display the open diagram as clean, presumeably after a recent save of the project resource.
-	 */
-	public void setDiagramClean(ProcessDiagramView diagram) {
-		diagram.setChanged(false);
-		updateBackgroundForDiagramState();
-	}
-	/**
-	 * Display the open diagram as dirty and in need of a save.
-	 * Update the notification handler to save its dirty state.
-	 */
-	public void setDiagramChanged(ProcessDiagramView diagram) {
-		diagram.setChanged(true);
-		diagram.updateNotificationHandlerForSave();
-		updateBackgroundForDiagramState();
-	}
-	/**
-	 * The selection has changed. If we've made a major change on the currently active diagram,
+	 * The selection has changed. If we've made a change to the currently active diagram,
 	 * set its background accordingly. The diagram should have set its own state.
+	 * Also update the navtree.
 	 */
 	private void updateBackgroundForDiagramState() {
 		BlockDesignableContainer container = getSelectedContainer();
 		if( container!=null ) {
 			ProcessDiagramView view = (ProcessDiagramView)(container.getModel());			
 			container.setBackground(view.getBackgroundColorForState());
+			statusManager.updateUI(view.getResourceId());
 			SwingUtilities.invokeLater(new WorkspaceRepainter());
 		}
 	}
@@ -1370,9 +1349,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		BlockDesignableContainer container = (BlockDesignableContainer)c;
 		ProcessDiagramView view = (ProcessDiagramView)(container.getModel());
 		view.removeChangeListener(this);
-		if( view.isChanged()) {
-			statusManager.setPendingView(view.getResourceId(), view);
-		}
 		container.removeAll();
 	}
 	/**
@@ -1458,22 +1434,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		return inBounds;
 	}
 
-	// ============================== Change Listener ================================
-	/**
-	 * If the current diagram changes state, then paint the background accordingly.
-	 *
-	 * 
-	 * @param event
-	 */
-	@Override
-	public void stateChanged(ChangeEvent event) {
-		log.infof("%s.stateChanged: source = %s",CLSS,event.getSource().getClass().getCanonicalName());
-		if( event.getSource() instanceof ProcessDiagramView ) {
-			ProcessDiagramView diagram = (ProcessDiagramView)event.getSource();
-			statusManager.setPendingView(diagram.getResourceId(), diagram);
-		}
-		updateBackgroundForDiagramState();
-	}
+
 	
 	/**
 	 * Paint connections. The cross-section is dependent on the connection type.
@@ -1557,7 +1518,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			}
 			requestHandler.updateBlockAnchors(diagram.getResourceId(),block.getId().toString(),anchors); // update gateway. 
 			diagram.updateConnectionTypes(block,connectionType);
-			setDiagramChanged(getActiveDiagram());
+			getActiveDiagram().fireStateChanged();
 		}
 	}
 
@@ -1573,7 +1534,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			block.getBlock().setLocation(new Point(topLeft.x, loc.y));
 		}
 		UndoManager.getInstance().add(new UndoMoveBlocks(undoMap));
-		setDiagramChanged(getActiveDiagram());
+		getActiveDiagram().fireStateChanged();
 	}
 	
 	public void alignRight() {
@@ -1587,7 +1548,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			block.getBlock().setLocation(new Point(bottomRight.x-block.getWidth(), loc.y));
 		}
 		UndoManager.getInstance().add(new UndoMoveBlocks(undoMap));
-		setDiagramChanged(getActiveDiagram());
+		getActiveDiagram().fireStateChanged();
 	}
 
 	public void alignWidthCenter() {
@@ -1603,7 +1564,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			block.getBlock().setLocation(new Point(bottomRight.x-block.getWidth()-adjust, loc.y));
 		}
 		UndoManager.getInstance().add(new UndoMoveBlocks(undoMap));
-		setDiagramChanged(getActiveDiagram());
+		getActiveDiagram().fireStateChanged();
 	}
 
 	public void alignHeightCenter() {
@@ -1619,7 +1580,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			block.getBlock().setLocation(new Point(loc.x, topLeft.y + adjust));
 		}
 		UndoManager.getInstance().add(new UndoMoveBlocks(undoMap));
-		setDiagramChanged(getActiveDiagram());
+		getActiveDiagram().fireStateChanged();
 	}
 
 	public void alignTop() {
@@ -1633,7 +1594,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			block.getBlock().setLocation(new Point(loc.x, topLeft.y));
 		}
 		UndoManager.getInstance().add(new UndoMoveBlocks(undoMap));
-		setDiagramChanged(getActiveDiagram());
+		getActiveDiagram().fireStateChanged();
 	}
 
 	public void alignBottom() {
@@ -1647,7 +1608,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			block.getBlock().setLocation(new Point(loc.x, bottomRight.y-block.getHeight()));
 		}
 		UndoManager.getInstance().add(new UndoMoveBlocks(undoMap));
-		setDiagramChanged(getActiveDiagram());
+		getActiveDiagram().fireStateChanged();
 	}
 	
 	
@@ -2225,5 +2186,22 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
     		workspace.repaint(200);  // Paint in 200 ms
     	}
     }
+    
+	// ============================== Change Listener ================================
+	/**
+	 * If the current diagram changes (e.g. block dropped on it), then paint the background accordingly.
+	 * This is triggered by a fireStateChange call to the diagram.
+	 *
+	 * @param event
+	 */
+	@Override
+	public void stateChanged(ChangeEvent event) {
+		log.infof("%s.stateChanged: source = %s",CLSS,event.getSource().getClass().getCanonicalName());
+		if( event.getSource() instanceof ProcessDiagramView ) {
+			ProcessDiagramView diagram = (ProcessDiagramView)event.getSource();
+			statusManager.setPendingView(diagram.getResourceId(), diagram);
+		}
+		updateBackgroundForDiagramState();
+	}
    
 }

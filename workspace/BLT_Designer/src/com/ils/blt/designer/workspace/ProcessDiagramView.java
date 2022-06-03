@@ -69,7 +69,6 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	private final ProjectResourceId resourceId;
 	private DiagramState state = DiagramState.ACTIVE;
 	private DesignerContext context;
-	private boolean changed = false;   // A newly created diagram is "clean" because it matches the gateway version
 	private boolean suppressStateChangeNotification = false;
 	private String watermark = "";
 	
@@ -135,9 +134,6 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			suppressStateChangeNotification = false;
 		}  // -- end synchronized
 		
-		// Do this at the end to override state change on adding blocks/connectors.
-		// Note this shouldn't represent a change for parents
-		this.changed = false;
 		// Compute diagram size to include all blocks
 		// We do this initially. From then on it's whatever the user leaves it at.
 		double maxX = MIN_WIDTH;
@@ -462,7 +458,6 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		for(UUID uuid:displaysToDelete) {
 			blockMap.remove(uuid);
 		}
-		changed = true;
 		fireStateChanged();
 	}
 	
@@ -557,18 +552,6 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	}
 	
 	public DiagramState getState() {return state;}
-	
-	/**
-	 * A diagram that is dirty is out-of-sync with what is running
-	 * in the gateway. The difference can be as trivial as position.
-	 * @return true if the diagram does not represent what is actually running.
-	 */
-	public boolean isChanged() {return changed;}
-	
-	public void setChanged(boolean flag) {
-		this.changed = flag;
-		fireStateChanged();
-	}
 	
 	@Override
 	public void setDiagramSize(Dimension dim) {

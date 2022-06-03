@@ -85,7 +85,7 @@ public class ListEditPanel extends BasicEditPanel {
 					String list = BlockProperty.assembleList(model);
 					log.infof("%s.OK action: assembled list, %s = %s",TAG,property.getName(),list);
 					property.setValue(list);
-					editor.setDiagramDirty();
+					editor.getDiagram().fireStateChanged();
 					editor.updatePanelForProperty(BlockEditConstants.HOME_PANEL,property);
 				}
 				else {

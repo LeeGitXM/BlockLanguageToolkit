@@ -91,6 +91,7 @@ public class ResourceSaveManager {
 				ResourcePath respath = resid.getResourcePath();
 				StringPath stringPath = respath.getPath();
 				String name = stringPath.getLastPathComponent();
+				BlockDesignableContainer tab = null;
 				
 				ProjectResourceBuilder builder = res.toBuilder();
 				builder.clearData();
@@ -110,17 +111,6 @@ public class ResourceSaveManager {
 				}
 				else {                     // Diagram
 					builder.setFolder(false);
-					// If the resource is open in the workspace and dirty, move it to the status manager
-					BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(res.getResourcePath());
-					if( tab!=null ) {
-						ProcessDiagramView tabView = (ProcessDiagramView)tab.getModel();
-						if( DEBUG ) log.infof("%s.saveModifiedResources, %s (%s)", CLSS, tabView.getName(), (tabView.isChanged()?"CHANGED":"UNCHANGED"));
-						if( tabView.isChanged() ) {
-							statusManager.setPendingView(resid, tabView);
-							tabView.registerChangeListeners();     // The diagram may include new components
-							if( DEBUG ) log.infof("%s.saveModifiedResource: Saving modified %s...", CLSS, tabView.getName());
-						}
-					}
 					ProcessDiagramView view = statusManager.getPendingView(resid);
 					if( view==null) {
 						// Serialize from the resource

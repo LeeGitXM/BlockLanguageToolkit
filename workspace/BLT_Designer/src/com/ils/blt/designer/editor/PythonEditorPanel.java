@@ -41,7 +41,7 @@ public class PythonEditorPanel extends BasicEditPanel {
 
 				if(property!=null) {
 					editor.updatePanelForProperty(BlockEditConstants.HOME_PANEL,property);
-					editor.setDiagramDirty(); 
+					editor.getDiagram().fireStateChanged();
 					setSelectedPane(BlockEditConstants.HOME_PANEL);
 				}
 			}

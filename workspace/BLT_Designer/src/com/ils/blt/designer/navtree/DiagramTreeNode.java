@@ -142,22 +142,18 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements Noti
 		if( this.getParent()==null ) {
 			log.errorf("%s.initPopupMenu: ERROR: Diagram (%d) has no parent",CLSS,hashCode());
 		}
-		// If there is a diagram open that is dirty, turn off some of the options.
-		boolean cleanView = true;
-		BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resourceId.getResourcePath());
-		if( tab!=null ) {
-			ProcessDiagramView view = (ProcessDiagramView)tab.getModel();
-			cleanView = !view.isChanged();
-		}
+		// Turn on and off options depending on whether the diagram has been modified.
+		boolean modified = statusManager.isModified(resourceId);
+
 		ExportDiagramAction exportAction = new ExportDiagramAction(menu.getRootPane(),resourceId, this);
-		exportAction.setEnabled(cleanView);
+		exportAction.setEnabled(true);
 		menu.add(exportAction);
 		DeleteDiagramAction deleteAction = new DeleteDiagramAction(this);
 		DebugDiagramAction debugAction = new DebugDiagramAction();
 		ResetDiagramAction resetAction = new ResetDiagramAction();
 		RevertDiagramAction revertAction = new RevertDiagramAction(this.getProjectResource());
-		resetAction.setEnabled(cleanView);
-		revertAction.setEnabled(isChanged());
+		resetAction.setEnabled(!modified);
+		revertAction.setEnabled(modified);
 		
 		// States are: ACTIVE, DISABLED, ISOLATED
 		DiagramState state = statusManager.getPendingState(resourceId);
@@ -170,7 +166,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements Noti
 		SetStateAction ssaIsolated = new SetStateAction(DiagramState.ISOLATED);
 		ssaIsolated.setEnabled(!state.equals(DiagramState.ISOLATED));
 		JMenu setStateMenu = new JMenu(BundleUtil.get().getString(PREFIX+".SetState"));
-		setStateMenu.setEnabled(cleanView);
+		setStateMenu.setEnabled(!modified);
 		setStateMenu.add(ssaActive);
 		setStateMenu.add(ssaDisable);
 		setStateMenu.add(ssaIsolated);
@@ -196,7 +192,6 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements Noti
 			DesignableContainer c = workspace.findDesignableContainer(resourceId.getResourcePath());
 			BlockDesignableContainer container = (BlockDesignableContainer)c;
 			ProcessDiagramView diagram = (ProcessDiagramView)container.getModel();
-			workspace.setDiagramClean(diagram);
 			diagram.unregisterChangeListeners();
 			workspace.close(resourceId);
 		}

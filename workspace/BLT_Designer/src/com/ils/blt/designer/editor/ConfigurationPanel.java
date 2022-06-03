@@ -97,7 +97,7 @@ public class ConfigurationPanel extends BasicEditPanel {
 				if(property!=null) {
 					property.setBindingType(BindingType.valueOf(bindingTypeCombo.getSelectedItem().toString()));
 				}
-				editor.setDiagramDirty();  
+				editor.getDiagram().fireStateChanged();  
 				editor.updatePanelForProperty(BlockEditConstants.HOME_PANEL,property);
 				setSelectedPane(BlockEditConstants.HOME_PANEL);
 			}

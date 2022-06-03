@@ -82,7 +82,7 @@ public class SourceEditPanel extends BasicEditPanel {
 						editor.updateCorePanel(BlockEditConstants.HOME_PANEL,block); // Core attributes
 						editor.updatePanelForProperty(BlockEditConstants.HOME_PANEL, tagProperty);
 						editor.updatePanelValue(SourceMainPanel.PROP_NAME, sinkDescriptor.getName());
-						editor.setDiagramDirty() ; 
+						editor.getDiagram().fireStateChanged(); 
 					}
 					else {
 						log.warnf("%s.OK action: No diagram found for sink %s, no action taken",TAG,sinkDescriptor.getIdString());

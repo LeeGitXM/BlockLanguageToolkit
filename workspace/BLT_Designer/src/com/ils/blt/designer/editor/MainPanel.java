@@ -145,7 +145,7 @@ public class MainPanel extends BasicEditPanel {
 				log.infof("%s.saveName(). changed name from %s to %s", CLSS, block.getName(), nameField.getText());
 				block.setName(nameField.getText());
 				// Make the diagram dirty (mustard) since we aren't saving automatically - PAH 07/15/2021
-				bpe.setDiagramDirty();
+				bpe.getDiagram().fireStateChanged();
 				bpe.getDiagram().updateNotificationHandlerForSave();
 			}
 			

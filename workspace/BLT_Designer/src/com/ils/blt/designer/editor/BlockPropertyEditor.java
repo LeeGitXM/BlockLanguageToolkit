@@ -85,9 +85,6 @@ public class BlockPropertyEditor extends AbstractPropertyEditor   {
 	}
 	public ProcessBlockView getBlock() { return this.block; }
 	public ProcessDiagramView getDiagram() { return this.diagram; }
-	public void setDiagramDirty() {
-		workspace.setDiagramChanged(workspace.getActiveDiagram());
-	}
 	
 	public DesignerContext getContext() { return this.context; }
 	/**

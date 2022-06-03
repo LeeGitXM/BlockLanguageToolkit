@@ -178,7 +178,7 @@ public class AttributeDisplaySelector extends JDialog implements TableModelListe
 				}
 			}
 			arrangeDisplays();
-			diagram.setChanged(true);
+			diagram.fireStateChanged();
 		}
 	}
 

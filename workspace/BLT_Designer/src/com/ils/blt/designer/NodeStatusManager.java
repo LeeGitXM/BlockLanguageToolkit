@@ -295,14 +295,13 @@ public class NodeStatusManager   {
 	/**
 	 * Update the node text for the specified resourceId
 	 */
-	/*
 	public void updateUI(ProjectResourceId resourceId) {
 		StatusEntry se = statusByPath.get(resourceId.getFolderPath());
 		if( se!=null  ) {
 			se.node.onSelected();
 		}
 	}
-	*/
+
 	/**
 	 * Hold status information for a node in the nav tree.
 	 * The pending is simply the last name change made on the node.
