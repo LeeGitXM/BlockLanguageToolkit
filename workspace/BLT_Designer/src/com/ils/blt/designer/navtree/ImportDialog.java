@@ -5,6 +5,10 @@ import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.List;
 import java.util.prefs.Preferences;
 
 import javax.swing.JComponent;
@@ -12,13 +16,18 @@ import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.WindowConstants;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.ils.blt.common.BLTProperties;
+import com.inductiveautomation.ignition.client.util.gui.ValidatedTextField;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
+import com.inductiveautomation.ignition.designer.navtree.model.AbstractNavTreeNode;
 
 import net.miginfocom.swing.MigLayout;
 
@@ -30,6 +39,8 @@ public class ImportDialog extends JDialog implements ActionListener {
 	private static final int DLG_HEIGHT = 80;
 	private static final int DLG_WIDTH = 400;
 	private File filePath = null;
+	private ValidatedTextField diagramName;
+	private final List<String> existingNames;
 	private JFileChooser fc;
 	private final String nameLabel;
 	private final String title;
@@ -37,15 +48,23 @@ public class ImportDialog extends JDialog implements ActionListener {
 	private final Preferences prefs;
 	
 	// Doing nothing works quite well.
-	public ImportDialog(Frame frame,String label,String title) {
+	public ImportDialog(Frame frame,String label,String title,AbstractNavTreeNode parent) {
 		super(frame);
 		setModal(true);
 		setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
-        setSize(new Dimension(DLG_WIDTH,DLG_HEIGHT));
         this.nameLabel = label;
         this.title = title;
+        setSize(new Dimension(DLG_WIDTH,DLG_HEIGHT));
         this.log = LogUtil.getLogger(getClass().getPackage().getName());
         this.prefs = Preferences.userRoot().node(BLTProperties.PREFERENCES_NAME);
+        
+        this.existingNames = new ArrayList<>();
+        @SuppressWarnings("unchecked")
+		Enumeration<AbstractNavTreeNode> walker = parent.children();
+        while( walker.hasMoreElements()) {
+        	existingNames.add(walker.nextElement().getName());
+        }
+  
         initialize();
 	}
 
@@ -61,7 +80,7 @@ public class ImportDialog extends JDialog implements ActionListener {
 		//Create a file chooser
 	    fc = new JFileChooser();
 	    fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-	    FileNameExtensionFilter filter = new FileNameExtensionFilter("JSON exports", "json", "txt");
+	    FileNameExtensionFilter filter = new FileNameExtensionFilter("JSON", "json", "txt");
 	    fc.setFileFilter(filter);
 	    String startDirectoryName = prefs.get(BLTProperties.PREF_EXIM_DIRECTORY,System.getProperty(BLTProperties.EXIM_PATH));
 	    if(startDirectoryName!=null ) {
@@ -81,7 +100,21 @@ public class ImportDialog extends JDialog implements ActionListener {
 		rowConstraints = "";
 	    JPanel namePanel = new JPanel(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));
 	    JLabel label = new JLabel(nameLabel);
-	    namePanel.add(label, "skip");    
+	    this.diagramName = new ValidatedTextField(new JTextField("", 30)) {
+			private static final long serialVersionUID = 3930811570476547474L;
+
+			protected String validate(String textValue) {
+				if (StringUtils.isBlank(textValue)) {
+					return "Name required";
+				}
+				else if (existingNames.contains(textValue)) {
+					return "Name in use";
+				}
+				return null;
+			}
+		};
+	    namePanel.add(label, ""); 
+	    namePanel.add(diagramName,  "pushx, growx"); 
 	    add(namePanel, "wrap");
 	    add(fc, "wrap");
 	}
@@ -91,6 +124,7 @@ public class ImportDialog extends JDialog implements ActionListener {
 	 * @return the file path that the user selected from the chooser.
 	 */
 	public File getFilePath() { return filePath; }
+	public String getDiagramName() { return diagramName.getField().getText(); }
 	
 	/**
 	 * We receive events from the file chooser.

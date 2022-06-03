@@ -49,9 +49,8 @@ import com.ils.blt.common.serializable.SerializableFolder;
 import com.ils.blt.common.serializable.SerializableNodeRenameHandler;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.designer.BLTDesignerHook;
-import com.ils.blt.designer.NewResourceDialog;
 import com.ils.blt.designer.NodeStatusManager;
-import com.ils.blt.designer.ResourceCreateManager;
+import com.ils.blt.designer.ResourceImportManager;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
@@ -645,7 +644,7 @@ public class NavTreeFolder extends FolderNode implements ProjectResourceListener
 				}
 			}
 
-			new ResourceCreateManager(getResourcePath().getFolderPath(),resid.getResourcePath().getName(),json.getBytes()).run();
+			new ResourceImportManager(getResourcePath().getFolderPath(),resid.getResourcePath().getName(),json.getBytes()).run();
 			if (!copyChildren(child)) {
 				return false;
 			}
@@ -1001,9 +1000,9 @@ public class NavTreeFolder extends FolderNode implements ProjectResourceListener
 				EventQueue.invokeLater(new Runnable() {
 					public void run() {
 						try {
-							String title = BundleUtil.get().getString(PREFIX+".Import.Application.DialogTitle");
-							String label = BundleUtil.get().getString(PREFIX+".Import.Application.NameLabel");
-							ImportDialog dialog = new ImportDialog(context.getFrame(),label,title);
+							String title = BundleUtil.get().getString(PREFIX+".Import.Diagram.DialogTitle");
+							String nameLabel = BundleUtil.get().getString(PREFIX+".Import.Diagram.NameLabel");
+							ImportDialog dialog = new ImportDialog(context.getFrame(),nameLabel,title,parentNode);
 							dialog.setLocationRelativeTo(anchor);
 							Point p = dialog.getLocation();
 	    					dialog.setLocation((int)(p.getX()-OFFSET),(int)(p.getY()-OFFSET));
@@ -1029,7 +1028,7 @@ public class NavTreeFolder extends FolderNode implements ProjectResourceListener
 
 											log.debugf("%s:ImportDiagramAction saved resource as:\n%s", CLSS,json);
 											ProjectResourceId resid = requestHandler.createResourceId(getResourceId().getProjectName(), getResourceId().getFolderPath(), BLTProperties.DIAGRAM_RESOURCE_TYPE);
-											new ResourceCreateManager(getResourcePath().getFolderPath(),sd.getName(),sd.serialize()).run();	
+											new ResourceImportManager(getResourcePath().getFolderPath(),sd.getName(),sd.serialize()).run();	
 											parentNode.selectChild(new ResourcePath[] {getResourcePath()} );
 											statusManager.setPendingView(resid, new ProcessDiagramView(context,resid,sd));
 										}

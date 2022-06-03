@@ -29,8 +29,8 @@ import com.inductiveautomation.ignition.designer.project.ResourceNotFoundExcepti
  * @author chuckc
  *
  */
-public class ResourceCreateManager implements Runnable {
-	private static final String CLSS = "ResourceCreateManager";
+public class ResourceImportManager implements Runnable {
+	private static final String CLSS = "ResourceImportManager";
 	private final LoggerEx log;
 	private static DesignerContext context = null;
 	private final ProjectResource resource;
@@ -40,13 +40,13 @@ public class ResourceCreateManager implements Runnable {
 	 * Use this version of the constructor to create or modify a specified resource.
 	 * @param pr
 	 */
-	public ResourceCreateManager(String parent,String nam) {
+	public ResourceImportManager(String parent,String nam) {
 		this.resourceName = nam;
 		this.resource = createFolderResource(parent,nam);
 		this.log = LogUtil.getLogger(getClass().getPackageName());
 	}
 	
-	public ResourceCreateManager(String parent,String nam,byte[]json) {
+	public ResourceImportManager(String parent,String nam,byte[]json) {
 		this.resourceName = nam;
 		this.resource = createDiagramResource(parent,resourceName,json);
 		this.log = LogUtil.getLogger(getClass().getPackageName());

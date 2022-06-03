@@ -1,4 +1,4 @@
-package com.ils.blt.designer;
+package com.ils.blt.designer.navtree;
 
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
@@ -19,6 +19,7 @@ import javax.swing.border.MatteBorder;
 import org.apache.commons.lang3.StringUtils;
 
 import com.google.common.base.Preconditions;
+import com.ils.blt.designer.NodeStatusManager;
 import com.inductiveautomation.ignition.client.IgnitionLookAndFeel;
 import com.inductiveautomation.ignition.client.util.action.BaseAction;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
@@ -77,7 +78,6 @@ public class NewResourceDialog extends JDialog {
 				else if (!namePredicate.test(textValue)) {
 					return "Invalid name";
 				}
-
 				return null;
 			}
 		};
