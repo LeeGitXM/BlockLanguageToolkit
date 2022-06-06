@@ -45,6 +45,7 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorP
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorType;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.BlockDiagramModel;
+import com.inductiveautomation.ignition.designer.blockandconnector.model.BlockListener;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Connection;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.impl.LookupConnection;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
@@ -52,7 +53,7 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
 /**
  * This class represents a diagram in the designer.
  */
-public class ProcessDiagramView extends AbstractChangeable implements BlockDiagramModel,NotificationChangeListener {
+public class ProcessDiagramView extends AbstractChangeable implements BlockDiagramModel,BlockListener, NotificationChangeListener {
 	private static LoggerEx log = LogUtil.getLogger(ProcessDiagramView.class.getPackage().getName());
 	// Use TAG as the "source" identifier when registering for notifications from Gateway
 	private static final String CLSS = "ProcessDiagramView";
@@ -205,6 +206,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			if( ((ProcessBlockView) blk).getProperties().isEmpty() ) initBlockProperties(block);
 			log.tracef("%s.addBlock - %s",CLSS,block.getClassName());
 			blockMap.put(blk.getId(), block);
+			block.addBlockListener(this);
 			fireStateChanged();
 		}
 	}
@@ -805,5 +807,16 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	@Override
 	public void watermarkChange(String mark) {
 		setWatermark(mark);
+	}
+	
+	// ================================ Block Listener =====================================
+	@Override
+	public void blockMoved(Block blk) {
+		fireStateChanged();
+	}
+
+	@Override
+	public void blockUIChanged(Block arg0) {
+		// TODO Auto-generated method stub
 	}
 }

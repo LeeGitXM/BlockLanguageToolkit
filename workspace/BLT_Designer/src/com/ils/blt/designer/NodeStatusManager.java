@@ -49,6 +49,7 @@ public class NodeStatusManager   {
 	private final LoggerEx log;
 	private final ApplicationRequestHandler handler;
 	private final Map<String,StatusEntry> statusByPath;
+	private List<ProjectResourceId> deletedResources;
 	
 
 	/**
@@ -58,6 +59,7 @@ public class NodeStatusManager   {
 		this.log = LogUtil.getLogger(getClass().getPackage().getName());
 		this.handler = new ApplicationRequestHandler();
 		statusByPath = new HashMap<>();
+		deletedResources = new ArrayList<>();
 	}
 	
 	/**
@@ -72,6 +74,8 @@ public class NodeStatusManager   {
 		return instance;
 	}
 
+	public void addResourceToDelete(ProjectResourceId id) { deletedResources.add(id); }
+	
 	/**	
 	 * Synchronize StatusEntries to current state of the resource. The resource name
 	 * is set to the pending name and the resource removed from the "unsaved" list.
@@ -82,6 +86,7 @@ public class NodeStatusManager   {
 			se.clearChanges();
 			if(DEBUG) log.infof("%s.commit: %s -----------------------------------------",CLSS,resourceId.getFolderPath());
 		}
+		deletedResources.clear();
 	}
 	
 	/**
@@ -98,6 +103,10 @@ public class NodeStatusManager   {
 			statusByPath.put(resourceId.getFolderPath(),se);
 		}
 	}
+	/**
+	 * @return a list of project resources that have been deleted
+	 */
+	List<ProjectResourceId> getDeletedResources() { return this.deletedResources; }
 	
 	/**
 	 * @return the count of nodes with changes

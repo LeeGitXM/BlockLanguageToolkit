@@ -7,7 +7,6 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Desktop;
-import java.awt.EventQueue;
 import java.awt.Frame;
 import java.awt.Graphics2D;
 import java.awt.Image;
@@ -97,11 +96,8 @@ import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.config.ObservablePropertySet;
 import com.inductiveautomation.ignition.common.config.PropertySet;
-import com.inductiveautomation.ignition.common.execution.ExecutionManager;
-import com.inductiveautomation.ignition.common.execution.impl.BasicExecutionEngine;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
-import com.inductiveautomation.ignition.common.project.resource.ResourcePath;
 import com.inductiveautomation.ignition.common.sqltags.model.TagProp;
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 import com.inductiveautomation.ignition.common.tags.browsing.NodeBrowseInfo;
@@ -166,7 +162,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	private final ApplicationRequestHandler requestHandler;
 	private final DesignerContext context;
 	private final EditActionHandler editActionHandler;
-	private final ExecutionManager executionEngine;
 	private final NotificationHandler notificationHandler = NotificationHandler.getInstance();
 	private final NodeStatusManager statusManager;
 	private Collection<ResourceWorkspaceFrame> frames;
@@ -184,7 +179,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		super();
 		this.context = ctx;
 		this.editActionHandler = new BlockActionHandler(this,context);
-		this.executionEngine = new BasicExecutionEngine(1,CLSS);
 		this.addDesignableWorkspaceListener(this);
 		this.zoomPopup = createZoomPopup();
 		this.rightClickHandler = new PopupListener();
@@ -2182,7 +2176,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
     	public void run() {
     		block.setLocation(location);
     		block.blockMoved(block);
-    		block.fireBlockMoved();
     		workspace.repaint(200);  // Paint in 200 ms
     	}
     }

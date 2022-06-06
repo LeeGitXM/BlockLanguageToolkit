@@ -13,6 +13,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagramState;
+import com.ils.blt.common.script.Script;
+import com.ils.blt.common.script.ScriptConstants;
+import com.ils.blt.common.script.ScriptNotificationManager;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
@@ -83,6 +86,7 @@ public class ResourceSaveManager {
 		if( count==0 ) count = 1;
 		int index = 0;
 		DesignableProject project = context.getProject();
+		ScriptNotificationManager notifier = ScriptNotificationManager.getInstance();
 		Map<ProjectResourceId,ProjectResource> map = context.getProject().getAllResources();
 		for(ProjectResourceId resid:map.keySet()) {
 			if( resid.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) && statusManager.isModified(resid)) {
@@ -101,6 +105,8 @@ public class ResourceSaveManager {
 				if(pendingName!=null) {
 					try {
 						project.renameResource(resid, pendingName);
+						Script script = notifier.createScript(ScriptConstants.RENAME_NOTIFICATION);
+						notifier.runScript(context.getScriptManager(), script, resid.getFolderPath(),pendingName);
 					}
 					catch(ResourceNamingException rne) {
 						log.warnf("%s.saveModifiedResources: Naming exception for %s->%s (%s)", CLSS,res.getResourceName(),pendingName,rne.getLocalizedMessage());
@@ -146,9 +152,16 @@ public class ResourceSaveManager {
 					SerializableDiagram sd = view.createSerializableRepresentation();
 					builder.putData(sd.serialize());
 					res = builder.build();
-					project.createOrModify(res);	
+					project.createOrModify(res);
+					Script script = notifier.createScript(ScriptConstants.SAVE_NOTIFICATION);
+					notifier.runScript(context.getScriptManager(), script, resid.getFolderPath(),new String(sd.serialize()));
 				}
 				requestHandler.triggerStatusNotifications(context.getProjectName());
+			}
+			// Send notifications of any deleted diagrams
+			for(ProjectResourceId id:statusManager.getDeletedResources()) {
+				Script script = notifier.createScript(ScriptConstants.DELETE_NOTIFICATION);
+				notifier.runScript(context.getScriptManager(), script, id.getFolderPath());
 			}
 			statusManager.clearChangeMarkers(resid);
 		}

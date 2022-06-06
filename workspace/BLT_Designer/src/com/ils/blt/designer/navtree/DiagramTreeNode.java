@@ -150,7 +150,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements Noti
 		menu.add(exportAction);
 		DeleteDiagramAction deleteAction = new DeleteDiagramAction(this);
 		DebugDiagramAction debugAction = new DebugDiagramAction();
-		ResetDiagramAction resetAction = new ResetDiagramAction(this.getProjectResource());
+		ResetDiagramAction resetAction = new ResetDiagramAction(resourceId);
 		RevertDiagramAction revertAction = new RevertDiagramAction(this.getProjectResource());
 		resetAction.setEnabled(!modified);
 		revertAction.setEnabled(modified);
@@ -480,11 +480,13 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements Noti
     }
     private class DeleteDiagramAction extends BaseAction {
     	private static final long serialVersionUID = 1L;
+    	private final ProjectResourceId resid;
     	private String noun;
     	private final DiagramTreeNode node;
     	
 	    public DeleteDiagramAction(DiagramTreeNode tnode)  {
-	    	super(PREFIX+".DeleteDiagram",IconUtil.getIcon("delete")); 
+	    	super(PREFIX+".DeleteDiagram",IconUtil.getIcon("delete")); 	
+	    	this.resid = tnode.getResourceId();
 	    	this.node = tnode;
 	    	this.noun = PREFIX+".DiagramNoun";
 	    }
@@ -494,21 +496,21 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements Noti
 	    	node.closeAndCommit();
 	    	ResourceDeleteAction deleter = new ResourceDeleteAction(context,nodes,noun);
 	    	deleter.execute();
+	    	statusManager.addResourceToDelete(resid);
 	    }
 	}
 	
 	private class ResetDiagramAction extends BaseAction {
     	private static final long serialVersionUID = 1L;
-    	private final ProjectResource res;
+    	private final ProjectResourceId resid;
     	
-	    public ResetDiagramAction(Optional<ProjectResource> pr)  {
+	    public ResetDiagramAction(ProjectResourceId id)  {
 	    	super(PREFIX+".ResetDiagram",IconUtil.getIcon("check2")); 
-	    	this.res = pr.get();
+	    	this.resid = id;
 	    }
 	    
 	    // Does not cause diagram to "become dirty" as these are runtime changes only
 		public void actionPerformed(ActionEvent e) {
-			ProjectResourceId resid = res.getResourceId();
 			requestHandler.resetDiagram(resid);
 		}
 	}
