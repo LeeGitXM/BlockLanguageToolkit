@@ -150,7 +150,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements Noti
 		menu.add(exportAction);
 		DeleteDiagramAction deleteAction = new DeleteDiagramAction(this);
 		DebugDiagramAction debugAction = new DebugDiagramAction();
-		ResetDiagramAction resetAction = new ResetDiagramAction();
+		ResetDiagramAction resetAction = new ResetDiagramAction(this.getProjectResource());
 		RevertDiagramAction revertAction = new RevertDiagramAction(this.getProjectResource());
 		resetAction.setEnabled(!modified);
 		revertAction.setEnabled(modified);
@@ -499,12 +499,17 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements Noti
 	
 	private class ResetDiagramAction extends BaseAction {
     	private static final long serialVersionUID = 1L;
-	    public ResetDiagramAction()  {
+    	private final ProjectResource res;
+    	
+	    public ResetDiagramAction(Optional<ProjectResource> pr)  {
 	    	super(PREFIX+".ResetDiagram",IconUtil.getIcon("check2")); 
+	    	this.res = pr.get();
 	    }
 	    
-	    // TODO: Implement.
+	    // Does not cause diagram to "become dirty" as these are runtime changes only
 		public void actionPerformed(ActionEvent e) {
+			ProjectResourceId resid = res.getResourceId();
+			requestHandler.resetDiagram(resid);
 		}
 	}
 	
