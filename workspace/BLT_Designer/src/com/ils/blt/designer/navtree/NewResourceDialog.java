@@ -49,11 +49,12 @@ public class NewResourceDialog extends JDialog {
 	private final Consumer<ProjectResourceBuilder> builderConsumer;
 	private final Consumer<ProjectResourceId> onAfterCreated;
 
-	public NewResourceDialog(final DesignerContext context,final ResourcePath folder, Consumer<ProjectResourceBuilder> builderConsumer, String title, String defaultName, String actionText, final Predicate<String> namePredicate, Consumer<ProjectResourceId> onAfterCreated, JComponent extraComponent) {
-		super(context.getFrame(), title);
+	public NewResourceDialog(final DesignerContext ctx,final ResourcePath folder, Consumer<ProjectResourceBuilder> builderConsumer, String title, String defaultName, String actionText, 
+			final Predicate<String> namePredicate, Consumer<ProjectResourceId> onAfterCreated, JComponent extraComponent) {
+		super(ctx.getFrame(), title);
 		setDefaultCloseOperation(2);
 
-		this.context = context;
+		this.context = ctx;
 		this.folder = folder;
 		this.builderConsumer = builderConsumer;
 		this.onAfterCreated = onAfterCreated;
@@ -118,6 +119,16 @@ public class NewResourceDialog extends JDialog {
 		this.createAction.setEnabled(this.name.isDataValid()); 
 	}
 	
+	public void open() {
+		pack();
+		CommonUI.centerComponent(this, this.context.getFrame());
+		setVisible(true);
+	}
+
+	public void close() {
+		setVisible(false);
+		dispose();
+	}
 	
 	/**
 	 * This is the action tied to the OK button on the dialog
@@ -155,16 +166,7 @@ public class NewResourceDialog extends JDialog {
 		}
 	}
 
-	public void open() {
-		pack();
-		CommonUI.centerComponent(this, this.context.getFrame());
-		setVisible(true);
-	}
 
-	public void close() {
-		setVisible(false);
-		dispose();
-	}
 
 
 	public static NewResourceDialogBuilder newBuilder() { return new NewResourceDialogBuilder(); }
@@ -172,7 +174,7 @@ public class NewResourceDialog extends JDialog {
 	public static class NewResourceDialogBuilder
 	{
 		private DesignerContext context;
-		private ResourcePath folder;
+		private ResourcePath parentPath;
 		private Consumer<ProjectResourceBuilder> builderConsumer;
 		private String title = "New Resource";
 		private String actionText = "Create Resource";
@@ -191,8 +193,8 @@ public class NewResourceDialog extends JDialog {
 			return this;
 		}
 
-		public NewResourceDialogBuilder setFolder(ResourcePath folder) {
-			this.folder = folder;
+		public NewResourceDialogBuilder setParent(ResourcePath path) {
+			this.parentPath = path;
 			return this;
 		}
 
@@ -240,10 +242,10 @@ public class NewResourceDialog extends JDialog {
 
 		public void buildAndDisplay() {
 			Preconditions.checkNotNull(this.context);
-			Preconditions.checkNotNull(this.folder);
+			Preconditions.checkNotNull(this.parentPath);
 			Preconditions.checkNotNull(this.builderConsumer);
 
-			NewResourceDialog dialog = new NewResourceDialog(this.context, this.folder, this.builderConsumer, this.title, this.defaultName, this.actionText, this.namePredicate, this.onAfterCreated, this.extraComponent);
+			NewResourceDialog dialog = new NewResourceDialog(this.context, this.parentPath, this.builderConsumer, this.title, this.defaultName, this.actionText, this.namePredicate, this.onAfterCreated, this.extraComponent);
 
 			dialog.open();
 		}

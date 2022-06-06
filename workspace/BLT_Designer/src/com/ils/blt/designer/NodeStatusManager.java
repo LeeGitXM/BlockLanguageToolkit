@@ -292,15 +292,6 @@ public class NodeStatusManager   {
 		log.infof("%s.isModified: %s (%s)",CLSS,resourceId.getFolderPath(),(modified?"modified":"clean"));
 		return modified;
 	}
-	/**
-	 * Update the node text for the specified resourceId
-	 */
-	public void updateUI(ProjectResourceId resourceId) {
-		StatusEntry se = statusByPath.get(resourceId.getFolderPath());
-		if( se!=null  ) {
-			se.node.onSelected();
-		}
-	}
 
 	/**
 	 * Hold status information for a node in the nav tree.

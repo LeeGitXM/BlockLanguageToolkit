@@ -1332,7 +1332,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		if( container!=null ) {
 			ProcessDiagramView view = (ProcessDiagramView)(container.getModel());			
 			container.setBackground(view.getBackgroundColorForState());
-			statusManager.updateUI(view.getResourceId());
+			statusManager.getNode(view.getResourceId()).select();
 			SwingUtilities.invokeLater(new WorkspaceRepainter());
 		}
 	}

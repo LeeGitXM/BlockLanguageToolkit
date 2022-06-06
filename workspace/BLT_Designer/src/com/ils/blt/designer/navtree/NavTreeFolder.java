@@ -17,10 +17,8 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -50,7 +48,6 @@ import com.ils.blt.common.serializable.SerializableNodeRenameHandler;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.NodeStatusManager;
-import com.ils.blt.designer.ResourceImportManager;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
@@ -96,8 +93,7 @@ public class NavTreeFolder extends FolderNode implements ProjectResourceListener
 	private final static LoggerEx log = LogUtil.getLogger(NavTreeFolder.class.getPackageName());
 	protected final DesignerContext context;
 	private DiagramState state = DiagramState.ACTIVE;  // Used for Applications and Families
-	private final CopyAction copyBranchAction;
-	private final PasteAction pasteBranchAction;
+	private final PasteAction pasteAction;
 	private final StartAction startAction = new StartAction();
 	private final StopAction stopAction = new StopAction();
 	private final DiagramWorkspace workspace;
@@ -134,8 +130,7 @@ public class NavTreeFolder extends FolderNode implements ProjectResourceListener
 		else {
 			setName(resource.getResourceName());      // Also sets text for tree
 		}
-		copyBranchAction = new CopyAction(this);
-		pasteBranchAction = new PasteAction(this);
+		pasteAction = new PasteAction(this);
 		folderCreateAction = new CreateFolderAction(this);
 		
 		workspace = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getWorkspace();
@@ -386,26 +381,19 @@ public class NavTreeFolder extends FolderNode implements ProjectResourceListener
 
 			CreateDiagramAction diagramAction = new CreateDiagramAction(this);
 			menu.add(diagramAction);
-			ImportDiagramAction importAction = new ImportDiagramAction(menu.getRootPane(),this);
+			ImportDiagramAction importAction = new ImportDiagramAction(context,this);
 			menu.add(importAction);
 			
 			menu.add(folderCreateAction);
 			menu.addSeparator();
 
-			if( true /*something is selected*/ ) {
-				copyBranchAction.setEnabled(true);
-			} 
-			else {
-				copyBranchAction.setEnabled(false);
-			}
 			if( true /*something is in the clipboard*/ ) {
-				pasteBranchAction.setEnabled(true);
+				pasteAction.setEnabled(true);
 			} 
 			else {
-				pasteBranchAction.setEnabled(false);
+				pasteAction.setEnabled(false);
 			}
-			menu.add(copyBranchAction);
-			menu.add(pasteBranchAction);	
+			menu.add(pasteAction);	
 		}
 		else { 
 			log.warnf("%s.initPopupMenu: ERROR: node %s(%s) has no project resource",CLSS,this.getName(),resourceId.getFolderPath());
@@ -644,7 +632,7 @@ public class NavTreeFolder extends FolderNode implements ProjectResourceListener
 				}
 			}
 
-			new ResourceImportManager(getResourcePath().getFolderPath(),resid.getResourcePath().getName(),json.getBytes()).run();
+			//new DiagramImportManager(getResourcePath().getFolderPath(),resid.getResourcePath().getName(),json.getBytes()).run();
 			if (!copyChildren(child)) {
 				return false;
 			}
@@ -925,13 +913,11 @@ public class NavTreeFolder extends FolderNode implements ProjectResourceListener
 		public CreateDiagramAction(NavTreeFolder currentNode)  {
 			super(PREFIX+".NewDiagram",diagramIcon);  // preferences
 			this.parentNode = currentNode;
-			if( newName==null) newName = "New Diagram";  // Missing string resource
 		}
 
 		public void actionPerformed(ActionEvent e) {
 			Objects.requireNonNull(parentNode);
 			try {
-				ProjectResourceId resid = requestHandler.createResourceId(parentNode.getResourceId().getProjectName(), parentNode.getResourcePath().getParentPath()+"/"+newName, BLTProperties.DIAGRAM_RESOURCE_TYPE);
 				SerializableDiagram sd = new SerializableDiagram();
 				sd.setName(newName);
 				sd.setPath(parentNode.getResourcePath().getFolderPath()+"/"+newName);
@@ -943,11 +929,11 @@ public class NavTreeFolder extends FolderNode implements ProjectResourceListener
 
 				NewResourceDialog.NewResourceDialogBuilder builder = NewResourceDialog.newBuilder();
 				builder.setContext(context);
-				builder.setNoun("Diagram");
+				builder.setNoun(BundleUtil.get().getString(PREFIX+".DiagramNoun"));
 				builder.setDefaultName(newName);
-				builder.setFolder(parentNode.getResourcePath());
+				builder.setParent(parentNode.getResourcePath());
 				builder.setResourceBuilder(b->b.setFolder(false).setApplicationScope(ApplicationScope.DESIGNER).putData(bytes));
-				builder.setTitle("New Dialog");
+				builder.setTitle(BundleUtil.get().getString(PREFIX+".NewDiagram.Title"));
 				builder.buildAndDisplay();
 			} 
 			catch (Exception err) {
@@ -955,18 +941,15 @@ public class NavTreeFolder extends FolderNode implements ProjectResourceListener
 			}
 		}
 	}
-
 	
 	// Create a folder child of the current node
 	private class CreateFolderAction extends BaseAction {
 		private static final long serialVersionUID = -1820363032385963659L;
-		private String newName = BundleUtil.get().getString(PREFIX+".NewFolder.Default.Name");
 		protected NavTreeFolder parentNode;
 		
 		public CreateFolderAction(NavTreeFolder currentNode)  {
 			super(PREFIX+".NewFolder",defaultIcon);  // preferences
 			this.parentNode = currentNode;
-			if( newName==null) newName = "New Folder";  // Missing string resource
 		}
 		@Override
 		public void actionPerformed(ActionEvent e) {
@@ -974,95 +957,37 @@ public class NavTreeFolder extends FolderNode implements ProjectResourceListener
 			Objects.requireNonNull(parentNode);
 			NewResourceDialog.NewResourceDialogBuilder builder = NewResourceDialog.newBuilder();
 			builder.setContext(context);
-			builder.setNoun("Folder");
-			builder.setDefaultName(newName);
-			builder.setFolder(parentNode.getResourcePath());
+			builder.setNoun(BundleUtil.get().getString(PREFIX+".FolderNoun"));
+			builder.setDefaultName(BundleUtil.get().getString(PREFIX+".NewFolder.Default.Name"));
+			builder.setParent(parentNode.getResourcePath());
 			builder.setResourceBuilder(b->b.setFolder(true).setApplicationScope(ApplicationScope.DESIGNER));  // No data
-			builder.setTitle("New Folder");
+			builder.setTitle(BundleUtil.get().getString(PREFIX+".NewFolder.Title"));
 			builder.buildAndDisplay();
 		}
 	}
 
 	private class ImportDiagramAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
+		private final DesignerContext context;
 		private final AbstractResourceNavTreeNode parentNode;
-		private final Component anchor;
-		private final static String POPUP_TITLE = "Import Diagram";
 		
-		public ImportDiagramAction(Component c,AbstractResourceNavTreeNode pNode)  {
+		public ImportDiagramAction(DesignerContext ctx,AbstractResourceNavTreeNode pNode)  {
 			super(PREFIX+".ImportDiagram",IconUtil.getIcon("import1"));  // preferences
+			this.context = ctx;
 			this.parentNode = pNode;
-			this.anchor = c;
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			try {
-				EventQueue.invokeLater(new Runnable() {
-					public void run() {
-						try {
-							String title = BundleUtil.get().getString(PREFIX+".Import.Diagram.DialogTitle");
-							String nameLabel = BundleUtil.get().getString(PREFIX+".Import.Diagram.NameLabel");
-							ImportDialog dialog = new ImportDialog(context.getFrame(),nameLabel,title,parentNode);
-							dialog.setLocationRelativeTo(anchor);
-							Point p = dialog.getLocation();
-	    					dialog.setLocation((int)(p.getX()-OFFSET),(int)(p.getY()-OFFSET));
-							dialog.pack();
-							dialog.setVisible(true);   // Returns when dialog is closed
-							File input = dialog.getFilePath();
-
-							if( input!=null ) {
-								if( input.exists() && input.canRead()) {
-									try {
-										// Note: Requires Java 1.7
-										byte[] bytes = Files.readAllBytes(input.toPath());
-										// It would be nice to simply convert to a resource.
-										// Unfortunately we have to replace all UUIDs with new ones
-										ObjectMapper mapper = new ObjectMapper();
-										mapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL,true);
-										SerializableDiagram sd = mapper.readValue(new String(bytes), SerializableDiagram.class);
-										if( sd!=null ) {
-											log.infof("%s:ImportDiagramAction imported diagram:\n%s", CLSS,sd.getName());
-											renameHandler.convertPaths(sd,getResourcePath().getFolderPath());
-											sd.setState(DiagramState.DISABLED);
-											String json = mapper.writeValueAsString(sd);
-
-											log.debugf("%s:ImportDiagramAction saved resource as:\n%s", CLSS,json);
-											ProjectResourceId resid = requestHandler.createResourceId(getResourceId().getProjectName(), getResourceId().getFolderPath(), BLTProperties.DIAGRAM_RESOURCE_TYPE);
-											new ResourceImportManager(getResourcePath().getFolderPath(),sd.getName(),sd.serialize()).run();	
-											parentNode.selectChild(new ResourcePath[] {getResourcePath()} );
-											statusManager.setPendingView(resid, new ProcessDiagramView(context,resid,sd));
-										}
-										else {
-											ErrorUtil.showWarning(String.format("Failed to deserialize file (%s)",input.getAbsolutePath()),POPUP_TITLE);
-										}
-									}
-									catch( FileNotFoundException fnfe) {
-										// Should never happen, we just picked this off a chooser
-										ErrorUtil.showWarning(String.format("File %s not found",input.getAbsolutePath()),POPUP_TITLE); 
-									}
-									catch( IOException ioe) {
-										ErrorUtil.showWarning(String.format("IOException (%s)",ioe.getLocalizedMessage()),POPUP_TITLE); 
-									}
-									catch(Exception ex) {
-										ErrorUtil.showError(String.format("Deserialization exception (%s)",ex.getMessage()),POPUP_TITLE,ex,true);
-									}
-
-								}
-								else {
-									ErrorUtil.showWarning(String.format("Selected file does not exist or is not readable: %s",input.getAbsolutePath()),POPUP_TITLE);
-								}
-							}  // Cancel
-						} 
-						catch (Exception ex) {
-							ErrorUtil.showError(String.format("Unhandled Exception (%s)",ex.getMessage()),POPUP_TITLE,ex,true);
-						}
-						// No need to inform of success, we'll see the new diagram
-					}
-				});
-			} 
-			catch (Exception err) {
-				ErrorUtil.showError(CLSS+" Exception importing diagram",err);
-			}
+			Objects.requireNonNull(parentNode);
+			ImportDialog.ImportDialogBuilder builder = ImportDialog.newBuilder();
+			builder.setContext(context);
+			builder.setNoun(BundleUtil.get().getString(PREFIX+".DiagramNoun"));
+			builder.setDefaultName(BundleUtil.get().getString(PREFIX+".ImportDiagram.Default.Name"));
+			builder.setParent(parentNode.getResourcePath());
+			builder.setParent(NavTreeFolder.this);
+			builder.setResourceBuilder(b->b.setFolder(false).setApplicationScope(ApplicationScope.DESIGNER));  // No data
+			builder.setTitle(PREFIX+".ImportDiagram.Title");
+			builder.buildAndDisplay();
 		}
 	}
 	
