@@ -20,7 +20,7 @@
 		<jar scope="D">blt-designer.jar</jar>
 		<jar scope="CD">blt-common.jar</jar>
 		<jar scope="CD">prefuse-1.0.1.jar</jar>
-		
+	
 		<jar scope="D">jackson-core-2.2.3.jar</jar>
 		<jar scope="D">jackson-databind-2.2.3.jar</jar>
 		<jar scope="D">jackson-annotations-2.2.3.jar</jar>

@@ -1,5 +1,5 @@
 <project name="BLTModuleBuilder" basedir="../" default="BuildAndInstallModule">
-
+	<!-- "basedir" is the workspace directory in the git repository -->
 	<import file="${basedir}/BLT_Build/build.xml"/>
 
 	<property name="version.major" value="3" />	
@@ -12,11 +12,12 @@
 	<property name="BLTModule.name" value="BLT" />
 	<property name="BLTModule.release" value="0.5" />
 	<property name="BLTModule.description" value="Block Language Toolkit" />
+	<!-- "root.dir" is the parent of a collection of git repositories -->
 	<property name="root.dir" value="${basedir}/../.." />
 	<property name="external.lib.dir" value="${root.dir}/external/lib" />
 	<property name="sdk.dir" value="${root.dir}/ignition-80/lib" />
 	<property name="common.jar.name" value="ils-common.jar" />
-	<property name="common.bin.dir" value="${root.dir}/ils-common/ILS_Common/bin" />
+	<property name="common.lib.dir" value="${root.dir}/ils-common/lib" />
 	<property name="common.src.dir" value="${root.dir}/ils-common/ILS_Common/src" />
 	<property name="block.jar.name" value="block-definition.jar" />
 	<property name="block.bin.dir" value="${root.dir}/blt/workspace/Block/bin" />
@@ -34,10 +35,6 @@
 		<fileset dir="${external.lib.dir}">
 	    	<include name="*.jar"/>
 		</fileset>
-		<fileset dir="${sdk.dir}">
-			 <include name="*.jar"/>
-		</fileset>
-	   <pathelement path="${build.dir}"/>
 	</path>
 	
 	<!-- Common jar classpath -->
@@ -108,10 +105,10 @@
 	
 	<!-- Clean ILS common -->
 	<target name="clean.ils.common" >
-		<mkdir dir="${common.bin.dir}"/>
+		<mkdir dir="${common.lib.dir}"/>
 		<delete file="${external.lib.dir}/${common.jar.name}" />
 		<delete>
-		    <fileset dir="${common.bin.dir}">
+		    <fileset dir="${common.lib.dir}">
 		        <include name="**/*.class"/>
 		    	<include name="**/*.png"/>
 		    </fileset>
@@ -120,19 +117,19 @@
 	
 	<!-- Compile the Common library -->
 	<target name="build.common" description="Compile the source">
-		<!-- <echo  message="Using Java version ${ant.java.version}."/> -->
-		<mkdir dir="${common.bin.dir}/images"/>
-		<javac destdir="${common.bin.dir}" debug="true" includeantruntime="false">
+		<echo  message="Using Java version ${ant.java.version} - destination: ${common.lib.dir} ${ignition.py.lib}"/>
+		<mkdir dir="${common.lib.dir}/images"/>
+		<javac destdir="${common.lib.dir}" debug="true" includeantruntime="false">
 			<src path="${common.src.dir}"/>
 			<classpath refid="BLT_Common.classpath"/>
 		</javac>
-		<copy todir="${common.bin.dir}/images" >
+		<copy todir="${common.lib.dir}/images" >
 			<fileset dir="${common.src.dir}/images"/>
 		</copy>
 	</target>
 	<target name ="common.jar" description="Create a jar for the ILS Common library">
 		<mkdir dir="${basedir}/BLT_Build/temp_modl"/>
-	    <jar destfile="${basedir}/BLT_Build/temp_modl/${common.jar.name}" includes="**/*.class,**/*.png" basedir="${common.bin.dir}"/>
+	    <jar destfile="${basedir}/BLT_Build/temp_modl/${common.jar.name}" includes="**/*.class,**/*.png" basedir="${common.lib.dir}"/>
 	</target>
 	
 	<!-- Compile the Block Definition library -->
