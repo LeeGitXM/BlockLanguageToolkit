@@ -2,10 +2,12 @@ package com.ils.blt.designer.workspace;
 
 import java.awt.Point;
 import java.io.IOException;
+import java.util.List;
 
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 
+import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockConstants;
@@ -19,6 +21,7 @@ import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.NotificationHandler;
 import com.inductiveautomation.ignition.client.tags.model.ClientTagManager;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 import com.inductiveautomation.ignition.common.tags.model.TagPath;
 import com.inductiveautomation.ignition.common.tags.model.event.TagChangeEvent;
 import com.inductiveautomation.ignition.common.tags.model.event.TagChangeListener;
@@ -48,10 +51,11 @@ public class BlockAttributeView extends ProcessBlockView implements BlockListene
 	 *              We do not have enough information to become a listener.
 	 *              Become a listener once the block and property are defined.
 	 */
-	public BlockAttributeView(BlockDescriptor descriptor) {
+	public BlockAttributeView(BlockDescriptor descriptor,String referenceBlockId) {
 		super(descriptor);
 		this.fncs = new UtilityFunctions();
-		setup();  // Create properties.
+		setup();  // Create property map.
+		setBlockId(referenceBlockId);
 		initialize();
 	}
 	/**
@@ -70,7 +74,14 @@ public class BlockAttributeView extends ProcessBlockView implements BlockListene
 		else {
 			propertyType = PropertyType.OBJECT;  // Unknown
 		}
-		
+	}
+	/**
+	 * For the attribute view, the properties come second hand from the reference block,
+	 * not the gateway.
+	 */
+	@Override
+	public void initProperties(ProjectResourceId parent) {
+		initialize();
 	}
 	/**
 	 * Add properties that are required for this class.
@@ -79,8 +90,8 @@ public class BlockAttributeView extends ProcessBlockView implements BlockListene
 	private void setup() {
 		createPseudoRandomName();  // Sets name without triggering listeners
 		// These properties define which block and property to display
-		BlockProperty blockId = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_BLOCK_ID,"", PropertyType.STRING, false);
-		setProperty(blockId);
+		BlockProperty bid = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_BLOCK_ID,"", PropertyType.STRING, false);
+		setProperty(bid);
 		BlockProperty propName = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_PROPERTY,"Name", PropertyType.STRING, false);
 		setProperty(propName);
 		BlockProperty value = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_VALUE,"", PropertyType.STRING, false);
@@ -107,21 +118,27 @@ public class BlockAttributeView extends ProcessBlockView implements BlockListene
 	
 	/**
 	 *  Initialize property listeners. These are steps necessary with either constructor.
+	 *  NOTE: The id string of the reference block must be set before this method is called.
 	 */
 	private void initialize() {
-		BlockProperty h = getProperty(BlockConstants.ATTRIBUTE_PROPERTY_HEIGHT);
-		String key = NotificationKey.keyForProperty(getBlockId(), h.getName());
-		notificationHandler.addNotificationChangeListener(key,CLSS,this);
-		setPreferredHeight(fncs.coerceToInteger(h.getValue().toString()));
-		BlockProperty w = getProperty(BlockConstants.ATTRIBUTE_PROPERTY_WIDTH);
-		key = NotificationKey.keyForProperty(getBlockId(), w.getName());
-		notificationHandler.addNotificationChangeListener(key,CLSS,this);;
-		setPreferredWidth(fncs.coerceToInteger(w.getValue().toString()));
+		String referenceBlockId = getBlockId();
+		if( referenceBlockId!=null && !referenceBlockId.isEmpty()) {
+			BlockProperty h = getProperty(BlockConstants.ATTRIBUTE_PROPERTY_HEIGHT);
+			String key = NotificationKey.keyForProperty(referenceBlockId, h.getName());
+			notificationHandler.addNotificationChangeListener(key,CLSS,this);
+			setPreferredHeight(fncs.coerceToInteger(h.getValue().toString()));
+			BlockProperty w = getProperty(BlockConstants.ATTRIBUTE_PROPERTY_WIDTH);
+			key = NotificationKey.keyForProperty(referenceBlockId, w.getName());
+			notificationHandler.addNotificationChangeListener(key,CLSS,this);
+			setPreferredWidth(fncs.coerceToInteger(w.getValue().toString()));
+		}
 	}
-	public String getBlockId() { return getProperty(BlockConstants.ATTRIBUTE_PROPERTY_BLOCK_ID).getValue().toString(); }
+ 	public String getBlockId() { 
+ 		return getProperty(BlockConstants.ATTRIBUTE_PROPERTY_BLOCK_ID).getValue().toString(); 
+ 	}
 	public void setBlockId(String id) { 
-		BlockProperty blockId = getProperty(BlockConstants.ATTRIBUTE_PROPERTY_BLOCK_ID);
-		blockId.setValue(id);
+		BlockProperty bid = getProperty(BlockConstants.ATTRIBUTE_PROPERTY_BLOCK_ID);
+		bid.setValue(id);
 	}
 	// For these properties, do not worry about case insensitivity.
 	// Fetching directory from the map is more efficient.

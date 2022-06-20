@@ -3,8 +3,11 @@
  */
 package com.ils.blt.designer;
 
+import java.awt.Color;
 import java.io.IOException;
 import java.util.Map;
+
+import javax.swing.SwingUtilities;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -19,6 +22,7 @@ import com.ils.blt.common.script.ScriptNotificationManager;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
+import com.ils.blt.designer.workspace.WorkspaceRepainter;
 import com.inductiveautomation.ignition.common.StringPath;
 import com.inductiveautomation.ignition.common.model.ApplicationScope;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
@@ -95,14 +99,13 @@ public class ResourceSaveManager {
 				ResourcePath respath = resid.getResourcePath();
 				StringPath stringPath = respath.getPath();
 				String name = stringPath.getLastPathComponent();
-				BlockDesignableContainer tab = null;
 				
 				ProjectResourceBuilder builder = res.toBuilder();
 				builder.clearData();
 				builder.setApplicationScope(ApplicationScope.GATEWAY);
 				// If there has been a re-name, update the project resource now
 				String pendingName = statusManager.getPendingName(resid);
-				if(pendingName!=null) {
+				if(pendingName!=null && !res.getResourceName().equals(pendingName)) {
 					try {
 						project.renameResource(resid, pendingName);
 						Script script = notifier.createScript(ScriptConstants.RENAME_NOTIFICATION);
@@ -143,6 +146,13 @@ public class ResourceSaveManager {
 					DiagramState state = statusManager.getPendingState(resid);
 					if( state!=null) view.setState(state);
 					else view.setState(requestHandler.getDiagramState(resid));
+					// If the diagram is open, update its appearance.
+					statusManager.clearChangeMarkers(resid);
+					BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resid.getResourcePath());
+					if(tab!=null) {
+						tab.setBackground(view.getBackgroundColorForState());
+						SwingUtilities.invokeLater(new WorkspaceRepainter());
+					}
 
 					if( pendingName!=null && !pendingName.equalsIgnoreCase(name)) {
 						stringPath = StringPath.extend(stringPath.getParentPath(),pendingName);
@@ -157,13 +167,13 @@ public class ResourceSaveManager {
 					notifier.runScript(context.getScriptManager(), script, resid.getFolderPath(),new String(sd.serialize()));
 				}
 				requestHandler.triggerStatusNotifications(context.getProjectName());
+				
 			}
 			// Send notifications of any deleted diagrams
 			for(ProjectResourceId id:statusManager.getDeletedResources()) {
 				Script script = notifier.createScript(ScriptConstants.DELETE_NOTIFICATION);
 				notifier.runScript(context.getScriptManager(), script, id.getFolderPath());
 			}
-			statusManager.clearChangeMarkers(resid);
 		}
 	}
 }

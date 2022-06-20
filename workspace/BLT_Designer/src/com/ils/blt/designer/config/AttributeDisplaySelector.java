@@ -140,8 +140,7 @@ public class AttributeDisplaySelector extends JDialog implements TableModelListe
 				// CASE I - checked box, display does not exist. Create it.
 				// Add to diagram. Reposition after all the displays have been created.
 				if ( newValue && (bav==null) ) {
-					bav = new BlockAttributeView(new AttributeDisplayDescriptor());
-					bav.setBlockId(block.getId().toString());
+					bav = new BlockAttributeView(new AttributeDisplayDescriptor(),block.getId().toString());
 					bav.setReferenceBlock(block);
 					bav.setPropertyName(propName);
 					if(propName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_NAME)) {

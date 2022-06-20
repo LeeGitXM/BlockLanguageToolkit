@@ -945,8 +945,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	 * @param block
 	 */
 	private void addNameDisplay(ProcessBlockView block,int x,int y) {
-		BlockAttributeView bav = new BlockAttributeView(new AttributeDisplayDescriptor());
-		bav.setBlockId(block.getId().toString());
+		BlockAttributeView bav = new BlockAttributeView(new AttributeDisplayDescriptor(),block.getId().toString());
 		bav.setReferenceBlock(block);
 		bav.setPropertyName(BlockConstants.BLOCK_PROPERTY_NAME);
 		bav.setValue(block.getName());
@@ -1259,8 +1258,10 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 					sd.setName(resourceId.getResourcePath().getName());
 					sd.setName(statusManager.getPendingName(res.getResourceId()));   // If null will not override
 					sd.setState(statusManager.getPendingState(res.getResourceId()));
-					for(SerializableBlock sb:sd.getBlocks()) {
-						if( DEBUG ) log.infof("%s: %s block, name = %s",CLSS,sb.getClassName(),sb.getName());
+					if( DEBUG ) {
+						for(SerializableBlock sb:sd.getBlocks()) {
+							log.infof("%s: %s block, name = %s",CLSS,sb.getClassName(),sb.getName());
+						}
 					}
 				} 
 				catch (JsonParseException jpe) {
