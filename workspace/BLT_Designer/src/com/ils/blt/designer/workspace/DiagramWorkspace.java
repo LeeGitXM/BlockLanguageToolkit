@@ -1276,7 +1276,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				// We are looking at the live version running in the gateway, obtain any updates
 				for( Block blk:diagram.getBlocks()) {
 					ProcessBlockView pbv = (ProcessBlockView)blk;
-					diagram.initBlockProperties(pbv);
+					pbv.initProperties(res.getResourceId());
 				}
 				diagram.registerChangeListeners();
 				requestHandler.triggerStatusNotifications(diagram.getResourceId().getProjectName());

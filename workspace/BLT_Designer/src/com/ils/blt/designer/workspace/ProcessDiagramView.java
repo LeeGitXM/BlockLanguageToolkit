@@ -172,30 +172,11 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		this.appRequestHandler = new ApplicationRequestHandler();
 		this.statusManager = NodeStatusManager.getInstance();
 	}
-	
-	/** 
-	 * Get the current block property values from the Gateway. 
-	 * If the block does not have a Gateway counterpart (e.g. diagram is dirty), we'll get the 
-	 * default property list for the block class. 
-	 * 
-	 * IMPORTANT: Always do this before block is displayed.
-	 */
-	public void initBlockProperties(ProcessBlockView block) {
-		if( appRequestHandler!=null ) {
-			List<BlockProperty> properties = appRequestHandler.getBlockProperties(block.getClassName(),
-					resourceId,block.getId());
-			for(BlockProperty bp:properties) {
-				block.setProperty(bp);
-			}
-			log.tracef("%s.initBlockProperties - initialize property list for %s (%d properties)",CLSS,block.getId().toString(),properties.size());
-		}
-	}
 
 	/**
-	 * At the time that we add a new block, make sure that the block has a unique name.
+	 * At the time that we add a new block,update its properties from the Gateway.
 	 * If it has no properties (e.g. was created from palette), then attempt to get 
-	 * properties from its gateway counterpart. A newly imported block should already
-	 * have properties.
+	 * properties from its gateway counterpart.
 	 * 
 	 * @param blk block to be added
 	 */
@@ -203,7 +184,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	public void addBlock(Block blk) {
 		if( blk instanceof ProcessBlockView) {
 			ProcessBlockView block = (ProcessBlockView) blk;
-			if( ((ProcessBlockView) blk).getProperties().isEmpty() ) initBlockProperties(block);
+			block.initProperties(resourceId);
 			log.tracef("%s.addBlock - %s",CLSS,block.getClassName());
 			blockMap.put(blk.getId(), block);
 			block.addBlockListener(this);

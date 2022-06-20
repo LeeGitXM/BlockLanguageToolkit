@@ -15,6 +15,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
 
+import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BlockConstants;
@@ -32,6 +33,7 @@ import com.ils.blt.designer.workspace.ui.AbstractBlockUIView;
 import com.ils.blt.designer.workspace.ui.UIFactory;
 import com.ils.common.GeneralPurposeDataContainer;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -376,6 +378,23 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 	public BlockStyle getStyle() { return style; }
 	public String getBadgeChar() { return badgeChar; }
 	public UUID getSubworkspaceId() {return subworkspaceId;}
+	
+	/** 
+	 * Get the current block property values from the Gateway. 
+	 * If the block does not have a Gateway counterpart (e.g. diagram is dirty), we'll get the 
+	 * default property list for the block class. 
+	 * 
+	 * IMPORTANT: Always do this before block is displayed.
+	 * @param parent resource id of the parent diagram
+	 */
+	public void initProperties(ProjectResourceId parent) {
+		ApplicationRequestHandler requestHandler = new ApplicationRequestHandler();
+		List<BlockProperty> properties = requestHandler.getBlockProperties(getClassName(),parent,getId());
+			for(BlockProperty bp:properties) {
+				setProperty(bp);
+			}
+			log.tracef("%s.initProperties - initialize property list for %s (%d properties)",CLSS,getId().toString(),properties.size());
+	}
 	
 	// This is called in the block-and-connector framework
 	// for each block as the diagram is opened.
