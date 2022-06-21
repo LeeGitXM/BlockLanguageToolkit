@@ -150,6 +150,7 @@ public class ResourceSaveManager {
 					statusManager.clearChangeMarkers(resid);
 					BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resid.getResourcePath());
 					if(tab!=null) {
+						view.registerChangeListeners();
 						tab.setBackground(view.getBackgroundColorForState());
 						SwingUtilities.invokeLater(new WorkspaceRepainter());
 					}
