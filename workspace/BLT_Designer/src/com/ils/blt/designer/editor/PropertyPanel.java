@@ -4,7 +4,6 @@
 package com.ils.blt.designer.editor;
 
 import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
 import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DropTarget;
 import java.awt.dnd.DropTargetDropEvent;
@@ -89,7 +88,7 @@ import net.miginfocom.swing.MigLayout;
  */
 public class PropertyPanel extends JPanel implements ChangeListener, FocusListener, NotificationChangeListener,TagChangeListener {
 	private static final long serialVersionUID = 2264535784255009984L;
-	private static final boolean DEBUG = true;
+	private static final boolean DEBUG = false;
 	private static SimpleDateFormat dateFormatter = new SimpleDateFormat(BlockConstants.TIMESTAMP_FORMAT);
 	private final NotificationHandler notificationHandler = NotificationHandler.getInstance();
 	private static UtilityFunctions fncs = new UtilityFunctions();

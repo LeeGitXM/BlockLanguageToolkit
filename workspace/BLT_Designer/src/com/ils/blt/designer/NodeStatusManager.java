@@ -44,7 +44,7 @@ import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceN
  */
 public class NodeStatusManager   {
 	private static String CLSS = "NodeStatusManager";
-	private static final boolean DEBUG = true;
+	private static final boolean DEBUG = false;
 	private static NodeStatusManager instance = null;
 	private final LoggerEx log;
 	private final ApplicationRequestHandler handler;

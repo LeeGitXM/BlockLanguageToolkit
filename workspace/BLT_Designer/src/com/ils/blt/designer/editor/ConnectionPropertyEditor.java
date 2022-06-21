@@ -15,9 +15,14 @@ import javax.swing.JSeparator;
 import javax.swing.JTextField;
 
 import com.ils.blt.common.connection.ConnectionType;
+import com.ils.blt.common.notification.NotificationChangeListener;
+import com.ils.blt.common.notification.NotificationKey;
+import com.ils.blt.designer.NotificationHandler;
 import com.ils.blt.designer.workspace.BasicAnchorPoint;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Connection;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
@@ -30,7 +35,10 @@ import net.miginfocom.swing.MigLayout;
 
 public class ConnectionPropertyEditor extends AbstractPropertyEditor {
 	private static final long serialVersionUID = 8971626415423709616L;
+	private final static String CLSS = "ConnectionPropertyEditor";
+	private final NotificationHandler notificationHandler = NotificationHandler.getInstance();
 	private Connection cxn;
+	private final LoggerEx log = LogUtil.getLogger(getClass().getPackageName());
 	private static final List<String> coreAttributeNames;
 	
 	// These are the attributes handled in the CorePropertyPanel
@@ -60,17 +68,19 @@ public class ConnectionPropertyEditor extends AbstractPropertyEditor {
 		setLayout(new MigLayout("flowy,ins 2"));
 
 		
-		JPanel panel = new CorePropertyPanel(cxn);
-		add(panel,"grow,push");
+		JPanel corePanel = new CorePropertyPanel(cxn);
+		add(corePanel,"grow,push");
 	
 		// Upstream
-		panel = new BlockPanel("Upstream",(ProcessBlockView)cxn.getOrigin().getBlock(),
+		BlockPanel panel = new BlockPanel(BlockPanel.UPSTREAM,(ProcessBlockView)cxn.getOrigin().getBlock(),
 				((BasicAnchorPoint)cxn.getOrigin()).getLastValue());
 		add(panel,"grow,push");
+		String key = NotificationKey.keyForConnection(cxn.getOrigin().getBlock().getId().toString(), cxn.getOrigin().getId().toString());
+		log.infof("%s.init: connection %s = %s",CLSS,cxn.getOrigin().getBlock().toString(),key);
+		notificationHandler.addNotificationChangeListener(key,CLSS,panel);
 		// Downstream
 		// NOTE: Only the upstream anchor is populated with "last value". 
-		//       ---- so we just show it again.
-		panel = new BlockPanel("Downstream",(ProcessBlockView)cxn.getTerminus().getBlock(),
+		panel = new BlockPanel(BlockPanel.DOWNSTREAM,(ProcessBlockView)cxn.getTerminus().getBlock(),
 				((BasicAnchorPoint)cxn.getOrigin()).getLastValue());
 		add(panel,"grow,push");
 	}
@@ -125,10 +135,13 @@ public class ConnectionPropertyEditor extends AbstractPropertyEditor {
 	 * A block panel is a display for properties of the upstream and downstream blocks.
 	 */
 	@SuppressWarnings("serial")
-	private class BlockPanel extends JPanel {
+	private class BlockPanel extends JPanel implements NotificationChangeListener {
+		private static final String DOWNSTREAM = "Downstream";
+		private static final String UPSTREAM = "Upstream";
 		private static final String columnConstraints = "[para]0[][100lp,fill][60lp][95lp,fill]";
 		private static final String layoutConstraints = "ins 2";
 		private static final String rowConstraints = "";
+		private JTextField textField = null;
 		public BlockPanel(String heading,ProcessBlockView blk,QualifiedValue qv) {
 			setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));     // 3 cells across
 			addSeparator(this,heading);
@@ -139,9 +152,34 @@ public class ConnectionPropertyEditor extends AbstractPropertyEditor {
 			add(createTextField(blk.getClassName()),"span,growx");
 			add(createLabel("UUID"),"skip");
 			add(createTextField(blk.getId().toString()),"span,growx");
-			add(createLabel("LastValue"),"skip");
-			add(createTextField((qv==null?"":qv.getValue().toString())),"span,growx");
+			if( heading.equals(DOWNSTREAM) ) {
+				add(createLabel("LastValue"),"skip");
+				this.textField = createTextField((qv==null?"":qv.getValue().toString()));
+				add(textField,"span,growx");
+			}
 		}
+		
+		// =============================== NotificationChangeListener ================================
+		// All we care about is the value
+		@Override
+		public void diagramStateChange(String path, String state) {}
+
+		@Override
+		public void bindingChange(String name, String binding) {}
+
+		@Override
+		public void nameChange(String name) {}
+
+		@Override
+		public void propertyChange(String name, Object value) {}
+
+		@Override
+		public void valueChange(QualifiedValue value) {
+			if( textField!=null) textField.setText(value.getValue().toString());
+		}
+
+		@Override
+		public void watermarkChange(String newWatermark) {}
 	}
 	
 	/**

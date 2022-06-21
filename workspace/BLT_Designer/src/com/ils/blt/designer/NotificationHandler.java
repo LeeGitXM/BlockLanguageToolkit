@@ -114,13 +114,13 @@ public class NotificationHandler implements PushNotificationListener {
 				Map<String,NotificationChangeListener> listeners = changeListenerMap.get(key);
 				if( listeners != null ) {
 					for(NotificationChangeListener listener:listeners.values()) {
-						log.infof("%s.receiveNotification: value %s=%s - notifying %s",CLSS,
-								key,payload.getValue().toString(),listener.getClass().getName());
+						//log.infof("%s.receiveNotification: value %s=%s - notifying %s",CLSS,
+						//		key,payload.getValue().toString(),listener.getClass().getName());
 						listener.valueChange(payload);
 					}
 				}
 				else {
-					log.infof("%s.receiveNotification: no receiver for key=%s,value=%s",CLSS,key,payload.toString());
+					log.debugf("%s.receiveNotification: no receiver for key=%s,value=%s",CLSS,key,payload.toString());
 				}
 			}
 			// Notify an open diagram of a state change

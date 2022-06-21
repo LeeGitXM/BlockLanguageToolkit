@@ -153,7 +153,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 							  			ChangeListener                                  {
 	private static final String ALIGN_MENU_TEXT = "Align Blocks";
 	private static final String CLSS = "DiagramWorkspace";
-	private static final boolean DEBUG = true;
+	private static final boolean DEBUG = false;
 	private static final long serialVersionUID = 4627016159409031941L;
 	private static final DataFlavor BlockDataFlavor = LocalObjectTransferable.flavorForClass(ObservablePropertySet.class);
 	public static final String key = "BlockDiagramWorkspace";
@@ -1279,8 +1279,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 					ProcessBlockView pbv = (ProcessBlockView)blk;
 					pbv.initProperties(res.getResourceId());
 				}
-				diagram.registerChangeListeners();
-				requestHandler.triggerStatusNotifications(diagram.getResourceId().getProjectName());
 			}
 			
 			// Now we have the view, display it -------------------------------
@@ -1297,6 +1295,11 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			     log.infof("%s.open %s is %s",CLSS,tab.getParent().getParent().getParent().getClass().getCanonicalName(),tab.getParent().getParent().getParent().getBackground());
 			    }
 			  });
+			// Only register for status updates if the diagram is "clean"
+			if(statusManager.getPendingView(resourceId)==null ) {
+				diagram.registerChangeListeners();
+				requestHandler.triggerStatusNotifications(diagram.getResourceId().getProjectName());
+			}
 			SwingUtilities.invokeLater(new WorkspaceRepainter());
 		}
 	}

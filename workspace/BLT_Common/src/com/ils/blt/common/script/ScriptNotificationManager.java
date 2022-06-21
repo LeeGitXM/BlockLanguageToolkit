@@ -29,7 +29,7 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
 public class ScriptNotificationManager {
 	private static String CLSS = "ScriptNotificationManager";
 	protected final LoggerEx log;
-	private static final boolean DEBUG = true;
+	private static final boolean DEBUG = false;
 	protected final JavaToPython j2p;
 	protected final PythonToJava p2j;
 	private static ScriptNotificationManager instance = null;

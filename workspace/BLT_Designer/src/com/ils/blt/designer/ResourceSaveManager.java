@@ -48,7 +48,7 @@ import com.inductiveautomation.ignition.designer.project.DesignableProject;
 public class ResourceSaveManager {
 	private final String CLSS = "ResourceSaveManager";
 	private final LoggerEx log;
-	private static final boolean DEBUG = true;
+	private static final boolean DEBUG = false;
 	private final DesignerContext context;
 	private final DiagramWorkspace workspace;
 	private final ObjectMapper mapper;
@@ -151,6 +151,7 @@ public class ResourceSaveManager {
 					BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resid.getResourcePath());
 					if(tab!=null) {
 						view.registerChangeListeners();
+						requestHandler.triggerStatusNotifications(resid.getProjectName());
 						tab.setBackground(view.getBackgroundColorForState());
 						SwingUtilities.invokeLater(new WorkspaceRepainter());
 					}

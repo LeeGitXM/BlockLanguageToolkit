@@ -201,10 +201,10 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		if( begin!=null && end!=null) {
 
 			boolean disallow = false;
-			BasicAnchorPoint eapp = null;
+			BasicAnchorPoint endAnchor = null;
 			// check if any input connections
 			if( end instanceof BasicAnchorPoint && begin instanceof BasicAnchorPoint ) {
-				eapp = (BasicAnchorPoint)end;
+				endAnchor = (BasicAnchorPoint)end;
 				ConnectionType originType = null;
 
 
@@ -218,18 +218,18 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 				}
 
 				// If only 1 input allowed, check to make sure it isn't already used and don't block if initializing
-				if (!eapp.allowConnectionType(originType) && !suppressStateChangeNotification) { 
+				if (!endAnchor.allowConnectionType(originType) && !suppressStateChangeNotification) { 
 					disallow = true;
-					String msg = String.format("Rejected connection.  Cannot connect %s and %s",eapp.getConnectionType().name(),originType.name());
+					String msg = String.format("Rejected connection.  Cannot connect %s and %s",endAnchor.getConnectionType().name(),originType.name());
 					JOptionPane.showMessageDialog(null, msg, "Warning", JOptionPane.INFORMATION_MESSAGE);
-					msg = String.format("%s.addConnection - rejected connection.  Cannot connect %s and %s",CLSS,eapp.getConnectionType().name(),originType.name());
+					msg = String.format("%s.addConnection - rejected connection.  Cannot connect %s and %s",CLSS,endAnchor.getConnectionType().name(),originType.name());
 					log.warnf(msg);
 				}
 
 
 				// check if input connection is of the correct type
 				// only 1 input allowed, check to make sure it isn't already used and don't block if initializing
-				if (!eapp.allowMultipleConnections() && !suppressStateChangeNotification) { 
+				if (!endAnchor.allowMultipleConnections() && !suppressStateChangeNotification) { 
 					for(Connection cxn:connections) {
 						if(cxn.getTerminus().equals(end)) {
 							disallow = true;
@@ -250,8 +250,8 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 						if( pad.getDisplay().equals(bap.getId())) {
 							if(pad.getConnectionType().equals(ConnectionType.ANY) ||
 									pad.getConnectionType().equals(ConnectionType.TEXT)  ) {
-								bap.setConnectionType(eapp.getConnectionType());
-								pad.setConnectionType(eapp.getConnectionType());
+								bap.setConnectionType(endAnchor.getConnectionType());
+								pad.setConnectionType(endAnchor.getConnectionType());
 							}
 							else {
 								bap.setConnectionType(pad.getConnectionType());
@@ -599,6 +599,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			if( bap!=null ) {    // Is null when block-and-connector library is hosed.
 				ProcessBlockView blk = (ProcessBlockView)bap.getBlock();
 				String key = NotificationKey.keyForConnection(blk.getId().toString(), bap.getId().toString());
+				log.infof("%s.registerChangeListeners: connection %s = %s",CLSS,blk.getName(),key);
 				handler.addNotificationChangeListener(key,CLSS, bap);
 			}
 		}
