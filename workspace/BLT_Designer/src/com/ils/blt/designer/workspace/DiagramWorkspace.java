@@ -1879,32 +1879,15 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			this.block = blk;
 		}
 		/**
-		 * Block name is unique within a diagram
+		 * Resetting a block does not affect the saved state and,
+		 * therefore, does not make the diagram dirty.
 		 */
 		public void actionPerformed(ActionEvent e) {
 			ProcessDiagramView pdv = getActiveDiagram();
 			requestHandler.resetBlock(pdv.getResourceId(),block.getName());
 		}
 	}
-	/**
-	 * "Save" implies a push of the block attributes into the model running in the Gateway.
-	 * This, in turn, makes the parent diagram resource dirty.
-	 */
-	private class SaveAction extends BaseAction {
-		private static final long serialVersionUID = 1L;
-		private final ProcessBlockView block;
-		public SaveAction(ProcessBlockView blk)  {
-			super(PREFIX+".SaveBlock",IconUtil.getIcon("window_play"));  // preferences
-			this.block = blk;
-		}
 
-		public void actionPerformed(ActionEvent e) {
-			log.info("DiagramWorkspace: SAVE BLOCK");
-			ProcessDiagramView pdv = getActiveDiagram();
-			requestHandler.setBlockProperties(pdv.getResourceId(),block.getId(), block.getProperties());
-			block.setDirty(false);
-		}
-	}
 	/**
 	 * Display sub-menus listing the diagrams connected to the subject source
 	 * or sink 

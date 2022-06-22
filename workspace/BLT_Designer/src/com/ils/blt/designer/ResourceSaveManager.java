@@ -35,6 +35,7 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignableContainer;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.model.SaveContext;
+import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceNavTreeNode;
 import com.inductiveautomation.ignition.designer.project.DesignableProject;
 
 
@@ -117,6 +118,7 @@ public class ResourceSaveManager {
 				}
 				if( res.isFolder()) {      // Folder
 					builder.setFolder(true);
+					statusManager.clearChangeMarkers(resid);
 				}
 				else {                     // Diagram
 					builder.setFolder(false);
