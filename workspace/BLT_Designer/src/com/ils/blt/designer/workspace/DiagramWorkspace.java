@@ -736,8 +736,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 									desc.setCtypeEditable(true);
 									block = new ProcessBlockView(desc);
 									block.setName(nameFromTagTree(tnode));
-									updatePropertiesForTagPath(block,tnode.getFullPath().toStringFull());
-									addNameDisplay(block,dropx,dropy);
 								}
 								else {
 									desc.setBlockClass(BlockConstants.BLOCK_CLASS_INPUT);
@@ -748,9 +746,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 									desc.setCtypeEditable(true);
 									block = new ProcessBlockView(desc);
 									block.setName(enforceUniqueName(nameFromTagTree(tnode),diagram));
-									updatePropertiesForTagPath(block,tnode.getFullPath().toStringFull());
-									addNameDisplay(block,dropx,dropy);
-									
 								}
 								// Define a single output
 								AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.ANY);
@@ -765,6 +760,9 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 								BlockProperty valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,"",PropertyType.OBJECT,false);
 								valueProperty.setBindingType(BindingType.ENGINE);
 								block.setProperty(valueProperty);
+								
+								updatePropertiesForTagPath(block,tnode.getFullPath().toStringFull());
+								addNameDisplay(block,dropx,dropy);
 							} 
 							else {
 								if( isStandardFolder ) {
@@ -779,7 +777,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 									// Define a single output
 									AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.ANY);
 									block.addAnchor(output);
-									addNameDisplay(block,dropx,dropy);
 								}
 								else {
 									desc.setBlockClass(BlockConstants.BLOCK_CLASS_OUTPUT);
@@ -790,8 +787,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 									desc.setCtypeEditable(true);
 									block = new ProcessBlockView(desc);
 									block.setName(enforceUniqueName(nameFromTagTree(tnode),diagram));
-									addNameDisplay(block,dropx,dropy);
-								}
+								}								
 								// Define a single input
 								AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.ANY);
 								input.setIsMultiple(false);
@@ -804,6 +800,9 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 								BlockProperty valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,"",PropertyType.OBJECT,false);
 								valueProperty.setBindingType(BindingType.ENGINE);
 								block.setProperty(valueProperty);
+								
+								updatePropertiesForTagPath(block,tnode.getFullPath().toStringFull());
+								addNameDisplay(block,dropx,dropy);
 							}
 							
 							AnchorPrototype signal = new AnchorPrototype(BlockConstants.SIGNAL_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.SIGNAL);
