@@ -188,7 +188,9 @@ public class BlockAttributeView extends ProcessBlockView implements BlockListene
 		return value;
 	}
 	// When we change the value, we need to change the label
-	public void setValue(String val) { getProperty(BlockConstants.ATTRIBUTE_PROPERTY_VALUE).setValue(val); }
+	public void setValue(String val) { 
+		getProperty(BlockConstants.ATTRIBUTE_PROPERTY_VALUE).setValue(val); 
+	}
 	@Override
 	public String getBackgroundColor() { return getProperty(BlockConstants.ATTRIBUTE_PROPERTY_BACKGROUND_COLOR).getValue().toString(); } 
 	public int getFontSize() { return fncs.parseInteger(getProperty(BlockConstants.ATTRIBUTE_PROPERTY_FONT_SIZE).getValue().toString()); }

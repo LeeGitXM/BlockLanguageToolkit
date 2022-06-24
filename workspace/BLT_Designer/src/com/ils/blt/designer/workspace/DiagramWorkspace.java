@@ -718,7 +718,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 						int dropx = event.getLocation().x;
 						int dropy = event.getLocation().y;
 						int thewidth = getActiveDiagram().getDiagramSize().width;
-						nameFromTagTree(tnode);
 
 						if( getSelectedContainer()!=null ) {
 							ProcessBlockView block = null;
@@ -736,6 +735,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 									desc.setCtypeEditable(true);
 									block = new ProcessBlockView(desc);
 									block.setName(nameFromTagTree(tnode));
+									updatePropertiesForTagPath(block,tnode.getFullPath().toStringFull());
 								}
 								else {
 									desc.setBlockClass(BlockConstants.BLOCK_CLASS_INPUT);
@@ -746,6 +746,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 									desc.setCtypeEditable(true);
 									block = new ProcessBlockView(desc);
 									block.setName(enforceUniqueName(nameFromTagTree(tnode),diagram));
+									updatePropertiesForTagPath(block,tnode.getFullPath().toStringFull());
 								}
 								// Define a single output
 								AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.ANY);
@@ -759,10 +760,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 								
 								BlockProperty valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,"",PropertyType.OBJECT,false);
 								valueProperty.setBindingType(BindingType.ENGINE);
-								block.setProperty(valueProperty);
-								
-								updatePropertiesForTagPath(block,tnode.getFullPath().toStringFull());
-								addNameDisplay(block,dropx,dropy);
+								block.setProperty(valueProperty);								
 							} 
 							else {
 								if( isStandardFolder ) {
@@ -800,9 +798,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 								BlockProperty valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,"",PropertyType.OBJECT,false);
 								valueProperty.setBindingType(BindingType.ENGINE);
 								block.setProperty(valueProperty);
-								
-								updatePropertiesForTagPath(block,tnode.getFullPath().toStringFull());
-								addNameDisplay(block,dropx,dropy);
 							}
 							
 							AnchorPrototype signal = new AnchorPrototype(BlockConstants.SIGNAL_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.SIGNAL);
@@ -822,6 +817,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 							if( isInBounds(dropPoint,bdc) ) {
 								block.setLocation(dropPoint);
 								this.getActiveDiagram().addBlock(block);
+								addNameDisplay(block,dropx,dropy);
 								DataType type = DataType.Boolean;
 								List<TagPath> paths = new ArrayList<>();
 								paths.add(tnode.getFullPath());
@@ -939,7 +935,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	}
 
 	/**
-	 * Add an attribute display of the name to the specified block. We do not listen for name changes
+	 * Add an attribute display of the name to the specified block.
 	 * @param diagram
 	 * @param block
 	 */
@@ -947,9 +943,10 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		BlockAttributeView bav = new BlockAttributeView(new AttributeDisplayDescriptor(),block.getId().toString());
 		bav.setReferenceBlock(block);
 		bav.setPropertyName(BlockConstants.BLOCK_PROPERTY_NAME);
+		bav.startListener();
 		bav.setValue(block.getName());
 		bav.setFormat("%s");
-		bav.startListener();
+
 		Point loc = new Point(x+BlockConstants.ATTRIBUTE_DISPLAY_OFFSET_X,
                 y+block.getPreferredHeight()+BlockConstants.ATTRIBUTE_DISPLAY_OFFSET_Y);
 		this.getActiveDiagram().addBlock(bav);
