@@ -7,10 +7,6 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Image;
-import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
-import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.FileWriter;
@@ -37,6 +33,7 @@ import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.NotificationHandler;
+import com.ils.blt.designer.workspace.CopyPasteHandler;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
@@ -46,7 +43,6 @@ import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.client.util.action.BaseAction;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
 import com.inductiveautomation.ignition.common.BundleUtil;
-import com.inductiveautomation.ignition.common.StringPath;
 import com.inductiveautomation.ignition.common.execution.ExecutionManager;
 import com.inductiveautomation.ignition.common.execution.impl.BasicExecutionEngine;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
@@ -54,8 +50,6 @@ import com.inductiveautomation.ignition.common.project.ChangeOperation;
 import com.inductiveautomation.ignition.common.project.ProjectResourceListener;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
-import com.inductiveautomation.ignition.common.project.resource.ResourceNamingException;
-import com.inductiveautomation.ignition.common.project.resource.ResourcePath;
 import com.inductiveautomation.ignition.designer.UndoManager;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignableContainer;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
@@ -89,6 +83,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements Noti
 	protected final ImageIcon openRestrictedIcon;
 	protected final ImageIcon closedRestrictedIcon;
 	private CopyAction copyDiagramAction = null;
+	private final CopyPasteHandler cpHandler;
 
 	/**
 	 * Constructor. A DiagramTreeNode is created initially without child resources.
@@ -103,6 +98,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements Noti
 		this.workspace = ws;
 		this.executor = new BasicExecutionEngine();
 		this.requestHandler = new ApplicationRequestHandler();
+		this.cpHandler = new CopyPasteHandler(this);
 		statusManager = NodeStatusManager.getInstance();
 		
 		alertBadge =iconFromPath("Block/icons/badges/bell.png");
@@ -158,7 +154,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements Noti
 		// States are: ACTIVE, DISABLED, ISOLATED
 		DiagramState state = statusManager.getPendingState(resourceId);
 		if( state==null) state = requestHandler.getDiagramState(resourceId);
-		copyDiagramAction = new CopyAction(this);
+		copyDiagramAction = new CopyAction();
 		SetStateAction ssaActive = new SetStateAction(DiagramState.ACTIVE);
 		ssaActive.setEnabled(!state.equals(DiagramState.ACTIVE));
 		SetStateAction ssaDisable = new SetStateAction(DiagramState.DISABLED);
@@ -353,29 +349,13 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements Noti
 	// copy the currently selected node resourceId to the clipboard
 	private class CopyAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
-		private final AbstractResourceNavTreeNode parentNode;
 
-		public CopyAction(AbstractResourceNavTreeNode pNode)  {
+		public CopyAction()  {
 			super(PREFIX+".CopyNode",IconUtil.getIcon("copy"));
-			this.parentNode = pNode;
 		}
 
 		public void actionPerformed(ActionEvent e) {
-           final Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-           Optional<ProjectResource> option = parentNode.getProjectResource();
-           ProjectResource res = option.get();
-           String data = ""+res.getResourceId();
-           Transferable t =  new StringSelection(NavTreeFolder.BLT_COPY_OPERATION + data);
-				   
-		   if (t != null) {
-			   try { 
-				   clipboard.setContents(t, null); 
-			   } 
-			   catch (Exception ex) {
-				   ErrorUtil.showError(String.format("actionPerformed: Unhandled Exception (%s)",ex.getMessage()), "Copy Diagram");
-			   }
-		   }
-				   
+           cpHandler.doCopyDiagram();	   
 		}
 	}
  

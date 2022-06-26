@@ -13,7 +13,6 @@ import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.io.File;
@@ -48,6 +47,7 @@ import com.ils.blt.common.serializable.SerializableNodeRenameHandler;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.NodeStatusManager;
+import com.ils.blt.designer.workspace.CopyPasteHandler;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
@@ -73,6 +73,7 @@ import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceN
 import com.inductiveautomation.ignition.designer.navtree.model.FolderNode;
 import com.inductiveautomation.ignition.designer.navtree.model.ResourceDeleteAction;
 import com.inductiveautomation.ignition.designer.project.ResourceNotFoundException;
+
 /**
  * Edit a folder in the designer scope to support the diagnostics toolkit diagram
  * layout. In addition to standard folders, folders can be of type "Application" or
@@ -106,6 +107,7 @@ public class NavTreeFolder extends FolderNode implements ProjectResourceListener
 	private final ImageIcon openIcon;
 	private final ImageIcon closedIcon;
 	private final ImageIcon diagramIcon;
+	private final CopyPasteHandler cpHandler;
 
 	/**
 	 * A NavTreeFolder is a NavTreeNode that contains either diagrams or other folders.
@@ -119,6 +121,7 @@ public class NavTreeFolder extends FolderNode implements ProjectResourceListener
 	public NavTreeFolder(DesignerContext ctx,ProjectResource resource) {
 		super(ctx,resource,ApplicationScope.DESIGNER);
 		this.context = ctx;
+		this.cpHandler = new CopyPasteHandler(this);
 		this.requestHandler = new ApplicationRequestHandler();
 		this.renameHandler = new SerializableNodeRenameHandler();
 		this.children = null;
@@ -387,12 +390,8 @@ public class NavTreeFolder extends FolderNode implements ProjectResourceListener
 			menu.add(folderCreateAction);
 			menu.addSeparator();
 
-			if( true /*something is in the clipboard*/ ) {
-				pasteAction.setEnabled(true);
-			} 
-			else {
-				pasteAction.setEnabled(false);
-			}
+			pasteAction.setEnabled(cpHandler.canPaste());
+
 			menu.add(pasteAction);	
 		}
 		else { 
@@ -576,279 +575,30 @@ public class NavTreeFolder extends FolderNode implements ProjectResourceListener
 		}
 	}
 
-	// Called during paste
-	protected boolean copyChildren(AbstractResourceNavTreeNode fromNode) throws Exception {
-		ObjectMapper mapper = new ObjectMapper();
-		mapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL,true);
-
-		if (fromNode == null) {
-			ErrorUtil.showWarning("copy children with NULL node!");
-			return false;
-		}
-		// Iterate over the children of the original node
-		@SuppressWarnings("rawtypes")
-		Enumeration walker = fromNode.children();
-		while(walker.hasMoreElements()) {
-			AbstractResourceNavTreeNode child = (AbstractResourceNavTreeNode)walker.nextElement();
-			Optional<ProjectResource> optional = child.getProjectResource();
-			ProjectResource res = optional.get();
-			byte[] bytes = res.getData();
-			String json = "";
-			ProjectResourceId resid = null;
-
-			if( !res.isFolder()) {
-
-				SerializableDiagram sd = mapper.readValue(new String(bytes), SerializableDiagram.class);
-				if( sd!=null ) {
-					renameHandler.convertPaths(sd,res.getFolderPath());
-					ProcessDiagramView diagram = new ProcessDiagramView(context,res.getResourceId(),sd);
-					for( Block blk:diagram.getBlocks()) {
-						ProcessBlockView pbv = (ProcessBlockView)blk;
-						if (pbv.isDiagnosis()) {
-							renameDiagnosis(sd, pbv);
-
-							continue;
-						}
-					}
-					sd.setState(DiagramState.DISABLED);
-					json = mapper.writeValueAsString(sd);
-					resid = requestHandler.createResourceId(getResourceId().getProjectName(), sd.getPath().toString(), BLTProperties.DIAGRAM_RESOURCE_TYPE);
-				}
-				else {
-					ErrorUtil.showWarning(String.format("Failed to deserialize child diagram (%s)",res.getResourceName()),"Copy Diagram");
-					return false;
-				}
-			}
-			else  {
-				SerializableFolder sf = mapper.readValue(new String(bytes), SerializableFolder.class);
-				if( sf!=null ) {
-					renameHandler.convertPaths(sf,res.getFolderPath());
-					json = mapper.writeValueAsString(sf);
-					resid = requestHandler.createResourceId(getResourceId().getProjectName(), sf.getPath().toString(), BLTProperties.DIAGRAM_RESOURCE_TYPE);
-				}
-				else {
-					ErrorUtil.showWarning(String.format("Failed to deserialize child folder (%s)",res.getResourceName()),"Copy Folder");
-					return false;
-				}
-			}
-
-			//new DiagramImportManager(getResourcePath().getFolderPath(),resid.getResourcePath().getName(),json.getBytes()).run();
-			if (!copyChildren(child)) {
-				return false;
-			}
-		}
-		return true;
-	} 
-
+	
 	// copy the currently selected node UUID to the clipboard
 	private class CopyAction extends BaseAction {
-		private static final long serialVersionUID = 1L;
-		private final AbstractResourceNavTreeNode parentNode;
+		private static final long serialVersionUID = -1720155293900962586L;
 
-		public CopyAction(AbstractResourceNavTreeNode pNode)  {
+		public CopyAction()  {
 			super(PREFIX+".CopyNode",IconUtil.getIcon("copy"));
-			this.parentNode = pNode;
 		}
 
 		public void actionPerformed(ActionEvent e) {
-           final Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-
-           Optional<ProjectResource> optional = parentNode.getProjectResource();
-           ProjectResource res = optional.get();
-           String data = ""+res.getResourceId();
-           Transferable t =  new StringSelection(BLT_COPY_OPERATION + data);
-				   
-		   if (t != null) {
-			   try { 
-				   clipboard.setContents(t, null); 
-			   } catch (Exception ex) {
-					log.errorf("%s: actionPerformed: Unhandled Exception (%s)",CLSS,ex.getMessage());
-			   }
-		   }
-				   
+			cpHandler.doCopyFolder();
 		}
 	}
 
-	// paste the nodes from the clipboard into the tree at the selected location
-	private class PasteAction extends BaseAction  implements UndoManager.UndoAction{
-		private static final long serialVersionUID = 1L;
-		private final NavTreeFolder parentNode;  // Bad naming, it isn't really a parent node, it's this one
-		private String bundleString;
-		private ProjectResource pasted = null;
+	// paste the nodes from the clipboard into the tree as children of this node
+	private class PasteAction extends BaseAction  {
 
 		public PasteAction(NavTreeFolder pNode)  {
 			super(PREFIX+".PasteNode",IconUtil.getIcon("paste"));
-			this.bundleString = PREFIX+".PasteNode";
-			this.parentNode = pNode;
 		}
-
-		@Override
-		public boolean isGroupSequenceIndependent() {return false;}
-
-		@Override
-		public boolean undo() {
-			try {
-				context.getProject().deleteResource(pasted.getResourceId());
-			}
-			catch(ResourceNotFoundException rnfe) {
-				log.warnf("%s: undo: Resource not found (%s)",CLSS,rnfe.getMessage());
-			}
-			return true;
-		}
-
-		@Override
-		public String getDescription() { return " paste"; }  // This could be made more descriptive
-
-		@Override
-		public boolean execute() {
-			boolean result = true;
-			final Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-
-			Transferable t = clipboard.getContents(null);
-			if (t.isDataFlavorSupported(DataFlavor.stringFlavor)) {
-				try { 
-					String clipData = (String)t.getTransferData(DataFlavor.stringFlavor);
-					if (clipData.startsWith(BLT_CUT_OPERATION)) {
-						String data = clipData.substring(BLT_CUT_OPERATION.length());
-						paste(data, true);
-					}
-					if (clipData.startsWith(BLT_COPY_OPERATION)) {
-						String data = clipData.substring(BLT_COPY_OPERATION.length());
-						paste(data, false);
-					}
-				} catch (Exception ex) {
-					result = false;
-					log.errorf("%s: actionPerformed: Unhandled Exception in PASTE (%s)",CLSS,ex.getMessage());
-					ex.printStackTrace();
-				}
-			}
-			return result;
-		}
-
-
 
 		public void actionPerformed(ActionEvent e) {
-			execute();
+			cpHandler.doPaste();
 		}	
-
-		// The paste string represents a resourceID of a new resource/nav tree node
-		public void paste(String data, boolean deleteOriginal) {
-			ObjectMapper mapper = new ObjectMapper();
-			ProjectResourceId clipId = null;
-			try {
-				clipId = (ProjectResourceId)mapper.readValue(data, ProjectResourceId.class);
-
-			}
-			catch(JsonParseException jpe) {
-				log.warnf("%s: paste: Parse exception of paste object (%s)",CLSS,jpe.getMessage());
-				return;
-			}
-			catch(JsonMappingException jme) {
-				log.warnf("%s: paste: Json mapping exception of paste object (%s)",CLSS,jme.getMessage());
-				return;
-			}
-			catch(IOException ioe) {
-				log.warnf("%s: paste: IO exception of paste object (%s)",CLSS,ioe.getMessage());
-				return;
-			}
-			//			*Note cut disabled for now.  Just copy & delete	
-			Optional<ProjectResource> optional = context.getProject().getResource(clipId);
-			ProjectResource res = optional.get();
-			optional = parentNode.getProjectResource();
-			ProjectResource dst = optional.get();
-			String newName = nextFreeName((NavTreeFolder)parentNode,res.getResourceName());
-			try {
-				EventQueue.invokeLater(new Runnable() {
-					public void run() {
-						try {	
-							ObjectMapper mapper = new ObjectMapper();
-							mapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL,true);
-							SerializableDiagram sd = null;
-
-							String json = "";
-							if( res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
-								AbstractResourceNavTreeNode node = parentNode;
-								if( (node.getProjectResource() != null && 
-										parentNode.getResourcePath().getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)  )) {
-									sd = mapper.readValue(new String(res.getData()), SerializableDiagram.class);
-									if( sd!=null ) {
-										ProcessDiagramView diagram = new ProcessDiagramView(context,res.getResourceId(),sd);
-										renameHandler.convertPaths(sd,res.getFolderPath());  // converted UUIDs are thrown away because later CopyChildren also does it
-										sd.setName(newName);
-										for( Block blk:diagram.getBlocks()) {
-											ProcessBlockView pbv = (ProcessBlockView)blk;
-											if (pbv.isDiagnosis()) {
-												renameDiagnosis(sd, pbv);
-												continue;
-											}
-										}										
-										sd.setState(DiagramState.DISABLED);
-										json = mapper.writeValueAsString(sd);
-										statusManager.setPendingView(res.getResourceId(), diagram);
-									}
-									else {
-										ErrorUtil.showWarning(String.format("Failed to deserialize diagram (%s)",res.getResourceName()),"Paste Diagram");
-										return;
-									}
-								} 
-								else {
-									ErrorUtil.showWarning("Tried to paste a diagram into an invalid location","Paste Diagram");
-									return;
-								}
-
-							} 
-							else {
-								ErrorUtil.showWarning(String.format("Unexpected resource type(%s)",res.getResourceType()),"Paste Node");
-								return;
-							}
-							// res is the project resource to copy - we just have to change the name
-							ProjectResourceId oldId = res.getResourceId();
-							ProjectResourceId newId = requestHandler.createResourceId(oldId.getProjectName(),
-									oldId.getFolderPath()+"/"+name, oldId.getResourceType());
-
-							ProjectResourceBuilder builder = ProjectResource.newBuilder();
-							builder.setResourceId(newId);;
-							builder.putData(res.getData());
-							builder.setVersion(res.getVersion());
-							builder.setApplicationScope(res.getApplicationScope());
-
-
-							AbstractResourceNavTreeNode node = statusManager.getNode(res.getResourceId());  // so basically starting over here
-							ProjectResource resource = builder.build();
-							/*							Copies children and assigns new ResourcePaths
-							if (copyChildren(node) && deleteOriginal) { // copy children will rename diagnosis blocks
-								ResourceDeleteManager deleter;
-								deleter = new ResourceDeleteManager(node);
-								deleter.acquireResourcesToDelete();
-								deleter.run();
-							}
-							*/
-
-							// Finally display the parent node
-							//new ResourceCreateManager(resource,resource.getResourceName()).run();
-							AbstractResourceNavTreeNode newNode = statusManager.getNode(resource.getResourceId());  // so basically starting over here
-
-							UndoManager.getInstance().add(PasteAction.this,AbstractNavTreeNode.class);
-							pasted = resource;
-							((NavTreeFolder)parentNode).selectChild(new ResourcePath[] {resource.getResourcePath().getParent()} );
-
-						}
-						catch( IOException ioe) {
-							// Should never happen, we just picked this off a chooser
-							log.warnf("%s: actionPerformed, IOException(%s)",CLSS,ioe.getLocalizedMessage()); 
-							ioe.printStackTrace();
-						}
-						catch (Exception ex) {
-							log.errorf("%s: actionPerformed: Unhandled Exception (%s)",CLSS,ex.getMessage());
-							ex.printStackTrace();
-						}
-					}
-				});
-			} 
-			catch (Exception err) {
-				ErrorUtil.showError(CLSS+" Exception cloning diagram",err);
-			}	
-		}
 	}
 		
 	// From the root node, recursively log the contents of the tree
