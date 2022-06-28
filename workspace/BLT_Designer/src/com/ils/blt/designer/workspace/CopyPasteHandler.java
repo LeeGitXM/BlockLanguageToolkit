@@ -8,12 +8,19 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
+import java.util.Enumeration;
 
+import com.ils.blt.common.BLTProperties;
+import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.navtree.DiagramTreeNode;
 import com.ils.blt.designer.navtree.NavTreeFolder;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
+import com.inductiveautomation.ignition.common.StringPath;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
+import com.inductiveautomation.ignition.common.project.resource.ResourceType;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
+import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceNavTreeNode;
 
 /**
@@ -29,13 +36,15 @@ public class CopyPasteHandler  {
 	public static final String ARCHIVE_TYPE_FOLDER = "blt.folder";
 	public static final String ENTRY_DELIMITER = "|";
 	public static final String KEY_DELIMITER = ":";
+	private final DesignerContext context;
 	private final AbstractResourceNavTreeNode parent;
 	private final static LoggerEx log = LogUtil.getLogger(NavTreeFolder.class.getPackageName());
 
 	/**
 	 * Constructor: Provide the node for which this applies
 	 */
-	public CopyPasteHandler(AbstractResourceNavTreeNode node) {
+	public CopyPasteHandler(DesignerContext ctx,AbstractResourceNavTreeNode node) {
+		this.context = ctx;
 		this.parent = node;
 	}
 
@@ -113,7 +122,7 @@ public class CopyPasteHandler  {
 			try { 
 				String clipData = (String)t.getTransferData(DataFlavor.stringFlavor);
 				if( clipData.startsWith(ARCHIVE_TYPE_DIAGRAM)) {
-					pasteDiagram(clipData.substring(ARCHIVE_TYPE_DIAGRAM.length()+KEY_DELIMITER.length()));
+					pasteDiagram(StringPath.parse(clipData.substring(ARCHIVE_TYPE_DIAGRAM.length()+KEY_DELIMITER.length())));
 				}
 				else if(clipData.startsWith(ARCHIVE_TYPE_FOLDER)  ) {
 					pasteFolder(clipData);
@@ -140,13 +149,78 @@ public class CopyPasteHandler  {
 		}
 	}
 	
-	private void pasteDiagram(String stringPath) {
+	public ProjectResourceId createResourceId(String path) {
+		String projectName = context.getProjectName();
+		ProjectResourceId resourceId = new ProjectResourceId(projectName,BLTProperties.DIAGRAM_RESOURCE_TYPE,path);
+		return resourceId;
+	}
+	
+	/**
+	 * Check children of the parent node to make sure there is no duplication.
+	 *  
+	 * @param text
+	 * @return a vetted name
+	 */
+	private String ensureUniqueName(String text) {
+		String name = text;
+		int index = 0;
+		while( isNameDuplicated(name)) {
+			index++;
+			name = String.format("%s-%d", text,index);
+		}
+		return name;
+	}
+	
+	/**
+	 * @param name to be tested
+	 * @return true if the supplied name matches any of the child node names.
+	 */
+	private boolean isNameDuplicated(String name) {
+		boolean result = false;
+		@SuppressWarnings("unchecked")
+		Enumeration<AbstractResourceNavTreeNode> e = parent.children();
+		while(e.hasMoreElements()) {
+			AbstractResourceNavTreeNode node = e.nextElement();
+			if(node.getName().equalsIgnoreCase(name)) {
+				result = false;
+				break;
+			}
+		}
+		return result;
+	}
+	
+	private void pasteDiagram(StringPath stringPath) {
 		// Guarantee that the root node name does not conflict with any of the current node's children
+		String name = stringPath.getLastPathComponent();
+		name = ensureUniqueName(name);
+		ProjectResourceId source = createResourceId(stringPath.toString());
+		StringPath destinationPath = StringPath.extend(parent.getResourcePath().getPath(),name);
+		ProjectResourceId destination = createResourceId(destinationPath.toString());
+		createProjectResource(ARCHIVE_TYPE_DIAGRAM,source,destination);
+		
 	}
 	
 	private void pasteFolder(String stringEntries) {
 		// Guarantee that the root node name does not conflict with any of the current node's children
 		String[] entries = stringEntries.split(ENTRY_DELIMITER);
 		String root = entries[0].split(KEY_DELIMITER)[1];
+	}
+	
+	/**
+	 * Copy the source resource into a project resource with the specified new Id
+	 */
+	private void createProjectResource(String key,ProjectResourceId source,ProjectResourceId destination) {
+		
+		if( key.equalsIgnoreCase(ARCHIVE_TYPE_DIAGRAM)) {
+			ProcessDiagramView view = null;
+			// The diagram may be held by the status manager, if dirty
+			NodeStatusManager statusManager = NodeStatusManager.getInstance();
+			if( statusManager.getPendingView(source)!=null ) {
+				view = statusManager.getPendingView(source).clone();  // Changes block Ids
+			}
+		}
+		else {     // Folder
+			
+		}
 	}
 }

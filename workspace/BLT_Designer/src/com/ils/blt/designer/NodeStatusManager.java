@@ -9,13 +9,11 @@ import java.util.List;
 import java.util.Map;
 
 import com.ils.blt.common.ApplicationRequestHandler;
-import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagramState;
 import com.ils.blt.designer.navtree.NavTreeFolder;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 import com.inductiveautomation.ignition.common.project.resource.ResourcePath;
-import com.inductiveautomation.ignition.common.project.resource.ResourceType;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceNavTreeNode;
@@ -298,7 +296,7 @@ public class NodeStatusManager   {
 				modified = false;
 			}
 		}
-		log.infof("%s.isModified: %s (%s)",CLSS,resourceId.getFolderPath(),(modified?"modified":"clean"));
+		//log.infof("%s.isModified: %s (%s)",CLSS,resourceId.getFolderPath(),(modified?"modified":"clean"));
 		return modified;
 	}
 

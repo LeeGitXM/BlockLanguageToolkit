@@ -121,7 +121,7 @@ public class NavTreeFolder extends FolderNode implements ProjectResourceListener
 	public NavTreeFolder(DesignerContext ctx,ProjectResource resource) {
 		super(ctx,resource,ApplicationScope.DESIGNER);
 		this.context = ctx;
-		this.cpHandler = new CopyPasteHandler(this);
+		this.cpHandler = new CopyPasteHandler(ctx,this);
 		this.requestHandler = new ApplicationRequestHandler();
 		this.renameHandler = new SerializableNodeRenameHandler();
 		this.children = null;

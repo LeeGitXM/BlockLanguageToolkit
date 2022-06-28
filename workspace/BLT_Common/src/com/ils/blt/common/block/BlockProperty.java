@@ -24,7 +24,7 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  * use the concrete SerializedQualifiedValue class rather than the interface.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class BlockProperty  {
+public class BlockProperty implements Cloneable {
 	@SuppressWarnings("unused")
 	private static final long serialVersionUID = -8851989629221127947L;
 	private static final String CLSS = "BlockProperty";

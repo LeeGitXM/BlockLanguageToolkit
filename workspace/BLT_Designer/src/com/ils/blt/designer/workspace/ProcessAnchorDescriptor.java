@@ -11,7 +11,7 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorT
  * Extend an AnchorDescriptor to include the idea of connection type,
  * port annotation and placement hints.
  */
-public class ProcessAnchorDescriptor extends AnchorDescriptor {
+public class ProcessAnchorDescriptor extends AnchorDescriptor implements Cloneable{
 	private ConnectionType connectionType;
 	private final String annotation;
 	private boolean hidden = false;
@@ -60,4 +60,10 @@ public class ProcessAnchorDescriptor extends AnchorDescriptor {
 	public void setLastValue(QualifiedValue qv) { this.lastValue = qv; }
 	public void setSortOrder(int sortOrder) { this.sortOrder = sortOrder; }
 	
+	@Override
+	public ProcessAnchorDescriptor clone() {
+		ProcessAnchorDescriptor clone = new ProcessAnchorDescriptor(getType(),getConnectionType(),getId(),getDisplay(),
+				getAnnotation(),getHint(),isMultiple(),getSortOrder());
+		return clone;
+	}
 }

@@ -53,7 +53,7 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
 /**
  * This class represents a diagram in the designer.
  */
-public class ProcessDiagramView extends AbstractChangeable implements BlockDiagramModel,BlockListener, NotificationChangeListener {
+public class ProcessDiagramView extends AbstractChangeable implements BlockDiagramModel,BlockListener, Cloneable, NotificationChangeListener {
 	private static LoggerEx log = LogUtil.getLogger(ProcessDiagramView.class.getPackage().getName());
 	// Use TAG as the "source" identifier when registering for notifications from Gateway
 	private static final String CLSS = "ProcessDiagramView";
@@ -66,7 +66,6 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	private static final boolean DEBUG = false;
 	private Dimension diagramSize = new Dimension(MIN_WIDTH,MIN_HEIGHT);
 	private String name = "UNSET";
-	private UUID encapsulationBlockID = null;  // Used only if this diagram represents a sub-workspace
 	private final ProjectResourceId resourceId;
 	private DiagramState state = DiagramState.ACTIVE;
 	private DesignerContext context;
@@ -514,7 +513,6 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	public Dimension getDiagramSize() {
 		return diagramSize;
 	}
-	public UUID getEncapsulationBlockID() {return encapsulationBlockID;}
 
 	public String getName() {return name;}
 
@@ -541,8 +539,6 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		diagramSize = dim;
 		fireStateChanged();  // Bypass setting block dirty
 	}
-	
-	public void setEncapsulationBlockID(UUID encapsulationBlockID) {this.encapsulationBlockID = encapsulationBlockID;}
 	
 	public void setState(DiagramState ds) { 
 		this.state = ds;
@@ -800,5 +796,52 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	@Override
 	public void blockUIChanged(Block arg0) {
 		// TODO Auto-generated method stub
+	}
+	// ================================ Cloneable =====================================
+	@Override
+	public ProcessDiagramView clone() {
+		ProcessDiagramView clone = new ProcessDiagramView(getResourceId(),getName());
+		clone.diagramSize = diagramSize;
+		clone.state = state;
+		clone.watermark = watermark;
+
+		synchronized (this) {
+			
+			clone.suppressStateChangeNotification = true;
+			for( ProcessBlockView pbv : blockMap.values()) {
+				ProcessBlockView view = pbv.clone();  // Sets new name, UUID
+				blockMap.put(view.getId(), view);
+				this.addBlock(view);
+			}
+			clone.connections = new ArrayList<>();
+			for( Connection cxn:connections ) {
+				AnchorPoint a = cxn.getOrigin();
+				AnchorPoint b = cxn.getTerminus();
+				if( a!=null && b!=null ) {
+					ProcessBlockView blocka = blockMap.get(a.getId());
+					ProcessBlockView blockb = blockMap.get(b.getId());
+					if( blocka!=null && blockb!=null) {
+						if( DEBUG ) log.infof("%s.clone: Cloning a connection from %s to %s...", CLSS, blocka.getName(), blockb.getName());
+						AnchorPoint origin = new ProcessAnchorView(a.getId(),blocka,AnchorType.Origin);
+						AnchorPoint terminus = new ProcessAnchorView(a.getId(),blockb,AnchorType.Terminus);
+						this.addConnection(origin,terminus);   // AnchorPoints
+					}
+					else {
+						if( blocka==null ) {
+							log.warnf("%s.clone: Failed to find block %s for begin anchor point %s",CLSS,a.getId(),a);
+						}
+						if( blockb==null ) {
+							log.warnf("%s.clone: Failed to find block %s for end anchor point %s",CLSS,b.getId(),b);
+						}
+					}
+				}
+				else {
+					log.warnf("%s.clone: Connection %s missing one or more anchor points",CLSS,cxn.toString());
+				}
+			}
+			clone.suppressStateChangeNotification = false;
+		}
+		return clone;
+		
 	}
 }

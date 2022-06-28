@@ -150,13 +150,7 @@ public class ResourceSaveManager {
 					else view.setState(requestHandler.getDiagramState(resid));
 					// If the diagram is open, update its appearance.
 					statusManager.clearChangeMarkers(resid);
-					BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resid.getResourcePath());
-					if(tab!=null) {
-						view.registerChangeListeners();
-						requestHandler.triggerStatusNotifications(resid.getProjectName());
-						tab.setBackground(view.getBackgroundColorForState());
-						SwingUtilities.invokeLater(new WorkspaceRepainter());
-					}
+
 
 					if( pendingName!=null && !pendingName.equalsIgnoreCase(name)) {
 						stringPath = StringPath.extend(stringPath.getParentPath(),pendingName);
@@ -169,6 +163,13 @@ public class ResourceSaveManager {
 					project.createOrModify(res);
 					Script script = notifier.createScript(ScriptConstants.SAVE_NOTIFICATION);
 					notifier.runScript(context.getScriptManager(), script, resid.getFolderPath(),new String(sd.serialize()));
+					BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resid.getResourcePath());
+					if(tab!=null) {
+						view.registerChangeListeners();
+						view.updateNotificationHandlerForSave();
+						tab.setBackground(view.getBackgroundColorForState());
+						SwingUtilities.invokeLater(new WorkspaceRepainter());
+					}
 				}
 				requestHandler.triggerStatusNotifications(context.getProjectName());
 				

@@ -670,10 +670,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 						log.infof("%s.handleDrop: dropped block %s",CLSS,block.getClassName());
 						if( block.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK) ||
 							block.getClassName().equals(BlockConstants.BLOCK_CLASS_INPUT) ||
-							block.getClassName().equals(BlockConstants.BLOCK_CLASS_OUTPUT)) {
-							addNameDisplay(block,dropPoint.x,dropPoint.y);
-						}
-						else if(block.getClassName().equals(BlockConstants.BLOCK_CLASS_SOURCE)) {
+							block.getClassName().equals(BlockConstants.BLOCK_CLASS_OUTPUT) ||
+							block.getClassName().equals(BlockConstants.BLOCK_CLASS_SOURCE)) {
 							addNameDisplay(block,dropPoint.x,dropPoint.y);
 						}
 						// Create the process editor for the new block
@@ -785,7 +783,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 									desc.setCtypeEditable(true);
 									block = new ProcessBlockView(desc);
 									block.setName(enforceUniqueName(nameFromTagTree(tnode),diagram));
-								}								
+								}	
+								 
 								// Define a single input
 								AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.ANY);
 								input.setIsMultiple(false);
@@ -829,7 +828,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 									type = (DataType)config.getOrDefault(WellKnownTagProps.DataType);
 								}
 								catch(Exception ex) {
-									log.infof("%s.handleDiagramDrop: failed to get tag info for %s %s (%s)",CLSS,block.getClassName(),tnode.getFullPath().toStringFull(),
+									log.infof("%s.handleTagDrop: failed to get tag info for %s %s (%s)",CLSS,block.getClassName(),tnode.getFullPath().toStringFull(),
 											ex.getMessage());
 								}
 
@@ -845,7 +844,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 								BlockPropertyEditor editor = new BlockPropertyEditor(context,this,block);
 								PropertyEditorFrame peframe = getPropertyEditorFrame();
 								peframe.setEditor(editor);
-								log.infof("%s.handleTagDrop: dropped %s",CLSS,block.getClassName());
+								log.infof("%s.handleTagDrop: dropped %s (%s)",CLSS,block.getClassName(),block.getName());
 							}
 							else {
 								log.infof("%s.handleTagDrop: drop of %s out-of-bounds",CLSS,block.getClassName());
@@ -950,13 +949,14 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		Point loc = new Point(x+BlockConstants.ATTRIBUTE_DISPLAY_OFFSET_X,
                 y+block.getPreferredHeight()+BlockConstants.ATTRIBUTE_DISPLAY_OFFSET_Y);
 		this.getActiveDiagram().addBlock(bav);
+		log.infof("%s.addNameDisplay: %s",CLSS,block.getName());
 		SwingUtilities.invokeLater(new BlockPositioner(this,bav,loc));
 	}
 	
 	@Override
 	public void onActivation() {
 		zoomCombo.setVisible(true);
-		log.infof("%s: onActivation",CLSS);
+		log.infof("%s.onActivation",CLSS);
 		
 	}
 
@@ -964,7 +964,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	@Override
 	public void onDeactivation() {
 		zoomCombo.setVisible(false);
-		log.infof("%s: onDeactivation",CLSS);
+		log.infof("%s.onDeactivation",CLSS);
 	}
 	
 	// Guarantee a unique name for a block that has not yet been added to the diagram.
@@ -2172,7 +2172,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	 */
 	@Override
 	public void stateChanged(ChangeEvent event) {
-		log.infof("%s.stateChanged: source = %s",CLSS,event.getSource().getClass().getCanonicalName());
+		///log.infof("%s.stateChanged: source = %s",CLSS,event.getSource().getClass().getCanonicalName());
 		if( event.getSource() instanceof ProcessDiagramView ) {
 			ProcessDiagramView diagram = (ProcessDiagramView)event.getSource();
 			statusManager.setPendingView(diagram.getResourceId(), diagram);

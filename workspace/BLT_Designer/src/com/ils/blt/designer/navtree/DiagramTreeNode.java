@@ -93,12 +93,12 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements Noti
 	 * @param resource panel resource 
 	 * @param ws the tabbed workspace holding the diagrams
 	 */
-	public DiagramTreeNode(DesignerContext context,ProjectResource resource,DiagramWorkspace ws) {
-		super(context,resource.getResourcePath());
+	public DiagramTreeNode(DesignerContext ctx,ProjectResource resource,DiagramWorkspace ws) {
+		super(ctx,resource.getResourcePath());
 		this.workspace = ws;
 		this.executor = new BasicExecutionEngine();
 		this.requestHandler = new ApplicationRequestHandler();
-		this.cpHandler = new CopyPasteHandler(this);
+		this.cpHandler = new CopyPasteHandler(context,this);
 		statusManager = NodeStatusManager.getInstance();
 		
 		alertBadge =iconFromPath("Block/icons/badges/bell.png");

@@ -156,24 +156,6 @@ public class MainPanel extends BasicEditPanel {
 			
 			
 		}
-		
-		// return the name of the appropriate tag provider
-		private String getProvider() {
-			DiagramState state = bpe.getDiagram().getState();
-			String provider = (state.equals(DiagramState.ISOLATED)?
-					bpe.getRequestHandler().getProjectIsolationTagProvider(context.getProjectName()):
-					bpe.getRequestHandler().getProjectProductionTagProvider(context.getProjectName()));
-			return provider;
-		}
-		// Replace the last element of path with name
-		private String renamePath(String name,String path) {
-			int index = path.lastIndexOf("/");
-			if( index>0 ) {
-				path = path.substring(0, index+1);
-				path = path + name;
-			}
-			return path;
-		}
 
 		public void updatePanelForBlock(ProcessBlockView pbv) {
 			nameField.setText(pbv.getName());
@@ -188,7 +170,7 @@ public class MainPanel extends BasicEditPanel {
 
 		@Override
 		public void stateChanged(ChangeEvent e) {
-			log.infof("CorePropertyPanel.stateChanged: name now %s (was? %s)",e.getSource().getClass().getCanonicalName(),block.getName());
+			if(DEBUG) log.infof("CorePropertyPanel.stateChanged: name now %s (was? %s)",e.getSource().getClass().getCanonicalName(),block.getName());
 			nameField.setText(block.getName());
 		}
 		// ============================================== Focus listener ==========================================

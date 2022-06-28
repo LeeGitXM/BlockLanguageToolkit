@@ -57,7 +57,7 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.impl.Ab
  * Note: initUI is called from the AbstractBlock constructor which is called
  *       when the diagram is opened.
  */
-public class ProcessBlockView extends AbstractBlock implements ChangeListener, NotificationChangeListener {
+public class ProcessBlockView extends AbstractBlock implements ChangeListener,Cloneable, NotificationChangeListener {
 	private static final String CLSS = "ProcessBlockView";
 	private static final boolean DEBUG = false;
 	private final static Random random = new Random();
@@ -70,7 +70,6 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 	private String className;
 	private boolean dirty = false;   // A newly created block is clean because we initially sync with the gateway
 	private String editorClass = null; // Class name of custom editor for this block
-	private boolean encapsulation = false; // Is this an encapsulation block
 	private int    embeddedFontSize = WorkspaceConstants.DEFAULT_EMBEDDED_FONT_SIZE; // Size of font for interior label
 	private String embeddedIcon="";               // 32x32 icon to place in block in designer
 	private String embeddedLabel="";              // Label place in block in designer
@@ -129,6 +128,16 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 		}
 		if(DEBUG)log.infof("%s: Created %s (%s) view from descriptor (%d anchors)", CLSS, className, style.toString(),anchors.size());
 		createPseudoRandomName();
+	}
+	
+	/**
+	 * Used by the clone() method
+	 */
+	public ProcessBlockView() {
+		this.listenerList = new EventListenerList();
+		this.changeEvent  = new ChangeEvent(this);
+		this.log = LogUtil.getLogger(getClass().getPackageName());
+		this.uuid = UUID.randomUUID();
 	}
 	
 	public ProcessBlockView(SerializableBlock sb) {
@@ -405,7 +414,6 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 	}
 	public boolean isCtypeEditable() {return ctypeEditable;}
 	public boolean isDirty() {return dirty;}
-	public boolean isEncapsulation() {return encapsulation;}
 	public boolean isLocked() {return locked;}
 	public boolean isSignalAnchorDisplayed() {
 		for(ProcessAnchorDescriptor pad:anchors.values()) {
@@ -430,7 +438,6 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 	public void setCtypeEditable(boolean flag) {this.ctypeEditable = flag;}
 	public void setDirty(boolean dirty) {this.dirty = dirty;} 
 	public void setEditorClass(String editorClass) {this.editorClass = editorClass;}
-	public void setEncapsulation(boolean encapsulation) {this.encapsulation = encapsulation;}
 	public void setEmbeddedFontSize(int size) {this.embeddedFontSize = size;}
 	public void setEmbeddedIcon(String embeddedIcon) {this.embeddedIcon = embeddedIcon;}
 	public void setEmbeddedLabel(String embeddedLabel) {this.embeddedLabel = embeddedLabel;}
@@ -676,6 +683,36 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener, N
 		// TODO Auto-generated method stub
 		
 	}
-
+	// ================================ Cloneable =====================================
+		@Override
+		public ProcessBlockView clone() {
+			ProcessBlockView clone = new ProcessBlockView();
+			clone.background 	= getBackground();
+			clone.className 	= className;
+			clone.ctypeEditable = isCtypeEditable();
+			clone.editorClass 	= getEditorClass();
+			clone.embeddedIcon 	= getEmbeddedIcon();
+			clone.embeddedLabel	= getEmbeddedLabel();
+			clone.embeddedFontSize	= getEmbeddedFontSize();
+			clone.iconPath 			= getIconPath();
+			clone.preferredHeight	= getPreferredHeight();
+			clone.preferredWidth 	= getPreferredWidth();
+			clone.state 		= getState();
+			clone.statusText 	= "";
+			clone.style 		= getStyle();
+			clone.badgeChar      = getBadgeChar();
+			clone.anchors = new HashMap<>();
+			for(String key:anchors.keySet()) {
+				ProcessAnchorDescriptor pad = anchors.get(key);
+				clone.anchors.put(key, pad.clone());
+			}
+			clone.propertyMap = new HashMap<>();
+			for(String key:propertyMap.keySet()) {
+				BlockProperty bp = propertyMap.get(key);
+				clone.propertyMap.put(key,bp.clone());
+			}
+			clone.auxiliaryData= getAuxiliaryData().clone();
+			return clone;
+		}
 }
 
