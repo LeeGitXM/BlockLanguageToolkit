@@ -8,20 +8,29 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
+import java.io.IOException;
 import java.util.Enumeration;
+import java.util.Optional;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.navtree.DiagramTreeNode;
 import com.ils.blt.designer.navtree.NavTreeFolder;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
 import com.inductiveautomation.ignition.common.StringPath;
+import com.inductiveautomation.ignition.common.model.ApplicationScope;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResourceBuilder;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
-import com.inductiveautomation.ignition.common.project.resource.ResourceType;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceNavTreeNode;
+import com.inductiveautomation.ignition.designer.project.DesignableProject;
 
 /**
  * Handle the nitty-gitties of Copy/Paste as requested from the Nav tree. There are two "flavors".
@@ -189,6 +198,10 @@ public class CopyPasteHandler  {
 		return result;
 	}
 	
+	/**
+	 * Add a cloned diagram to the current node.
+	 * @param stringPath path to the original copied diagram
+	 */
 	private void pasteDiagram(StringPath stringPath) {
 		// Guarantee that the root node name does not conflict with any of the current node's children
 		String name = stringPath.getLastPathComponent();
@@ -197,30 +210,95 @@ public class CopyPasteHandler  {
 		StringPath destinationPath = StringPath.extend(parent.getResourcePath().getPath(),name);
 		ProjectResourceId destination = createResourceId(destinationPath.toString());
 		createProjectResource(ARCHIVE_TYPE_DIAGRAM,source,destination);
-		
 	}
-	
+	/**
+	 * Add a folder and descendant folders and diagrams to the current node.
+	 * @param stringEntries clipboard data
+	 */
 	private void pasteFolder(String stringEntries) {
 		// Guarantee that the root node name does not conflict with any of the current node's children
+		// The root node is the only one to worry about name conflicts.
 		String[] entries = stringEntries.split(ENTRY_DELIMITER);
 		String root = entries[0].split(KEY_DELIMITER)[1];
+		String name = StringPath.parse(root).getLastPathComponent();
+		name = ensureUniqueName(name);
+		ProjectResourceId source = createResourceId(root);
+		StringPath destinationPath = StringPath.extend(parent.getResourcePath().getPath(),name);
+		ProjectResourceId destination = createResourceId(destinationPath.toString());
+		createProjectResource(ARCHIVE_TYPE_FOLDER,source,destination);
+		
+		// Now create all the child resources
+		boolean hasRoot = false;
+		for(String entry:entries) {
+			if(!hasRoot) {
+				hasRoot = true;
+				continue;  // We've already handled the root node
+			}
+			String[] keyPath = entry.split(KEY_DELIMITER);
+			String key = keyPath[0];
+			String path= keyPath[1];
+			source = createResourceId(path);
+			path = path.substring(root.length()+1);  // Now partial path w/ respect to root
+			destinationPath = StringPath.extend(parent.getResourcePath().getPath(),path);
+			destination = createResourceId(destinationPath.toString());
+			createProjectResource(key,source,destination);
+		}
 	}
 	
 	/**
-	 * Copy the source resource into a project resource with the specified new Id
+	 * Copy the source resource into a project resource with the specified new resourceId.
+	 * The project will become saved after a normal save action.
 	 */
 	private void createProjectResource(String key,ProjectResourceId source,ProjectResourceId destination) {
+		ProjectResourceBuilder builder = ProjectResource.newBuilder();
+		DesignableProject project = context.getProject();
 		
 		if( key.equalsIgnoreCase(ARCHIVE_TYPE_DIAGRAM)) {
 			ProcessDiagramView view = null;
+			
 			// The diagram may be held by the status manager, if dirty
 			NodeStatusManager statusManager = NodeStatusManager.getInstance();
 			if( statusManager.getPendingView(source)!=null ) {
 				view = statusManager.getPendingView(source).clone();  // Changes block Ids
 			}
+			else {
+				Optional<ProjectResource> optional = project.getResource(source);
+				ProjectResource pr = optional.get();
+				ObjectMapper mapper = new ObjectMapper();
+				byte[] bytes = pr.getData();
+				try {
+					SerializableDiagram sd = mapper.readValue(new String(bytes), SerializableDiagram.class);
+					if( sd!=null ) {
+						view = new ProcessDiagramView(context,source,sd);
+					}
+				}
+				catch(JsonParseException jpe) {
+					log.warnf("%s.saveModifiedResource: Parse exception saving %s...(%s)", CLSS, pr.getResourceName(),jpe.getLocalizedMessage());
+					return;
+				}
+				catch(JsonMappingException jme) {
+					log.warnf("%s.saveModifiedResource: Mapping exception saving %s...(%s)", CLSS, pr.getResourceName(),jme.getLocalizedMessage());
+					return;
+				}
+				catch(IOException ioe) {
+					log.warnf("%s.saveModifiedResource: IO exception saving %s...(%s)", CLSS, pr.getResourceName(),ioe.getLocalizedMessage());
+					return;
+				}
+			}
+			builder.setApplicationScope(ApplicationScope.GATEWAY);
+			builder.setFolder(false);
+			SerializableDiagram sd = view.clone().createSerializableRepresentation();
+			sd.setPath(destination.getFolderPath());
+			sd.setName(destination.getResourcePath().getName());
+			builder.putData(sd.serialize());
+
 		}
 		else {     // Folder
-			
+			builder.setApplicationScope(ApplicationScope.GATEWAY);
+			builder.setFolder(true);
 		}
+		builder.setResourcePath(destination.getResourcePath());
+		ProjectResource res = builder.build();
+		project.createOrModify(res);
 	}
 }

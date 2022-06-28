@@ -165,8 +165,8 @@ public class ResourceSaveManager {
 					notifier.runScript(context.getScriptManager(), script, resid.getFolderPath(),new String(sd.serialize()));
 					BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resid.getResourcePath());
 					if(tab!=null) {
-						view.registerChangeListeners();
 						view.updateNotificationHandlerForSave();
+						view.registerChangeListeners();
 						tab.setBackground(view.getBackgroundColorForState());
 						SwingUtilities.invokeLater(new WorkspaceRepainter());
 					}
