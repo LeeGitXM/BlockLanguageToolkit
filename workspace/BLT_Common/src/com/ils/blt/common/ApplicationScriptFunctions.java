@@ -236,12 +236,7 @@ public class ApplicationScriptFunctions   {
 	public static String getWindowsBrowserPath() {
 		return handler.getWindowsBrowserPath();
 	}
-	/**
-	 * @return the alert state of the specified diagram;
-	 */
-	public static boolean isAlerting(ProjectResourceId resourceId) {
-		return handler.isAlerting(resourceId);
-	}
+
 	/**
 	 * Query a block in the gateway for list of the blocks connected to the named port. 
 	 * @param diagramId of the parent diagram

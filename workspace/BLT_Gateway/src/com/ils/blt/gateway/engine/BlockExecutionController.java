@@ -327,6 +327,14 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		return result;
 	}
 	// Not part of the interface
+	/**
+	 * @param path
+	 * @return a process node (e.g. diagram) with the referenced resource path
+	 */
+	public ProcessNode getProcessNode(String projectName,String path) {
+		ProjectResourceId id = new ProjectResourceId(projectName,BLTProperties.DIAGRAM_RESOURCE_TYPE,path);
+		return modelManager.getProcessNode(id);
+	}
 	public ProcessNode getProcessNode(ProjectResourceId id) {
 		return modelManager.getProcessNode(id);
 	}
@@ -644,23 +652,6 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		}
 	}
 
-	/**
-	 * Notify any listeners in the Client or Designer scopes that a diagram has changed its alert state,
-	 * presumably triggered due to a block state change on the diagram.
-	 * @param resid resourceId of the diagram
-	 * @param val new state (true implies alerting).
-	 */
-	@Override
-	public void sendAlertNotification(ProjectResourceId resid, String val) {
-		String key = NotificationKey.keyForAlert(resid);
-		try {
-			sessionManager.sendNotification(ApplicationScope.DESIGNER, BLTProperties.MODULE_ID, key, val);
-		}
-		catch(Exception ex) {
-			// Probably no receiver registered. This is to be expected if the designer is not running.
-			log.debugf("%s.sendAlertNotification: No notification receiver for %s (%s)",CLSS,key,ex.getMessage());
-		}
-	}
 	/**
 	 * Notify any notification listeners of changes to a block property. This is usually triggered by the 
 	 * block itself. The ultimate receiver is typically a block property in the UI, a ProcessBlockView.

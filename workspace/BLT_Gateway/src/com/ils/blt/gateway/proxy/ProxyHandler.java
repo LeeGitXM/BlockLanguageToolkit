@@ -161,10 +161,11 @@ public class ProxyHandler   {
 				PyDictionary pyDictionary = new PyDictionary();  // Empty
 				createBlockCallback.initializeLocalsMap(scriptManager);
 				createBlockCallback.setLocalVariable(0,new PyString(className));
-				createBlockCallback.setLocalVariable(1,new PyString(parentId.toString()));
-				createBlockCallback.setLocalVariable(2,new PyString(blockId.toString()));
-				createBlockCallback.setLocalVariable(3,new PyString(name));
-				createBlockCallback.setLocalVariable(4,pyDictionary);
+				createBlockCallback.setLocalVariable(1,new PyString(parentId.getProjectName()));
+				createBlockCallback.setLocalVariable(2,new PyString(parentId.getResourcePath().getParentPath()));
+				createBlockCallback.setLocalVariable(3,new PyString(blockId.toString()));
+				createBlockCallback.setLocalVariable(4,new PyString(name));
+				createBlockCallback.setLocalVariable(5,pyDictionary);
 				log.infof("%s.createBlockInstance --- executing create script for %s",CLSS,className); 
 				createBlockCallback.execute(scriptManager);
 
@@ -187,14 +188,6 @@ public class ProxyHandler   {
 			log.warnf("%s.createBlockInstance --- failed to compile create script %s",CLSS,className);
 		}
 		return block;
-	}
-	
-	private String removeXomFromClassName(String classNm) {
-		String ret = classNm;
-		if (classNm.toLowerCase().startsWith("xom.block.")) {
-			ret = "ils" + classNm.substring(3);
-		}
-		return ret;
 	}
 
 	/**

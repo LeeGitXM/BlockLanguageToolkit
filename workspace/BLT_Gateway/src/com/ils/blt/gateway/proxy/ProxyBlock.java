@@ -161,7 +161,6 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	public synchronized void setState(TruthValue newState) {
 		super.setState(newState);   // Records activity
 		delegate.setBlockState(context.getScriptManager(),this,newState);
-		requestHandler.postAlertingStatus(this);
 	}
 	
 	/**
@@ -195,7 +194,6 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	@Override
 	public synchronized  void getAuxData(GeneralPurposeDataContainer container) { 
 		delegate.getAuxData(context.getProjectManager().getProjectScriptManager(getProjectName()),getPythonBlock(),container);
-		requestHandler.postAlertingStatus(this);
 	}
 	
 	/**
@@ -225,7 +223,6 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	@Override
 	public synchronized void onDelete() { 
 		delegate.onDelete(context.getProjectManager().getProjectScriptManager(getProjectName()),getPythonBlock()); 
-		requestHandler.postAlertingStatus(this);
 	}
 	/**
 	 * Perform whatever is necessary prior to creating or saving the block.
@@ -233,7 +230,6 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	@Override
 	public synchronized void onSave() { 
 		delegate.onSave(context.getProjectManager().getProjectScriptManager(getProjectName()),getPythonBlock()); 
-		requestHandler.postAlertingStatus(this);
 	}
 	/**
 	 * Reset the block. Resetting  python block may change the diagram alert
@@ -242,7 +238,6 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	@Override
 	public synchronized void reset() { 
 		delegate.reset(context.getProjectManager().getProjectScriptManager(getProjectName()),getPythonBlock()); 
-		requestHandler.postAlertingStatus(this);
 		recordActivity(Activity.ACTIVITY_RESET,"");
 	}
 	/**
@@ -252,6 +247,5 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	public synchronized void setAuxData(GeneralPurposeDataContainer container) { 
 		delegate.setAuxData(context.getProjectManager().getProjectScriptManager(getProjectName()),getPythonBlock(),container); 
 		setAuxiliaryData(container);
-		requestHandler.postAlertingStatus(this);
 	}
 }

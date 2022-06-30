@@ -34,10 +34,6 @@ import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceN
  *  
  *  Note that a name change does not make a node dirty, just "unsaved".
  *  
- *  "Alerting" is completely independent of dirtiness. It refers to
- *  the state something inside a diagram. A node is alerting if any of its
- *  children are alerting.
- *  
  *  The resourceId is known to both the view code and the nav tree.
  */
 public class NodeStatusManager   {
@@ -128,7 +124,6 @@ public class NodeStatusManager   {
 		StatusEntry se = statusByPath.get(resourceId.getFolderPath());
 		if( se == null ) {
 			se = new StatusEntry(node);
-			se.setAlerting(handler.isAlerting(resourceId));
 			statusByPath.put(resourceId.getFolderPath(),se);
 		}
 		log.debugf("%s.createResourceStatus: %s (%s)",CLSS,node.getName(),resourceId.getFolderPath());

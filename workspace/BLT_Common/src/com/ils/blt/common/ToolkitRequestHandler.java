@@ -219,11 +219,6 @@ public interface ToolkitRequestHandler  {
 	 * @return the configured browser path (for Windows)
 	 */
 	public String getWindowsBrowserPath();
-	/**
-	 * @param id the diagram expressed as a resource
-	 * @return the alert state of the specified diagram;
-	 */
-	public boolean isAlerting(ProjectResourceId id) ;
 	
 	/**
 	 * @return whether or not the engine is running

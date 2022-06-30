@@ -285,11 +285,6 @@ public class GatewayRpcDispatcher   {
 		return requestHandler.getWindowsBrowserPath();
 	}
 
-    public Boolean isAlerting(ProjectResourceId resourceId) {
-    	boolean result = requestHandler.isAlerting(resourceId);
-    	return result;
-    }
-
 	public List<SerializableBlockStateDescriptor> listBlocksConnectedAtPort(ProjectResourceId diagramId,String blockId,String portName) {
 		return requestHandler.listBlocksConnectedAtPort(diagramId,blockId,portName);
 	}

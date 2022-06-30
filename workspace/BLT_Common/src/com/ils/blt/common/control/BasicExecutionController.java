@@ -123,10 +123,7 @@ public class BasicExecutionController implements ExecutionController  {
 		log.warnf("%s.listSourcesForSink: WARNING: Executed from stub class",CLSS);
 		return new ArrayList<>();
 	}
-	@Override
-	public void sendAlertNotification(ProjectResourceId resid, String val) {
-		log.warnf("%s.sendAlertNotification: WARNING: Executed from stub class",CLSS);
-	}
+
 	@Override
 	public void sendAuxDataNotification(String id,QualifiedValue val) {
 		log.warnf("%s.sendAuxDataNotification: WARNING: Executed from stub class",CLSS);

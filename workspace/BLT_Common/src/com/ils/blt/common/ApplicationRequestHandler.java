@@ -587,23 +587,6 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		if( state.equalsIgnoreCase("running")) isRunning = true;
 		return isRunning;
 	}
-	/**
-	 * Determine whether or not the diagram is alerting.
-	 */
-	@Override
-	public boolean isAlerting(ProjectResourceId resid) {
-		Boolean result = null;
-		try {
-			result = (Boolean)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "isAlerting",resid);
-			log.debugf("%s.isAlerting ...%s:%s = %s",CLSS,resid.getProjectName(),resid.getResourcePath().getPath().toString(),result);
-		}
-		catch(Exception ge) {
-			log.infof("%s.isAlerting: GatewayException (%s) for project %s, resource %s",CLSS,ge.getMessage(),resid.getProjectName(),resid.getResourcePath().getPath().toString());
-		}
-		if( result==null ) return false;
-		return result.booleanValue();
-	}
 	
 	/**
 	 * Query a block in the gateway for list of the blocks connected to the named port. 

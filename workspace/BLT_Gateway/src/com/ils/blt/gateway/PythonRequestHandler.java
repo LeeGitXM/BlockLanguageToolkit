@@ -7,6 +7,7 @@ package com.ils.blt.gateway;
 import java.util.Date;
 import java.util.UUID;
 
+import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.ProcessBlock;
 import com.ils.blt.common.block.TruthValue;
@@ -34,19 +35,19 @@ public class PythonRequestHandler   {
 	public PythonRequestHandler() {}
 
 	
-	
 	/**
-	 * Find a block given the Id of the parent diagram the block itself.
+	 * Find a block given the resourcePath of the parent diagram and the UUID of the block itself.
 	 * 
-	 * @param parent identifier for the diagram, a string version of a UUID
+	 * @param projectName project for the diagram
+	 * @param resource path, a string
 	 * @param blockId identifier for the block, a string version of a UUID
 	 * @return the referenced block
 	 */
-	public ProcessBlock getBlock(ProjectResourceId parent,String blockId)  {
-		log.tracef("%s.getBlock, diagram.block = %s.%s ",CLSS,parent,blockId);
+	public ProcessBlock getBlock(String projectName,String resourcePath,String blockId)  {
+		log.tracef("%s.getBlock, diagram.block = %s.%s ",CLSS,resourcePath,blockId);
 		ProcessBlock block = null;
 		try {
-			ProcessNode node = controller.getProcessNode(parent);
+			ProcessNode node = controller.getProcessNode(projectName,resourcePath);
 			if( node instanceof ProcessDiagram ) {
 				UUID uuid = UUID.fromString(blockId);
 				ProcessDiagram diag = (ProcessDiagram)node;
@@ -54,7 +55,7 @@ public class PythonRequestHandler   {
 			}
 		}
 		catch(IllegalArgumentException iae) {
-			log.warnf("%s.getBlock: on of %s or %s is an illegal UUID (%s)",CLSS,parent,blockId,iae.getMessage());
+			log.warnf("%s.getBlock: on of %s or %s is an illegal UUID (%s)",CLSS,resourcePath,blockId,iae.getMessage());
 		}
 		return block;
 	}
@@ -78,25 +79,27 @@ public class PythonRequestHandler   {
 	
 	/**
 	 * Search the tree of node ancestors until we find one with the project set.
-	 * @param uuidString identifier for a node, a string version of a UUID
+	 *
+	 * @param projectName project for the diagram
+	 * @param resource path, a string
 	 * @return the default database for the project containing this node
 	 */
-	public String getDefaultDatabase(ProjectResourceId resourceId)  {
+	public String getDefaultDatabase(String projectName,String resourcePath)  {
 		String dbName = "";
 
-		ProcessNode node = controller.getProcessNode(resourceId);
+		ProcessNode node = controller.getProcessNode(projectName,resourcePath);
 		while( node!=null) {
 			if(node instanceof ProcessDiagram ) {
 				ProcessDiagram diagram = (ProcessDiagram)node;
-				if( diagram.getState().equals(DiagramState.ISOLATED)) dbName = controller.getProjectIsolationDatabase(resourceId.getProjectName());
-				else dbName = controller.getProjectProductionDatabase(resourceId.getProjectName());
+				if( diagram.getState().equals(DiagramState.ISOLATED)) dbName = controller.getProjectIsolationDatabase(projectName);
+				else dbName = controller.getProjectProductionDatabase(projectName);
 				break;
 			}
 			node = controller.getParentNode(node);
 		}
 
 		if( !dbName.isEmpty() ) log.debugf("%s.getDefaultDatabase: %s ",CLSS,dbName);
-		else                   log.warnf("%s.getDefaultDatabase: Database for diagram %s not found,",CLSS,resourceId.getResourcePath().getPath().toString());
+		else                   log.warnf("%s.getDefaultDatabase: Database for diagram %s not found,",CLSS,resourcePath);
 		return dbName;
 	}
 	
@@ -113,103 +116,84 @@ public class PythonRequestHandler   {
 		return controller.getProjectProductionDatabase(projectName);
 	}
 	/**
-	 * @param uuidString identifier for the diagram, a string version of a UUID
+	 * @param projectName project for the diagram
+	 * @param resource path, a string
 	 * @return the default tag provider for the project associated with 
 	 *         the specified diagram
 	 */
-	public String getDefaultTagProvider(ProjectResourceId resid)  {
-		log.tracef("%s.getDefaultTagProvider, node = %s ",CLSS,resid.getResourcePath().getPath().toString());
+	public String getDefaultTagProvider(String projectName,String resourcePath)  {
+		log.tracef("%s.getDefaultTagProvider, node = %s ",CLSS,resourcePath);
 		String provider = "";
 		try {
-			ProcessNode node = controller.getProcessNode(resid);
+			ProcessNode node = controller.getProcessNode(projectName,resourcePath);
 			while(  node!=null) {
 				if(node instanceof ProcessDiagram ) {
 					ProcessDiagram diagram = (ProcessDiagram)node;
-					if( diagram.getState().equals(DiagramState.ISOLATED)) provider = controller.getProjectIsolationProvider(resid.getProjectName());
-					else provider = controller.getProjectProductionProvider(resid.getProjectName());
+					if( diagram.getState().equals(DiagramState.ISOLATED)) provider = controller.getProjectIsolationProvider(projectName);
+					else provider = controller.getProjectProductionProvider(projectName);
 					break;
 				}
 				node = controller.getParentNode(node);
 			}
 		}
 		catch(IllegalArgumentException iae) {
-			log.warnf("%s.getDefaultTagProvider: %s is an illegal UUID (%s)",CLSS,resid.getResourcePath().getPath().toString(),iae.getMessage());
+			log.warnf("%s.getDefaultTagProvider: %s is an illegal UUID (%s)",CLSS,resourcePath,iae.getMessage());
 		}
-		if( provider.isEmpty() ) log.warnf("%s.getDefaultTagProvider: Provider for diagram %s not found,",CLSS,resid.getResourcePath().getPath().toString());
+		if( provider.isEmpty() ) log.warnf("%s.getDefaultTagProvider: Provider for diagram %s not found,",CLSS,resourcePath);
 		return provider;
 	}
 	/**
 	 * Given an identifier string, return the associated diagram. 
 	 * The parent of a block should be a diagram.
-	 * 
+	 * @param projectName project for the diagram
+	 * @param resource path
 	 * @return the diagram
 	 */
-	public ProcessDiagram getDiagram(ProjectResourceId diagramId)  {
-		log.tracef("%s.getDiagram, diagram = %s ",CLSS,diagramId);
+	public ProcessDiagram getDiagram(String projectName,String resourcePath)  {
+		log.tracef("%s.getDiagram, diagram = %s ",CLSS,resourcePath);
 		ProcessDiagram result = null;
 		try {
-			ProcessNode node = controller.getProcessNode(diagramId);
+			ProcessNode node = controller.getProcessNode(projectName,resourcePath);
 			if( node instanceof ProcessDiagram ) {
 				result = (ProcessDiagram)node;
 			}
 		}
 		catch(IllegalArgumentException iae) {
-			log.warnf("%s.getDiagram: %s is an illegal UUID (%s)",CLSS,diagramId,iae.getMessage());
+			log.warnf("%s.getDiagram: %s is an illegal UUID (%s)",CLSS,resourcePath,iae.getMessage());
 		}
 		return result;
 	}
 
-
-	public boolean isAlerting(ProcessDiagram diagram) {
-		return getAlertStatus(diagram);
-	}
-	/**
-	 * Inform anyone who will listen about the diagram alerting status.
-	 * 
-	 * @param block the block that is responsible for a status change
-	 */
-	public void postAlertingStatus(ProcessBlock block)  {
-		// It only matters if this is an alerter
-		if( block.getClassName().equalsIgnoreCase(alerterClassName) ) {
-			ProcessNode node = controller.getProcessNode(block.getParentId());
-			if( node instanceof ProcessDiagram ) {
-				ProcessDiagram diagram = (ProcessDiagram)node;
-				boolean alerting = getAlertStatus(diagram);
-				controller.sendAlertNotification(diagram.getResourceId(), (alerting?"true":"false"));
-			}	
-		}
-	}
 	/**
 	 * Handle the block placing a new value on its output. The input may be PyObjects.
 	 * This method is not "test-time" aware.
 	 * 
-	 * @param parent identifier for the parent, a string version of a UUID
+	 * @param projectName project for the diagram
+	 * @param resource path
+	 * @return the diagram
 	 * @param id block identifier a string version of the UUID
 	 * @param port the output port on which to insert the result
 	 * @param value the result of the block's computation
 	 * @param quality of the reported output
 	 * @param time timestamp of the notification
 	 */
-	public void postValue(ProjectResourceId parent,String id,String port,String value,String quality,long time)  {
+	public void postValue(String projectName,String resourcePath,String id,String port,String value,String quality,long time)  {
 		log.debugf("%s.postValue - %s = %s (%s) on %s",CLSS,id,value.toString(),quality.toString(),port);
 		
 		try {
 			UUID uuid = UUID.fromString(id);
-			ProcessDiagram diagram = getDiagram(parent); 
+			ProcessDiagram diagram = getDiagram(projectName,resourcePath); 
 			// Do nothing if diagram is disabled
 			if( diagram!=null && !diagram.getState().equals(DiagramState.DISABLED)) {
-				ControllerRequestHandler.getInstance().postValue(parent,id,port,value);
+				ControllerRequestHandler.getInstance().postValue(projectName,resourcePath,id,port,value);
 				controller.sendConnectionNotification(id, port, 
 						new BasicQualifiedValue(value,
 								(quality.equalsIgnoreCase("good")?QualityCode.Good:QualityCode.Bad),
 								new Date(time)));
-				ProcessBlock block = diagram.getProcessBlock(uuid);
-				postAlertingStatus(block);
-				
 			}
 		}
 		catch(IllegalArgumentException iae) {
-			log.warnf("%s.postValue: one of %s or %s illegal UUID (%s)",CLSS,parent,id,iae.getMessage());
+			log.warnf("%s.postValue: one of %s or %s illegal UUID (%s)",CLSS,resourcePath,id,iae.getMessage());
 		}
 	}
 	
@@ -242,62 +226,39 @@ public class PythonRequestHandler   {
 	/**
 	 * Broadcast a result to blocks in the diagram
 	 * 
-	 * @param parent identifier for the diagram, a string version of a UUID
+	 * @param projectName project for the diagram
+	 * @param resource path
 	 * @param command the value of the signal
 	 * @param message text of the signal
 	 * @param arg an argument
 	 * @param time the time associated with this signal
 	 */
-	public void sendTimestampedSignal(ProjectResourceId parent,String command,String message,String arg,long time)  {
-		log.debugf("%s.sendLocalSignal - %s = %s %s %s ",CLSS,parent,command,message,arg);
-		ControllerRequestHandler.getInstance().sendTimestampedSignal(parent,command,message,arg,time);
+	public void sendTimestampedSignal(String projectName,String resourcePath,String command,String message,String arg,long time)  {
+		log.debugf("%s.sendLocalSignal - %s = %s %s %s ",CLSS,resourcePath,command,message,arg);
+		ProjectResourceId diagId = new ProjectResourceId(projectName,BLTProperties.DIAGRAM_RESOURCE_TYPE,resourcePath);
+		ControllerRequestHandler.getInstance().sendTimestampedSignal(diagId,command,message,arg,time);
 		
 	}
-	/**
-	 * Specify a class of block that, when it has a true state, gives the entire diagram
-	 * an "alerting" state. For now there is only a single class defined. This could easily
-	 * be a list. This is global.
-	 * @param cname
-	 */
-	public void setAlerterClass(String cname) {
-		alerterClassName = cname;
-	}
+
 	/**
 	 * Write a value to the named tag. The provider is the provider appropriate to
 	 * the referenced diagram
 	 * 
-	 * @param parent identifier for the diagram, a string version of a UUID
+	 * @param projectName project for the diagram
+	 * @param resource path, a string
 	 * @param tagPath path to the tag
 	 * @param data the value to be written
 	 * @param quality the quality of the output
 	 * @param time the time associated with this write operation
 	 */
-	public void updateTag(ProjectResourceId diagId,String tagPath,String data,String quality,long time)  {
+	public void updateTag(String projectName,String resourcePath,String tagPath,String data,String quality,long time)  {
 		if( tagPath==null || tagPath.isEmpty() ) return;   // Fail silently
-		log.debugf("%s.updateTag - %s = %s %s %s %d ",CLSS,diagId.getResourcePath().getPath().toString(),tagPath,data,quality,time);
+		log.debugf("%s.updateTag - %s = %s %s %s %d ",CLSS,resourcePath,tagPath,data,quality,time);
 
 		QualityCode q = QualityCode.Good;
 		if(!quality.equalsIgnoreCase("good")) q = QualityCode.Bad;
+		ProjectResourceId diagId = new ProjectResourceId(projectName,BLTProperties.DIAGRAM_RESOURCE_TYPE,resourcePath);
 		QualifiedValue qv = new BasicQualifiedValue(data,q,new Date(time));
 		controller.updateTag(diagId, tagPath, qv);
-	}
-	
-	/*
-	 * This method is only called on a state change of one of the Python blocks under the
-	 * assumption that hard-coded blocks do not impact the diagram's alert status.
-	 */
-	private boolean getAlertStatus(ProcessDiagram diagram) {
-		boolean result = false;
-		if( alerterClassName!=null ) {
-			for(ProcessBlock blk:diagram.getProcessBlocks()){
-				if(blk.getClassName().equalsIgnoreCase(alerterClassName)) {
-					if(blk.getState().equals(TruthValue.TRUE)) {
-						result = true;
-						break;
-					}
-				}
-			}
-		}
-		return result;
 	}
 }

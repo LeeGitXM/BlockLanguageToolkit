@@ -116,8 +116,13 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		return instance;
 	}
 	@Override
-	public List<SerializableResourceDescriptor> childNodes(ProjectResourceId nodeId) {
-		ProcessNode node = controller.getProcessNode(nodeId);
+	public List<SerializableResourceDescriptor> childNodes(ProjectResourceId id) {
+		String projectName = id.getProjectName();
+		String resourcePath = id.getResourcePath().getFolderPath();
+		return childNodes(projectName,resourcePath);
+	}
+	public List<SerializableResourceDescriptor> childNodes(String projectName,String resource) {
+		ProcessNode node = controller.getProcessNode(projectName,resource);
 		List<SerializableResourceDescriptor> result = new ArrayList<>();
 		if( node!=null ) {
 			Collection<ProcessNode> children =  node.getChildren();
@@ -750,16 +755,6 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		return getExecutionState().equalsIgnoreCase("running");
 	}
 	@Override
-	public boolean isAlerting(ProjectResourceId resid) {
-		ProcessDiagram diagram = controller.getDiagram(resid);
-		if( diagram==null ) {
-			// Node is most likely an application or family
-			log.debugf("%s.isAlerting: No diagram found in project %s with id = %s",CLSS,resid.getProjectName(),resid.getResourcePath().getPath().toString());
-			return false;
-		}
-		return pyHandler.isAlerting(diagram);
-	}
-	@Override
 	public synchronized List<SerializableBlockStateDescriptor> listBlocksConnectedAtPort(ProjectResourceId diagramId,String blockId,String portName) {
 		List<SerializableBlockStateDescriptor> descriptors = new ArrayList<>();
 		ProcessDiagram diagram = controller.getDiagram(diagramId);
@@ -1200,6 +1195,22 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * @param port the output port on which to insert the result
 	 * @param value the result of the block's computation
 	 */
+	public void postValue(String projectName,String resourcePath, String blockId,String port,String value)  {
+		log.tracef("%s.postValue - %s = %s on %s",CLSS,blockId,value,port);
+		UUID blockuuid   = UUID.fromString(blockId);
+		ProjectResourceId diagramId = new ProjectResourceId(projectName,BLTProperties.DIAGRAM_RESOURCE_TYPE,resourcePath);
+		postValue(diagramId,blockuuid,port,value,BLTProperties.QUALITY_GOOD) ;
+	}
+	
+	/**
+	 * Handle the block placing a new value on its output. This minimalist version
+	 * is likely called from an external source through an RPC.
+	 * 
+	 * @param diagramId identifier for the parent
+	 * @param blockId identifier for the block
+	 * @param port the output port on which to insert the result
+	 * @param value the result of the block's computation
+	 */
 	public void postValue(ProjectResourceId diagramId,String blockId,String port,String value)  {
 		log.tracef("%s.postValue - %s = %s on %s",CLSS,blockId,value,port);
 		try {
@@ -1214,7 +1225,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * Handle the block placing a new value on its output. This version is called from
 	 * a Python implementation of a block.
 	 * 
-	 * @param parentuuid identifier for the parent
+	 * @param diagramId identifier for the parent diagram
 	 * @param blockId identifier for the block
 	 * @param port the output port on which to insert the result
 	 * @param value the result of the block's computation
