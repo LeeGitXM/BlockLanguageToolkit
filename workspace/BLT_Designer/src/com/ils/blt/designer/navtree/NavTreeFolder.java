@@ -102,7 +102,7 @@ public class NavTreeFolder extends FolderNode implements ProjectResourceListener
 	private final NodeStatusManager statusManager;
 	private final CreateFolderAction folderCreateAction;
 	private final ApplicationRequestHandler requestHandler;
-	protected final ImageIcon alertBadge;
+	private final ImageIcon brainIcon;
 	private final ImageIcon defaultIcon = IconUtil.getIcon("folder_closed");
 	private final ImageIcon openIcon;
 	private final ImageIcon closedIcon;
@@ -138,7 +138,7 @@ public class NavTreeFolder extends FolderNode implements ProjectResourceListener
 		
 		workspace = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getWorkspace();
 		statusManager = NodeStatusManager.getInstance();
-		alertBadge =iconFromPath("Block/icons/badges/bell.png");
+		brainIcon =iconFromPath("Block/icons/navtree/ai_abstract.png");
 
 		// Simple folder
 		closedIcon = IconUtil.getIcon("folder_closed");
@@ -170,18 +170,14 @@ public class NavTreeFolder extends FolderNode implements ProjectResourceListener
 	@Override
 	public Icon getExpandedIcon() { 
 		Icon ike  = openIcon;
-		if(statusManager.getAlertState(resourceId)) {
-			ike = IconUtil.applyBadge(ike, alertBadge);
-		}
+		if(isRoot()) ike = brainIcon;
 		return ike;
 	}
 	
 	@Override
 	public Icon getIcon() {
 		Icon ike  = closedIcon;
-		if(statusManager.getAlertState(resourceId)) {
-			ike = IconUtil.applyBadge(ike, alertBadge);
-		}
+		if(isRoot()) ike = brainIcon;
 		return ike;
 	}
 	public int getResourceScope() { return this.resourceScope; }
