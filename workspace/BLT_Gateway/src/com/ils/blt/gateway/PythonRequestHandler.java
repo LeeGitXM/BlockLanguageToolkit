@@ -18,6 +18,7 @@ import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualityCode;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
+import com.inductiveautomation.ignition.common.project.resource.ResourceType;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 
@@ -34,7 +35,10 @@ public class PythonRequestHandler   {
 	
 	public PythonRequestHandler() {}
 
-	
+	public ProjectResourceId createResourceId(String projectName, String path) {
+		ProjectResourceId resourceId = new ProjectResourceId(projectName,BLTProperties.DIAGRAM_RESOURCE_TYPE,path);
+		return resourceId;
+	}
 	/**
 	 * Find a block given the resourcePath of the parent diagram and the UUID of the block itself.
 	 * 

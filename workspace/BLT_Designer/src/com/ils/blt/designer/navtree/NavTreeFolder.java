@@ -19,6 +19,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Objects;
@@ -47,6 +49,7 @@ import com.ils.blt.common.serializable.SerializableNodeRenameHandler;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.NodeStatusManager;
+import com.ils.blt.designer.workspace.BlockAttributeView;
 import com.ils.blt.designer.workspace.CopyPasteHandler;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
@@ -227,6 +230,7 @@ public class NavTreeFolder extends FolderNode implements ProjectResourceListener
 					res.getResourceType().getTypeId().toString());
 		}
 	}
+	
 	public String nextFreeName(AbstractResourceNavTreeNode node,String root) {
 		int childCount = node.getChildCount();
 		if( childCount==0 ) return root;
@@ -306,6 +310,7 @@ public class NavTreeFolder extends FolderNode implements ProjectResourceListener
 				}
 			}
 		}
+		Collections.sort(kids,new SortByName());
 		return kids;
 	}
 	/**
@@ -897,6 +902,15 @@ public class NavTreeFolder extends FolderNode implements ProjectResourceListener
 		}
 		return result;
 	}
+	// ************************ For sorting children by name *****************************
+	private class SortByName implements Comparator<AbstractNavTreeNode>
+	{
+	    @Override
+		public int compare(final AbstractNavTreeNode object1, final AbstractNavTreeNode object2) {
+	          return object1.getName().compareTo(object2.getName());
+	      }
+	}
+	
     // ************************ ProjectResourceListener *****************************
 	/**
 	 * We get here due to:

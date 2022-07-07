@@ -17,6 +17,8 @@ import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import javax.swing.JButton;
@@ -245,12 +247,20 @@ public class AttributeDisplaySelector extends JDialog implements TableModelListe
 	 * The
 	 */
 	private void arrangeDisplays() {
-		Point ref = block.getLocation();
+		log.infof("%s.arrangeDisplays: reference %s %d:%d",CLSS,block.getName(),block.getLocation().x,block.getLocation().y);
 		int count = 0;
-		for(BlockAttributeView bav:findDisplays(diagram,block)) {
-			Point loc = new Point(ref.x,ref.y);
+		List<BlockAttributeView> displays = findDisplays(diagram,block);
+		Collections.sort(displays,new SortByPropertyName());
+		for(BlockAttributeView bav:displays) {
+			Point loc = new Point(origin.x,origin.y);
+			loc.y += count*SEPARATION;
 			bav.setLocation(loc);
 			bav.fireBlockMoved();
+			// The offsets are the difference between the reference block and display
+			bav.setOffsetX(loc.x - block.getLocation().x);
+			bav.setOffsetY(loc.y - block.getLocation().y);
+			log.infof("%s.arrangeDisplay: - %s %d:%d %dx%d",CLSS,bav.getPropertyName(),bav.getOffsetX(),bav.getOffsetY(),
+					bav.getPreferredWidth(),bav.getPreferredHeight());
 			count++;
 		}
 	}
@@ -306,5 +316,13 @@ public class AttributeDisplaySelector extends JDialog implements TableModelListe
 			}
 		}
 		return top;
+	}
+	
+	private class SortByPropertyName implements Comparator<BlockAttributeView>
+	{
+	    @Override
+		public int compare(final BlockAttributeView object1, final BlockAttributeView object2) {
+	          return object1.getPropertyName().compareTo(object2.getPropertyName());
+	      }
 	}
 }
