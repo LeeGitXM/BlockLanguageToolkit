@@ -549,7 +549,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements Noti
 			updateUI();
 		} 
 		catch (Exception ex) {
-			log.warn(String.format("%s.setStateAction: ERROR: %s",CLSS,ex.getMessage()),ex);
+			log.warn(String.format("%s.setDiagramState: ERROR: %s",CLSS,ex.getMessage()),ex);
 			ErrorUtil.showError(CLSS+" Exception setting state",ex);
 		}
 	}

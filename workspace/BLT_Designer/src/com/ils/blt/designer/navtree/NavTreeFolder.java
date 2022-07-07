@@ -377,7 +377,7 @@ public class NavTreeFolder extends FolderNode implements ProjectResourceListener
 			SetFolderStateAction ssaActive = new SetFolderStateAction(this,DiagramState.ACTIVE);
 			SetFolderStateAction ssaDisable = new SetFolderStateAction(this,DiagramState.DISABLED);
 			SetFolderStateAction ssaIsolated = new SetFolderStateAction(this,DiagramState.ISOLATED);
-			JMenu setStateMenu = new JMenu(BundleUtil.get().getString(PREFIX+".SetApplicationState"));
+			JMenu setStateMenu = new JMenu(BundleUtil.get().getString(PREFIX+".SetFolderState"));
 			setStateMenu.add(ssaActive);
 			setStateMenu.add(ssaDisable);
 			setStateMenu.add(ssaIsolated);
