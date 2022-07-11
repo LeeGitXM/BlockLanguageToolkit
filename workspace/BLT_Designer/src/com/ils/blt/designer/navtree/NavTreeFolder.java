@@ -141,7 +141,7 @@ public class NavTreeFolder extends FolderNode implements ProjectResourceListener
 		
 		workspace = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getWorkspace();
 		statusManager = NodeStatusManager.getInstance();
-		brainIcon =iconFromPath("Block/icons/navtree/ai_abstract.png");
+		brainIcon =iconFromPath("Block/icons/navtree/brain_cogs.png");
 
 		// Simple folder
 		closedIcon = IconUtil.getIcon("folder_closed");

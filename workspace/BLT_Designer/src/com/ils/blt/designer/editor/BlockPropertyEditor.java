@@ -16,6 +16,7 @@ import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.ils.common.persistence.ToolkitProperties;
 import com.ils.common.tag.TagUtility;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
+import com.inductiveautomation.ignition.designer.tags.tree.selection.TagSelectionTreePanel;
 
 
 /**
@@ -26,7 +27,6 @@ public class BlockPropertyEditor extends AbstractPropertyEditor   {
 	private static final long serialVersionUID = 8971626415423709616L;
 
 	private final DesignerContext context;
-	private final DiagramWorkspace workspace;
 	private final ProcessDiagramView diagram;
 	private final ProcessBlockView block;
 	private final ApplicationRequestHandler requestHandler;
@@ -35,7 +35,7 @@ public class BlockPropertyEditor extends AbstractPropertyEditor   {
 	private final MainPanel          mainPanel;       		// display the properties for a block
 	private final ConfigurationPanel configPanel;     		// configure a single block property
 	private final ListEditPanel      listEditPanel;   		// configure a property that is a list of strings
-	private final TagBrowserPanel    tagPanel;        		// configure tag for a bound value
+	private final TagTreePanel       tagPanel;        // configure tag for a bound value
 	private final SourceMainPanel     sourceMainPanel;		// Special case editor for SourceConnection 
 	private final SourceEditPanel     sourceEditPanel;		// configure an editor for lists of source blocks
 	
@@ -51,13 +51,12 @@ public class BlockPropertyEditor extends AbstractPropertyEditor   {
 	public BlockPropertyEditor(DesignerContext ctx,DiagramWorkspace wksp,ProcessBlockView view) {
 		this.context = ctx;
 		this.requestHandler = new ApplicationRequestHandler();
-		this.workspace = wksp;
 		this.diagram = wksp.getActiveDiagram();
 		this.block = view;
         this.mainPanel = new MainPanel(context,this,block, wksp);
         this.configPanel = new ConfigurationPanel(this);
         this.listEditPanel = new ListEditPanel(this);
-        this.tagPanel = new TagBrowserPanel(context,this);
+        this.tagPanel = new TagTreePanel(context,this);
         this.sourceMainPanel = new SourceMainPanel(context,this,block, wksp);
         this.sourceEditPanel = new SourceEditPanel(this);
         init();    

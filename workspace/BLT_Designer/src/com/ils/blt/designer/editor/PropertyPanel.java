@@ -336,8 +336,6 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 				DataType typ = null;
 				try {
 					TagPath tp = TagPathParser.parse(tagPath);
-					DataType tagType = DataType.Boolean;
-					Integer exprType = 0;
 					List<TagPath> paths = new ArrayList<>();
 					paths.add(tp);
 					CompletableFuture<List<TagConfigurationModel>> futures = tmgr.getTagConfigsAsync(paths, false, true);
@@ -357,11 +355,10 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 				catch (IOException e) {
 					e.printStackTrace();
 				}
-				if( tagProp==null) return;    // Tag is empty
 				
 				// block binding to expressions for output
-				if (block.getClassName().equals(BlockConstants.BLOCK_CLASS_OUTPUT) &&
-					tagProp!=ExpressionType.None.getIntValue()) {  // only update the tagpath property
+				if (block.getClassName().equals(BlockConstants.BLOCK_CLASS_OUTPUT) && tagProp!=null 
+					&& tagProp!=ExpressionType.None.getIntValue()) {  // only update the tagpath property
 					msg = "Unable to bind expression tag to output";
 				} 
 				else {
