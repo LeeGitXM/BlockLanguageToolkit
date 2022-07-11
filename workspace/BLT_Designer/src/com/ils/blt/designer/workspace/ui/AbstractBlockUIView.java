@@ -27,6 +27,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.block.PlacementHint;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
@@ -527,6 +528,24 @@ public abstract class AbstractBlockUIView extends JComponent implements BlockVie
 		else if( type==ConnectionType.TEXT  ) size = WorkspaceConstants.CONNECTION_WIDTH_TEXT;
 		else if( type==ConnectionType.ANY  ) size = WorkspaceConstants.CONNECTION_WIDTH_TEXT;
 		return size;
+	}
+	
+	protected Color colorForString(String clr) {
+		Color color = new Color(255,255,255,0); // TRANSPARENT
+		if(clr.equalsIgnoreCase(BLTProperties.BLACK)) 		color = new Color(0,0,0,127);
+		else if(clr.equalsIgnoreCase("RED")) 	color = Color.RED;
+		else if(clr.equalsIgnoreCase("GREEN")) 	color = Color.GREEN;
+		else if(clr.equalsIgnoreCase("BLUE"))	color = new Color(0,0,255,127);
+		else if(clr.equalsIgnoreCase("WHITE"))	color = Color.WHITE;
+		else if(clr.equalsIgnoreCase("YELLOW"))	color = Color.YELLOW;
+		else if(clr.equalsIgnoreCase("GRAY"))	color = Color.GRAY;
+		else if(clr.equalsIgnoreCase("LIGHT_GRAY"))	color = Color.LIGHT_GRAY;
+		else if(clr.equalsIgnoreCase("DARK_GRAY"))	color = new Color(63,63,63,127);
+		else if(clr.equalsIgnoreCase("ORANGE"))	color = Color.ORANGE;
+		else if(clr.equalsIgnoreCase("MAGENTA"))color = Color.MAGENTA;
+		else if(clr.equalsIgnoreCase("PINK"))	color = Color.PINK;
+		else if(clr.equalsIgnoreCase("CYAN"))	color = Color.CYAN;
+		return color;
 	}
 	
 	protected Color fillColorForConnectionType(ConnectionType type) {

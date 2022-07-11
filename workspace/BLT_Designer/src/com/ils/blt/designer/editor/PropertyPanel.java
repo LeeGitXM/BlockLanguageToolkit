@@ -32,6 +32,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.TimeUtility;
 import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.block.BindingType;
@@ -484,8 +485,8 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 	 */
 	private void setColorCombo(JComboBox<String> box) {
 		box.removeAllItems();
-		box.addItem("TRANSPARENT");
-		box.addItem("BLACK");
+		box.addItem(BLTProperties.TRANSPARENT);
+		box.addItem(BLTProperties.BLACK);
 		box.addItem("RED");
 		box.addItem("GREEN");
 		box.addItem("BLUE");

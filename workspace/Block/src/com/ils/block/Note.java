@@ -6,6 +6,7 @@ package com.ils.block;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
+import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.ProcessBlock;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
@@ -74,7 +75,7 @@ public class Note extends AbstractProcessBlock implements ProcessBlock {
 		setProperty(BlockConstants.BLOCK_PROPERTY_WIDTH, width);		
 		BlockProperty height = new BlockProperty(BlockConstants.BLOCK_PROPERTY_HEIGHT, Integer.valueOf(DEFAULT_HEIGHT), PropertyType.INTEGER,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_HEIGHT, height);		
-		BlockProperty backgroundColor = new BlockProperty(BlockConstants.BLOCK_PROPERTY_BACKGROUND_COLOR, "TRANSPARENT", PropertyType.COLOR,true);
+		BlockProperty backgroundColor = new BlockProperty(BlockConstants.BLOCK_PROPERTY_BACKGROUND_COLOR, BLTProperties.TRANSPARENT, PropertyType.COLOR,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_BACKGROUND_COLOR, backgroundColor);		
 	}
 	

@@ -99,6 +99,11 @@ public interface BLTProperties   {
 	
 	// Name to use for "Good" Quality
 	public static final String QUALITY_GOOD        = "Good";
+	
+	// Non-standard color names for use with AttributeDisplay backgrounds and elsewhere
+	public static String BLACK                		= "BLACK";
+	public static String TRANSPARENT                = "TRANSPARENT";
+	
 	// Preferences keys
 	public static final String PREFERENCES_NAME     = "BLTPreferences";    // Preferences collection name
 	public static final String PREF_EXIM_DIRECTORY  = "ExImDirectory";     // Export/import directory

@@ -6,6 +6,7 @@ package com.ils.block;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
+import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.ProcessBlock;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
@@ -90,7 +91,7 @@ public class AttributeDisplay extends AbstractProcessBlock implements Cloneable,
 		setProperty(BlockConstants.ATTRIBUTE_PROPERTY_VALUE, value);
 		
 		// These attributes defined how the display is configured
-		BlockProperty backgroundColor = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_BACKGROUND_COLOR, "TRANSPARENT", PropertyType.COLOR,true);
+		BlockProperty backgroundColor = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_BACKGROUND_COLOR, BLTProperties.TRANSPARENT, PropertyType.COLOR,true);
 		setProperty(BlockConstants.ATTRIBUTE_PROPERTY_BACKGROUND_COLOR, backgroundColor);
 		BlockProperty foregroundColor = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_FOREGROUND_COLOR, "BLACK", PropertyType.COLOR,true);
 		setProperty(BlockConstants.ATTRIBUTE_PROPERTY_FOREGROUND_COLOR, foregroundColor);

@@ -6,6 +6,7 @@ package com.ils.block;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
+import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.ProcessBlock;
 import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockConstants;
@@ -77,7 +78,7 @@ public class BlockPropertyDisplay extends AbstractProcessBlock implements Proces
 		setProperty(BlockConstants.BLOCK_PROPERTY_PREFIX, prefix);		
 		BlockProperty suffix = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SUFFIX,"", PropertyType.STRING, true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_SUFFIX, suffix);		
-		BlockProperty backgroundColor = new BlockProperty(BlockConstants.BLOCK_PROPERTY_BACKGROUND_COLOR, "TRANSPARENT", PropertyType.COLOR,true);
+		BlockProperty backgroundColor = new BlockProperty(BlockConstants.BLOCK_PROPERTY_BACKGROUND_COLOR, BLTProperties.TRANSPARENT, PropertyType.COLOR,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_BACKGROUND_COLOR, backgroundColor);		
 	}
 	

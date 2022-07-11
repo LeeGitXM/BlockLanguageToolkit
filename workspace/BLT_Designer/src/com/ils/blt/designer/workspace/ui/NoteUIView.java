@@ -105,19 +105,10 @@ public class NoteUIView extends AbstractBlockUIView implements BlockViewUI, Chan
 		Color background = this.getBackground();
 		Boolean opaque = false;
 
-		String selectedBackgroundName = (String)backgroundColorProperty.getValue();
+		String backgroundName = (String)backgroundColorProperty.getValue();
 		
-		if (selectedBackgroundName != null) {
-			Color selectedBackground = null;
-		    try {
-		        selectedBackground = (Color)Color.class.getField(selectedBackgroundName.toUpperCase()).get(null);
-		    } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
-				selectedBackground = null;
-		    }
-			if (selectedBackground != null) {
-				background = selectedBackground;
-			}
-			background = selectedBackground;
+		if (backgroundName != null) {
+			background = colorForString(backgroundName);
 			opaque = true;
 		}
 		

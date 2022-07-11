@@ -2,12 +2,11 @@ package com.ils.blt.designer.workspace;
 
 import java.awt.Point;
 import java.io.IOException;
-import java.util.List;
 
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 
-import com.ils.blt.common.ApplicationRequestHandler;
+import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockConstants;
@@ -98,9 +97,9 @@ public class BlockAttributeView extends ProcessBlockView implements BlockListene
 		setProperty(value);
 		
 		// These attributes defined how the display is configured
-		BlockProperty bk = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_BACKGROUND_COLOR, "TRANSPARENT", PropertyType.COLOR,true);
+		BlockProperty bk = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_BACKGROUND_COLOR, BLTProperties.TRANSPARENT, PropertyType.COLOR,true);
 		setProperty(bk);
-		BlockProperty fg = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_FOREGROUND_COLOR, "BLACK", PropertyType.COLOR,true);
+		BlockProperty fg = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_FOREGROUND_COLOR, BLTProperties.BLACK, PropertyType.COLOR,true);
 		setProperty(fg);
 		BlockProperty height = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_HEIGHT, BlockConstants.ATTRIBUTE_DISPLAY_HEIGHT, PropertyType.INTEGER,true);
 		setProperty(height);		
