@@ -137,7 +137,15 @@ public class BlockPropertyEditor extends AbstractPropertyEditor   {
 			break;
 		}
 	}
-	
+	// Update the displayed value in the main panel
+	public void updatePanelForBinding(String propertyName,String val) {
+		if (block.getClassName().equals(BlockConstants.BLOCK_CLASS_SOURCE)) {
+			sourceMainPanel.updatePanelForBinding(propertyName,val);
+		} 
+		else {
+			mainPanel.updatePanelForBinding(propertyName,val);
+		}
+	}
 	public void updatePanelForProperty(int panelIndex,BlockProperty prop) {
 		switch(panelIndex) {
 		case BlockEditConstants.CONFIGURATION_PANEL:

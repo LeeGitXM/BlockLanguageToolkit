@@ -260,9 +260,8 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 	}
 	// Subscribe to a tag. This will fail if the tag path is unset or illegal.
 	// The provider has been set in the panel constructor.
-	private DataType subscribeToTagPath(String path) {
-		DataType type = null;
-		if( path==null || path.length()==0 ) return null;  // Fail silently for path not set
+	private void subscribeToTagPath(String path) {
+		if( path==null || path.length()==0 ) return;  // Fail silently for path not set
 		if(DEBUG)log.infof("%s.subscribeToTagPath: - %s (%s)",CLSS,property.getName(),path);
 		 ClientTagManager tmgr = context.getTagManager();
 		try {
@@ -270,11 +269,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 			tmgr.subscribeAsync(tp, this);
 			CompletableFuture<Results<NodeDescription>> future = tmgr.browseAsync(tp, new BrowseFilter());
 			Results<NodeDescription> results = future.get();
-			if( results!=null ) {
-				Iterator<NodeDescription> iterator = results.getResults().iterator();
-				if(iterator.hasNext()) type = iterator.next().getDataType();
-			}
-			else {
+			if( results==null ) {
 				log.errorf("%s.subscribeToTagPath: No results reading tag %s",CLSS,path);
 			}
 		}
@@ -287,7 +282,6 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 		catch(IOException ioe) {
 			log.errorf("%s.subscribeToTagPath tag path parse error for %s (%s)",CLSS,path,ioe.getMessage());
 		}
-		return type;
 	}
 	
 	// Unsubscribe to a tag
@@ -322,76 +316,16 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 		}
 		
 		valueDisplayField.setText(text);
+		
 		if( property.getBindingType().equals(BindingType.TAG_MONITOR) ||
 				property.getBindingType().equals(BindingType.TAG_READ) ||
 				property.getBindingType().equals(BindingType.TAG_READWRITE) ||
 				property.getBindingType().equals(BindingType.TAG_WRITE)	) {
 			
-			String msg = null;
-			String tagPath = fncs.coerceToString(property.getBinding());
-			// we should only do  this check if it affects the connection type
-			Integer tagProp = 0;
-			if( BlockConstants.BLOCK_PROPERTY_TAG_PATH.equalsIgnoreCase(property.getName())) {
-				ProcessDiagramView dview = workspace.getActiveDiagram();
-				ClientTagManager tmgr = context.getTagManager();
-				DataType typ = null;
-				try {
-					TagPath tp = TagPathParser.parse(tagPath);
-					List<TagPath> paths = new ArrayList<>();
-					paths.add(tp);
-					CompletableFuture<List<TagConfigurationModel>> futures = tmgr.getTagConfigsAsync(paths, false, true);
-					// There should be only one model as there was only o
-					try {
-						List<TagConfigurationModel> results = futures.get();
-						TagConfigurationModel model = results.get(0);
-						PropertySet config = model.getTagProperties();
-						typ = (DataType)config.getOrDefault(WellKnownTagProps.DataType);
-						tagProp = (Integer) config.get(TagProp.ExpressionType);
-					}
-					catch(Exception ex) {
-						log.infof("%s.handleDiagramDrop: failed to get tag info for %s (%s)",CLSS,tp.toStringFull(),
-								ex.getMessage());
-					}
-				} 
-				catch (IOException e) {
-					e.printStackTrace();
-				}
-				
-				// block binding to expressions for output
-				if (block.getClassName().equals(BlockConstants.BLOCK_CLASS_OUTPUT) && tagProp!=null 
-					&& tagProp!=ExpressionType.None.getIntValue()) {  // only update the tagpath property
-					msg = "Unable to bind expression tag to output";
-				} 
-				else {
-					msg = dview.isValidBindingChange(block,property,tagPath,typ,tagProp);
-				}
-			}
-			if (msg == null) {
-				// The display field has the old binding - use it to unsubscribe
-				String oldPath = bindingDisplayField.getText();
-				unsubscribeToTagPath(oldPath);
-				
-				bindingDisplayField.setText(tagPath);
-				
-				DataType type = subscribeToTagPath(tagPath);
-				editButton.setVisible(true);
-				bindingDisplayField.setVisible(true);
-				valueDisplayField.setEnabled(false);
-				valueDisplayField.setEditable(false);
-				// we should only do  this check if it affects the connection type.
-				if (property.getBinding()!=null ) {
-					block.modifyConnectionForTagChange(property, type);
-				}
-				// If there has been a change, update the editor and view
-				if( !oldPath.equalsIgnoreCase(tagPath)) {
-					BlockPropertyEditor editor = (BlockPropertyEditor)parent.getEditor();
-					editor.getDiagram().fireStateChanged();
-				}
-			} 
-			else {
-		        JOptionPane.showMessageDialog(null, msg, "Warning", JOptionPane.INFORMATION_MESSAGE);
-			}
-				
+			editButton.setVisible(true);
+			bindingDisplayField.setVisible(true);
+			valueDisplayField.setEnabled(false);
+			valueDisplayField.setEditable(false);
 		} 
 		else {
 			bindingDisplayField.setVisible(false);
@@ -427,6 +361,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 		EditableTextField field = new EditableTextField(prop,val.toString());
 		field.setEditable(prop.isEditable());
 		field.setEnabled(prop.isEditable());
+		field.setName(prop.getName());
 		if(prop.isEditable()) field.addFocusListener(this);
 		return field;
 	}
@@ -744,26 +679,88 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 		}
 		else {
 			if( !field.getText().equals(prop.getBinding()) ) {
-				unsubscribeToTagPath(prop.getBinding());
-				String tagPath = parent.getBlockPropertyEditor().modifyPathForProvider(field.getText());
-				if( DEBUG ) log.infof("%s.updatePropertyForField: Adjusting %s to %s", CLSS,prop.getBinding(),tagPath);
-				prop.setBinding(tagPath);
-				subscribeToTagPath(tagPath);
-				workspace.getActiveDiagram().fireStateChanged();
+				bindingChange(prop.getName(),field.getText());  // Can't check change, filed already changed
 			}
 		}
 	}
 	// ======================================= Notification Change Listener ===================================
-	@Override
-	public void bindingChange(String name,String binding) {
-		if(DEBUG )log.infof("%s.bindingChange: - %s new binding (%s)",CLSS,property.getName(),binding);
-		//property.setValue(value.getValue());  // Block should have its own subscription to value changes.
+	/**
+	 * @param name - unused
+	 * @param binding new path for tag binding
+	 */
+	@Override	
+	public void bindingChange(String name,String newBinding) {
+		if(DEBUG )log.infof("%s.bindingChange: - %s new binding (%s)",CLSS,property.getName(),newBinding);
+
 		SwingUtilities.invokeLater( new Runnable() {
 			public void run() {
-				unsubscribeToTagPath(bindingDisplayField.getText());
-				bindingDisplayField.setText(binding);
-				property.setBinding(binding);
-				subscribeToTagPath(binding);
+				if( newBinding==null ||newBinding.isBlank() ) return;
+				// Whatever changed is the new binding
+				String oldBinding = bindingDisplayField.getText();
+				if( !property.getBinding().equalsIgnoreCase(newBinding)) oldBinding = property.getBinding(); 
+				// If there is no change, do nothing
+				if( oldBinding.equalsIgnoreCase(newBinding)) return;
+				
+				// check if it affects the connection type
+				Integer tagProp = 0;
+				String errMsg = null;
+				ProcessDiagramView dview = workspace.getActiveDiagram();
+				ClientTagManager tmgr = context.getTagManager();
+				DataType typ = null;
+				try {
+					TagPath tp = TagPathParser.parse(newBinding);
+					List<TagPath> paths = new ArrayList<>();
+					paths.add(tp);
+					CompletableFuture<List<TagConfigurationModel>> futures = tmgr.getTagConfigsAsync(paths, false, true);
+					// There should be only one model as there was only o
+					try {
+						List<TagConfigurationModel> results = futures.get();
+						TagConfigurationModel model = results.get(0);
+						PropertySet config = model.getTagProperties();
+						typ = (DataType)config.getOrDefault(WellKnownTagProps.DataType);
+						tagProp = (Integer) config.get(TagProp.ExpressionType);
+						if (block.getClassName().equals(BlockConstants.BLOCK_CLASS_OUTPUT) && tagProp!=null 
+								&& tagProp!=ExpressionType.None.getIntValue()) {  // only update the tagpath property
+							errMsg = "Unable to bind expression tag to output";
+						} 
+						else {
+							errMsg = dview.isValidBindingChange(block,property,newBinding,typ,tagProp);
+						}
+					}
+					catch(Exception ex) {
+						errMsg = String.format("%s.bindingChange: failed to get tag info for %s (%s)",CLSS,tp.toStringFull(),ex.getMessage());
+						log.info(errMsg);
+					}
+				} 
+				catch (IOException ioe) {
+					errMsg = String.format("%s.bindingChange: failed to parse tag %s (%s)",CLSS,newBinding,ioe.getMessage());
+					ioe.printStackTrace();
+				}
+			
+					
+				if (errMsg == null) {
+					// The display field has the old binding - use it to unsubscribe
+					unsubscribeToTagPath(oldBinding);
+					bindingDisplayField.setText(newBinding);
+					property.setBinding(newBinding);
+					subscribeToTagPath(newBinding);				
+			
+					// Perform different actions if this is the "main" property for the block
+					if( BlockConstants.BLOCK_PROPERTY_TAG_PATH.equalsIgnoreCase(property.getName()) ) {
+						int index = newBinding.lastIndexOf("/");
+						String newName = newBinding;
+						if(index>0) newName = newBinding.substring(index+1);
+						block.setName(workspace.enforceUniqueName(newName, dview));
+						block.setCtypeEditable(true);
+						block.modifyConnectionForTagChange(property, typ);	
+					}
+					// There has been a change, update the editor and view
+					BlockPropertyEditor editor = (BlockPropertyEditor)parent.getEditor();
+					editor.getDiagram().fireStateChanged();
+				} 
+				else {
+			        JOptionPane.showMessageDialog(null, errMsg, "Warning", JOptionPane.INFORMATION_MESSAGE);
+				}
 			}
 		});
 	}
@@ -874,27 +871,26 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 			if( bindingDisplayField.equals((source.getComponent())) ) {
 				log.infof("%s.drop: source is %s", CLSS,bindingDisplayField.getName());
 				event.acceptDrop(DnDConstants.ACTION_COPY);
-			String data = null;
-			try {
-				data = (String)event.getTransferable().getTransferData(DataFlavor.stringFlavor);
-				log.infof("%s.drop: data is %s", CLSS,data);
-				// Data is JSON. Do simple cuts to get tag path.
-				String target = "tagPath\":\"";
-				int pos = data.indexOf(target);
-				if( pos>0 ) {
-					data = data.substring(pos+target.length());
-					pos = data.indexOf("\"");
-					if( pos > 0 ) {
-						data = data.substring(0,pos);
-						bindingChange(bindingDisplayField.getName(),data);
-					}
-				}	
-			} 
-			catch (Exception ex) {
-				log.infof("%s.drop: Exception with drop %s", CLSS,ex.getLocalizedMessage());
-			}
+				String data = null;
+				try {
+					data = (String)event.getTransferable().getTransferData(DataFlavor.stringFlavor);
+					log.infof("%s.drop: data are %s", CLSS,data);
+					// Data are JSON. Do simple cuts to get tag path.
+					String target = "tagPath\":\"";
+					int pos = data.indexOf(target);
+					if( pos>0 ) {
+						data = data.substring(pos+target.length());
+						pos = data.indexOf("\"");
+						if( pos > 0 ) {
+							data = data.substring(0,pos);
+							bindingChange(bindingDisplayField.getName(),data);
+						}
+					}	
+				} 
+				catch (Exception ex) {
+					log.infof("%s.drop: Exception - %s", CLSS,ex.getLocalizedMessage());
+				}
 			}
 		}
-		
 	}
 }

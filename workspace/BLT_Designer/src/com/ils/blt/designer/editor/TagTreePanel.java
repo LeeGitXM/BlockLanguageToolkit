@@ -76,7 +76,7 @@ public class TagTreePanel extends BasicEditPanel {
 										BlockConstants.SOURCE_SINK_TAG_FOLDER));	
 					}
 					else {
-						property.setBinding(selectedPath);
+						editor.updatePanelForBinding(property.getName(), selectedPath);
 						editor.updatePanelForProperty(BlockEditConstants.HOME_PANEL,property);
 						setSelectedPane(BlockEditConstants.HOME_PANEL);
 					}

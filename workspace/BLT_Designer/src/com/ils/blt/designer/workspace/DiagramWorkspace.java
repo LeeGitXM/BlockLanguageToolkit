@@ -968,7 +968,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	}
 	
 	// Guarantee a unique name for a block that has not yet been added to the diagram.
-	private String enforceUniqueName(String name,ProcessDiagramView diagram) {
+	public String enforceUniqueName(String name,ProcessDiagramView diagram) {
 		int count = 0;
 		for(Block block:diagram.getBlocks() ) {
 			if(block instanceof ProcessBlockView) {

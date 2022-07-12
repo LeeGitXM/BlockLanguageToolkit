@@ -100,6 +100,15 @@ public class MainPanel extends BasicEditPanel {
 	 * This is the property summary on the main panel.
 	 * @param prop
 	 */
+	public void updatePanelForBinding(String propName,String binding ) {
+		log.infof("%s.updatePanelForBinding: %s = %s", CLSS,propName,binding);
+		PropertyPanel pp = panelMap.get(propName);
+		if( pp!=null ) pp.bindingChange(propName,binding);
+	}
+	/**
+	 * This is the property summary on the main panel.
+	 * @param prop
+	 */
 	public void updatePanelForProperty(BlockProperty prop ) {
 		log.infof("%s.updatePanelForProperty: %s = %s", CLSS,prop.getName(),prop.getValue().toString());
 		PropertyPanel pp = panelMap.get(prop.getName());
