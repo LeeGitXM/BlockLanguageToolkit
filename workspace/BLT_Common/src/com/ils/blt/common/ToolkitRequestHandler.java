@@ -45,6 +45,7 @@ public interface ToolkitRequestHandler  {
 	 * @param resource path
 	 * @param resource type
 	 */
+	public ProjectResourceId createResourceId(String projectName,String path);
 	public ProjectResourceId createResourceId(String projectName,String path, String type);
 	public ProjectResourceId createResourceId(String projectName,String path, ResourceType rtype);
 	/**

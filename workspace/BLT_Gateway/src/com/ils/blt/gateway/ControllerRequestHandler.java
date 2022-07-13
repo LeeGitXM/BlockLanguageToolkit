@@ -194,6 +194,12 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * scripts to easily generate resourceId inputs to the various methods.
 	 */
 	@Override
+	public ProjectResourceId createResourceId(String projectName, String path) {
+		ResourceType rtype = BLTProperties.DIAGRAM_RESOURCE_TYPE;
+		ProjectResourceId resourceId = new ProjectResourceId(projectName,rtype,path);
+		return resourceId;
+	}
+	@Override
 	public ProjectResourceId createResourceId(String projectName, String path, String type) {
 		ResourceType rtype = new ResourceType(BLTProperties.MODULE_ID,type);
 		ProjectResourceId resourceId = new ProjectResourceId(projectName,rtype,path);
