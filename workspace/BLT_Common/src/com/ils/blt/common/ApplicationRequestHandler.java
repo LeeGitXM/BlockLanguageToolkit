@@ -83,28 +83,19 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 			log.infof("%s.clearWatermark: GatewayException (%s)",CLSS,ge.getMessage());
 		}
 	}
-	
+	/**
+	 * Create a ProjectResourceId object from String components. This is designed for Python
+	 * scripts to easily generate resourceId inputs to the various methods.
+	 */
+	@Override
 	public ProjectResourceId createResourceId(String projectName, String path) {
 		ResourceType rtype = BLTProperties.DIAGRAM_RESOURCE_TYPE;
 		ProjectResourceId resourceId = new ProjectResourceId(projectName,rtype,path);
 		return resourceId;
 	}
 	
-	/**
-	 * Create a ProjectResourceId object from String components. This is designed for Python
-	 * scripts to easily generate resourceId inputs to the various methods.
-	 */
-	@Override
-	public ProjectResourceId createResourceId(String projectName, String path, String type) {
-		ResourceType rtype = new ResourceType(BLTProperties.MODULE_ID,type);
-		ProjectResourceId resourceId = new ProjectResourceId(projectName,rtype,path);
-		return resourceId;
-	}
-	@Override
-	public ProjectResourceId createResourceId(String projectName, String path, ResourceType rtype) {
-		ProjectResourceId resourceId = new ProjectResourceId(projectName,rtype,path);
-		return resourceId;
-	}
+
+
 	/**
 	 * Create a SQLTag memory tag given its path and data type.
 	 * Create in both production and isolation

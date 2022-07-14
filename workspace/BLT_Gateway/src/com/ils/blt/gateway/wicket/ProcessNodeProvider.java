@@ -57,7 +57,7 @@ public class ProcessNodeProvider implements ITreeProvider<ProcessNode> {
     	Collection<ProcessNode> roots = new ArrayList<>();
     	for(String name:root.allProjects() ){
     		StringPath path = StringPath.extend(root.getResourceId().getResourcePath().getPath(),name);
-    		ProjectResourceId id = handler.createResourceId(name, path.toString(), BLTProperties.DIAGRAM_RESOURCE_TYPE.getTypeId());
+    		ProjectResourceId id = handler.createResourceId(name, path.toString());
     		ProjectNode pn = new ProjectNode(root,id);
     		roots.add(pn);
     	}

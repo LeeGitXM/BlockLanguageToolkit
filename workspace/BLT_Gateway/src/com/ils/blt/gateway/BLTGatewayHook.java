@@ -129,12 +129,7 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 		panels.add(new ToolkitStatus());
 		return panels;
 	}
-	
-	@Override
-	public void initializeScriptManager(ScriptManager mgr) {
-		super.initializeScriptManager(mgr);
-		mgr.addScriptModule(BLTProperties.DIAGRAM_SCRIPT_PACKAGE, GatewayScriptFunctions.class);
-	}
+
 	
 	private static class ToolkitStatus extends AbstractNamedTab {
 		private static final long serialVersionUID = 64149723779427382L;

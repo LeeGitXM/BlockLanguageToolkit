@@ -39,13 +39,12 @@ public class ProcessNode implements Serializable {
 	 * @param parent UUID of the parent of this node.
 	 * @param projectName project for this resource
 	 * @param path string path to this resource
-	 * @param type resource type as a string 
 	 */
-	public ProcessNode(ResourcePath parent,String projectName,String nam,String type) { 
+	public ProcessNode(ResourcePath parent,String projectName,String nam) { 
 		requestHandler = ControllerRequestHandler.getInstance();
 		this.name = nam;
 		String path = StringPath.extend(parent.getPath(), nam).toString();
-		this.resourceId = requestHandler.createResourceId(projectName, path,type);
+		this.resourceId = requestHandler.createResourceId(projectName, path);
 		this.auxiliaryData = new GeneralPurposeDataContainer();
 		this.children = new HashMap<>();
 		this.log = LogUtil.getLogger(getClass().getPackageName());

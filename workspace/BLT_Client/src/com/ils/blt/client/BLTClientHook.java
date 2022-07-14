@@ -6,7 +6,6 @@ package com.ils.blt.client;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.ils.blt.common.ApplicationScriptFunctions;
 import com.ils.blt.common.BLTProperties;
 import com.inductiveautomation.ignition.client.model.ClientContext;
 import com.inductiveautomation.ignition.common.BundleUtil;
@@ -24,32 +23,27 @@ public class BLTClientHook implements ClientModuleHook {
 		BundleUtil.get().addBundle(BLTProperties.CUSTOM_PREFIX,ClientModuleHook.class,HOOK_BUNDLE_NAME);
 	}
 	/**
-	 * Make the interface script functions available.
+	 * We do not support a scripting interface in favor of simply using ApplicationRequestHandler
 	 */
 	@Override
 	public void initializeScriptManager(ScriptManager mgr) {
-		mgr.addScriptModule(BLTProperties.DIAGRAM_SCRIPT_PACKAGE,ApplicationScriptFunctions.class);
 	}
 
 	@Override
 	public void configureDeserializer(XMLDeserializer arg0) {
-		// TODO Auto-generated method stub
 	}
 	
 	@Override
 	public Map<String,String> createPermissionKeys() {
-		// TODO Auto-generated method stub	
 		return new HashMap<>();
 	}
 	
 	@Override
 	public void notifyActivationStateChanged(LicenseState arg0) {
-		// TODO Auto-generated method stub	
 	}
 
 	@Override
 	public void shutdown() {
-		// TODO Auto-generated method stub
 	}
 
 	@Override

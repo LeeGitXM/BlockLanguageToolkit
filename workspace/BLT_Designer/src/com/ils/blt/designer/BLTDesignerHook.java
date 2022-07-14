@@ -23,7 +23,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.ApplicationRequestHandler;
-import com.ils.blt.common.ApplicationScriptFunctions;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.designer.navtree.NavTreeFolder;
@@ -47,7 +46,6 @@ import com.inductiveautomation.ignition.common.project.resource.ProjectResourceI
 import com.inductiveautomation.ignition.common.project.resource.ResourceNamingException;
 import com.inductiveautomation.ignition.common.project.resource.ResourcePath;
 import com.inductiveautomation.ignition.common.project.resource.ResourceType;
-import com.inductiveautomation.ignition.common.script.ScriptManager;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
@@ -94,12 +92,6 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	}
 	
 	public static DesignerContext getContext() { return context; }
-	
-	@Override
-	public void initializeScriptManager(ScriptManager mgr) {
-		super.initializeScriptManager(mgr);
-		mgr.addScriptModule(BLTProperties.DIAGRAM_SCRIPT_PACKAGE,ApplicationScriptFunctions.class);
-	}
 
 
 	// Insert a menu to allow control of database and tag provider.

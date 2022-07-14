@@ -46,8 +46,7 @@ public interface ToolkitRequestHandler  {
 	 * @param resource type
 	 */
 	public ProjectResourceId createResourceId(String projectName,String path);
-	public ProjectResourceId createResourceId(String projectName,String path, String type);
-	public ProjectResourceId createResourceId(String projectName,String path, ResourceType rtype);
+
 	/**
 	 * Create a SQLTag memory tag given its path and data type.
 	 * Create in both production and isolation
