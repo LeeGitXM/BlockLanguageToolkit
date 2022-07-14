@@ -307,7 +307,6 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		Map<String,String> attributes = descriptor.getAttributes();
 		attributes.put("Name", getName());
 		attributes.put("UUID", getBlockId().toString());
-		attributes.put("Parent", getParentId().toString());
 		if( stateIsMeaningful() ) {
 			attributes.put("State", getState().toString());
 			if( stateChangeTimestamp!=null ) {     // On start we'never had a state change
@@ -323,17 +322,6 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 				}
 			}
 		}
-
-		// NOT SURE WHY THIS DOESN"T WORK.  
-		// ALL BlockProperties fail with NotSerializableException, only on Input and Output blocks for getSroucesForSink call
-		// MAYBE its isn't needed?  wth?
-//		Map<String,BlockProperty> properties = descriptor.getProperties();
-//		if( propertyMap.size()>0 ) {
-//			for (String key:propertyMap.keySet()) {
-//				BlockProperty thingy = propertyMap.get(key);
-//				properties.put(key, thingy);
-//			}
-//		}
 		
 		return descriptor;
 	}
@@ -766,7 +754,8 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		descriptor.setIdString(getBlockId().toString());
 		Map<String,String> attributes = descriptor.getAttributes();
 		attributes.put(BLTProperties.BLOCK_ATTRIBUTE_CLASS,getClassName());
-		attributes.put(BLTProperties.BLOCK_ATTRIBUTE_PARENT,getParentId().toString());
+		attributes.put(BLTProperties.BLOCK_ATTRIBUTE_PARENT,getParentId().getResourcePath().getParentPath());
+		attributes.put(BLTProperties.BLOCK_ATTRIBUTE_PROJECT,getParentId().getProjectName());
 		return descriptor;
 	}
 	/**

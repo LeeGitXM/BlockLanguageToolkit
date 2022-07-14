@@ -59,8 +59,9 @@ public interface BLTProperties   {
 	public static final String BLOCK_ATTRIBUTE_ID         = "uuid";
 	public static final String BLOCK_ATTRIBUTE_ISSUE      = "issue";   // Reason for being invalid
 	public static final String BLOCK_ATTRIBUTE_NAME       = "name";
-	public static final String BLOCK_ATTRIBUTE_PARENT     = "parent";  // UUID of parent diagram
-	public static final String BLOCK_ATTRIBUTE_PATH       = "path";
+	public static final String BLOCK_ATTRIBUTE_PARENT     = "parent";  // Path to parent diagram
+	public static final String BLOCK_ATTRIBUTE_PATH       = "path";    // Path to block or tag
+	public static final String BLOCK_ATTRIBUTE_PROJECT    = "project"; // Name of the project
 	public static final String BLOCK_ATTRIBUTE_QUALITY    = "quality";
 	public static final String BLOCK_ATTRIBUTE_TARGET     = "target";
 	public static final String BLOCK_ATTRIBUTE_DATA_TYPE  = "type";

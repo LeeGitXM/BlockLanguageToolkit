@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.ils.block.AttributeDisplay;
-import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagnosticDiagram;
 import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.ProcessBlock;
