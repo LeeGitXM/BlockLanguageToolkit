@@ -48,8 +48,8 @@ public class DiagramSearchCursor extends SearchObjectCursor {
 		// Deserialize here - first time through only - return next block cursor
 		if( index==0 ) {
 			diagram = deserializeResource(resource);
+			blockWalker = diagram.getBlocks().iterator();
 			ApplicationRequestHandler appRequestHandler = new ApplicationRequestHandler();
-
 		}
 		
 		if( index==0 && searchDiagrams ) {
