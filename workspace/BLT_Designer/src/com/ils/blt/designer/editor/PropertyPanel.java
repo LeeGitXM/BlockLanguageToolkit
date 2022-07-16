@@ -185,7 +185,8 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 			add(configurationButton,"w :25:,wrap");
 			valueComboBox.setEditable(false);
 			valueComboBox.setEnabled(true);
-		}                // Enumerated types are neither editable nor bindable
+		}       
+		// Enumerated types are neither editable nor bindable
 		else if( property.getBindingType().equals(BindingType.NONE) ||
 				 property.getBindingType().equals(BindingType.TAG_MONITOR) ||
 				 property.getBindingType().equals(BindingType.ENGINE)     )  {

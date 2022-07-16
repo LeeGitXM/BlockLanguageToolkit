@@ -366,7 +366,7 @@ public class BlockAttributeView extends ProcessBlockView implements BlockListene
 
 	@Override
 	public void tagChanged(TagChangeEvent event) {
-		if( event!=null ) {
+		if( event!=null && event.getValue()!=null && event.getValue().getValue()!=null ) {
 			String value = event.getValue().getValue().toString();
 			log.debugf("%s.tagChanged: - %s new value (%s)",CLSS,event.getTagPath().toStringFull(),event.getValue().toString());
 			setValue(value);
@@ -374,7 +374,7 @@ public class BlockAttributeView extends ProcessBlockView implements BlockListene
 		}
 		else {
 			// Tag or path is null
-			log.warnf("%s.tagChanged: Received and empty value",CLSS);
+			log.warnf("%s.tagChanged: Received an empty value",CLSS);
 		}		
 	}
 }
