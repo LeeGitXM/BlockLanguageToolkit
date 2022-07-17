@@ -449,6 +449,8 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 		desc.setEmbeddedFontSize(20);
 		desc.setBlockClass(getClass().getCanonicalName());
 		desc.setStyle(BlockStyle.SQUARE);
+		desc.setPreferredWidth(80);
+		desc.setPreferredHeight(80);
 		desc.setBackground(BlockConstants.BLOCK_BACKGROUND_LIGHT_GRAY);
 	}
 	/**

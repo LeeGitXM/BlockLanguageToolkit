@@ -1,5 +1,5 @@
 /**
- *   (c) 2014-2022  ILS Automation. All rights reserved.
+ 	*   (c) 2014-2022  ILS Automation. All rights reserved.
  *   http://docs.oracle.com/javase/tutorial/displayCode.html?code=http://docs.oracle.com/javase/tutorial/uiswing/examples/components/SharedModelDemoProject/src/components/SharedModelDemo.java
  *   
  *   This class implements a swing dialog that provides a table of all of the properties of the originating block.
@@ -131,8 +131,8 @@ public class AttributeDisplaySelector extends JDialog implements TableModelListe
 				TableModel model = (TableModel) e.getSource();
 				String propName = (String) model.getValueAt(row, 1);
 				boolean newValue = ((Boolean) model.getValueAt(row, column)).booleanValue();
-				origin = findTopBlock(diagram,block);
-				// If there isn't any existing block, set the origin to the bottom of the block
+				origin = findTopAttribute(diagram,block);
+				// If there isn't any existing attribute display, set the origin to the bottom of the block
 				if(origin==null) {
 					origin = new Point(block.getLocation().x+BlockConstants.ATTRIBUTE_DISPLAY_OFFSET_X,
 						               block.getLocation().y+block.getPreferredHeight()+BlockConstants.ATTRIBUTE_DISPLAY_OFFSET_Y);
@@ -302,7 +302,7 @@ public class AttributeDisplaySelector extends JDialog implements TableModelListe
 	/**.
 	 * @return coordinates of the uppermost attribute display for the given block
 	 */
-	private Point findTopBlock(ProcessDiagramView dia, ProcessBlockView refBlock) {
+	private Point findTopAttribute(ProcessDiagramView dia, ProcessBlockView refBlock) {
 		Point top = null;
 		for(Block block:dia.getBlocks()) {
 			if( block instanceof BlockAttributeView ) {
