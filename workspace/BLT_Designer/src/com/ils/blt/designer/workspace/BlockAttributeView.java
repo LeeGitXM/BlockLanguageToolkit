@@ -2,6 +2,10 @@ package com.ils.blt.designer.workspace;
 
 import java.awt.Point;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
@@ -34,6 +38,7 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.BlockLi
  */
 public class BlockAttributeView extends ProcessBlockView implements BlockListener, NotificationChangeListener,TagChangeListener {
 	private static final String CLSS = "BlockAttributeView";
+	private final static boolean DEBUG = false;
 	public static final int ATTRIBUTE_DISPLAY_SEPARATION  = 30; // Default y separation
 	public static final String DEFAULT_FONT = "SansSerif";      // Font family - Serif, Dialog,Monospaced
 	public static final int DEFAULT_FONT_SIZE = 12;
@@ -43,6 +48,7 @@ public class BlockAttributeView extends ProcessBlockView implements BlockListene
 	public static final int DEFAULT_WIDTH = 100;
 	private final NotificationHandler notificationHandler = NotificationHandler.getInstance();
 	private ProcessBlockView reference = null;
+	private String binding = null;  // Current binding, if any
 	private PropertyType propertyType = PropertyType.STRING;
 	private final UtilityFunctions fncs;
 	/**
@@ -93,8 +99,8 @@ public class BlockAttributeView extends ProcessBlockView implements BlockListene
 		setProperty(bid);
 		BlockProperty propName = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_PROPERTY,"Name", PropertyType.STRING, false);
 		setProperty(propName);
-		BlockProperty value = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_VALUE,"", PropertyType.STRING, false);
-		setProperty(value);
+		BlockProperty propValue = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_VALUE,"", PropertyType.STRING, false);
+		setProperty(propValue);
 		
 		// These attributes defined how the display is configured
 		BlockProperty bk = new BlockProperty(BlockConstants.ATTRIBUTE_PROPERTY_BACKGROUND_COLOR, BLTProperties.TRANSPARENT, PropertyType.COLOR,true);
@@ -117,6 +123,7 @@ public class BlockAttributeView extends ProcessBlockView implements BlockListene
 	
 	/**
 	 *  Initialize property listeners. These are steps necessary with either constructor.
+	 *  These allow dynamic changes from the property editor.
 	 *  NOTE: The id string of the reference block must be set before this method is called.
 	 */
 	private void initialize() {
@@ -145,6 +152,7 @@ public class BlockAttributeView extends ProcessBlockView implements BlockListene
 		return propertyMap.get(nam);
 	}
 	
+	// This is the property we are tracking
 	public String getPropertyName()  {return getProperty(BlockConstants.ATTRIBUTE_PROPERTY_PROPERTY).getValue().toString(); }
 	public void setPropertyName(String name) {
 		BlockProperty propName = getProperty(BlockConstants.ATTRIBUTE_PROPERTY_PROPERTY);
@@ -163,10 +171,14 @@ public class BlockAttributeView extends ProcessBlockView implements BlockListene
 		}
 		return type;
 	}
-	// Return a string based on the value, property type and format
+	// Return a string based on the value, property type and format.
+	// The VALUE property is where the raw value is stored.
 	public String getValue() {
 		String format = getProperty(BlockConstants.ATTRIBUTE_PROPERTY_FORMAT).getValue().toString();
 		String value = getProperty(BlockConstants.ATTRIBUTE_PROPERTY_VALUE).getValue().toString(); 
+		if( binding!=null && !binding.isEmpty()) {
+			value = readTag(binding);
+		}
 		if( value!=null && !value.isEmpty() ) {
 			try {
 				if( propertyType==PropertyType.DOUBLE) {
@@ -217,12 +229,13 @@ public class BlockAttributeView extends ProcessBlockView implements BlockListene
 		this.reference=ref;
 		reference.addBlockListener(this);
 	}
+	
 	@Override
 	public void setName(String text) { 
 		this.name = text;;
 	}
 	/**
-	 * Create property change listeners. Ignore name changes.
+	 * Create property change listeners for the AttributeDisplayBlock itself 
 	 */
 	@Override
 	public void startup () {
@@ -232,6 +245,7 @@ public class BlockAttributeView extends ProcessBlockView implements BlockListene
 			notificationHandler.addNotificationChangeListener(key,CLSS, this);
 		}
 	}
+	
 	/**
 	 * Start listening to the value of the indicated property block. Both reference block and
 	 * property name must be set prior to call. Listening on the name is aspecial case. 
@@ -249,12 +263,37 @@ public class BlockAttributeView extends ProcessBlockView implements BlockListene
 			// If the property is bound to a tag, listen on that tag
 			BlockProperty valueProp = reference.getProperty(getPropertyName());
 			if(valueProp!=null && valueProp.getBindingType().equals(BindingType.TAG_MONITOR)) {
-				String tagPath = fncs.coerceToString(valueProp.getBinding());
-				subscribeToTagPath(tagPath);
+				binding = fncs.coerceToString(valueProp.getBinding()); 
+				subscribeToTagPath(binding);
 			}
 		}
 		addBlockListener(this);
 	}
+	
+	private String readTag(String path) {
+		String result = null;
+		if( path==null || path.length()==0 ) return result;  // Fail silently for no binding
+		ClientTagManager tmgr = BLTDesignerHook.getContext().getTagManager();
+		try {
+			TagPath tp = TagPathParser.parse(path);
+			List<TagPath> paths = new ArrayList<>();
+			paths.add(tp);
+			CompletableFuture<List<QualifiedValue>> futures = tmgr.readAsync(paths);
+			List<QualifiedValue> results = futures.get();
+			result = results.get(0).getValue().toString();
+		}
+		catch(InterruptedException ie) {
+			log.errorf("%s.readTag interrupted error for %s (%s)",CLSS,path,ie.getMessage());
+		}
+		catch(ExecutionException ee) {
+			log.errorf("%s.readTag execution error for %s (%s)",CLSS,path,ee.getMessage());
+		}
+		catch(IOException ioe) {
+			log.errorf("%s.readTag tag path parse error for %s (%s)",CLSS,path,ioe.getMessage());
+		}
+		return result;
+	}
+	
 	// Subscribe to a tag. This will fail if the tag path is unset or illegal.
 	// The provider has been set in the panel constructor.
 	private void subscribeToTagPath(String path) {
@@ -287,17 +326,17 @@ public class BlockAttributeView extends ProcessBlockView implements BlockListene
 	public void shutdown () {
 		super.shutdown();
 		removeBlockListener(this);
-		if( reference!=null ) {
-			BlockProperty valueProp = reference.getProperty(getPropertyName());
-			if(valueProp!=null && valueProp.getBindingType().equals(BindingType.TAG_MONITOR)) {
-				String tagPath = fncs.coerceToString(valueProp.getBinding());
-				unsubscribeToTagPath(tagPath);
-			}
-		}
+		unsubscribeToTagPath(binding);
 	}
+
 	// ======================================= Notification Change Listener ===================================
+	// If the binding changes we need to change our tag listener.
 	@Override
-	public void bindingChange(String name,String binding) {}
+	public void bindingChange(String name,String tagPath) {
+		unsubscribeToTagPath(binding);
+		this.binding = tagPath;
+		subscribeToTagPath(binding);
+	}
 	@Override
 	public void diagramStateChange(String path, String state) {}
 	// We never need to set our own name. We should be listening on the reference block.

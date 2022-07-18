@@ -753,6 +753,8 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			String nkey = NotificationKey.keyForBlockName(block.getId().toString());
 			handler.initializeBlockNameNotification(nkey, block.getName());
 			for(BlockProperty prop:block.getProperties()) {
+				String bkey = NotificationKey.keyForPropertyBinding(block.getId().toString(),prop.getName());
+				handler.initializePropertyBindingNotification(bkey, prop.getBinding());
 				String pkey = NotificationKey.keyForProperty(block.getId().toString(),prop.getName());
 				handler.initializePropertyValueNotification(pkey, prop.getValue());
 			}

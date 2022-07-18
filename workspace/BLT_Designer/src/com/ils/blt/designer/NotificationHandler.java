@@ -266,7 +266,7 @@ public class NotificationHandler implements PushNotificationListener {
 				log.tracef("%s.initializePropertyBindingNotification: key=%s - notifying %s",CLSS,key,listener.getClass().getName());
 				if( NotificationKey.isPropertyBindingKey(key) ) {
 					String pname = NotificationKey.propertyFromKey(key);
-					listener.propertyChange(pname,value);
+					listener.bindingChange(pname, value.toString());
 				}
 			}
 			// Repaint the workspace
