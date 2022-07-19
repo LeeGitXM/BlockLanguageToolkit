@@ -732,7 +732,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 									desc.setBackground(new Color(127,127,127).getRGB()); // Dark gray
 									desc.setCtypeEditable(true);
 									block = new ProcessBlockView(desc);
-									block.setName(nameFromTagTree(tnode));
+									block.setName(nameFromTagPath(tnode.getFullPath()));
 									updatePropertiesForTagPath(block,tnode.getFullPath().toStringFull());
 								}
 								else {
@@ -743,7 +743,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 									desc.setBackground(Color.cyan.getRGB());
 									desc.setCtypeEditable(true);
 									block = new ProcessBlockView(desc);
-									block.setName(enforceUniqueName(nameFromTagTree(tnode),diagram));
+									block.setName(enforceUniqueName(nameFromTagPath(tnode.getFullPath()),diagram));
 									updatePropertiesForTagPath(block,tnode.getFullPath().toStringFull());
 								}
 								// Define a single output
@@ -769,7 +769,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 									desc.setStyle(BlockStyle.ARROW);
 									desc.setCtypeEditable(true);
 									block = new ProcessBlockView(desc);
-									block.setName(nameFromTagTree(tnode));
+									block.setName(nameFromTagPath(tnode.getFullPath()));
 									// Define a single output
 									AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.ANY);
 									block.addAnchor(output);
@@ -782,7 +782,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 									desc.setBackground(Color.cyan.getRGB());
 									desc.setCtypeEditable(true);
 									block = new ProcessBlockView(desc);
-									block.setName(enforceUniqueName(nameFromTagTree(tnode),diagram));
+									block.setName(enforceUniqueName(nameFromTagPath(tnode.getFullPath()),diagram));
 								}	
 								 
 								// Define a single input
@@ -915,7 +915,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 								prop.setBinding(tnode.getFullPath().toStringFull());
 								setSelectedItems((JComponent)null);  // hack to get the property panel to refresh
 								setSelectedItems((JComponent)droppedOn);
-								pblock.setName(nameFromTagTree(tnode));
+								pblock.setName(nameFromTagPath(tnode.getFullPath()));
 								pblock.setCtypeEditable(true);
 								pblock.modifyConnectionForTagChange(prop, tagType);
 								getActiveDiagram().fireStateChanged();
@@ -969,38 +969,52 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	
 	// Guarantee a unique name for a block that has not yet been added to the diagram.
 	public String enforceUniqueName(String name,ProcessDiagramView diagram) {
-		int count = 0;
-		for(Block block:diagram.getBlocks() ) {
-			if(block instanceof ProcessBlockView) {
-				String bname = ((ProcessBlockView)block).getName();
-				if( bname.startsWith(name+"-") ) {
-					String suffix = bname.substring(name.length()+1);
-					if( suffix==null) count = count+1;  // Name ends in -
-					else {
-						try {
-							int val = Integer.parseInt(suffix);
-							if( val>=count) count = val + 1;
-							else count = count+1;
-						}
-						catch(NumberFormatException nfe) {
-							count = count + 1;
-						}
-					}
-				}
-				// The plain name
-				else if( bname.equalsIgnoreCase(name) ) {
-					count = count+1;
-				}
-			}
-		}
-		if( count>0 ) {
-			name = name +"-"+String.valueOf(count);
+		while( nameExists(diagram,name) ) {
+			name = nextName(name);
 		}
 		return name;
 	}
 	
-	private String nameFromTagTree(NodeBrowseInfo tnode) {
-		String name = tnode.getName();
+	/**
+	 * @param name proposed unique name
+	 * @return true if the name belongs to a current block 
+	 */
+	private boolean nameExists(ProcessDiagramView diagram,String name) {
+		boolean exists = false;
+		for(Block block:diagram.getBlocks() ) {
+			if(block instanceof ProcessBlockView) {
+				String bname = ((ProcessBlockView)block).getName();
+				if( bname.equalsIgnoreCase(name) ) {
+					exists = true;
+					break;
+				}
+			}
+		}
+		return exists;
+	}
+	private String nextName(String name) {
+		int index = name.lastIndexOf("-");
+		if( index>0 ) {
+			String suffix = name.substring(index+1);
+			try {
+				int count = Integer.parseInt(suffix);
+				name = String.format("%s-%d",name.substring(0,index-1),count+1);
+			}
+			catch(NumberFormatException nfe) {
+				log.infof("%s.nextName: %s (%s)",CLSS,name,nfe.getLocalizedMessage());
+				name = name + "-1";
+			}
+		}
+		else {
+			name = name + "-1";
+		}
+		return name;
+	}
+	
+	public String nameFromTagPath(TagPath tp) {
+		String[] components = tp.toStringPartial().split("/");
+		int count = components.length;
+		String name = components[count-1];
 		return name;
 	}
 

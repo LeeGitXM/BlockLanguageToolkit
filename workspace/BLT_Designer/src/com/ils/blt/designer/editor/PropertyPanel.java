@@ -708,8 +708,9 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 				ProcessDiagramView dview = workspace.getActiveDiagram();
 				ClientTagManager tmgr = context.getTagManager();
 				DataType typ = null;
+				TagPath tp = null;
 				try {
-					TagPath tp = TagPathParser.parse(newBinding);
+					tp = TagPathParser.parse(newBinding);
 					List<TagPath> paths = new ArrayList<>();
 					paths.add(tp);
 					CompletableFuture<List<TagConfigurationModel>> futures = tmgr.getTagConfigsAsync(paths, false, true);
@@ -749,9 +750,14 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 					// Perform different actions if this is the "main" property for the block
 					if( BlockConstants.BLOCK_PROPERTY_TAG_PATH.equalsIgnoreCase(property.getName()) ) {
 						int index = newBinding.lastIndexOf("/");
-						String newName = newBinding;
-						if(index>0) newName = newBinding.substring(index+1);
-						block.setName(workspace.enforceUniqueName(newName, dview));
+						String newName = workspace.nameFromTagPath(tp);
+						if( block.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SOURCE) &&
+							block.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SINK)      ) {
+							block.setName(newName);
+						}
+						else {
+							block.setName(workspace.enforceUniqueName(newName, dview));
+						}
 						block.setCtypeEditable(true);
 						block.modifyConnectionForTagChange(property, typ);	
 					}
