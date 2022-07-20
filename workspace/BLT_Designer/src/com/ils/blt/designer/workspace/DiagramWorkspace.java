@@ -103,7 +103,9 @@ import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 import com.inductiveautomation.ignition.common.tags.browsing.NodeBrowseInfo;
 import com.inductiveautomation.ignition.common.tags.config.TagConfigurationModel;
 import com.inductiveautomation.ignition.common.tags.config.properties.WellKnownTagProps;
+import com.inductiveautomation.ignition.common.tags.config.types.TagObjectType;
 import com.inductiveautomation.ignition.common.tags.model.TagPath;
+import com.inductiveautomation.ignition.common.tags.paths.parser.TagPathParser;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.common.xmlserialization.SerializationException;
@@ -1012,16 +1014,82 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	}
 	
 	public String nameFromTagPath(TagPath tp) {
-		String[] components = tp.toStringPartial().split("/");
-		int count = components.length;
-		String name = components[count-1];
+		String path = tp.toStringFull();
+		int index = path.indexOf("]");
+		String source = path.substring(0,index+1);
+		path = path.substring(index+1);
+		String[] elements = path.split("/");
+		int count = elements.length;
+		String name = elements[count-1];
+		for( index=0;index<count;index++) {
+			tp = pathFromStringArray(elements,source,index);
+			if( tp!=null && isUDT(tp)) {
+				name = nameFromPartial(elements,index);
+				break;
+			}
+		}
 		return name;
 	}
-
+	/*
+	 * @return true if the supplied tag path points to a UDT
+	 */
+	private boolean isUDT(TagPath tp) {
+		boolean udt = false;
+		List<TagPath> tags = new ArrayList<>();
+		tags.add(tp);
+		ClientTagManager tmgr = context.getTagManager();
+		CompletableFuture<List<TagConfigurationModel>> futures = tmgr.getTagConfigsAsync(tags,false,true);
+		try {
+			TagConfigurationModel model = futures.get().get(0);
+			PropertySet config = model.getTagProperties();
+			TagObjectType type = (TagObjectType)config.getOrDefault(WellKnownTagProps.TagType);
+			udt = (type==TagObjectType.UdtInstance);
+		}
+		catch(Exception ex) {
+			log.infof("%s.isUDT: failed to get tag type for %s (%s)",CLSS,tp.toStringFull(),ex.getMessage());
+		}
+		return udt;
+	}
+	/*
+	 * Create a human-readable name from elements of the supplied array
+	 */
+	private String nameFromPartial(String[]e,int start) {
+		int len = e.length;
+		String name = e[len-1];  // Last component
+		StringBuffer sb = new StringBuffer();
+		for(int i = start;i<len;i++) {
+			sb.append(e[i]);
+			if(i<len-1) sb.append("-");
+		}
+		name = sb.toString();
+		return name;
+	}
+	/*
+	 * Use specified elements of a string array to construct a tag path.
+	 * If there is a parsing error or the path is not found, return null.
+	 * @return a tag path constructed from string elements.
+	 */
+	private TagPath pathFromStringArray(String[]e,String source,int start) {
+		TagPath tp = null;
+		int len = e.length;
+		StringBuffer sb = new StringBuffer(source);
+		for(int i = start;i<len;i++) {
+			sb.append(e[i]);
+			if(i<len-1) sb.append("/");
+		}
+		String path = sb.toString();
+		try {
+			tp = TagPathParser.parse(path);
+		}
+		catch(IOException ioe) {
+			log.errorf("%s.pathFromStringArray tag path parse error for %s (%s)",CLSS,path,ioe.getMessage());
+		}
+		return tp;
+	}
+	
 	@Override
 	public void resetFrames(DockingManager dockManager, DockableBarManager barManager) {
-		// TODO Auto-generated method stub
-		
+
 	}
 
 	/**
