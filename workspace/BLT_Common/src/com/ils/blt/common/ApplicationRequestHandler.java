@@ -849,35 +849,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		return blockList;
 	}
 	
-	@Override
-	public String pathForBlock(ProjectResourceId diagramId,String blockName) {
-		String path = "";
-		try {
-			path = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID,"pathForBlock",diagramId,blockName);
-		}
-		catch(Exception ge) {
-			log.infof("%s.pathForBlock: GatewayException (%s)",CLSS,ge.getMessage());
-		}
-		return path;
-	}
-	/** 
-	 * @param nodeId UUID as a String of a node in the navigation tree
-	 * @return a slash-separated path to the specified node. The path 
-	 *         root is a slash representing the top node of the navigation tree.
-	 */
-	@Override
-	public String pathForNode(ProjectResourceId nodeId) {
-		String path = "";
-		try {
-			path = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID,"pathForNode",nodeId);
-		}
-		catch(Exception ge) {
-			log.infof("%s.pathForNode: GatewayException (%s)",CLSS,ge.getMessage());
-		}
-		return path;
-	}
+
 	/**
 	 * Post a (simulated) block result on its output.
 	 * @param diagramId the parent diagram

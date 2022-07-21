@@ -371,15 +371,6 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	}
 	
 	/**
-	 * The node must be an element of the nav-tree, that is an application,
-	 * family, folder or diagram. 
-	 * @param nodeId
-	 * @return colon-separated path to the indicated node
-	 */
-	public String pathForNode(ProjectResourceId nodeId) {
-		return modelManager.pathForNode(nodeId);
-	}
-	/**
 	 * Execute a block's propagate method. This places the last-computed
 	 * value on the output(s).
 	 * @param diagramId the block or diagram identifier.

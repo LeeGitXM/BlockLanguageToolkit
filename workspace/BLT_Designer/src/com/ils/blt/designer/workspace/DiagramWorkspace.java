@@ -1064,18 +1064,18 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		name = sb.toString();
 		return name;
 	}
-	/*
+	/**
 	 * Use specified elements of a string array to construct a tag path.
 	 * If there is a parsing error or the path is not found, return null.
+	 * @param count of subset of elements to use in generating the path
 	 * @return a tag path constructed from string elements.
 	 */
-	private TagPath pathFromStringArray(String[]e,String source,int start) {
+	private TagPath pathFromStringArray(String[]e,String source,int count) {
 		TagPath tp = null;
-		int len = e.length;
 		StringBuffer sb = new StringBuffer(source);
-		for(int i = start;i<len;i++) {
+		for(int i = 0;i<count+1;i++) {
 			sb.append(e[i]);
-			if(i<len-1) sb.append("/");
+			if(i<count) sb.append("/");
 		}
 		String path = sb.toString();
 		try {
@@ -1984,9 +1984,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		
 		// List paths to all connected diagrams
 		public void actionPerformed(ActionEvent e) {
-			String path = requestHandler.pathForBlock(diagram.getResourceId(), bname);
+			String path = diagram.getResourceId().getFolderPath();
 			int pos = path.lastIndexOf(":");    // Strip off block name
-			if( pos>0 ) path = path.substring(0, pos);
 			ProjectBrowserRoot project = context.getProjectBrowserRoot();
         	AbstractNavTreeNode root = null;
         	AbstractNavTreeNode node = null;

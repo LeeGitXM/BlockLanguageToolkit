@@ -66,8 +66,8 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 	 * @param diagm the serializable version of this object.
 	 * @param parent 
 	 */
-	public ProcessDiagram(SerializableDiagram diagm,ResourcePath parent,String projectName) { 
-		super(parent,projectName,diagm.getName());
+	public ProcessDiagram(String projectName,SerializableDiagram diagm,ResourcePath parent) { 
+		super(projectName,diagm.getName(),parent.getFolderPath());
 		this.state = diagm.getState();
 		blocks = new HashMap<UUID,ProcessBlock>();
 		connectionMap = new HashMap<ConnectionKey,ProcessConnection>();
@@ -107,6 +107,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 
 	public String getProviderForState(DiagramState s) {
 		String provider = "";
+		ControllerRequestHandler requestHandler = ControllerRequestHandler.getInstance();
 		if( s.equals(DiagramState.ISOLATED)) {
 			provider = requestHandler.getProjectToolkitProperty(getProjectName(),ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER);
 		}

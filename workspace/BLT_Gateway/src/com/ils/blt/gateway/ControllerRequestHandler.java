@@ -85,6 +85,7 @@ import simpleorm.dataset.SQuery;
  */
 public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	private final static String CLSS = "ControllerRequestHandler";
+	private final static boolean DEBUG = true;
 	private final LoggerEx log;
 	private GatewayContext context = null;
 	private static ControllerRequestHandler instance = null;
@@ -785,6 +786,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	
 	@Override
 	public synchronized List<SerializableBlockStateDescriptor> listBlocksForTag(String projectName,String tagpath) {
+		if(DEBUG) log.infof("%s.listBlocksForTag: project=%s, tagpath=%s",CLSS,projectName,tagpath);
 		List<SerializableBlockStateDescriptor> results = new ArrayList<>();
 		if( tagpath!=null && !tagpath.isEmpty() ) {
 			List<SerializableResourceDescriptor> descriptors = controller.getDiagramDescriptors();
@@ -805,7 +807,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 				}
 			}
 		}
-		log.warnf("%s.listBlocksForTag: %s returns %d blocks",CLSS,tagpath,results.size());
+		if(DEBUG) log.infof("%s.listBlocksForTag: %s returns %d blocks",CLSS,tagpath,results.size());
 		return results;
 	}
 	@Override
@@ -874,7 +876,6 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * @return a list of state descriptors for blocks that are of the specified class.
 	 */
 	public List<SerializableBlockStateDescriptor> listBlocksOfClass(String projectName,String className) {
-		log.debugf("%s.listBlocksOfClass: %s:%s",CLSS,projectName,className);
 		List<SerializableBlockStateDescriptor> descriptors = new ArrayList<>();
 		List<SerializableResourceDescriptor> diagrams = controller.getDiagramDescriptors();
 		for(SerializableResourceDescriptor diag:diagrams) {
@@ -885,7 +886,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 				}
 			}
 		}
-		log.debugf("%s.listBlocksOfClass: %s returning %d descriptors",CLSS,className,descriptors.size());
+		if(DEBUG) log.infof("%s.listBlocksOfClass: %s returning %d descriptors",CLSS,className,descriptors.size());
 		return descriptors;
 	}
 	
@@ -915,7 +916,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 					String problem = block.validate();
 					if( problem!=null) {
 						SerializableBlockStateDescriptor descriptor = block.toDescriptor();
-						descriptor.getAttributes().put(BLTProperties.BLOCK_ATTRIBUTE_PATH, pathForBlock(diagram.getResourceId(),block.getName()));
+						descriptor.getAttributes().put(BLTProperties.BLOCK_ATTRIBUTE_PATH, diagram.getResourceId().getFolderPath());
 						descriptor.getAttributes().put(BLTProperties.BLOCK_ATTRIBUTE_ISSUE, problem);
 						result.add(descriptor);
 					}
@@ -945,6 +946,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	@Override
 	public List<SerializableResourceDescriptor> listDiagramDescriptors(String projectName) {
 		List<SerializableResourceDescriptor> descriptors = controller.getDiagramDescriptors(projectName);
+		if(DEBUG) log.infof("%s.listDiagramDescriptors: %d diagrams for project %s",CLSS,descriptors.size(),projectName);
 		return descriptors;
 	}
 	/**
@@ -1095,8 +1097,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 						String problem = block.validateSubscription();
 						if( problem!=null) {
 							SerializableBlockStateDescriptor descriptor = block.toDescriptor();
-							descriptor.getAttributes().put(BLTProperties.BLOCK_ATTRIBUTE_PATH, pathForBlock(diagram.getResourceId(),
-									block.getName()));
+							descriptor.getAttributes().put(BLTProperties.BLOCK_ATTRIBUTE_PATH, diagram.getResourceId().getResourcePath().getFolderPath());
 							descriptor.getAttributes().put(BLTProperties.BLOCK_ATTRIBUTE_ISSUE, problem);
 							result.add(descriptor);
 						}
@@ -1127,7 +1128,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 							if( qv!=null && now-qv.getTimestamp().getTime()>interval ) {
 								double hrs = ((double)(now-qv.getTimestamp().getTime()))/(3600*1000);
 								SerializableBlockStateDescriptor descriptor = block.toDescriptor();
-								descriptor.getAttributes().put(BLTProperties.BLOCK_ATTRIBUTE_PATH, pathForBlock(res.getResourceId(),block.getName()));
+								descriptor.getAttributes().put(BLTProperties.BLOCK_ATTRIBUTE_PATH, res.getResourceId().getFolderPath());
 								descriptor.getAttributes().put(BLTProperties.BLOCK_ATTRIBUTE_ISSUE, String.format("Unchanged for %.2f hrs", hrs));
 								result.add(descriptor);
 							}
@@ -1142,21 +1143,6 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		return result;
 	}
 	
-	@Override
-	public String pathForBlock(ProjectResourceId diagramId,String blockName) {
-		String path = controller.pathForNode(diagramId);
-		return String.format("%s:%s",path,blockName);
-	}
-	/** 
-	 * @param nodeId UUID as a String of a node in the navigation tree
-	 * @return a slash-separated path to the specified node. The path 
-	 *         root is a slash representing the top node of the navigation tree.
-	 */
-	@Override
-	public String pathForNode(ProjectResourceId nodeId) {
-		String path = controller.pathForNode(nodeId);
-		return path;
-	}
 	/**
 	 * Post a (simulated) block result on its output.
 	 * @param diagramId the parent diagram

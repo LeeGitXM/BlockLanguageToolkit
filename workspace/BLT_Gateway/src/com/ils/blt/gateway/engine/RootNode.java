@@ -1,5 +1,5 @@
 /**
- *   (c) 2012-2021  ILS Automation. All rights reserved. 
+ *   (c) 2012-2022  ILS Automation. All rights reserved. 
  */
 package com.ils.blt.gateway.engine;
 
@@ -10,101 +10,93 @@ import java.util.List;
 import java.util.Map;
 
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.script.ScriptNotificationManager;
+import com.ils.blt.gateway.ControllerRequestHandler;
+import com.ils.common.JavaToPython;
+import com.ils.common.PythonToJava;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
-import com.inductiveautomation.ignition.common.project.resource.ResourcePath;
+import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 
 /**
- * This is the node at the top of the hierarchy. There is only one of these.
- * Its children are logically the applications. The node also keeps track of 
- * the projects and adds project name to the tree path when called for.
+ * This is the node at the top of the hierarchy. There is only one of these, a singleton.
+ * Its children are ProjectNodes. The getter for a project node will create a new node if it doesn't exist.
  * 
  * Keep track of children by project.
  */
 public class RootNode extends ProcessNode {
 	private static final long serialVersionUID = 4266822873285521574L;
 	private static String CLSS = "RootNode";
-	protected final GatewayContext context;   // Use to get project name
-	// The child key is resourceId (which is immutable)
-	private final Map <String,Map<ProjectResourceId,ProcessNode>>childrenByProjectName;
+	private static RootNode instance = null;
+	private Map<String,ProjectNode> projects;
+	
+	/**
+	 * The handler, make this private per Singleton pattern. 
+	 */
+	private RootNode() {
+		super(null, BLTProperties.ROOT_FOLDER_NAME);
+		projects = new HashMap<>();
+	}
 
 	/**
-	 * Constructor: 
-	 * @param ctx Gateway context 
+	 * Static method to create and/or fetch the single instance.
 	 */
-	public RootNode(GatewayContext ctx,ProjectResourceId id) { 
-		super(id,BLTProperties.ROOT_FOLDER_NAME);
-		this.context = ctx;
-		this.childrenByProjectName = new HashMap<>();
-	}
-	
-	public void addChild(ProcessNode child,String childProjectName) {
-		log.debugf("%s.addChild: %s[%s]",CLSS,getName(),child.getName());
-		String key = childProjectName;
-		
-		
-		Map<ProjectResourceId,ProcessNode>map = childrenByProjectName.get(key);
-		if( map==null ) {
-			map = new HashMap<>();
-			childrenByProjectName.put(key, map);
+	public static RootNode getInstance() {
+		if (instance == null) {
+			synchronized (ScriptNotificationManager.class) {
+				instance = new RootNode();
+			}
 		}
-		map.put(child.getResourceId(),child);
+		return instance;
 	}
+
 	
 	/**
-	 * This method should not be called ..
+	 * When we add a child to the root, we actually add it to the appropriate
+	 * child ProjectNode.
 	 */
-	@Override
 	public void addChild(ProcessNode child) {
-		log.errorf("%s.addChild: ERROR use addChild(child,projectId) for a RootNode",CLSS);
+		String project = child.getProjectName();
+		ProjectNode projNode = (ProjectNode)projects.get(project);
+		if( projNode==null) {
+			projNode = new ProjectNode(project);
+			projects.put(project, projNode);
+		}
+		projNode.addChild(child);
 	}
 	
-	
-	
 	public Collection<String> allProjects() {
-		return childrenByProjectName.keySet();
+		return projects.keySet();
 	}
 	/**
 	 * Create a flat list of nodes of all sorts known to belong to the project.
-	 * @param queryProjectId
-	 * @return the list of application, family, folder and diagram nodes in the project
+	 * @param project
+	 * @return the list of folder and diagram nodes in the project
 	 */
-	public List<ProcessNode> allNodesForProject(String queryName) {
+	public List<ProcessNode> allNodesForProject(String project) {
 		List<ProcessNode> nodes = new ArrayList<ProcessNode>();
-		Map<ProjectResourceId,ProcessNode> map = childrenByProjectName.get(queryName);
-		if( map!=null) {
-			Collection<ProcessNode> children = map.values();
-			if( children!=null) {
-				for(ProcessNode child:children) {
-					addNodeToList(child,nodes);
-				}
-			}
-		}
-		else {
-			log.debugf("%s.allNodesForProject: No nodes found for project %d", CLSS,queryName);
+		ProjectNode projNode = (ProjectNode)projects.get(project);
+		if( projNode!=null) {
+			nodes = projNode.allNodes();
 		}
 		return nodes;
 	}
-	
-	private void addNodeToList(ProcessNode root,List<ProcessNode>list) {
-		for( ProcessNode child:root.getChildren() ) {
-			addNodeToList(child,list);
-		}
-		list.add(root);
-	}
 	/**
-	 * Remove the children of a project. 
+	 * The child is not really a child of the root node,
+	 * but rather the child of the appropriate project node. 
 	 */
-	public void removeChildFromProjectRoot(String childProjectName,ProcessNode node) {
-		Map<ProjectResourceId,ProcessNode> map = childrenByProjectName.get(childProjectName);
-		if( map!=null) map.remove(node.getResourceId());	
+	public void removeChild(ProcessNode child) {
+		String project = child.getProjectName();
+		ProjectNode projNode = (ProjectNode)projects.get(project);
+		if( projNode==null) {
+			projNode.removeChild(child);
+		}
 	}
 	
 	/**
-	 * Remove all traces of a project. 
-	 * NOTE: The project name to Id mapping remains.
+	 * Remove all traces of a project in the ProcessNode tree. 
 	 */
 	public void removeProject(String projectToRemove) {
-		childrenByProjectName.remove(projectToRemove);	
+		projects.remove(projectToRemove);	
 	}
 }

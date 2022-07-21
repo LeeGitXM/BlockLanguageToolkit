@@ -10,7 +10,6 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.LoadableDetachableModel;
 import org.apache.wicket.model.Model;
 
-import com.ils.blt.common.BLTProperties;
 import com.ils.blt.gateway.ControllerRequestHandler;
 import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.blt.gateway.engine.ModelManager;
@@ -23,9 +22,7 @@ import com.inductiveautomation.ignition.common.project.resource.ProjectResourceI
 /**
  * A provider of {@link ProcessNode}s.
  * 
- * For simplicity all process nodes are kept as class members, in a real world scenario these would be
- * fetched from a database. If {@link ProcessNode}s were Serializable you could of course just keep
- * references in instance variables.
+ * This class is used to generate the wicket view of the node tree 
  * 
  * 
  * @author Sven Meier
@@ -53,15 +50,9 @@ public class ProcessNodeProvider implements ITreeProvider<ProcessNode> {
      */
     @Override
     public Iterator<ProcessNode> getRoots() {
-    	RootNode root = modelManager.getRootNode();
+    	RootNode root = RootNode.getInstance();
     	Collection<ProcessNode> roots = new ArrayList<>();
-    	for(String name:root.allProjects() ){
-    		StringPath path = StringPath.extend(root.getResourceId().getResourcePath().getPath(),name);
-    		ProjectResourceId id = handler.createResourceId(name, path.toString());
-    		ProjectNode pn = new ProjectNode(root,id);
-    		roots.add(pn);
-    	}
-        return roots.iterator();
+    	return root.getChildren().iterator();
     }
 
     @Override

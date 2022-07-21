@@ -90,9 +90,9 @@ public class ProcessNodeSynchronizer {
     	resourcesDelete.clear();
     	Map<ResourcePath,ProcessNode> nodesByKey = modelManager.getNodesByResourcePath();
     	Collection<ProcessNode> nodes = nodesByKey.values();
-    	RootNode root = modelManager.getRootNode();
+
     	for( ProcessNode child:nodes) {
-    		if( !child.getResourceId().equals(root.getResourceId()) && modelManager.getProcessNode(child.getResourceId())==null ) {
+    		if( child.getResourceId()!=null  && modelManager.getProcessNode(child.getResourceId())==null ) {
     			ProjectResourceId resid = child.getResourceId();
     			resourcesDelete.add(resourceMap.get(ResourceKey.keyForResource(resid)));
     			log.infof("%s.removeOrphans: DELETING node %s:%s (has no parent)", CLSS,child.getProjectName(),child.getResourceId().getResourcePath().getFolderPath());

@@ -53,7 +53,7 @@ public class ModelManager implements ProjectListener  {
 	private static final boolean DEBUG = true;
 	private final GatewayContext context;
 	private final LoggerEx log;
-	private RootNode root;
+	private final RootNode root;
 	private final Map<ResourcePath,ProcessNode> orphansByResourcePath;
 	private final Map<ResourcePath,ProcessNode> nodesByResourcePath;
 	private final BlockExecutionController controller = BlockExecutionController.getInstance();
@@ -68,12 +68,10 @@ public class ModelManager implements ProjectListener  {
 	public ModelManager(GatewayContext ctx) { 
 		this.context = ctx;
 		this.log = LogUtil.getLogger(getClass().getPackage().getName());
+		this.root = RootNode.getInstance();
 		
 		orphansByResourcePath = new HashMap<>();
 		nodesByResourcePath = new HashMap<>();
-		ProjectResourceId resourceId = new ProjectResourceId(BLTProperties.UNDEFINED,BLTProperties.DIAGRAM_RESOURCE_TYPE,BLTProperties.ROOT_FOLDER_NAME);
-		root = new RootNode(context,resourceId);
-		nodesByResourcePath.put(root.getResourceId().getResourcePath(), root);
 	}
 	
 	/**
@@ -212,6 +210,7 @@ public class ModelManager implements ProjectListener  {
 					result.add(descriptor);
 				}
 			}
+			if(DEBUG) log.infof("%s.getDiagramDescriptors: found %d for project %s", CLSS,result.size(),projectName);
 		}
 		else {
 			log.warnf("%s.getDiagramDescriptors: Project %s not found", CLSS,projectName);
@@ -240,16 +239,10 @@ public class ModelManager implements ProjectListener  {
 					result.add(descriptor);
 				}
 			}
-			if(DEBUG) log.infof("%s.getDiagramDescriptors: found %d for project %s", CLSS,result.size() - priorSize,projectName);
-			priorSize = result.size();  // Used only for debugging
+			if(DEBUG) log.infof("%s.getDiagramDescriptors: found %d (%s)", CLSS,result.size(),projectName);
 		}
 		return result;	
 	}
-
-	/**
-	 * @return the root node of the diagram tree
-	 */
-	public RootNode getRootNode() { return root; }
 	
 	public synchronized List<SerializableBlockStateDescriptor> listBlocksDownstreamOf(ProjectResourceId diagramId,UUID blockId,boolean spanDiagrams) {
 		List<SerializableBlockStateDescriptor> results = new ArrayList<>();
@@ -375,20 +368,7 @@ public class ModelManager implements ProjectListener  {
 			}
 		}	
 	}
-	// Node must be in the nav-tree. Include project name.
-	public String pathForNode(ProjectResourceId nodeId) {
-		String path = "";
-		ProcessNode node = nodesByResourcePath.get(nodeId.getResourcePath());
-		if( node!=null) {
-			// treePath includes "root", replace this with project.
-			path = node.getPath().toString();
-			path = path.substring(5); // Strip off :root
-			String projectName = root.getProjectName();
-			path = projectName+path;
-		}
-		return path.toString();
-		
-	}
+
 	/**
 	 * Remove a diagram that is not associated with a project resource,
 	 * nor with the folder hierarchy.
@@ -445,6 +425,7 @@ public class ModelManager implements ProjectListener  {
 		nodesByResourcePath.put(root.getResourceId().getResourcePath(), root);
 		if(DEBUG) log.infof("%s.removeAllDiagrams ... complete",CLSS);
 	}
+	
 	/**
 	 * Start all blocks in diagrams known to this manager. Note that, even if a diagram is
 	 * DISABLED, its blocks are started. It's just that their results are not propagated.
@@ -578,7 +559,7 @@ public class ModelManager implements ProjectListener  {
 				// Create a new diagram
 				if(DEBUG) log.infof("%s.addModifyDiagramResource: Creating diagram %s(%s) %s", CLSS,res.getResourceName(),
 						sd.getPath().toString(),sd.getState().name());
-				diagram = new ProcessDiagram(sd,res.getResourcePath().getParent(),res.getProjectName());
+				diagram = new ProcessDiagram(res.getProjectName(),sd,res.getResourcePath().getParent());
 
 				// Add the new diagram to our hierarchy
 				nodesByResourcePath.put(diagram.getResourceId().getResourcePath(),diagram);
@@ -662,16 +643,18 @@ public class ModelManager implements ProjectListener  {
 	 */
 	private void addToHierarchy(ProcessNode node) {
 		if(DEBUG) log.infof("%s.addToHierarchy: %s (%s)",CLSS,node.getName(),node.getResourceId().getResourcePath().getPath());
-		ProjectResourceId self     = node.getResourceId();
-		nodesByResourcePath.put(self.getResourcePath(), node);
+		ProjectResourceId resourceId     = node.getResourceId();;
+		nodesByResourcePath.put(resourceId.getResourcePath(), node);
 		
 		// If the parent is null, then we're the top of the chain for our project
 		// Add the node to the root.
-		if( node.getResourceId().getResourcePath().getParent()==null )  {
+		ResourcePath parentPath = resourceId.getResourcePath().getParent();
+		ResourcePath grandparentPath = resourceId.getResourcePath().getParent().getParent();
+		if( parentPath==null || parentPath.getParent().getFolderPath().equals("")   )  {
 			root.addChild(node);
 			if(DEBUG) log.infof("%s.addToHierarchy: %s is a ROOT (null parent)",CLSS,node.getName());
 		}
-		else if( node.getResourceId().getResourcePath().getParent().isModuleFolder() )  {
+		else if( parentPath.isModuleFolder() )  {
 			root.addChild(node);
 			if(DEBUG) log.infof("%s.addToHierarchy: %s is a ROOT (parent is root folder)",CLSS,node.getName());
 		}
@@ -681,7 +664,7 @@ public class ModelManager implements ProjectListener  {
 			ProcessNode parent = nodesByResourcePath.get(node.getResourceId().getResourcePath());
 			if(parent==null ) {
 				if(DEBUG) log.infof("%s.addToHierarchy: %s is an ORPHAN (parent is %s)",CLSS,node.getName(),node.getResourceId().getFolderPath());
-				orphansByResourcePath.put(self.getResourcePath(), node);
+				orphansByResourcePath.put(resourceId.getResourcePath(), node);
 			}
 			else {
 				if(DEBUG) log.infof("%s.addToHierarchy: %s is a CHILD of %s",CLSS,node.getName(),parent.getName());
@@ -728,9 +711,6 @@ public class ModelManager implements ProjectListener  {
 					ProcessNode parent = nodesByResourcePath.get(node.getResourceId().getResourcePath());
 					if( parent!=null ) {
 						parent.removeChild(node);
-						if( parent.getResourceId().equals(root.getResourceId())) {
-							root.removeChildFromProjectRoot(resourceId.getProjectName(),node);
-						}
 					}
 				}
 				// Finally remove from the node maps

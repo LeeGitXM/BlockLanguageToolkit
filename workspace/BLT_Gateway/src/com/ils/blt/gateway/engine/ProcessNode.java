@@ -11,7 +11,6 @@ import java.util.Map;
 
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.gateway.ControllerRequestHandler;
-import com.ils.common.GeneralPurposeDataContainer;
 import com.inductiveautomation.ignition.common.StringPath;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 import com.inductiveautomation.ignition.common.project.resource.ResourcePath;
@@ -25,52 +24,48 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  */
 public class ProcessNode implements Serializable {
 	private static final long serialVersionUID = 6280701183405134254L;
-	private final Map<ResourcePath,ProcessNode> children;   // Key by resourceId
-	protected final LoggerEx log;
-	private String name;
-	protected final ControllerRequestHandler requestHandler;
-	protected ProjectResourceId resourceId;   // Resource set when serialized.
 	private final String CLSS = "ProcessNode";
-	private GeneralPurposeDataContainer auxiliaryData;
-	
+	private final static boolean DEBUG = true;
+	protected String name;
+	protected final ProjectResourceId resourceId;   // Resource set when serialized.
+	protected final Map<ResourcePath,ProcessNode> children;   // Key by resource path
+	protected final LoggerEx log;
+
 	/**
 	 * Constructor: 
-	 * @param nam of the node
-	 * @param parent UUID of the parent of this node.
 	 * @param projectName project for this resource
-	 * @param path string path to this resource
+	 * @param nam name of the node
+	 * @param parentPath string path to the parent node
 	 */
-	public ProcessNode(ResourcePath parent,String projectName,String nam) { 
-		requestHandler = ControllerRequestHandler.getInstance();
+	public ProcessNode(String projectName,String nam,String parentPath) { 
 		this.name = nam;
-		String path = StringPath.extend(parent.getPath(), nam).toString();
+		StringPath parent = StringPath.parse(parentPath);
+		String path = StringPath.extend(parent, nam).toString();
+		ControllerRequestHandler requestHandler = ControllerRequestHandler.getInstance();
 		this.resourceId = requestHandler.createResourceId(projectName, path);
-		this.auxiliaryData = new GeneralPurposeDataContainer();
 		this.children = new HashMap<>();
 		this.log = LogUtil.getLogger(getClass().getPackageName());
 	}
 	
 	/**
 	 * Constructor: 
-	 * @param me resourceId of this node.
+	 * @param resid resourceId of this node.
 	 * @param nam of the node
 	 */
-	public ProcessNode(ProjectResourceId me,String nam) { 
-		requestHandler = ControllerRequestHandler.getInstance();
-		this.resourceId = me;
+	public ProcessNode(ProjectResourceId resid,String nam) { 
+		this.resourceId = resid;
 		this.name = nam;
-		this.auxiliaryData = new GeneralPurposeDataContainer();
 		this.children = new HashMap<>();
 		this.log = LogUtil.getLogger(getClass().getPackageName());
 	}
 
 	public void addChild(ProcessNode child)    { 
 		children.put(child.getResourceId().getResourcePath(),child);
-		log.debugf("%s.addChild: %s[%s]",CLSS,getName(),child.getName());
+		if(DEBUG) log.infof("%s.addChild: %s[%s]",CLSS,getName(),child.getName());
 	}
 
 	// So that class is comparable
-	// Same self (UUID) is sufficient to prove equality
+	// Same resourceId is sufficient to prove equality
 	@Override
 	public boolean equals(Object arg) {
 		boolean result = false;
@@ -96,7 +91,11 @@ public class ProcessNode implements Serializable {
 	public Collection<ProcessNode> getChildren() { return children.values(); }
 	public String getName() {return name;}
 	public ProjectResourceId getResourceId() { return this.resourceId; }
-	public String getProjectName() {return resourceId.getProjectName();}
+	public String getProjectName() {
+		String project = "";
+		if( resourceId!=null)project = resourceId.getProjectName();
+		return project;
+	}
 	
 	/**
 	 * Create a list of descendants by recursing through the children. Add
@@ -118,9 +117,9 @@ public class ProcessNode implements Serializable {
 	public int hashCode() {
 		return this.getResourceId().hashCode();
 	}	
-	public void removeChild(ProcessNode child) { children.remove(child.getResourceId());} 
+	public void removeChild(ProcessNode child) { children.remove(child);} 
 	public void setName(String nam) { this.name = nam; }
-	public void setResourceId(ProjectResourceId resid) {this.resourceId = resid;}
+
 	public SerializableResourceDescriptor toResourceDescriptor() {
 		SerializableResourceDescriptor descriptor = new SerializableResourceDescriptor();
 		descriptor.setName(getName());
@@ -129,6 +128,4 @@ public class ProcessNode implements Serializable {
 		descriptor.setIsFolder(true);
 		return descriptor;
 	}
-	public GeneralPurposeDataContainer getAuxiliaryData() {return auxiliaryData;}
-	public void setAuxiliaryData(GeneralPurposeDataContainer auxiliaryData) {this.auxiliaryData = auxiliaryData;}
 }

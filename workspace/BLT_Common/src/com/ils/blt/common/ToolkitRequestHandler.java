@@ -16,7 +16,6 @@ import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.common.GeneralPurposeDataContainer;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
-import com.inductiveautomation.ignition.common.project.resource.ResourceType;
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 
 /**
@@ -353,13 +352,6 @@ public interface ToolkitRequestHandler  {
 	 * @return a list of blocks logically connected to the sink.
 	 */
 	public List<SerializableBlockStateDescriptor> listSourcesForSink(ProjectResourceId diagramId,String blockId) ;
-	/** 
-	 * @param diagramId of the parent diagram
-	 * @param blockName name of the block within the diagram
-	 * @return a colon-separated path to the specified block. The path includes
-	 *         the project name.
-	 */
-	public String pathForBlock(ProjectResourceId diagramId,String blockName);
 	/**
 	 * Post a (simulated) block result on its output.
 	 * @param diagramId the parent diagram
@@ -368,12 +360,6 @@ public interface ToolkitRequestHandler  {
 	 * @param value new value
 	 */
 	public void postResult(ProjectResourceId diagramId,String blockId,String port,String value);
-	/** 
-	 * @param nodeId UUID as a String of a node in the navigation tree
-	 * @return a slash-separated path to the specified node. The path 
-	 *         root is a slash representing the top node of the navigation tree.
-	 */
-	public String pathForNode(ProjectResourceId nodeId);
 	/**
 	 * Execute propagate() on a specified block. Send its current state
 	 * to the outputs.

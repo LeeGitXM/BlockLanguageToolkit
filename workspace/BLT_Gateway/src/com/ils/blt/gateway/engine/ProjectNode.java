@@ -3,45 +3,45 @@
  */
 package com.ils.blt.gateway.engine;
 
-import java.util.Collection;
-
-import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * A project node is a construction solely for the use of the status panel
- * browser. It is a way to create a full tree from the root node.
+ * A project node is a child of the root node. Its children are ProcessNodes representing
+ * project resources - diagrams and folders.
  * A project node is identified by the project name. Its parent is the root node.
  */
 public class ProjectNode extends ProcessNode {
 	private static final long serialVersionUID = 6280701183405134254L;
-	private final RootNode root;
-	
+
 	/**
-	 * Constructor: 
-	 * @param rootNode the root node
-	 * @param me UUID of this node 
+	 * Constructor: Set the name of the node to the project.
 	 * @param projName the project
 	 */
-	public ProjectNode(RootNode rootNode, ProjectResourceId me) { 
-		super(me,rootNode.getName());
-		this.root = rootNode;
+	public ProjectNode(String name) { 
+		super(null,name);
 	}
-
-	public void addChild(ProjectNode child)    { 
-		throw new UnsupportedOperationException();
+	/**
+	 * Create a flat list of nodes of all sorts known to belong to the project.
+	 * The list does not include the ProjectNode
+	 * @param project
+	 * @return the list of folder and diagram nodes in the project
+	 */
+	public List<ProcessNode> allNodes() {
+		List<ProcessNode> nodes = new ArrayList<ProcessNode>();
+		addChildrenToList(nodes,this);
+		return nodes;
 	}
-
-	public Collection<ProcessNode> getChildren() { 
-		return root.allNodesForProject(this.resourceId.getProjectName()); 
+	
+	/**
+	 * Recursively add children in the tree to the list.
+	 * @param nodes
+	 * @param node
+	 */
+	private void addChildrenToList(List<ProcessNode> nodes,ProcessNode parent) {
+		nodes.add(parent);
+		for(ProcessNode node:parent.children.values()) {
+			addChildrenToList(nodes,node);
+		}
 	}
-
-
-	public void setProjectName(String name) {
-		throw new UnsupportedOperationException();
-	}
- 
-	@Override
-	public void removeChild(ProcessNode child) { 
-		throw new UnsupportedOperationException();
-	} 
 }
