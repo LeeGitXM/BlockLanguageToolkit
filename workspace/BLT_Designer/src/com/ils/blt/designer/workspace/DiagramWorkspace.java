@@ -1341,6 +1341,12 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 							log.infof("%s: %s block, name = %s",CLSS,sb.getClassName(),sb.getName());
 						}
 					}
+					diagram = new ProcessDiagramView(context,res.getResourceId(),sd);
+					// We are looking at the live version running in the gateway, obtain any updates
+					for( Block blk:diagram.getBlocks()) {
+						ProcessBlockView pbv = (ProcessBlockView)blk;
+						pbv.initProperties(res.getResourceId());
+					}
 				} 
 				catch (JsonParseException jpe) {
 					log.warnf("%s.open: JSON parse exception (%s)",CLSS,jpe.getLocalizedMessage());
@@ -1350,12 +1356,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				} 
 				catch (IOException ioe) {
 					log.warnf("%s.open: io exception (%s)",CLSS,ioe.getLocalizedMessage());
-				}
-				diagram = new ProcessDiagramView(context,res.getResourceId(),sd);
-				// We are looking at the live version running in the gateway, obtain any updates
-				for( Block blk:diagram.getBlocks()) {
-					ProcessBlockView pbv = (ProcessBlockView)blk;
-					pbv.initProperties(res.getResourceId());
 				}
 			}
 			

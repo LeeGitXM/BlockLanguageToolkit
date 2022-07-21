@@ -1,5 +1,5 @@
 /**
- *   (c) 2020-2021  ILS Automation. All rights reserved.
+ *   (c) 2020-2022  ILS Automation. All rights reserved.
  *   http://docs.oracle.com/javase/tutorial/displayCode.html?code=http://docs.oracle.com/javase/tutorial/uiswing/examples/components/SharedModelDemoProject/src/components/SharedModelDemo.java
  */
 package com.ils.blt.designer.editor;
@@ -42,7 +42,6 @@ public class SourceEditPanel extends BasicEditPanel {
 	private List<SerializableBlockStateDescriptor> sinks;
 	private JTable table;
 
-	@SuppressWarnings("unchecked")
 	public SourceEditPanel(final BlockPropertyEditor editor) {
 		super(editor);
 		sinks = editor.getRequestHandler().listBlocksOfClass(editor.getContext().getProjectName(),BlockConstants.BLOCK_CLASS_SINK);
@@ -78,7 +77,7 @@ public class SourceEditPanel extends BasicEditPanel {
 						Object binding = handler.getPropertyBinding(diag.getResourceId(), sinkDescriptor.getIdString(), BlockConstants.BLOCK_PROPERTY_TAG_PATH);
 						tagProperty.setValue(val);
 						tagProperty.setBinding(binding.toString());
-						// block.setName(sinkDescriptor.getName());  // Don't change the name for a sink re-match
+						block.setName(sinkDescriptor.getName());  // Don't change the name for a sink re-match
 						editor.updateCorePanel(BlockEditConstants.HOME_PANEL,block); // Core attributes
 						editor.updatePanelForProperty(BlockEditConstants.HOME_PANEL, tagProperty);
 						editor.updatePanelValue(SourceMainPanel.PROP_NAME, sinkDescriptor.getName());
