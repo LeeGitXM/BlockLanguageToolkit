@@ -348,18 +348,19 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * @return an explanation for the state of a block.
 	 */
 	@Override
-	public String getExplanation(ProjectResourceId diagramId,String blockId) {
+	public String getExplanation(ProjectResourceId diagramId,String blockName) {
 		String reason="";
 
 		try {
 			reason = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "getExplanation",diagramId,blockId);
+					BLTProperties.MODULE_ID, "getExplanation", diagramId, blockName);
 		}
 		catch(Exception ex) {
 			log.infof("%s.getExplanation: Exception (%s)",CLSS,ex.getMessage());
 		};
 		return reason;
 	}
+	
 	/**
 	 * @return the hostname of the gateway
 	 */

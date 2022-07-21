@@ -551,15 +551,15 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * @return an explanation for the block's current state
 	 */
 	@Override
-	public synchronized String getExplanation(ProjectResourceId diagramId,String blockId) {
+	public synchronized String getExplanation(ProjectResourceId diagramId,String blockName) {
 		String explanation = "";
 		ProcessDiagram diagram = controller.getDiagram(diagramId);
 		if(diagram!=null) {
-			UUID uuid = UUID.fromString(blockId);
-			ProcessBlock block = controller.getBlock(diagram,uuid );
+			ProcessBlock blk = diagram.getBlockByName(blockName);
+			UUID uuid = blk.getBlockId();
 			List<UUID> members = new ArrayList<>();
 			members.add(uuid);
-			if( block!=null ) explanation = block.getExplanation(diagram,members); 
+			if( blk!=null ) explanation = blk.getExplanation(diagram, members); 
 		}
 		return explanation;
 	}
