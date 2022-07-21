@@ -885,7 +885,7 @@ public class NavTreeFolder extends FolderNode implements ProjectResourceListener
 	@Override
 	public boolean isChanged() {
 		boolean changed =  statusManager.isModified(resourceId);
-		log.infof("%s.isChanged: %s modified = %s",CLSS,resourceId.getResourcePath().getPath().toString(),(changed?"true":"false"));
+		//log.infof("%s.isChanged: %s modified = %s",CLSS,resourceId.getResourcePath().getPath().toString(),(changed?"true":"false"));
 		return changed;
 	}
 

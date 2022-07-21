@@ -103,7 +103,9 @@ import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 import com.inductiveautomation.ignition.common.tags.browsing.NodeBrowseInfo;
 import com.inductiveautomation.ignition.common.tags.config.TagConfigurationModel;
 import com.inductiveautomation.ignition.common.tags.config.properties.WellKnownTagProps;
+import com.inductiveautomation.ignition.common.tags.config.types.TagObjectType;
 import com.inductiveautomation.ignition.common.tags.model.TagPath;
+import com.inductiveautomation.ignition.common.tags.paths.parser.TagPathParser;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.common.xmlserialization.SerializationException;
@@ -732,7 +734,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 									desc.setBackground(new Color(127,127,127).getRGB()); // Dark gray
 									desc.setCtypeEditable(true);
 									block = new ProcessBlockView(desc);
-									block.setName(nameFromTagTree(tnode));
+									block.setName(nameFromTagPath(tnode.getFullPath()));
 									updatePropertiesForTagPath(block,tnode.getFullPath().toStringFull());
 								}
 								else {
@@ -743,7 +745,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 									desc.setBackground(Color.cyan.getRGB());
 									desc.setCtypeEditable(true);
 									block = new ProcessBlockView(desc);
-									block.setName(enforceUniqueName(nameFromTagTree(tnode),diagram));
+									block.setName(enforceUniqueName(nameFromTagPath(tnode.getFullPath()),diagram));
 									updatePropertiesForTagPath(block,tnode.getFullPath().toStringFull());
 								}
 								// Define a single output
@@ -769,7 +771,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 									desc.setStyle(BlockStyle.ARROW);
 									desc.setCtypeEditable(true);
 									block = new ProcessBlockView(desc);
-									block.setName(nameFromTagTree(tnode));
+									block.setName(nameFromTagPath(tnode.getFullPath()));
 									// Define a single output
 									AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.ANY);
 									block.addAnchor(output);
@@ -782,7 +784,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 									desc.setBackground(Color.cyan.getRGB());
 									desc.setCtypeEditable(true);
 									block = new ProcessBlockView(desc);
-									block.setName(enforceUniqueName(nameFromTagTree(tnode),diagram));
+									block.setName(enforceUniqueName(nameFromTagPath(tnode.getFullPath()),diagram));
 								}	
 								 
 								// Define a single input
@@ -915,7 +917,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 								prop.setBinding(tnode.getFullPath().toStringFull());
 								setSelectedItems((JComponent)null);  // hack to get the property panel to refresh
 								setSelectedItems((JComponent)droppedOn);
-								pblock.setName(nameFromTagTree(tnode));
+								pblock.setName(nameFromTagPath(tnode.getFullPath()));
 								pblock.setCtypeEditable(true);
 								pblock.modifyConnectionForTagChange(prop, tagType);
 								getActiveDiagram().fireStateChanged();
@@ -969,45 +971,125 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	
 	// Guarantee a unique name for a block that has not yet been added to the diagram.
 	public String enforceUniqueName(String name,ProcessDiagramView diagram) {
-		int count = 0;
-		for(Block block:diagram.getBlocks() ) {
-			if(block instanceof ProcessBlockView) {
-				String bname = ((ProcessBlockView)block).getName();
-				if( bname.startsWith(name+"-") ) {
-					String suffix = bname.substring(name.length()+1);
-					if( suffix==null) count = count+1;  // Name ends in -
-					else {
-						try {
-							int val = Integer.parseInt(suffix);
-							if( val>=count) count = val + 1;
-							else count = count+1;
-						}
-						catch(NumberFormatException nfe) {
-							count = count + 1;
-						}
-					}
-				}
-				// The plain name
-				else if( bname.equalsIgnoreCase(name) ) {
-					count = count+1;
-				}
-			}
-		}
-		if( count>0 ) {
-			name = name +"-"+String.valueOf(count);
+		while( nameExists(diagram,name) ) {
+			name = nextName(name);
 		}
 		return name;
 	}
 	
-	private String nameFromTagTree(NodeBrowseInfo tnode) {
-		String name = tnode.getName();
+	/**
+	 * @param name proposed unique name
+	 * @return true if the name belongs to a current block 
+	 */
+	private boolean nameExists(ProcessDiagramView diagram,String name) {
+		boolean exists = false;
+		for(Block block:diagram.getBlocks() ) {
+			if(block instanceof ProcessBlockView) {
+				String bname = ((ProcessBlockView)block).getName();
+				if( bname.equalsIgnoreCase(name) ) {
+					exists = true;
+					break;
+				}
+			}
+		}
+		return exists;
+	}
+	private String nextName(String name) {
+		int index = name.lastIndexOf("-");
+		if( index>0 ) {
+			String suffix = name.substring(index+1);
+			try {
+				int count = Integer.parseInt(suffix);
+				name = String.format("%s-%d",name.substring(0,index-1),count+1);
+			}
+			catch(NumberFormatException nfe) {
+				log.infof("%s.nextName: %s (%s)",CLSS,name,nfe.getLocalizedMessage());
+				name = name + "-1";
+			}
+		}
+		else {
+			name = name + "-1";
+		}
 		return name;
 	}
-
+	
+	public String nameFromTagPath(TagPath tp) {
+		String path = tp.toStringFull();
+		int index = path.indexOf("]");
+		String source = path.substring(0,index+1);
+		path = path.substring(index+1);
+		String[] elements = path.split("/");
+		int count = elements.length;
+		String name = elements[count-1];
+		for( index=0;index<count;index++) {
+			tp = pathFromStringArray(elements,source,index);
+			if( tp!=null && isUDT(tp)) {
+				name = nameFromPartial(elements,index);
+				break;
+			}
+		}
+		return name;
+	}
+	/*
+	 * @return true if the supplied tag path points to a UDT
+	 */
+	private boolean isUDT(TagPath tp) {
+		boolean udt = false;
+		List<TagPath> tags = new ArrayList<>();
+		tags.add(tp);
+		ClientTagManager tmgr = context.getTagManager();
+		CompletableFuture<List<TagConfigurationModel>> futures = tmgr.getTagConfigsAsync(tags,false,true);
+		try {
+			TagConfigurationModel model = futures.get().get(0);
+			PropertySet config = model.getTagProperties();
+			TagObjectType type = (TagObjectType)config.getOrDefault(WellKnownTagProps.TagType);
+			udt = (type==TagObjectType.UdtInstance);
+		}
+		catch(Exception ex) {
+			log.infof("%s.isUDT: failed to get tag type for %s (%s)",CLSS,tp.toStringFull(),ex.getMessage());
+		}
+		return udt;
+	}
+	/*
+	 * Create a human-readable name from elements of the supplied array
+	 */
+	private String nameFromPartial(String[]e,int start) {
+		int len = e.length;
+		String name = e[len-1];  // Last component
+		StringBuffer sb = new StringBuffer();
+		for(int i = start;i<len;i++) {
+			sb.append(e[i]);
+			if(i<len-1) sb.append("-");
+		}
+		name = sb.toString();
+		return name;
+	}
+	/*
+	 * Use specified elements of a string array to construct a tag path.
+	 * If there is a parsing error or the path is not found, return null.
+	 * @return a tag path constructed from string elements.
+	 */
+	private TagPath pathFromStringArray(String[]e,String source,int start) {
+		TagPath tp = null;
+		int len = e.length;
+		StringBuffer sb = new StringBuffer(source);
+		for(int i = start;i<len;i++) {
+			sb.append(e[i]);
+			if(i<len-1) sb.append("/");
+		}
+		String path = sb.toString();
+		try {
+			tp = TagPathParser.parse(path);
+		}
+		catch(IOException ioe) {
+			log.errorf("%s.pathFromStringArray tag path parse error for %s (%s)",CLSS,path,ioe.getMessage());
+		}
+		return tp;
+	}
+	
 	@Override
 	public void resetFrames(DockingManager dockManager, DockableBarManager barManager) {
-		// TODO Auto-generated method stub
-		
+
 	}
 
 	/**
