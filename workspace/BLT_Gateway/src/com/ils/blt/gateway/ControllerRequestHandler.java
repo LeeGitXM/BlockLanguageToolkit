@@ -177,10 +177,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		catch( ClassNotFoundException cnf ) {
 			log.debugf("%s.createInstance: Java class %s not found - trying Python",CLSS,className);
 			ProxyHandler ph = ProxyHandler.getInstance();
-			ProcessDiagram diagram = controller.getDiagram(parentId);
-			if( diagram!=null ) {
-				block = ph.createBlockInstance(className,parentId,blockId,"");
-			}
+			block = ph.createBlockInstance(className,parentId,blockId,"");
 		}
 		catch( InstantiationException ie ) {
 			log.warnf("%s.createInstance: Error instantiating %s (%s)",CLSS,className,ie.getLocalizedMessage()); 
@@ -246,7 +243,8 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	}
 	/**
 	 * Query the block controller for a block specified by the block id. If the block
-	 * does not exist, create it.
+	 * does not exist, create it. If the diagram is null, it means that the controller
+	 * has not "seen" it yet.
 	 * 
 	 * @param className class of the block
 	 * @param projectId id of the project containing the diagram
@@ -268,7 +266,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			log.tracef("%s.getProperties existing %s = %s",CLSS,block.getClass().getName(),props.toString());
 		}
 		else {
-			block = createInstance(className,(diagram!=null?diagram.getResourceId():null),blockId);  // Block is not (yet) attached to a diagram
+			block = createInstance(className,(diagram!=null?diagram.getResourceId():resourceId),blockId);  // Block is not (yet) attached to a diagram
 			if(block!=null) {
 				props = block.getProperties();
 				log.tracef("%s.getProperties new %s = %s",CLSS,block.getClass().getName(),props.toString());

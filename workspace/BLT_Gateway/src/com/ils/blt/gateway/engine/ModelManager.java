@@ -169,8 +169,10 @@ public class ModelManager implements ProjectListener  {
 	 */
 	public ProcessDiagram getDiagram(ProjectResourceId resourceId) {
 		ProcessDiagram diagram = null;
-		ProcessNode node = nodesByResourcePath.get(resourceId.getResourcePath());
-		if( node instanceof ProcessDiagram ) diagram = (ProcessDiagram)node;
+		if( resourceId!=null ) {
+			ProcessNode node = nodesByResourcePath.get(resourceId.getResourcePath());
+			if( node instanceof ProcessDiagram ) diagram = (ProcessDiagram)node;
+		}
 		return diagram;
 	}
 	
