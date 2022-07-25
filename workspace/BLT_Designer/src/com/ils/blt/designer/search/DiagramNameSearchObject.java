@@ -43,7 +43,7 @@ public class DiagramNameSearchObject implements SearchObject {
 
 	@Override
 	public String getOwnerName() {
-		return diagram.getDiagramName();
+		return diagram.getResourcePath().getFolderPath();
 	}
 
 	@Override

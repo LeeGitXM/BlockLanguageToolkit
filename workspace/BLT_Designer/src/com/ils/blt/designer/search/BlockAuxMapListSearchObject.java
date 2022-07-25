@@ -65,7 +65,7 @@ public class BlockAuxMapListSearchObject implements SearchObject {
 
 	@Override
 	public String getOwnerName() {
-		return diagram.getName()+":"+block.getName();
+		return diagram.getResourcePath().getFolderPath()+":"+block.getName();
 	}
 
 

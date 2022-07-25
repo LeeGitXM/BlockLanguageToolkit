@@ -2,18 +2,16 @@ package com.ils.blt.designer.search;
 
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.Optional;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.serializable.SerializableDiagram;
+import com.ils.blt.designer.workspace.BlockAttributeView;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
-import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
@@ -49,7 +47,6 @@ public class DiagramSearchCursor extends SearchObjectCursor {
 		if( index==0 ) {
 			diagram = deserializeResource(resource);
 			blockWalker = diagram.getBlocks().iterator();
-			ApplicationRequestHandler appRequestHandler = new ApplicationRequestHandler();
 		}
 		
 		if( index==0 && searchDiagrams ) {
@@ -59,16 +56,17 @@ public class DiagramSearchCursor extends SearchObjectCursor {
 		else if( searchBlocks ) {
 			if( blockWalker.hasNext() ) {
 				ProcessBlockView view = (ProcessBlockView)blockWalker.next();
-				so = new BlockSearchCursor(context,diagram,view,searchKey);
+				while( view instanceof BlockAttributeView ) {
+					view = null;
+					if( blockWalker.hasNext()) {
+						view = (ProcessBlockView)blockWalker.next();
+					}
+				}
+				if( view !=null ) so = new BlockSearchCursor(context,diagram,view,searchKey);
 			}
 		}
 		index++;
 		return so;
-	}
-	private ProcessDiagramView deserializeResource(ProjectResourceId resourceId) {
-		Optional<ProjectResource> optional = context.getProject().getResource(resourceId);	
-		ProjectResource res = optional.get();
-		return deserializeResource(res);
 	}
 	private ProcessDiagramView deserializeResource(ProjectResource res) {
 		String json = new String(res.getData());

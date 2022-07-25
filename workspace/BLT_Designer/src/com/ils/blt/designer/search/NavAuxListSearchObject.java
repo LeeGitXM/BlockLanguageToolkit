@@ -26,7 +26,7 @@ public class NavAuxListSearchObject implements SearchObject {
 	private static final Dimension IMAGE_SIZE = new Dimension(18,18);
 	private final String key;
 	private final List<String> list;
-	private final String parentName;
+	private final String parentPath;
 	private final String nodeName;
 	private final ProjectResourceId parentId;
 	private final DesignerContext context;
@@ -36,7 +36,7 @@ public class NavAuxListSearchObject implements SearchObject {
 		this.context = ctx;
 		this.key = k;
 		this.list = data;
-		this.parentName = parent.getResourcePath().getName();
+		this.parentPath = parent.getResourcePath().getFolderPath();
 		this.nodeName = node;
 		this.parentId = parent;
 		this.rb = ResourceBundle.getBundle("com.ils.blt.designer.designer");  // designer.properties
@@ -57,7 +57,7 @@ public class NavAuxListSearchObject implements SearchObject {
 
 	@Override
 	public String getOwnerName() {
-		return parentName+":"+nodeName;
+		return parentPath+":"+nodeName;
 	}
 
 	@Override

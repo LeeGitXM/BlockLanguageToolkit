@@ -24,7 +24,7 @@ public class NavAuxPropertySearchObject implements SearchObject {
 	private static final Dimension IMAGE_SIZE = new Dimension(18,18);
 	private final String name;
 	private final String value;
-	private final String parentName;
+	private final String parentPath;
 	private final String nodeName;
 	private final ProjectResourceId parentId;
 	private final DesignerContext context;
@@ -34,7 +34,7 @@ public class NavAuxPropertySearchObject implements SearchObject {
 		this.context = ctx;
 		this.name = nam;
 		this.value = val;
-		this.parentName = parent.getResourcePath().getName();
+		this.parentPath = parent.getResourcePath().getFolderPath();
 		this.nodeName = node;
 		this.parentId = parent;
 		this.rb = ResourceBundle.getBundle("com.ils.blt.designer.designer");  // designer.properties
@@ -55,7 +55,7 @@ public class NavAuxPropertySearchObject implements SearchObject {
 
 	@Override
 	public String getOwnerName() {
-		return parentName+":"+nodeName;
+		return parentPath+":"+nodeName;
 	}
 
 
