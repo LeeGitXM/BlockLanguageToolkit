@@ -629,6 +629,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements Noti
 			public void run() {
 				setItalic(modified);
 				refresh();
+				new WorkspaceRepainter().run();
 			}
 		});
 	}

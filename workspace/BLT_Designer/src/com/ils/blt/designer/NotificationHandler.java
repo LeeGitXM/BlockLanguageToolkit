@@ -236,6 +236,7 @@ public class NotificationHandler implements PushNotificationListener {
 			}
 		}
 	}
+
 	/**
 	 * Receive notification from a ProcessViewDiagram in the Designer. This is a mechanism
 	 * to restore the diagram display to its state prior to its last serialization.

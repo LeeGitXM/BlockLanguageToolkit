@@ -135,6 +135,7 @@ import com.inductiveautomation.ignition.designer.model.ResourceWorkspaceFrame;
 import com.inductiveautomation.ignition.designer.model.menu.JMenuMerge;
 import com.inductiveautomation.ignition.designer.model.menu.MenuBarMerge;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractNavTreeNode;
+import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceNavTreeNode;
 import com.inductiveautomation.ignition.designer.navtree.model.ProjectBrowserRoot;
 import com.inductiveautomation.ignition.designer.tags.tree.dnd.NodeListTransferable;
 import com.jidesoft.action.CommandBar;
@@ -1408,8 +1409,9 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		if( container!=null ) {
 			ProcessDiagramView view = (ProcessDiagramView)(container.getModel());			
 			container.setBackground(view.getBackgroundColorForState());
-			statusManager.getNode(view.getResourceId()).select();
-			SwingUtilities.invokeLater(new WorkspaceRepainter());
+			AbstractResourceNavTreeNode node = statusManager.getNode(view.getResourceId());
+			node.select();
+			node.onSelected();
 		}
 	}
 	

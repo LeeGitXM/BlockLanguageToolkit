@@ -166,6 +166,15 @@ public class NodeStatusManager   {
 	}
 	
 	/**
+	 * When a node is renamed, we need to create a lookup by the new name.
+	 * @param oldPath
+	 * @param newPath
+	 */
+	public void renameNode(String oldPath,String newPath ) {
+		StatusEntry se = statusByPath.get(oldPath);
+		statusByPath.put(newPath, se);
+	}
+	/**
 	 * Return a list of resource paths for descendants of the node representing the specified resourceId.
 	 * The original node is contained in the list. 
 	 * @param root

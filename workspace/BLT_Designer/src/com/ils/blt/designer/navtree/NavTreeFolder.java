@@ -10,10 +10,6 @@ import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.Point;
-import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.FileWriter;
@@ -49,11 +45,11 @@ import com.ils.blt.common.serializable.SerializableNodeRenameHandler;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.NodeStatusManager;
-import com.ils.blt.designer.workspace.BlockAttributeView;
 import com.ils.blt.designer.workspace.CopyPasteHandler;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
+import com.ils.blt.designer.workspace.WorkspaceRepainter;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.client.util.action.BaseAction;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
@@ -62,7 +58,6 @@ import com.inductiveautomation.ignition.common.model.ApplicationScope;
 import com.inductiveautomation.ignition.common.project.ChangeOperation;
 import com.inductiveautomation.ignition.common.project.ProjectResourceListener;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
-import com.inductiveautomation.ignition.common.project.resource.ProjectResourceBuilder;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 import com.inductiveautomation.ignition.common.project.resource.ResourcePath;
 import com.inductiveautomation.ignition.common.util.LogUtil;
@@ -75,7 +70,6 @@ import com.inductiveautomation.ignition.designer.navtree.model.AbstractNavTreeNo
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceNavTreeNode;
 import com.inductiveautomation.ignition.designer.navtree.model.FolderNode;
 import com.inductiveautomation.ignition.designer.navtree.model.ResourceDeleteAction;
-import com.inductiveautomation.ignition.designer.project.ResourceNotFoundException;
 
 /**
  * Edit a folder in the designer scope to support the diagnostics toolkit diagram
@@ -962,6 +956,7 @@ public class NavTreeFolder extends FolderNode implements ProjectResourceListener
 			public void run() {
 				setItalic(modified);
 				refresh();
+				new WorkspaceRepainter().run();
 			}
 		});
 	}
