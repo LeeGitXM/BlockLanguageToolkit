@@ -30,7 +30,6 @@ import com.ils.blt.designer.search.BLTSearchProvider;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
-import com.ils.blt.designer.workspace.WorkspaceBackgroundRepainter;
 import com.ils.blt.designer.workspace.WorkspaceRepainter;
 import com.ils.common.component.DiagramViewer;
 import com.ils.common.component.recmap.RecommendationMap;
@@ -138,7 +137,6 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	public void startup(DesignerContext ctx, LicenseState activationState) throws Exception {
 		context = ctx;
 		appRequestHandler = new ApplicationRequestHandler();
-		WorkspaceBackgroundRepainter.setContext(ctx);
 		WorkspaceRepainter.setContext(ctx);
 		context.addBeanInfoSearchPath("com.ils.blt.designer.component.beaninfos");
 		searchProvider = new BLTSearchProvider(context);

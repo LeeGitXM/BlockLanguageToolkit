@@ -546,7 +546,8 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 
 	/**
 	 * There are a few situations (like deserialization) where we want to suppress the dirty propagation.
-	 * This method is called because we've messed up the diagram with a structural change.
+	 * This method is called when the diagram is changed. It fires a stateChange() event to any listeners.
+	 * The DiagramWorkspace is a listener.
 	 */
 	@Override
 	public void fireStateChanged() {

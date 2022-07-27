@@ -751,7 +751,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 					if( BlockConstants.BLOCK_PROPERTY_TAG_PATH.equalsIgnoreCase(property.getName()) ) {
 						int index = newBinding.lastIndexOf("/");
 						String newName = workspace.nameFromTagPath(tp);
-						if( block.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SOURCE) &&
+						if( block.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SOURCE) ||
 							block.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SINK)      ) {
 							block.setName(newName);
 						}
