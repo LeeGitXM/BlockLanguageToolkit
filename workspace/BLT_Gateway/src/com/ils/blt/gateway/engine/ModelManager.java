@@ -50,7 +50,7 @@ import com.inductiveautomation.ignition.gateway.model.GatewayContext;
  */
 public class ModelManager implements ProjectListener  {
 	private static final String CLSS = "ModelManager";
-	private static final boolean DEBUG = true;
+	private static final boolean DEBUG = false;
 	private final GatewayContext context;
 	private final LoggerEx log;
 	private final RootNode root;
