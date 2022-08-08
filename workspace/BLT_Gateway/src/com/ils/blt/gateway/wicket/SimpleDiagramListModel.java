@@ -1,5 +1,7 @@
 package com.ils.blt.gateway.wicket;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.apache.wicket.model.LoadableDetachableModel;
@@ -16,9 +18,25 @@ public class SimpleDiagramListModel extends LoadableDetachableModel<List<Process
 	}
 
 
+	/**
+	 * @return a sorted list of diagrams.
+	 */
 	@Override
 	protected List<ProcessDiagram> load() {
 		ModelManager modelManager = BlockExecutionController.getInstance().getDelegate();
-		return modelManager.getDiagrams(); 
+		List<ProcessDiagram> diagrams = modelManager.getDiagrams(); 
+
+		Collections.sort(diagrams, new Comparator<ProcessDiagram>() {
+			@Override
+			public int compare(ProcessDiagram a, ProcessDiagram b) {
+				if(a.getProjectName().equalsIgnoreCase(b.getProjectName())) {
+					return a.getResourceId().getFolderPath().compareTo(b.getResourceId().getFolderPath());
+				}
+				else {
+					return a.getProjectName().compareTo(b.getProjectName());
+				}
+			}
+		});
+		return diagrams;
 	}
 }

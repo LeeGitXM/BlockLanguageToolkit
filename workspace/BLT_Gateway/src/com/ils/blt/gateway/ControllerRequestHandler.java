@@ -985,13 +985,18 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			List<SerializableResourceDescriptor> descriptors = controller.getDiagramDescriptors();
 			for(SerializableResourceDescriptor desc:descriptors) {
 				diagram = controller.getDiagram(desc.getResourceId());
-				for(ProcessBlock sink:diagram.getProcessBlocks()) {
-					if( sink.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SINK) ) {
-						BlockProperty prop = sink.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
-						if( prop!=null && tagPath.equalsIgnoreCase(fcns.providerlessPath(prop.getBinding()))  ) {
-							results.add(sink.toDescriptor());
+				if( diagram!=null ) {
+					for(ProcessBlock sink:diagram.getProcessBlocks()) {
+						if( sink.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SINK) ) {
+							BlockProperty prop = sink.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
+							if( prop!=null && tagPath.equalsIgnoreCase(fcns.providerlessPath(prop.getBinding()))  ) {
+								results.add(sink.toDescriptor());
+							}
 						}
 					}
+				}
+				else {
+					log.warnf("%s.listSinksForSource: Diagram %s not found",CLSS,desc.getResourceId().getFolderPath());
 				}
 			}
 		}
@@ -1026,13 +1031,18 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			List<SerializableResourceDescriptor> descriptors = controller.getDiagramDescriptors();
 			for(SerializableResourceDescriptor descriptor:descriptors) {
 				diagram = controller.getDiagram(descriptor.getResourceId());
-				for(ProcessBlock source:diagram.getProcessBlocks()) {
-					if( source.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SOURCE) ) {
-						BlockProperty prop = source.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
-						if( prop!=null && tagPath.equalsIgnoreCase(fcns.providerlessPath(prop.getBinding()))  ) {
-							results.add(source.toDescriptor());
+				if( diagram!=null ) {
+					for(ProcessBlock source:diagram.getProcessBlocks()) {
+						if( source.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SOURCE) ) {
+							BlockProperty prop = source.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
+							if( prop!=null && tagPath.equalsIgnoreCase(fcns.providerlessPath(prop.getBinding()))  ) {
+								results.add(source.toDescriptor());
+							}
 						}
 					}
+				}
+				else {
+					log.warnf("%s.listSourcesForSink: Diagram %s not found",CLSS,descriptor.getResourceId().getFolderPath());
 				}
 			}
 		}
@@ -1052,11 +1062,11 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	public synchronized List<ProcessBlock> listSourceBlocksForSink(ProjectResourceId diagramId,String blockId) {
 		List<ProcessBlock> results = new ArrayList<>();
 		ProcessDiagram diagram = controller.getDiagram(diagramId);
+		log.infof("%s.listSourceBlocksForSink: %s",CLSS,diagramId.getFolderPath());
 		ProcessBlock sink = null;
 		if(diagram!=null) {
 			sink = diagram.getProcessBlock(makeUUID(blockId));
 		}
-
 		String tagPath = null;
 		if( sink!=null && (sink.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SINK))) {
 			BlockProperty prop = sink.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
@@ -1067,13 +1077,18 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			List<SerializableResourceDescriptor> descriptors = controller.getDiagramDescriptors();
 			for(SerializableResourceDescriptor descriptor:descriptors) {
 				diagram = controller.getDiagram(descriptor.getResourceId());
-				for(ProcessBlock source:diagram.getProcessBlocks()) {
-					if( source.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SOURCE) ) {
-						BlockProperty prop = source.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
-						if( prop!=null && tagPath.equalsIgnoreCase(fcns.providerlessPath(prop.getBinding()))  ) {
-							results.add(source);
+				if( diagram!=null ) {
+					for(ProcessBlock source:diagram.getProcessBlocks()) {
+						if( source.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_SOURCE) ) {
+							BlockProperty prop = source.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
+							if( prop!=null && tagPath.equalsIgnoreCase(fcns.providerlessPath(prop.getBinding()))  ) {
+								results.add(source);
+							}
 						}
 					}
+				}
+				else {
+					log.warnf("%s.listSourceBlocksForSink: Diagram %s not found",CLSS,descriptor.getResourceId().getFolderPath());
 				}
 			}
 		}
@@ -1090,7 +1105,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		try {
 			for(SerializableResourceDescriptor res:descriptors) {
 				ProcessDiagram diagram = controller.getDiagram(res.getResourceId());
-				if( !diagram.getState().equals(DiagramState.DISABLED)) {
+				if( diagram!=null && !diagram.getState().equals(DiagramState.DISABLED)) {
 					for( ProcessBlock block:diagram.getProcessBlocks() ) {
 						String problem = block.validateSubscription();
 						if( problem!=null) {
@@ -1119,7 +1134,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		try {
 			for(SerializableResourceDescriptor res:descriptors) {
 				ProcessDiagram diagram = controller.getDiagram(res.getResourceId());
-				if( !diagram.getState().equals(DiagramState.DISABLED)) {
+				if( diagram!=null && !diagram.getState().equals(DiagramState.DISABLED)) {
 					for( ProcessBlock block:diagram.getProcessBlocks() ) {
 						if( className==null || className.isEmpty() || block.getClassName().equals(className)) {
 							QualifiedValue qv = block.getLastValue();
