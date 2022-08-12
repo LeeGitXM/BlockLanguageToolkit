@@ -176,6 +176,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 					log.warnf("%s.forcePost: Unable to coerce %s to %s (%s)",getName(),sval,ct.name(),iae.getLocalizedMessage());
 				}
 
+				if(DEBUG) log.infof("%s.forcePost(): forcing %s on %s", name, sval, port);
 				OutgoingNotification nvn = new OutgoingNotification(this,port,new TestAwareQualifiedValue(timer,value));
 				controller.acceptCompletionNotification(nvn);
 			}
@@ -626,6 +627,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	public void propagate() {
 		// lastValue is used for blocks that send data
 		if( lastValue!=null ) {
+			if(DEBUG) log.infof("%s.propagate(): propagating %s on %s", name, lastValue.toString(), BlockConstants.OUT_PORT_NAME);
 			recordActivity(Activity.ACTIVITY_PROPAGATE,lastValue.toString());
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 			if(controller!=null) controller.acceptCompletionNotification(nvn);

@@ -868,31 +868,34 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 			log.infof("%s.postResult: GatewayException (%s)",CLSS,ge.getMessage());
 		}
 	}
+	
 	/**
 	 * Execute propagate() on a specified block. This sends its current value to
 	 * the output connections.
 	 */
 	@Override
-	public void propagateBlockState(ProjectResourceId diagramId,String blockId) {
+	public void propagateBlockState(ProjectResourceId diagramId, String blockName) {
 		log.debugf("%s.propagateBlockState ...",CLSS);
 
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "propagateBlockState",diagramId,blockId);
+					BLTProperties.MODULE_ID, "propagateBlockState", diagramId, blockName);
 		}
 		catch(Exception ge) {
-			log.infof("%s.propagateBlockState: GatewayException (%s)",CLSS,ge.getMessage());
+			log.infof("%s.propagateBlockState: GatewayException (%s)", CLSS, ge.getMessage());
 		}
 	}
+	
 	/**
 	 * Not implemented. The only time that the application should read from the database is in the case of an import -
-	 * snd that is a Gateway function.
+	 * and that is a Gateway function.
 	 */
 	@Override
 	public GeneralPurposeDataContainer readAuxData(ProjectResourceId resid, String nodeId, String provider, String db) {
 		// TODO Auto-generated method stub
 		return null;
 	}
+	
 	/** Change the name of a block 
 	 * @param duuid diagram unique Id
 	 * @param buuid block unique Id
@@ -908,6 +911,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 			log.infof("%s.renameBlock: GatewayException (%s)",CLSS,ge.getMessage());
 		}
 	}
+	
 	/**
 	 * Rename a SQLTag given its path and new name. The path must contain the
 	 * provider name in brackets.

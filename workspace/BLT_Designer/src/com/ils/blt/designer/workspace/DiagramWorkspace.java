@@ -1806,13 +1806,15 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		// Somehow IA got their python to work on Windows. Our attempts kept getting the #xxx stripped off.
 		// Thus we use the script instead of desktop.browse.
 		public void actionPerformed(final ActionEvent e) {
+			log.infof("%s.HelpAction.actionPerformed()", CLSS);
 			Desktop desktop=Desktop.getDesktop();
 			String hostname = requestHandler.getGatewayHostname();
 			String address = String.format("http:/%s:8088/main/%s#%s",hostname,BLTProperties.ROOT_HELP_PATH,block.getClassName());
 			try {
 				if( OS.indexOf("win")>=0) {
-					String browserPath = requestHandler.getWindowsBrowserPath();
-					if( browserPath==null ) browserPath = "PATH_NOT_FOUND_IN_ORM";
+					//String browserPath = requestHandler.getWindowsBrowserPath();
+					//if( browserPath==null ) browserPath = "PATH_NOT_FOUND_IN_ORM";
+					String browserPath = "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe";
 					log.infof("%s.HelpAction: Windows command: %s %s",CLSS,browserPath,address);
 					new ProcessBuilder().command(browserPath, address).start();
 				}

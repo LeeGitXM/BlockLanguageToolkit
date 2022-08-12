@@ -85,7 +85,7 @@ import simpleorm.dataset.SQuery;
  */
 public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	private final static String CLSS = "ControllerRequestHandler";
-	private final static boolean DEBUG = true;
+	private final static boolean DEBUG = false;
 	private final LoggerEx log;
 	private GatewayContext context = null;
 	private static ControllerRequestHandler instance = null;
@@ -1229,21 +1229,34 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			log.warnf("%s.postValue: one of %s or %s illegal UUID (%s)",CLSS,diagramId.getResourcePath().getPath().toString(),blockId,iae.getMessage());
 		}
 	}
+
 	/**
 	 * Tell the block to send its current value on the outputs.
 	 */
 	@Override
-	public void propagateBlockState(ProjectResourceId diagramId, String blockId) {
+	public void propagateBlockState(ProjectResourceId diagramId, String blockName) {
+		
+		ProcessDiagram diagram = null;
 		UUID blockUUID = null;
-		try {
-			blockUUID = UUID.fromString(blockId);
+		diagram = controller.getDiagram(diagramId);
+		if( diagram!=null ) {
+			ProcessBlock block = diagram.getBlockByName(blockName);
+			if( block!=null ) {
+				try {
+					if(DEBUG) log.infof("%s.propagateBlockState: Propagating state of %s on %s", CLSS, blockName, diagramId.toString());
+					blockUUID = block.getBlockId();
+					controller.propagateBlockState(diagramId, blockUUID);
+				}
+				catch(IllegalArgumentException iae) {
+					log.warnf("%s.propagateBlockState: Unable to propagate blok state for %s on %s", CLSS, blockName, diagramId.toString());
+				}
+			}
+			else{
+				log.warnf("%s.propagateBlockState: Unable to find block %s in diagram %s", CLSS, blockName, diagramId.toString());
+			}
 		}
-		catch(IllegalArgumentException iae) {
-			log.warnf("%s.propagateBlockState: Diagram or block UUID string is illegal (%s, %s), creating new",CLSS,
-					diagramId.getResourcePath().getPath().toString(),blockId);
-		}
-		controller.propagateBlockState(diagramId, blockUUID);
 	}
+	
 	/**
 	 * Execute the getAux extension function in Gateway scope for the supplied resource.
 	 * The notifications and resource saves are pretty heavy weight. If the aux data
@@ -1509,6 +1522,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			ProcessBlock block = diagram.getBlockByName(bname);
 			if( block!=null ) {
 				try {
+					if(DEBUG) log.infof("%s.setBlockState: Setting %s on %s to %s", CLSS, bname, diagramId.toString(), stateName);
 					TruthValue state = TruthValue.valueOf(stateName.toUpperCase());
 					block.setState(state);
 					block.notifyOfStatus();

@@ -32,6 +32,8 @@ import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.designer.workspace.ProcessAnchorDescriptor;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorType;
 
 import net.miginfocom.swing.MigLayout;
@@ -41,15 +43,27 @@ import net.miginfocom.swing.MigLayout;
  */
 
 public class ForceValueSettingsDialog extends JDialog {
+	private final static String CLSS = "ForceValueSettingsDialog";
 	private static final long serialVersionUID = 4224388376825535527L;
 	private final Dimension ENTRY_BOX_SIZE = new Dimension(200,24);
-	private final int DIALOG_HEIGHT = 100;
+	
+	/*
+	 * Determining the size of the dialog is tricky.  Most blocks have a single output so
+	 * the ideal size should be big enough for a single output.  However, blocks may have multiple 
+	 * outputs.  The Trend block is a good example.  At one time, the dialog was too small to even display the 
+	 * field for a single output - so I want to fix that and I think it will be OK if they want to see all of 
+	 * the fields for those rare blocks that have multiple outputs. 
+	 */
+	private final int DIALOG_HEIGHT = 150;
+	private final int ROW_HEIGHT = 50;
 	private final int DIALOG_WIDTH = 300;
 	private final ProcessDiagramView diagram;
 	private final ProcessBlockView block;
 	private final Map<String,JComponent> componentMap;
 	private final ResourceBundle rb;
 	private final ApplicationRequestHandler requestHandler;
+	protected LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
+	private static final boolean DEBUG = true;
 	
 	public ForceValueSettingsDialog(Frame frame,ProcessDiagramView diag,ProcessBlockView view) {
 		super(frame);
@@ -60,9 +74,10 @@ public class ForceValueSettingsDialog extends JDialog {
 		setAlwaysOnTop(true);
 		setModal(false);
 		setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
+		
 		// Extend the height depending on the count
 		int count = countOutputs(block);
-		this.setPreferredSize(new Dimension(DIALOG_WIDTH,DIALOG_HEIGHT+30*count));
+		this.setPreferredSize(new Dimension(DIALOG_WIDTH, DIALOG_HEIGHT + ROW_HEIGHT*count));
 		this.componentMap = new HashMap<>();
 		this.requestHandler = new ApplicationRequestHandler();
         initialize();
@@ -95,6 +110,7 @@ public class ForceValueSettingsDialog extends JDialog {
 					else if(component instanceof JTextField) {
 						value = ((JTextField)component).getText();
 					}
+					if(DEBUG) log.infof("%s.actionPerformed(): forcing %s on %s", CLSS, value, port);
 					requestHandler.postResult(diagram.getResourceId(),block.getId().toString(),port,value);
 				}
 			}
