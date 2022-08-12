@@ -1,6 +1,8 @@
 package com.ils.blt.gateway.wicket;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
@@ -49,20 +51,7 @@ public class ToolkitStatusPanel extends Panel {
 		
 		Form<Void> form = new Form<Void>("form");
         add(form);
-        form.add(new Link<Void>("collapseAll") {
-        	private static final long serialVersionUID = 1L;
-        	@Override
-        	public void onClick() {
-        		ProcessNodeExpansion.get().collapseAll();
-        	}
-        });
-        form.add(new Link<Void>("expandAll") {
-        	private static final long serialVersionUID = 1L;
-        	@Override
-            public void onClick() {
-                ProcessNodeExpansion.get().expandAll();
-            }
-        });
+
         form.add(new Button("refresh") {
             private static final long serialVersionUID = 1L;
             @Override
@@ -91,7 +80,7 @@ public class ToolkitStatusPanel extends Panel {
 			private static final long serialVersionUID = 3537127058517061095L;
 			protected void populateItem(ListItem<ProcessDiagram> item) {
 				ProcessDiagram diagram = item.getModelObject();
-				String label = String.format("%3d.%4d: %s\t(%s)", diagram.getProjectName(),diagram.getResourceId(),diagram.getName(),diagram.getState().name());
+				String label = String.format("%24s %s (%s)", diagram.getProjectName(),diagram.getResourceId().getFolderPath(),diagram.getState().name());
 				item.add(new Label("name",label));
 			}
 		});
@@ -181,5 +170,7 @@ public class ToolkitStatusPanel extends Panel {
         }
     }
   
+	
+
 	
 }

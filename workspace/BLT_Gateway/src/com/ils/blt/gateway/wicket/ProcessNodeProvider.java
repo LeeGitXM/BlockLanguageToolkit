@@ -1,8 +1,6 @@
 package com.ils.blt.gateway.wicket;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 
 import org.apache.wicket.extensions.markup.html.repeater.tree.ITreeProvider;
@@ -10,13 +8,10 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.LoadableDetachableModel;
 import org.apache.wicket.model.Model;
 
-import com.ils.blt.gateway.ControllerRequestHandler;
 import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.blt.gateway.engine.ModelManager;
 import com.ils.blt.gateway.engine.ProcessNode;
-import com.ils.blt.gateway.engine.ProjectNode;
 import com.ils.blt.gateway.engine.RootNode;
-import com.inductiveautomation.ignition.common.StringPath;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 
 /**
@@ -30,12 +25,12 @@ import com.inductiveautomation.ignition.common.project.resource.ProjectResourceI
 public class ProcessNodeProvider implements ITreeProvider<ProcessNode> {
     private static final long serialVersionUID = 1L;
     private static ModelManager modelManager = BlockExecutionController.getInstance().getDelegate();
-    private final ControllerRequestHandler handler;
+
     /**
      * Construct.
      */
     public ProcessNodeProvider() {
-    	this.handler = ControllerRequestHandler.getInstance();
+    	
     }
 
     /**
@@ -47,11 +42,11 @@ public class ProcessNodeProvider implements ITreeProvider<ProcessNode> {
 
     /**
      * The "roots" are the nodes representing projects.
+     * They are of type ProjectNode.
      */
     @Override
     public Iterator<ProcessNode> getRoots() {
     	RootNode root = RootNode.getInstance();
-    	Collection<ProcessNode> roots = new ArrayList<>();
     	return root.getChildren().iterator();
     }
 

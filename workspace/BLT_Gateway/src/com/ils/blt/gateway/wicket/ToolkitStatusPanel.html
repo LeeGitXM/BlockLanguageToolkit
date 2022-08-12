@@ -32,24 +32,14 @@ td.text {
 <body>
 	<wicket:panel>
 		<div class="status-panel">
-		<div class="title">
+		<h1 class="title">
 			Symbolic AI Resources  
 			<P ALIGN=RIGHT><a href="system/moduledocs/block/index.html">Help</a></P>
-		</div>
-				<h2>Diagram Hierarchy</h2>
-				<form wicket:id="form" action="">
-
-					<p><a wicket:id="collapseAll">collapse all</a> <a wicket:id="expandAll">expand all</a></p>
-					<p wicket:id="tree">[tree]</p>
-					<input type="submit" wicket:id="refresh" value="Refresh" />
-					<input type="submit" wicket:id="synchronize" value="Synchronize" />
-				</form>
-
-				<h2>Currently defined diagrams</h2>
-
-				<ul>
-					<li wicket:id="diagrams"><span wicket:id="name"></span></li>
-				</ul>
+		</h1>
+			<h3>Currently Defined Diagrams</h3>
+			<ul>
+				<li wicket:id="diagrams"><span wicket:id="name"></span></li>
+			</ul>
 		</div>
 	</wicket:panel>
 </body>
