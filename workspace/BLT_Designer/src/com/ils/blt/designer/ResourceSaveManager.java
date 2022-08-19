@@ -155,9 +155,10 @@ public class ResourceSaveManager {
 					if( pendingName!=null && !pendingName.equalsIgnoreCase(name)) {
 						stringPath = StringPath.extend(stringPath.getParentPath(),pendingName);
 						respath = new ResourcePath(BLTProperties.DIAGRAM_RESOURCE_TYPE,stringPath);
-						builder.setResourcePath(respath);
 					}
+					builder.setResourcePath(respath);
 					SerializableDiagram sd = view.createSerializableRepresentation();
+					sd.setPath(respath.getFolderPath());
 					builder.putData(sd.serialize());
 					res = builder.build();
 					project.createOrModify(res);
@@ -174,11 +175,11 @@ public class ResourceSaveManager {
 				requestHandler.triggerStatusNotifications(context.getProjectName());
 				
 			}
-			// Send notifications of any deleted diagrams
-			for(ProjectResourceId id:statusManager.getDeletedResources()) {
-				Script script = notifier.createScript(ScriptConstants.DELETE_NOTIFICATION);
-				notifier.runScript(context.getScriptManager(), script, id.getFolderPath());
-			}
+		}
+		// Send notifications of any deleted diagrams
+		for(ProjectResourceId id:statusManager.getDeletedResources()) {
+			Script script = notifier.createScript(ScriptConstants.DELETE_NOTIFICATION);
+			notifier.runScript(context.getScriptManager(), script, id.getFolderPath());
 		}
 	}
 }

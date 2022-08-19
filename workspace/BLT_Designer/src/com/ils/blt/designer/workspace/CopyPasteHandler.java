@@ -3,6 +3,7 @@
  */
 package com.ils.blt.designer.workspace;
 
+import java.awt.EventQueue;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
@@ -11,6 +12,7 @@ import java.awt.datatransfer.Transferable;
 import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -20,6 +22,7 @@ import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.navtree.DiagramTreeNode;
 import com.ils.blt.designer.navtree.NavTreeFolder;
+import com.ils.blt.designer.navtree.NewResourceDialog;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
 import com.inductiveautomation.ignition.common.StringPath;
 import com.inductiveautomation.ignition.common.model.ApplicationScope;
@@ -48,6 +51,7 @@ public class CopyPasteHandler  {
 	private final DesignerContext context;
 	private final AbstractResourceNavTreeNode parent;
 	private final static LoggerEx log = LogUtil.getLogger(NavTreeFolder.class.getPackageName());
+	private final Consumer<ProjectResourceId> onAfterCreated;
 
 	/**
 	 * Constructor: Provide the node for which this applies
@@ -55,6 +59,11 @@ public class CopyPasteHandler  {
 	public CopyPasteHandler(DesignerContext ctx,AbstractResourceNavTreeNode node) {
 		this.context = ctx;
 		this.parent = node;
+		this.onAfterCreated = id -> {
+			NodeStatusManager statusManager = NodeStatusManager.getInstance();
+			statusManager.setPendingName(id, id.getResourcePath().getName());
+			statusManager.getNode(id).select();
+		};
 	}
 
 	/**
@@ -191,7 +200,7 @@ public class CopyPasteHandler  {
 		while(e.hasMoreElements()) {
 			AbstractResourceNavTreeNode node = e.nextElement();
 			if(node.getName().equalsIgnoreCase(name)) {
-				result = false;
+				result = true;
 				break;
 			}
 		}
@@ -210,6 +219,7 @@ public class CopyPasteHandler  {
 		StringPath destinationPath = StringPath.extend(parent.getResourcePath().getPath(),name);
 		ProjectResourceId destination = createResourceId(destinationPath.toString());
 		createProjectResource(ARCHIVE_TYPE_DIAGRAM,source,destination);
+		EventQueue.invokeLater(() -> onAfterCreated.accept(destination));
 	}
 	/**
 	 * Add a folder and descendant folders and diagrams to the current node.
@@ -226,6 +236,7 @@ public class CopyPasteHandler  {
 		StringPath destinationPath = StringPath.extend(parent.getResourcePath().getPath(),name);
 		ProjectResourceId destination = createResourceId(destinationPath.toString());
 		createProjectResource(ARCHIVE_TYPE_FOLDER,source,destination);
+		EventQueue.invokeLater(() -> onAfterCreated.accept(destination));
 		
 		// Now create all the child resources
 		boolean hasRoot = false;
@@ -240,8 +251,9 @@ public class CopyPasteHandler  {
 			source = createResourceId(path);
 			path = path.substring(root.length()+1);  // Now partial path w/ respect to root
 			destinationPath = StringPath.extend(parent.getResourcePath().getPath(),path);
-			destination = createResourceId(destinationPath.toString());
-			createProjectResource(key,source,destination);
+			ProjectResourceId child = createResourceId(destinationPath.toString());
+			createProjectResource(key,source,child);
+			EventQueue.invokeLater(() -> onAfterCreated.accept(child));
 		}
 	}
 	
@@ -266,22 +278,28 @@ public class CopyPasteHandler  {
 				ProjectResource pr = optional.get();
 				ObjectMapper mapper = new ObjectMapper();
 				byte[] bytes = pr.getData();
-				try {
-					SerializableDiagram sd = mapper.readValue(new String(bytes), SerializableDiagram.class);
-					if( sd!=null ) {
-						view = new ProcessDiagramView(context,source,sd);
+				if( key.equals(ARCHIVE_TYPE_FOLDER )|| bytes.length>0 ) {
+					try {
+						SerializableDiagram sd = mapper.readValue(new String(bytes), SerializableDiagram.class);
+						if( sd!=null ) {
+							view = new ProcessDiagramView(context,source,sd);
+						}
+					}
+					catch(JsonParseException jpe) {
+						log.warnf("%s.createProjectResource: Parse exception saving %s...(%s)", CLSS, pr.getResourceName(),jpe.getLocalizedMessage());
+						return;
+					}
+					catch(JsonMappingException jme) {
+						log.warnf("%s.createProjectResource: Mapping exception saving %s...(%s)", CLSS, pr.getResourceName(),jme.getLocalizedMessage());
+						return;
+					}
+					catch(IOException ioe) {
+						log.warnf("%s.createProjectResource: IO exception saving %s...(%s)", CLSS, pr.getResourceName(),ioe.getLocalizedMessage());
+						return;
 					}
 				}
-				catch(JsonParseException jpe) {
-					log.warnf("%s.saveModifiedResource: Parse exception saving %s...(%s)", CLSS, pr.getResourceName(),jpe.getLocalizedMessage());
-					return;
-				}
-				catch(JsonMappingException jme) {
-					log.warnf("%s.saveModifiedResource: Mapping exception saving %s...(%s)", CLSS, pr.getResourceName(),jme.getLocalizedMessage());
-					return;
-				}
-				catch(IOException ioe) {
-					log.warnf("%s.saveModifiedResource: IO exception saving %s...(%s)", CLSS, pr.getResourceName(),ioe.getLocalizedMessage());
+				else {
+					log.warnf("%s.createProjectResource: Diagram %s has no data", CLSS, source.getFolderPath());
 					return;
 				}
 			}
@@ -297,6 +315,7 @@ public class CopyPasteHandler  {
 			builder.setApplicationScope(ApplicationScope.GATEWAY);
 			builder.setFolder(true);
 		}
+		builder.setProjectName(project.getName());
 		builder.setResourcePath(destination.getResourcePath());
 		ProjectResource res = builder.build();
 		project.createOrModify(res);

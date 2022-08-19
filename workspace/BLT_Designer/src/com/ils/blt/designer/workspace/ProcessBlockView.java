@@ -695,6 +695,8 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener,Cl
 			clone.embeddedLabel	= getEmbeddedLabel();
 			clone.embeddedFontSize	= getEmbeddedFontSize();
 			clone.iconPath 			= getIconPath();
+			clone.location.x		= getLocation().x;
+			clone.location.y		= getLocation().y;
 			clone.preferredHeight	= getPreferredHeight();
 			clone.preferredWidth 	= getPreferredWidth();
 			clone.state 		= getState();

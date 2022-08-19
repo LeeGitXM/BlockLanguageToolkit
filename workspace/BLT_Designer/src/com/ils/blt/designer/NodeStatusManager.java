@@ -78,9 +78,9 @@ public class NodeStatusManager   {
 		StatusEntry se = statusByPath.get(resourceId.getFolderPath());
 		if( se!=null ) {
 			se.clearChanges();
-			if(DEBUG) log.infof("%s.commit: %s -----------------------------------------",CLSS,resourceId.getFolderPath());
+			if(DEBUG) log.infof("%s.clearChangeMarkers: %s -----------------------------------------",CLSS,resourceId.getFolderPath());
 		}
-		deletedResources.clear();
+		deletedResources.remove(resourceId);
 	}
 	
 	/**
@@ -158,7 +158,7 @@ public class NodeStatusManager   {
 	 * @return the AbstractResourceNavTreeNode associated with the specified resourceId.
 	 */
 	public AbstractResourceNavTreeNode getNode(ProjectResourceId resourceId) {
-		log.debugf("%s.findNode(%s)",CLSS,resourceId.getResourcePath().getPath().toString());
+		log.debugf("%s.getNode(%s)",CLSS,resourceId.getResourcePath().getPath().toString());
 		AbstractResourceNavTreeNode node = null;
 		StatusEntry se = statusByPath.get(resourceId.getFolderPath());
 		if( se!=null ) node=se.getNode();

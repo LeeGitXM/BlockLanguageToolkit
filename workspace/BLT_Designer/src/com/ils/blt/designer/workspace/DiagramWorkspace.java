@@ -423,7 +423,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	@Override
 	protected EdgeRouter newEdgeRouter(BlockDiagramModel bdm) {
 		ProcessDiagramView mdl = (ProcessDiagramView)bdm;
-		if( mdl.getConnections().size()>15) {
+		if( mdl!=null && mdl.getConnections().size()>15) {
 			return new HighPerformanceEdgeRouter();
 		}
 		else {
@@ -746,7 +746,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 									desc.setBackground(Color.cyan.getRGB());
 									desc.setCtypeEditable(true);
 									block = new ProcessBlockView(desc);
-									block.setName(enforceUniqueName(nameFromTagPath(tnode.getFullPath()),diagram));
+									block.setName(enforceUniqueBlockName(nameFromTagPath(tnode.getFullPath()),diagram));
 									updatePropertiesForTagPath(block,tnode.getFullPath().toStringFull());
 								}
 								// Define a single output
@@ -785,7 +785,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 									desc.setBackground(Color.cyan.getRGB());
 									desc.setCtypeEditable(true);
 									block = new ProcessBlockView(desc);
-									block.setName(enforceUniqueName(nameFromTagPath(tnode.getFullPath()),diagram));
+									block.setName(enforceUniqueBlockName(nameFromTagPath(tnode.getFullPath()),diagram));
 								}	
 								 
 								// Define a single input
@@ -969,10 +969,9 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		zoomCombo.setVisible(false);
 		log.infof("%s.onDeactivation",CLSS);
 	}
-	
 	// Guarantee a unique name for a block that has not yet been added to the diagram.
-	public String enforceUniqueName(String name,ProcessDiagramView diagram) {
-		while( nameExists(diagram,name) ) {
+	public String enforceUniqueBlockName(String name,ProcessDiagramView diagram) {
+		while( blockNameExists(diagram,name) ) {
 			name = nextName(name);
 		}
 		return name;
@@ -982,7 +981,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	 * @param name proposed unique name
 	 * @return true if the name belongs to a current block 
 	 */
-	private boolean nameExists(ProcessDiagramView diagram,String name) {
+	private boolean blockNameExists(ProcessDiagramView diagram,String name) {
 		boolean exists = false;
 		for(Block block:diagram.getBlocks() ) {
 			if(block instanceof ProcessBlockView) {
@@ -995,6 +994,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		}
 		return exists;
 	}
+
 	private String nextName(String name) {
 		int index = name.lastIndexOf("-");
 		if( index>0 ) {
@@ -1133,7 +1133,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			List<SerializableBlock>list = mapper.readValue(json, type);
 
 			Point offset = calculatePasteOffset(this.getMousePosition(), list);
-			ProcessDiagramView theDiagram = getActiveDiagram();
 			for(SerializableBlock sb:list) {
 				ProcessBlockView pbv = new ProcessBlockView(sb);
 				

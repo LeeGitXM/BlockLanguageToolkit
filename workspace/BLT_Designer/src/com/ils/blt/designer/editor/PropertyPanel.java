@@ -756,7 +756,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 							block.setName(newName);
 						}
 						else {
-							block.setName(workspace.enforceUniqueName(newName, dview));
+							block.setName(workspace.enforceUniqueBlockName(newName, dview));
 						}
 						block.setCtypeEditable(true);
 						block.modifyConnectionForTagChange(property, typ);	

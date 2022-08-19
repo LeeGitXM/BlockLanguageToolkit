@@ -809,32 +809,33 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		clone.watermark = watermark;
 
 		synchronized (this) {
-			
-			clone.suppressStateChangeNotification = true;
+			// Create a block view map for connections so we can lookup up cloned view by old Id
+			Map<String,ProcessBlockView> viewMap = new HashMap<>();
+			clone.suppressStateChangeNotification = true; 
 			for( ProcessBlockView pbv : blockMap.values()) {
 				ProcessBlockView view = pbv.clone();  // Sets new name, UUID
-				blockMap.put(view.getId(), view);
-				this.addBlock(view);
+				viewMap.put(pbv.getId().toString(), view);
+				clone.addBlock(view);
 			}
 			clone.connections = new ArrayList<>();
 			for( Connection cxn:connections ) {
 				AnchorPoint a = cxn.getOrigin();
 				AnchorPoint b = cxn.getTerminus();
 				if( a!=null && b!=null ) {
-					ProcessBlockView blocka = blockMap.get(a.getId());
-					ProcessBlockView blockb = blockMap.get(b.getId());
+					ProcessBlockView blocka = viewMap.get(a.getBlock().getId().toString());
+					ProcessBlockView blockb = viewMap.get(b.getBlock().getId().toString());
 					if( blocka!=null && blockb!=null) {
 						if( DEBUG ) log.infof("%s.clone: Cloning a connection from %s to %s...", CLSS, blocka.getName(), blockb.getName());
 						AnchorPoint origin = new ProcessAnchorView(a.getId(),blocka,AnchorType.Origin);
-						AnchorPoint terminus = new ProcessAnchorView(a.getId(),blockb,AnchorType.Terminus);
-						this.addConnection(origin,terminus);   // AnchorPoints
+						AnchorPoint terminus = new ProcessAnchorView(b.getId(),blockb,AnchorType.Terminus);
+						clone.addConnection(origin,terminus);   // AnchorPoints
 					}
 					else {
 						if( blocka==null ) {
-							log.warnf("%s.clone: Failed to find block %s for begin anchor point %s",CLSS,a.getId(),a);
+							log.warnf("%s.clone: Failed to find block %s for begin anchor point %s",CLSS,a.getBlock().getId(),a.getId());
 						}
 						if( blockb==null ) {
-							log.warnf("%s.clone: Failed to find block %s for end anchor point %s",CLSS,b.getId(),b);
+							log.warnf("%s.clone: Failed to find block %s for end anchor point %s",CLSS,b.getBlock().getId(),b.getId());
 						}
 					}
 				}
