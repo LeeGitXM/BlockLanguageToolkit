@@ -674,23 +674,25 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	public String isValidBindingChange(ProcessBlockView pblock,BlockProperty prop,String tagPath, DataType type,Integer tagProp) {
 		String msg = null;
 
-		// ConType is the type of the proposed new connection.
-		ConnectionType conType = pblock.determineConnectionTypeFromTagType(type);
+		// ConType is the type of the proposed new connection. Do this check only for the tag paths
+		if( prop.getName().equals(BlockConstants.BLOCK_PROPERTY_TAG_PATH)) {
+			ConnectionType conType = pblock.determineConnectionTypeFromTagType(type);
 
-		Collection<Connection> cxns = getConnections();
-		for (Connection connection:cxns) {
-			BasicAnchorPoint intended = null;
-			if (connection.getOrigin().getBlock() == pblock) {
-				intended = (BasicAnchorPoint)connection.getTerminus();
-				log.infof("Intended Type of Origin: %s", intended.toString());
-			}
-			if (connection.getTerminus().getBlock() == pblock) {
-				intended = (BasicAnchorPoint)connection.getOrigin();
-				log.infof("Intended Type of Terminus: %s", intended.toString());
-			}
+			Collection<Connection> cxns = getConnections();
+			for (Connection connection:cxns) {
+				BasicAnchorPoint intended = null;
+				if (connection.getOrigin().getBlock() == pblock) {
+					intended = (BasicAnchorPoint)connection.getTerminus();
+					log.infof("Intended Type of Origin: %s", intended.toString());
+				}
+				if (connection.getTerminus().getBlock() == pblock) {
+					intended = (BasicAnchorPoint)connection.getOrigin();
+					log.infof("Intended Type of Terminus: %s", intended.toString());
+				}
 
-			if (intended != null && !intended.allowConnectionType(conType)) {
-				msg = String.format("%s: Tag change error, cannot connect %s to %s", pblock.getName(),intended.getConnectionType().name(), conType.name());
+				if (intended != null && !intended.allowConnectionType(conType)) {
+					msg = String.format("%s: Tag change error, cannot connect %s to %s", pblock.getName(),intended.getConnectionType().name(), conType.name());
+				}
 			}
 		}
 		

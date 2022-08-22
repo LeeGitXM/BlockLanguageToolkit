@@ -16,7 +16,6 @@ import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.ils.common.persistence.ToolkitProperties;
 import com.ils.common.tag.TagUtility;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
-import com.inductiveautomation.ignition.designer.tags.tree.selection.TagSelectionTreePanel;
 
 
 /**

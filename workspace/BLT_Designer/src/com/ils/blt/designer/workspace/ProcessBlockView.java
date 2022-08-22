@@ -558,6 +558,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener,Cl
 	 // is lazily created using the parameters passed into
 	 // the fire method.
 	 protected void fireStateChanged() {
+		 if(DEBUG) log.infof("%s.fireStateChanged: %s", CLSS, getName());
 		 // Guaranteed to return a non-null array
 		 Object[] listnrs = listenerList.getListenerList();
 		 // Process the listeners last to first, notifying

@@ -16,7 +16,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -49,6 +48,7 @@ import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.notification.NotificationChangeListener;
 import com.ils.blt.common.notification.NotificationKey;
+import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.NotificationHandler;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessAnchorDescriptor;
@@ -89,7 +89,7 @@ import net.miginfocom.swing.MigLayout;
  */
 public class PropertyPanel extends JPanel implements ChangeListener, FocusListener, NotificationChangeListener,TagChangeListener {
 	private static final long serialVersionUID = 2264535784255009984L;
-	private static final boolean DEBUG = false;
+	private static final boolean DEBUG = true;
 	private static SimpleDateFormat dateFormatter = new SimpleDateFormat(BlockConstants.TIMESTAMP_FORMAT);
 	private final NotificationHandler notificationHandler = NotificationHandler.getInstance();
 	private static UtilityFunctions fncs = new UtilityFunctions();
@@ -224,23 +224,32 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 			if(!property.getType().equals(PropertyType.LIST)) editButton.setVisible(false);
 		}
 		
-		// Register for notifications
-		if(property.getBindingType().equals(BindingType.ENGINE)) {
-			log.debugf("%s: adding %s for ENGINE",CLSS,valueKey);
-			notificationHandler.addNotificationChangeListener(valueKey,CLSS,this);
+		// Register for notifications - but only if there is no pending view
+		ProcessDiagramView pending = NodeStatusManager.getInstance().getPendingView(workspace.getActiveDiagram().getResourceId());
+		if( pending==null ) {
+			if(property.getBindingType().equals(BindingType.ENGINE)) {
+				log.debugf("%s: adding %s for ENGINE",CLSS,valueKey);
+				notificationHandler.addNotificationChangeListener(valueKey,CLSS,this);
+			}
+			// The "plain" (NONE) properties can be changed by python scripting. Note: we do not want to update from Gateway
+			// yet, as there may have been local changes in the designer
+			else if(property.getBindingType().equals(BindingType.ENGINE) || property.getBindingType().equals(BindingType.NONE)) {
+				log.debugf("%s: adding %s",CLSS,valueKey);
+				notificationHandler.addNotificationChangeListener(valueKey,CLSS,this,false);
+			}
+			else if( property.getBindingType().equals(BindingType.TAG_MONITOR) ||
+					property.getBindingType().equals(BindingType.TAG_READ) ||
+					property.getBindingType().equals(BindingType.TAG_READWRITE) ||
+					property.getBindingType().equals(BindingType.TAG_WRITE)	) {
+				if(DEBUG)log.infof("%s: adding %s for %s",CLSS,bindingKey,property.getBindingType().name());
+				notificationHandler.addNotificationChangeListener(bindingKey,CLSS,this);
+			}
 		}
-		// The "plain" (NONE) properties can be changed by python scripting. Note: we do not want to update from Gateway
-		// yet, as there may have been local changes in the designer
-		else if(property.getBindingType().equals(BindingType.ENGINE) || property.getBindingType().equals(BindingType.NONE)) {
-			log.debugf("%s: adding %s",CLSS,valueKey);
-			notificationHandler.addNotificationChangeListener(valueKey,CLSS,this,false);
-		}
-		else if( property.getBindingType().equals(BindingType.TAG_MONITOR) ||
+		if( property.getBindingType().equals(BindingType.TAG_MONITOR) ||
 				property.getBindingType().equals(BindingType.TAG_READ) ||
 				property.getBindingType().equals(BindingType.TAG_READWRITE) ||
 				property.getBindingType().equals(BindingType.TAG_WRITE)	) {
-			if(DEBUG)log.infof("%s: adding %s for %s",CLSS,bindingKey,property.getBindingType().name());
-			notificationHandler.addNotificationChangeListener(bindingKey,CLSS,this);
+			if(DEBUG)log.infof("%s: adding %s for %s",CLSS,property.getBinding(),property.getBindingType().name());
 			subscribeToTagPath(property.getBinding());
 		}
 		updatePanelUI();
@@ -685,6 +694,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 		}
 	}
 	// ======================================= Notification Change Listener ===================================
+	// Ignore updates from the NotificationHandler if we have a pending view
 	/**
 	 * @param name - unused
 	 * @param binding new path for tag binding
@@ -844,6 +854,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 
 	// The display contains tag value, quality and timestamp
 	// Note: This gets triggered each time we start the subscription
+	// If the editor has been sitting open, then it is possible, that the block has become dirty. Check
 	@Override
 	public void tagChanged(TagChangeEvent event) {
 		final TagPath path = event.getTagPath();

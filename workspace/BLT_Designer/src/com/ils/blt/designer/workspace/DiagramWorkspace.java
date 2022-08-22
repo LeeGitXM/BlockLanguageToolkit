@@ -716,6 +716,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 						BlockDesignableContainer container = getSelectedContainer();
 						ProcessDiagramView diagram = (ProcessDiagramView)container.getModel();
 						NodeBrowseInfo tnode = (NodeBrowseInfo) tagNodeArr.get(0);
+
 						int dropx = event.getLocation().x;
 						int dropy = event.getLocation().y;
 						int thewidth = getActiveDiagram().getDiagramSize().width;
@@ -723,137 +724,142 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 						if( getSelectedContainer()!=null ) {
 							ProcessBlockView block = null;
 							TagPath tp = tnode.getFullPath();
-							boolean isStandardFolder = BusinessRules.isStandardConnectionsFolder(tp);
-							BlockDescriptor desc = new BlockDescriptor();
-							// Sinks to right,sources to the left
-							if (dropx < thewidth / 2) {	
-								if( isStandardFolder ) {
-									desc.setBlockClass(BlockConstants.BLOCK_CLASS_SOURCE);
-									desc.setStyle(BlockStyle.ARROW);
-									desc.setPreferredHeight(40);
-									desc.setPreferredWidth(50);
-									desc.setBackground(new Color(127,127,127).getRGB()); // Dark gray
-									desc.setCtypeEditable(true);
-									block = new ProcessBlockView(desc);
-									block.setName(nameFromTagPath(tnode.getFullPath()));
-									updatePropertiesForTagPath(block,tnode.getFullPath().toStringFull());
-								}
-								else {
-									desc.setBlockClass(BlockConstants.BLOCK_CLASS_INPUT);
-									desc.setStyle(BlockStyle.ARROW);
-									desc.setPreferredHeight(46);
-									desc.setPreferredWidth(60);
-									desc.setBackground(Color.cyan.getRGB());
-									desc.setCtypeEditable(true);
-									block = new ProcessBlockView(desc);
-									block.setName(enforceUniqueBlockName(nameFromTagPath(tnode.getFullPath()),diagram));
-									updatePropertiesForTagPath(block,tnode.getFullPath().toStringFull());
-								}
-								// Define a single output
-								AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.ANY);
-								block.addAnchor(output);
-								// Properties are the same for Inputs and Sources
-								// This property causes the engine to start a subscription.
-								BlockProperty tagPathProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH,tnode.getFullPath().toStringFull(),PropertyType.OBJECT,true);
-								tagPathProperty.setBinding(tnode.getName());
-								tagPathProperty.setBindingType(BindingType.TAG_READ);
-								block.setProperty(tagPathProperty);
-								
-								BlockProperty valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,"",PropertyType.OBJECT,false);
-								valueProperty.setBindingType(BindingType.ENGINE);
-								block.setProperty(valueProperty);								
-							} 
-							else {
-								if( isStandardFolder ) {
-									desc.setBlockClass(BlockConstants.BLOCK_CLASS_SINK);
-									desc.setPreferredHeight(40);
-									desc.setPreferredWidth(50);    // Leave 6-pixel inset on top and bottom
-									desc.setBackground(new Color(127,127,127).getRGB()); // Dark gray
-									desc.setStyle(BlockStyle.ARROW);
-									desc.setCtypeEditable(true);
-									block = new ProcessBlockView(desc);
-									block.setName(nameFromTagPath(tnode.getFullPath()));
+							if( !isUDT(tp) && isValidDropType(tnode.getDataType()) ) {
+								boolean isStandardFolder = BusinessRules.isStandardConnectionsFolder(tp);
+								BlockDescriptor desc = new BlockDescriptor();
+								// Sinks to right,sources to the left
+								if (dropx < thewidth / 2) {	
+									if( isStandardFolder ) {
+										desc.setBlockClass(BlockConstants.BLOCK_CLASS_SOURCE);
+										desc.setStyle(BlockStyle.ARROW);
+										desc.setPreferredHeight(40);
+										desc.setPreferredWidth(50);
+										desc.setBackground(new Color(127,127,127).getRGB()); // Dark gray
+										desc.setCtypeEditable(true);
+										block = new ProcessBlockView(desc);
+										block.setName(nameFromTagPath(tnode.getFullPath()));
+										updatePropertiesForTagPath(block,tnode.getFullPath().toStringFull());
+									}
+									else {
+										desc.setBlockClass(BlockConstants.BLOCK_CLASS_INPUT);
+										desc.setStyle(BlockStyle.ARROW);
+										desc.setPreferredHeight(46);
+										desc.setPreferredWidth(60);
+										desc.setBackground(Color.cyan.getRGB());
+										desc.setCtypeEditable(true);
+										block = new ProcessBlockView(desc);
+										block.setName(enforceUniqueBlockName(nameFromTagPath(tnode.getFullPath()),diagram));
+										updatePropertiesForTagPath(block,tnode.getFullPath().toStringFull());
+									}
 									// Define a single output
 									AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.ANY);
 									block.addAnchor(output);
+									// Properties are the same for Inputs and Sources
+									// This property causes the engine to start a subscription.
+									BlockProperty tagPathProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH,tnode.getFullPath().toStringFull(),PropertyType.OBJECT,true);
+									tagPathProperty.setBinding(tnode.getName());
+									tagPathProperty.setBindingType(BindingType.TAG_READ);
+									block.setProperty(tagPathProperty);
+
+									BlockProperty valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,"",PropertyType.OBJECT,false);
+									valueProperty.setBindingType(BindingType.ENGINE);
+									block.setProperty(valueProperty);								
+								} 
+								else {
+									if( isStandardFolder ) {
+										desc.setBlockClass(BlockConstants.BLOCK_CLASS_SINK);
+										desc.setPreferredHeight(40);
+										desc.setPreferredWidth(50);    // Leave 6-pixel inset on top and bottom
+										desc.setBackground(new Color(127,127,127).getRGB()); // Dark gray
+										desc.setStyle(BlockStyle.ARROW);
+										desc.setCtypeEditable(true);
+										block = new ProcessBlockView(desc);
+										block.setName(nameFromTagPath(tnode.getFullPath()));
+										// Define a single output
+										AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.ANY);
+										block.addAnchor(output);
+									}
+									else {
+										desc.setBlockClass(BlockConstants.BLOCK_CLASS_OUTPUT);
+										desc.setStyle(BlockStyle.ARROW);
+										desc.setPreferredHeight(46);
+										desc.setPreferredWidth(60);
+										desc.setBackground(Color.cyan.getRGB());
+										desc.setCtypeEditable(true);
+										block = new ProcessBlockView(desc);
+										block.setName(enforceUniqueBlockName(nameFromTagPath(tnode.getFullPath()),diagram));
+									}	
+
+									// Define a single input
+									AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.ANY);
+									input.setIsMultiple(false);
+									block.addAnchor(input);
+									// Properties are the same for Outputs and Sinks
+									BlockProperty pathProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH,"",PropertyType.STRING,true);
+									pathProperty.setBindingType(BindingType.TAG_WRITE);
+									pathProperty.setBinding(tnode.getFullPath().toStringFull());
+									block.setProperty( pathProperty);
+									BlockProperty valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,"",PropertyType.OBJECT,false);
+									valueProperty.setBindingType(BindingType.ENGINE);
+									block.setProperty(valueProperty);
+								}
+
+								AnchorPrototype signal = new AnchorPrototype(BlockConstants.SIGNAL_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.SIGNAL);
+								block.addAnchor(signal);
+
+								// Define a property that holds the size of the activity buffer. This applies to all blocks.
+								BlockProperty bufferSize = new BlockProperty(BlockConstants.BLOCK_PROPERTY_ACTIVITY_BUFFER_SIZE,10,PropertyType.INTEGER,true);
+								block.setProperty(bufferSize);
+
+								DesignPanel panel = getSelectedDesignPanel();
+								BlockDesignableContainer bdc = (BlockDesignableContainer) panel.getDesignable();
+								Point dropPoint = SwingUtilities.convertPoint(
+										event.getDropTargetContext().getComponent(),
+										panel.unzoom(event.getLocation()), bdc);
+								this.setCurrentTool(getSelectionTool());   // So the next select on workspace does not result in another block
+
+								if( isInBounds(dropPoint,bdc) ) {
+									block.setLocation(dropPoint);
+									this.getActiveDiagram().addBlock(block);
+									addNameDisplay(block,dropx,dropy);
+									DataType type = DataType.Boolean;
+									List<TagPath> paths = new ArrayList<>();
+									paths.add(tnode.getFullPath());
+									ClientTagManager tmgr = context.getTagManager();
+									CompletableFuture<List<TagConfigurationModel>> futures = tmgr.getTagConfigsAsync(paths,false,true);
+									try {
+										TagConfigurationModel model = futures.get().get(0);
+										PropertySet config = model.getTagProperties();
+										type = (DataType)config.getOrDefault(WellKnownTagProps.DataType);
+									}
+									catch(Exception ex) {
+										log.infof("%s.handleTagDrop: failed to get tag info for %s %s (%s)",CLSS,block.getClassName(),tnode.getFullPath().toStringFull(),
+												ex.getMessage());
+									}
+
+
+									Collection<BlockProperty> props = block.getProperties();
+									for (BlockProperty property:props) {
+										if( BlockConstants.BLOCK_PROPERTY_TAG_PATH.equalsIgnoreCase(property.getName())) {
+											property.setBinding(tnode.getFullPath().toStringFull());}
+										block.modifyConnectionForTagChange(property, type);
+									}
+
+									// Create the process editor for the new block
+									BlockPropertyEditor editor = new BlockPropertyEditor(context,this,block);
+									PropertyEditorFrame peframe = getPropertyEditorFrame();
+									peframe.setEditor(editor);
+									log.infof("%s.handleTagDrop: dropped %s (%s)",CLSS,block.getClassName(),block.getName());
 								}
 								else {
-									desc.setBlockClass(BlockConstants.BLOCK_CLASS_OUTPUT);
-									desc.setStyle(BlockStyle.ARROW);
-									desc.setPreferredHeight(46);
-									desc.setPreferredWidth(60);
-									desc.setBackground(Color.cyan.getRGB());
-									desc.setCtypeEditable(true);
-									block = new ProcessBlockView(desc);
-									block.setName(enforceUniqueBlockName(nameFromTagPath(tnode.getFullPath()),diagram));
-								}	
-								 
-								// Define a single input
-								AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.ANY);
-								input.setIsMultiple(false);
-								block.addAnchor(input);
-								// Properties are the same for Outputs and Sinks
-								BlockProperty pathProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH,"",PropertyType.STRING,true);
-								pathProperty.setBindingType(BindingType.TAG_WRITE);
-								pathProperty.setBinding(tnode.getFullPath().toStringFull());
-								block.setProperty( pathProperty);
-								BlockProperty valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,"",PropertyType.OBJECT,false);
-								valueProperty.setBindingType(BindingType.ENGINE);
-								block.setProperty(valueProperty);
-							}
-							
-							AnchorPrototype signal = new AnchorPrototype(BlockConstants.SIGNAL_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.SIGNAL);
-							block.addAnchor(signal);
-							
-							// Define a property that holds the size of the activity buffer. This applies to all blocks.
-							BlockProperty bufferSize = new BlockProperty(BlockConstants.BLOCK_PROPERTY_ACTIVITY_BUFFER_SIZE,10,PropertyType.INTEGER,true);
-							block.setProperty(bufferSize);
-							
-							DesignPanel panel = getSelectedDesignPanel();
-							BlockDesignableContainer bdc = (BlockDesignableContainer) panel.getDesignable();
-							Point dropPoint = SwingUtilities.convertPoint(
-									event.getDropTargetContext().getComponent(),
-									panel.unzoom(event.getLocation()), bdc);
-							this.setCurrentTool(getSelectionTool());   // So the next select on workspace does not result in another block
-
-							if( isInBounds(dropPoint,bdc) ) {
-								block.setLocation(dropPoint);
-								this.getActiveDiagram().addBlock(block);
-								addNameDisplay(block,dropx,dropy);
-								DataType type = DataType.Boolean;
-								List<TagPath> paths = new ArrayList<>();
-								paths.add(tnode.getFullPath());
-								ClientTagManager tmgr = context.getTagManager();
-								CompletableFuture<List<TagConfigurationModel>> futures = tmgr.getTagConfigsAsync(paths,false,true);
-								try {
-									TagConfigurationModel model = futures.get().get(0);
-									PropertySet config = model.getTagProperties();
-									type = (DataType)config.getOrDefault(WellKnownTagProps.DataType);
+									log.infof("%s.handleTagDrop: drop of %s out-of-bounds",CLSS,block.getClassName());
 								}
-								catch(Exception ex) {
-									log.infof("%s.handleTagDrop: failed to get tag info for %s %s (%s)",CLSS,block.getClassName(),tnode.getFullPath().toStringFull(),
-											ex.getMessage());
-								}
-
-
-								Collection<BlockProperty> props = block.getProperties();
-								for (BlockProperty property:props) {
-									if( BlockConstants.BLOCK_PROPERTY_TAG_PATH.equalsIgnoreCase(property.getName())) {
-										property.setBinding(tnode.getFullPath().toStringFull());}
-									block.modifyConnectionForTagChange(property, type);
-								}
-								
-								// Create the process editor for the new block
-								BlockPropertyEditor editor = new BlockPropertyEditor(context,this,block);
-								PropertyEditorFrame peframe = getPropertyEditorFrame();
-								peframe.setEditor(editor);
-								log.infof("%s.handleTagDrop: dropped %s (%s)",CLSS,block.getClassName(),block.getName());
 							}
 							else {
-								log.infof("%s.handleTagDrop: drop of %s out-of-bounds",CLSS,block.getClassName());
+								log.infof("%s.handleTagDrop: drop rejected - inappropriate type (%s)",CLSS,tnode.getDataType());
 							}
+							getActiveDiagram().fireStateChanged();
 						}
-						getActiveDiagram().fireStateChanged();
 					}
 				}
 			} 
@@ -884,8 +890,13 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 						BlockDesignableContainer container = getSelectedContainer();
 						ProcessDiagramView diagram = (ProcessDiagramView)container.getModel();
 						NodeBrowseInfo tnode = (NodeBrowseInfo) tagNodeArr.get(0);
-						log.infof("%s.handleTagOnBlockDrop: tag data: %s",CLSS,tnode.getFullPath());
 						TagPath tp = tnode.getFullPath();
+						log.infof("%s.handleTagOnBlockDrop: tag data: %s",CLSS,tnode.getFullPath());
+						if( isUDT(tp) || !isValidDropType(tnode.getDataType()) ) {
+							log.infof("%s.handleTagOnBlockDrop: drop rejected - inappropriate type (%s)",CLSS,tnode.getDataType());
+							return;
+						}
+						
 
 						Block targetBlock = ((BlockComponent)droppedOn).getBlock();
 						if(targetBlock instanceof ProcessBlockView)  {
@@ -900,7 +911,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 							List<TagPath> paths = new ArrayList<>();
 							paths.add(tp);
 							CompletableFuture<List<TagConfigurationModel>> futures = tmgr.getTagConfigsAsync(paths, false, true);
-							// There should be only one model as there was only o
+							// There should be only one model as there was only one tag
 							try {
 								List<TagConfigurationModel> results = futures.get();
 								TagConfigurationModel model = results.get(0);
@@ -916,11 +927,11 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 							
 							if( connectionMessage==null ) {
 								prop.setBinding(tnode.getFullPath().toStringFull());
-								setSelectedItems((JComponent)null);  // hack to get the property panel to refresh
-								setSelectedItems((JComponent)droppedOn);
 								pblock.setName(nameFromTagPath(tnode.getFullPath()));
 								pblock.setCtypeEditable(true);
 								pblock.modifyConnectionForTagChange(prop, tagType);
+								setSelectedItems((JComponent)null);  // hack to get the property panel to refresh
+								setSelectedItems((JComponent)droppedOn);
 								getActiveDiagram().fireStateChanged();
 							} 
 							else {
@@ -1030,6 +1041,21 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			}
 		}
 		return name;
+	}
+	private boolean isValidDropType(DataType type) {
+		boolean valid = false;
+		if (type == DataType.Int1 || 
+			type == DataType.Int2 ||
+			type == DataType.Int4 ||
+			type == DataType.Int8 ||
+			type == DataType.Float4 ||
+			type == DataType.Float8 ||
+			type == DataType.String || 
+			type == DataType.Text ||
+			type == DataType.Boolean) { 
+			valid = true; 
+		}
+		return valid;
 	}
 	/*
 	 * @return true if the supplied tag path points to a UDT
@@ -1458,7 +1484,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		if( selections!=null ) {
 			if (selections.size()==1 ) {
 				JComponent selection = selections.get(0);
-				log.infof("%s.itemSelectionChanged: selected a %s",CLSS,selection.getClass().getCanonicalName());
+				log.infof("%s.itemSelectionChanged: selected %s (%s)",CLSS,selection.getName(),selection.getClass().getCanonicalName());
 			} 
 			else {
 				int count = 0;
@@ -1476,7 +1502,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	}
 	
 	private void updateBlockAlignMenus(boolean enableAlign) {
-//		BLTDesignerHook dh = (BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID);
 		CommandBar cb = getAlignBar();
 		for (Component cp:cb.getComponents()) {
 			cp.setEnabled(enableAlign);
