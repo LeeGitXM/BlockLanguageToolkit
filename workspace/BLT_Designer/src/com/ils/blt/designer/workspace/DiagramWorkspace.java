@@ -894,7 +894,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 						ProcessDiagramView diagram = (ProcessDiagramView)container.getModel();
 						NodeBrowseInfo tnode = (NodeBrowseInfo) tagNodeArr.get(0);
 						TagPath tp = tnode.getFullPath();
-						log.infof("%s.handleTagOnBlockDrop: tag data: %s",CLSS,tnode.getFullPath());
+						log.infof("%s.c: tag %s",CLSS,tnode.getFullPath());
 						if( isUDT(tp) || !isValidDropType(tnode.getDataType()) ) {
 							String msg = String.format("Drop rejected - UDT or inappropriate type (%s)",tnode.getDataType());
 							log.infof("%s.handleTagOnBlockDrop: ",CLSS,msg);
@@ -925,7 +925,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 								exprType = (Integer) config.get(TagProp.ExpressionType);
 							}
 							catch(Exception ex) {
-								log.infof("%s.handleDiagramDrop: failed to get tag info for %s (%s)",CLSS,tnode.getFullPath().toStringFull(),
+								log.infof("%s.handleTagOnBlockDrop: failed to get tag info for %s (%s)",CLSS,tnode.getFullPath().toStringFull(),
 										ex.getMessage());
 							}
 							String connectionMessage = diagram.isValidBindingChange(pblock, prop, tp.toStringFull(), tagType,exprType);
@@ -935,9 +935,9 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 								pblock.setName(nameFromTagPath(tnode.getFullPath()));
 								pblock.setCtypeEditable(true);
 								pblock.modifyConnectionForTagChange(prop, tagType);
-								setSelectedItems((JComponent)null);  // hack to get the property panel to refresh
+								getActiveDiagram().fireStateChanged();    // diagram now dirty, editor won't subscribe to notifications
+								setSelectedItems((JComponent)null);       // hack to get the property panel to refresh
 								setSelectedItems((JComponent)droppedOn);
-								getActiveDiagram().fireStateChanged();
 							} 
 							else {
 								JOptionPane.showMessageDialog(null, connectionMessage, "Warning", JOptionPane.INFORMATION_MESSAGE);
@@ -948,7 +948,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			}
 		}
 		catch(Exception ex) {
-			log.error(String.format("%s.handleDrop: Exceptiona: %s",CLSS,ex.getLocalizedMessage()),ex);
+			log.error(String.format("%s.handleTagOnBlockDrop: Exceptiona: %s",CLSS,ex.getLocalizedMessage()),ex);
 		}
 	}
 
