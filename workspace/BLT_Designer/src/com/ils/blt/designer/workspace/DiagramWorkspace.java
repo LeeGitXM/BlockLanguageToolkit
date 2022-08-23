@@ -850,15 +850,18 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 									PropertyEditorFrame peframe = getPropertyEditorFrame();
 									peframe.setEditor(editor);
 									log.infof("%s.handleTagDrop: dropped %s (%s)",CLSS,block.getClassName(),block.getName());
+									getActiveDiagram().fireStateChanged();
 								}
 								else {
 									log.infof("%s.handleTagDrop: drop of %s out-of-bounds",CLSS,block.getClassName());
 								}
 							}
 							else {
-								log.infof("%s.handleTagDrop: drop rejected - inappropriate type (%s)",CLSS,tnode.getDataType());
+								String msg = String.format("Drop rejected - UDT or inappropriate type (%s)",tnode.getDataType());
+								log.infof("%s.handleTagDrop: ",CLSS,msg);
+								JOptionPane.showMessageDialog(null, msg, "Warning", JOptionPane.INFORMATION_MESSAGE);
 							}
-							getActiveDiagram().fireStateChanged();
+							
 						}
 					}
 				}
@@ -893,7 +896,9 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 						TagPath tp = tnode.getFullPath();
 						log.infof("%s.handleTagOnBlockDrop: tag data: %s",CLSS,tnode.getFullPath());
 						if( isUDT(tp) || !isValidDropType(tnode.getDataType()) ) {
-							log.infof("%s.handleTagOnBlockDrop: drop rejected - inappropriate type (%s)",CLSS,tnode.getDataType());
+							String msg = String.format("Drop rejected - UDT or inappropriate type (%s)",tnode.getDataType());
+							log.infof("%s.handleTagOnBlockDrop: ",CLSS,msg);
+							JOptionPane.showMessageDialog(null, msg, "Warning", JOptionPane.INFORMATION_MESSAGE);
 							return;
 						}
 						
