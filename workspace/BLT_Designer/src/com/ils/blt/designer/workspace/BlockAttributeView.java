@@ -3,6 +3,7 @@ package com.ils.blt.designer.workspace;
 import java.awt.Point;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -51,6 +52,18 @@ public class BlockAttributeView extends ProcessBlockView implements BlockListene
 	private String binding = null;  // Current binding, if any
 	private PropertyType propertyType = PropertyType.STRING;
 	private final UtilityFunctions fncs;
+	
+	/**
+	 * Constructor: Used only for clone()
+	 */
+	public BlockAttributeView() {
+		super();
+		this.className = BlockConstants.BLOCK_CLASS_ATTRIBUTE;
+		this.fncs = new UtilityFunctions();
+		setup();  // Create property map.
+		initialize();
+	}
+	
 	/**
 	 * Constructor: Used when a new block is created from the selection dialog. 
 	 *              We do not have enough information to become a listener.
@@ -139,6 +152,10 @@ public class BlockAttributeView extends ProcessBlockView implements BlockListene
 			setPreferredWidth(fncs.coerceToInteger(w.getValue().toString()));
 		}
 	}
+	/**
+	 * The blockId is the UUID as a String of the block that we reference.
+	 * @return the reference block's Id
+	 */
  	public String getBlockId() { 
  		return getProperty(BlockConstants.ATTRIBUTE_PROPERTY_BLOCK_ID).getValue().toString(); 
  	}
@@ -227,6 +244,7 @@ public class BlockAttributeView extends ProcessBlockView implements BlockListene
 	public ProcessBlockView getReferenceBlock() {  return this.reference; }
 	public void setReferenceBlock(ProcessBlockView ref) { 
 		this.reference=ref;
+		setBlockId(ref.getId().toString());
 		reference.addBlockListener(this);
 	}
 	
@@ -401,6 +419,40 @@ public class BlockAttributeView extends ProcessBlockView implements BlockListene
 	@Override
 	public void blockUIChanged(Block blk) {}
 	
+	// ================================ Cloneable =====================================
+	@Override
+	public BlockAttributeView clone() {
+		BlockAttributeView clone = new BlockAttributeView();
+		clone.setBackground(getBackground());
+		clone.className 	= className;
+		clone.ctypeEditable = isCtypeEditable();
+		clone.setEditorClass(getEditorClass());
+		clone.setEmbeddedIcon(getEmbeddedIcon());
+		clone.setEmbeddedLabel(getEmbeddedLabel());
+		clone.setEmbeddedFontSize(getEmbeddedFontSize());
+		clone.iconPath 			= getIconPath();
+		clone.location.x		= getLocation().x;
+		clone.location.y		= getLocation().y;
+		clone.setPreferredHeight(getPreferredHeight());
+		clone.setPreferredWidth (getPreferredWidth());
+		clone.state 		= getState();
+		clone.statusText 	= "";
+		clone.setStyle(getStyle());
+		clone.badgeChar      = getBadgeChar();
+		clone.anchors = new HashMap<>();
+		for(String key:anchors.keySet()) {
+			ProcessAnchorDescriptor pad = anchors.get(key);
+			clone.anchors.put(key, pad.clone());
+		}
+		clone.propertyMap = new HashMap<>();
+		for(String key:propertyMap.keySet()) {
+			BlockProperty bp = propertyMap.get(key);
+			clone.propertyMap.put(key,bp.clone());
+		}
+		clone.setAuxiliaryData(getAuxiliaryData().clone());
+		return clone;
+	}
+
 	// ======================================= Tag Change Listener ==================================
 
 	@Override
@@ -416,5 +468,8 @@ public class BlockAttributeView extends ProcessBlockView implements BlockListene
 			log.warnf("%s.tagChanged: Received an empty value",CLSS);
 		}		
 	}
+	
+
+	
 }
 

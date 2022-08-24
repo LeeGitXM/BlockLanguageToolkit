@@ -92,7 +92,6 @@ public class TruthCycleCounter extends AbstractProcessBlock implements ProcessBl
 	 * Define the synchronization property and ports.
 	 */
 	private void initialize() {	
-		setName("TruthCycleCounter");
 		state = TruthValue.UNSET;
 		delayStart = true;    // We transmit our initial value
 		

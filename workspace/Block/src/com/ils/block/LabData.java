@@ -87,7 +87,6 @@ public class LabData extends Input implements ProcessBlock {
 	 */
 	@Override
 	protected void initialize() {	
-		setName("LabData");
 		delayStart = false;
 		
 		// This property causes the engine to start a subscription.

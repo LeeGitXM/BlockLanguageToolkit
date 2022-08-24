@@ -77,9 +77,7 @@ public class LowLimitTimeWindow extends AbstractProcessBlock implements ProcessB
 	 * Add properties that are new for this class.
 	 * Populate them with default values.
 	 */
-	private void initialize() {	
-		setName("LowLimitTime");
-		
+	private void initialize() {		
 		BlockProperty windowProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW,timeWindow,PropertyType.DOUBLE,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW, windowProperty);
 		BlockProperty intervalProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SCAN_INTERVAL,scanInterval,PropertyType.TIME_SECONDS,true);

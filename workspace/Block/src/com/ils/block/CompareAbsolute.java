@@ -55,8 +55,6 @@ public class CompareAbsolute extends Compare implements ProcessBlock {
 	 * The super-class initialize method is run first.
 	 */
 	private void initialize() {	
-		setName("CompareAbsolute");
-		
 		anchors.clear();  // Re-define the anchors here
 		// Define a two inputs
 		AnchorPrototype input = new AnchorPrototype(X_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);

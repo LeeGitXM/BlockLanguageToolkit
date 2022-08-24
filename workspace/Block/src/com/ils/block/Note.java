@@ -68,7 +68,6 @@ public class Note extends AbstractProcessBlock implements ProcessBlock {
 	 * Populate them with default values.
 	 */
 	private void initialize() {
-		setName(TAG);
 		BlockProperty text = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TEXT,"Your note here", PropertyType.STRING, true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_TEXT, text);		
 		BlockProperty width = new BlockProperty(BlockConstants.BLOCK_PROPERTY_WIDTH, Integer.valueOf(DEFAULT_WIDTH), PropertyType.INTEGER,true);

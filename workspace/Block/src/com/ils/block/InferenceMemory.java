@@ -82,7 +82,6 @@ public class InferenceMemory extends AbstractProcessBlock implements ProcessBloc
 	 * Define the ports. There are no user-settable properties
 	 */
 	private void initialize() {	
-		setName("InferenceMemory");
 		delayStart = false;
 		// Define set and reset inputs
 		AnchorPrototype setInput = new AnchorPrototype(SET_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.TRUTHVALUE);

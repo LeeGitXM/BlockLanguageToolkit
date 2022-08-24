@@ -64,8 +64,6 @@ public class PropertySetter extends AbstractProcessBlock implements ProcessBlock
 	 * Define the synchronization property and ports.
 	 */
 	private void initialize() {	
-		setName("PropertySetter");
-		
 		BlockProperty propertyProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_PROPERTY,propertyName,PropertyType.STRING,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_PROPERTY, propertyProperty);
 		

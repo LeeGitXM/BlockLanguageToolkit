@@ -64,8 +64,7 @@ public class MovingAverage extends AbstractProcessBlock implements ProcessBlock 
 	 * Add properties that are new for this class.
 	 * Populate them with default values.
 	 */
-	private void initialize() {	
-		setName("MovingAverage");
+	private void initialize() {
 		BlockProperty resetProperty =  new BlockProperty(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET,clearOnReset,PropertyType.BOOLEAN,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET, resetProperty);
 		

@@ -107,7 +107,6 @@ public class Output extends AbstractProcessBlock implements ProcessBlock {
 	 * Populate them with default values.
 	 */
 	protected void initialize() {
-		setName("Output");
 	    // TAG_WRITE means that we won't create a subscription to it
 		tagPathProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH,"",PropertyType.STRING,true);
 		tagPathProperty.setBindingType(BindingType.TAG_WRITE);

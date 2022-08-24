@@ -107,7 +107,6 @@ public class TruthValuePulse extends AbstractProcessBlock implements ProcessBloc
 	 * Define the interval and trigger properties and ports.
 	 */
 	private void initialize() {	
-		setName("TruthValuePulse");
 		delayStart = false;
 		
 		BlockProperty intervalProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_INTERVAL,interval,PropertyType.TIME_MINUTES,true);

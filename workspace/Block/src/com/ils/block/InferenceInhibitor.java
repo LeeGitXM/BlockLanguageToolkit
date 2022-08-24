@@ -148,7 +148,6 @@ public class InferenceInhibitor extends AbstractProcessBlock implements ProcessB
 	 * Under certain conditions we propage an initial value on start.
 	 */
 	private void initialize() {
-		setName("InferenceInhibitor");
 		delayStart = propagateOnStart();
 		state = TruthValue.UNSET;
 		BlockProperty initialValueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_INITIAL_VALUE,initialValue,PropertyType.TRUTHVALUE,true);

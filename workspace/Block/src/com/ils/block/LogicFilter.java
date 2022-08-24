@@ -87,7 +87,6 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 	 * Populate them with default values.
 	 */
 	private void initialize() {	
-		setName("LogicFilter");
 		BlockProperty deadbandProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_DEADBAND,deadband,PropertyType.DOUBLE,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_DEADBAND, deadbandProperty);
 		BlockProperty hProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_HYSTERESIS,hysteresis,PropertyType.HYSTERESIS,true);

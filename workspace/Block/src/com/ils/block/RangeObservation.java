@@ -70,7 +70,6 @@ public class RangeObservation extends AbstractProcessBlock implements ProcessBlo
 	 * Populate them with default values.
 	 */
 	private void initialize() {
-		setName("RangeObservation");
 		BlockProperty bp = new BlockProperty(BLOCK_PROPERTY_LOWER_LIMIT,lowerlimit,PropertyType.DOUBLE,true);
 		setProperty(BLOCK_PROPERTY_LOWER_LIMIT, bp);
 		bp = new BlockProperty(BLOCK_PROPERTY_UPPER_LIMIT,upperlimit,PropertyType.DOUBLE,true);

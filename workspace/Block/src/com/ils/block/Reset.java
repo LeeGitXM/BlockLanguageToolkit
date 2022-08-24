@@ -63,8 +63,6 @@ public class Reset extends AbstractProcessBlock implements ProcessBlock {
 	 * Populate them with default values.
 	 */
 	private void initialize() {	
-		setName("Reset");
-
 		BlockProperty triggerProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TRIGGER,trigger,PropertyType.BOOLEAN,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_TRIGGER, triggerProperty);
 		

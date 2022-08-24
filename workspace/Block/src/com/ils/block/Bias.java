@@ -120,7 +120,6 @@ public class Bias extends AbstractProcessBlock implements ProcessBlock {
 	 * Populate them with default values.
 	 */
 	private void initialize() {
-		setName("Bias");
 		BlockProperty constant = new BlockProperty(BLOCK_PROPERTY_BIAS,bias,PropertyType.DOUBLE,true);
 		setProperty(BLOCK_PROPERTY_BIAS, constant);
 		

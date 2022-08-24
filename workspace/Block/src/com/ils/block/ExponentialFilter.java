@@ -66,7 +66,6 @@ public class ExponentialFilter extends AbstractProcessBlock implements ProcessBl
 	 * Populate them with default values.
 	 */
 	private void initialize() {
-		setName("Exponential Filter");
 		BlockProperty constant = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW,window,PropertyType.TIME_MINUTES,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW, constant);
 		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,"",PropertyType.STRING,false);

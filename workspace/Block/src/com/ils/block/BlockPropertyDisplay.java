@@ -61,7 +61,6 @@ public class BlockPropertyDisplay extends AbstractProcessBlock implements Proces
 	 * Populate them with default values.
 	 */
 	private void initialize() {
-		setName(CLSS);
 		// Property designates what property of the connected block this shows
 		BlockProperty property = new BlockProperty(BlockConstants.BLOCK_PROPERTY_PROPERTY,"", PropertyType.STRING, true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_PROPERTY, property);	

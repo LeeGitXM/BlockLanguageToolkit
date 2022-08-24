@@ -61,7 +61,6 @@ public class Transmitter extends AbstractProcessBlock implements ProcessBlock {
 	 * Populate them with default values.
 	 */
 	private void initialize() {
-		setName("Transmitter");
 		scopeProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SCOPE,TransmissionScope.LOCAL.toString(),PropertyType.STRING,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_SCOPE, scopeProperty);
 		

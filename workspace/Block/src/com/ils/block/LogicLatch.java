@@ -110,9 +110,7 @@ public class LogicLatch extends AbstractProcessBlock implements ProcessBlock {
 	/**
 	 * There are no properties for this class.
 	 */
-	private void initialize() {
-		setName("LogicLatch");
-		
+	private void initialize() {	
 		// Define a single input
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.TRUTHVALUE);
 		input.setIsMultiple(false);

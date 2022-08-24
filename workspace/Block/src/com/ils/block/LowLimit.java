@@ -70,9 +70,7 @@ public class LowLimit extends AbstractProcessBlock implements ProcessBlock {
 	/**
 	 * Define the synchronization property and ports.
 	 */
-	private void initialize() {	
-		setName("LowLimit");
-		
+	private void initialize() {		
 		BlockProperty bp = new BlockProperty(BlockConstants.BLOCK_PROPERTY_LIMIT,limit,PropertyType.DOUBLE,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_LIMIT, bp);
 		// Define the time for "coalescing" inputs ~ msec

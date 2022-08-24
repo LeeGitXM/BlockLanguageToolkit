@@ -62,7 +62,6 @@ public class StateLookup extends AbstractProcessBlock implements ProcessBlock {
 	 * Define the synchronization property and ports. 
 	 */
 	private void initialize() {	
-		setName("StateLookup");
 		state = TruthValue.UNSET;
 		lookupMap = new HashMap<>();
 		String nameValues = "OTHER:UNKNOWN";

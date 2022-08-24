@@ -56,7 +56,6 @@ public class CompareDeadband extends Compare implements ProcessBlock {
 	 * The super-class method has already been run. Its anchors work for us as-is.
 	 */
 	private void initialize() {	
-		setName("CompareDeadband");
 		// Define the deadband
 		BlockProperty oprop = new BlockProperty(BlockConstants.BLOCK_PROPERTY_DEADBAND,deadband,PropertyType.DOUBLE,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_DEADBAND, oprop);

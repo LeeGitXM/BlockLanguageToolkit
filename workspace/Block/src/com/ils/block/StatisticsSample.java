@@ -102,8 +102,6 @@ public class StatisticsSample extends AbstractProcessBlock implements ProcessBlo
 	 * Populate them with default values.
 	 */
 	private void initialize() {	
-		setName("StatisticalSample");
-
 		BlockProperty clearProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET,clearOnReset,PropertyType.BOOLEAN,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET, clearProperty);
 		BlockProperty sizeProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SAMPLE_SIZE,sampleSize,PropertyType.INTEGER,true);

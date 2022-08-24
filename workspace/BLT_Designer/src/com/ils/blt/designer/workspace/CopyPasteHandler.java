@@ -282,7 +282,7 @@ public class CopyPasteHandler  {
 					try {
 						SerializableDiagram sd = mapper.readValue(new String(bytes), SerializableDiagram.class);
 						if( sd!=null ) {
-							view = new ProcessDiagramView(context,source,sd);
+							view = new ProcessDiagramView(context,source,sd).clone();
 						}
 					}
 					catch(JsonParseException jpe) {
@@ -305,7 +305,7 @@ public class CopyPasteHandler  {
 			}
 			builder.setApplicationScope(ApplicationScope.GATEWAY);
 			builder.setFolder(false);
-			SerializableDiagram sd = view.clone().createSerializableRepresentation();
+			SerializableDiagram sd = view.createSerializableRepresentation();
 			sd.setPath(destination.getFolderPath());
 			sd.setName(destination.getResourcePath().getName());
 			builder.putData(sd.serialize());

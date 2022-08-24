@@ -69,7 +69,6 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 	 * Add the tag property and link it to the value property.
 	 */
 	protected void initialize() {
-		setName("Input");
 		delayStart = true;
 		// This property causes the engine to start a subscription.
 		tagPathProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH,"",PropertyType.OBJECT,true);

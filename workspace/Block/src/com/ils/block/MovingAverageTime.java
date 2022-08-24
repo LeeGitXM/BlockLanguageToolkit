@@ -77,9 +77,7 @@ public class MovingAverageTime extends AbstractProcessBlock implements ProcessBl
 	 * Add properties that are new for this class.
 	 * Populate them with default values.
 	 */
-	private void initialize() {	
-		setName("MovingAverageTime");
-		
+	private void initialize() {			
 		BlockProperty resetProperty =  new BlockProperty(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET,Boolean.FALSE,PropertyType.BOOLEAN,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET, resetProperty);
 		BlockProperty windowProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW,timeWindow,PropertyType.TIME_MINUTES,true);

@@ -72,7 +72,6 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 	 * Populate them with default values.
 	 */
 	private void initialize() {	
-		setName("PersistenceGate");
 		BlockProperty windowProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW,timeWindow,PropertyType.TIME_MINUTES,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW, windowProperty);
 		BlockProperty scanIntervalProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SCAN_INTERVAL,scanInterval,PropertyType.TIME_SECONDS,true);

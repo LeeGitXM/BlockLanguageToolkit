@@ -74,9 +74,7 @@ public class LowLimitSampleCount extends AbstractProcessBlock implements Process
 	/**
 	 * Define the synchronization property and ports.
 	 */
-	private void initialize() {	
-		setName("LowValueSample");
-		
+	private void initialize() {			
 		BlockProperty bp = new BlockProperty(BlockConstants.BLOCK_PROPERTY_LIMIT,limit,PropertyType.DOUBLE,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_LIMIT, bp);
 		BlockProperty fillProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_FILL_REQUIRED,fillRequired,PropertyType.BOOLEAN,true);

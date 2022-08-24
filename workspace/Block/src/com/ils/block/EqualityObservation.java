@@ -70,7 +70,6 @@ public class EqualityObservation extends AbstractProcessBlock implements Process
 	 * Populate them with default values.
 	 */
 	private void initialize() {
-		setName("EqualityObservation");
 		BlockProperty db = new BlockProperty(BlockConstants.BLOCK_PROPERTY_DEADBAND,deadband,PropertyType.DOUBLE,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_DEADBAND, db);
 		BlockProperty targ = new BlockProperty(BLOCK_PROPERTY_NOMINAL,nominal,PropertyType.DOUBLE,true);

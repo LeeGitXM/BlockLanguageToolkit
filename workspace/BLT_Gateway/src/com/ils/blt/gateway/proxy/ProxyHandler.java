@@ -164,7 +164,7 @@ public class ProxyHandler   {
 				createBlockCallback.setLocalVariable(1,new PyString(parentId.getProjectName()));
 				createBlockCallback.setLocalVariable(2,new PyString(parentId.getResourcePath().getFolderPath()));
 				createBlockCallback.setLocalVariable(3,new PyString(blockId.toString()));
-				createBlockCallback.setLocalVariable(4,new PyString(name));
+				createBlockCallback.setLocalVariable(4,new PyString((name==null?"":name)));
 				createBlockCallback.setLocalVariable(5,pyDictionary);
 				log.infof("%s.createBlockInstance --- executing create script for %s",CLSS,className); 
 				createBlockCallback.execute(scriptManager);

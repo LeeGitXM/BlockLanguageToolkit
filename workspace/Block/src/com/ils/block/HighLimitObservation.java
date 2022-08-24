@@ -70,7 +70,6 @@ public class HighLimitObservation extends AbstractProcessBlock implements Proces
 	 * Populate them with default values.
 	 */
 	private void initialize() {
-		setName("HighLimitObservation");
 		BlockProperty bp = new BlockProperty(BlockConstants.BLOCK_PROPERTY_LIMIT,limit,PropertyType.DOUBLE,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_LIMIT, bp);
 		bp = new BlockProperty(BlockConstants.BLOCK_PROPERTY_DEADBAND,deadband,PropertyType.DOUBLE,true);

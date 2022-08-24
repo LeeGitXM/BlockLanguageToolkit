@@ -59,7 +59,6 @@ public class Receiver extends AbstractProcessBlock implements ProcessBlock {
 	 * Populate them with default values.
 	 */
 	private void initialize() {
-		setName("Receiver");
 		patternProperty = new BlockProperty(BLOCK_PROPERTY_PATTERN,"*",PropertyType.STRING,true);
 		setProperty(BLOCK_PROPERTY_PATTERN, patternProperty);
 		

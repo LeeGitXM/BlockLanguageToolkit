@@ -145,7 +145,11 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			
 			if(blk.getClassName().equalsIgnoreCase(BlockConstants.BLOCK_CLASS_ATTRIBUTE)) {
 				BlockAttributeView bav = (BlockAttributeView)blk;
-				ProcessBlockView refBlock = (ProcessBlockView)getBlock(UUID.fromString(bav.getBlockId()));
+				ProcessBlockView refBlock = null;
+				String uuidString = bav.getBlockId();
+				if(uuidString!=null && !uuidString.isBlank() ) {
+					refBlock = (ProcessBlockView)getBlock(UUID.fromString(uuidString));
+				}
 				if( refBlock!=null ) {
 					bav.setReferenceBlock(refBlock);
 					bav.startListener();
@@ -812,20 +816,35 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 
 		synchronized (this) {
 			// Create a block view map for connections so we can lookup up cloned view by old Id
-			Map<String,ProcessBlockView> viewMap = new HashMap<>();
+			Map<String,ProcessBlockView> cloneMap = new HashMap<>();
 			clone.suppressStateChangeNotification = true; 
 			for( ProcessBlockView pbv : blockMap.values()) {
 				ProcessBlockView view = pbv.clone();  // Sets new name, UUID
-				viewMap.put(pbv.getId().toString(), view);
+				cloneMap.put(pbv.getId().toString(), view);
+				log.infof("%s.clone: map %s to %s", CLSS,pbv.getId().toString(),view.getId().toString());
 				clone.addBlock(view);
 			}
+			// Fix attribute display references to point to cloned blocks
+			for( ProcessBlockView pbv : blockMap.values()) {
+				if( pbv instanceof BlockAttributeView ) {
+					BlockAttributeView bav = (BlockAttributeView)pbv;
+					log.infof("%s.clone: get %s", CLSS,pbv.getId().toString());
+					ProcessBlockView pbvclone = cloneMap.get(pbv.getId().toString());
+					if( pbvclone instanceof BlockAttributeView ) {
+						BlockAttributeView bavclone = (BlockAttributeView)pbvclone;
+						ProcessBlockView ref = bav.getReferenceBlock();
+						bavclone.setReferenceBlock(cloneMap.get(ref.getId().toString()));
+					}
+				}
+			}
+			
 			clone.connections = new ArrayList<>();
 			for( Connection cxn:connections ) {
 				AnchorPoint a = cxn.getOrigin();
 				AnchorPoint b = cxn.getTerminus();
 				if( a!=null && b!=null ) {
-					ProcessBlockView blocka = viewMap.get(a.getBlock().getId().toString());
-					ProcessBlockView blockb = viewMap.get(b.getBlock().getId().toString());
+					ProcessBlockView blocka = cloneMap.get(a.getBlock().getId().toString());
+					ProcessBlockView blockb = cloneMap.get(b.getBlock().getId().toString());
 					if( blocka!=null && blockb!=null) {
 						if( DEBUG ) log.infof("%s.clone: Cloning a connection from %s to %s...", CLSS, blocka.getName(), blockb.getName());
 						AnchorPoint origin = new ProcessAnchorView(a.getId(),blocka,AnchorType.Origin);

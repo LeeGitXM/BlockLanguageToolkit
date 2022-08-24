@@ -56,7 +56,6 @@ public class TimeReadout extends Readout implements ProcessBlock {
 	 * Populate them with default values.
 	 */
 	private void initialize() {	
-		setName("TimeReadout");
 		// Define the display format
 		BlockProperty fmt = new BlockProperty(BlockConstants.BLOCK_PROPERTY_FORMAT,DEFAULT_FORMAT,PropertyType.STRING,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_FORMAT, fmt);

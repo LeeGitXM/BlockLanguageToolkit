@@ -81,7 +81,6 @@ public class InRangeTimeWindow extends AbstractProcessBlock implements ProcessBl
 	 * Populate them with default values.
 	 */
 	private void initialize() {	
-		setName("InRangeTime");
 		BlockProperty minprop = new BlockProperty(BLOCK_PROPERTY_LOWER_LIMIT, lowerLimit,PropertyType.DOUBLE, true);
 		setProperty(BLOCK_PROPERTY_LOWER_LIMIT, minprop);
 		BlockProperty maxprop = new BlockProperty(BLOCK_PROPERTY_UPPER_LIMIT, upperLimit,PropertyType.DOUBLE, true);

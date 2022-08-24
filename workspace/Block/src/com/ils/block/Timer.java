@@ -79,7 +79,6 @@ public class Timer extends AbstractProcessBlock implements ProcessBlock {
 	 * Populate them with default values.
 	 */
 	private void initialize() {	
-		setName("Timer");
 //		this.setReceiver(true);
 		BlockProperty accumulateProperty = new BlockProperty(BLOCK_PROPERTY_ACCUMULATE_VALUES,accumulateValues,PropertyType.BOOLEAN,true);
 		setProperty(BLOCK_PROPERTY_ACCUMULATE_VALUES, accumulateProperty);

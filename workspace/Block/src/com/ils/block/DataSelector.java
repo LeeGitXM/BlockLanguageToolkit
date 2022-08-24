@@ -59,7 +59,6 @@ public class DataSelector extends AbstractProcessBlock implements ProcessBlock {
 	 * Define the synchronization property and ports.
 	 */
 	private void initialize() {	
-		setName("DataSelector");
 		this.state = TruthValue.UNSET;
 		
 		// Define two data inputs

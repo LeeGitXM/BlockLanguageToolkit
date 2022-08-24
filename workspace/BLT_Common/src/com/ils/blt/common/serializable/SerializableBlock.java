@@ -35,17 +35,16 @@ public class SerializableBlock {
 	private int preferredHeight = 0;
 	private int preferredWidth  = 0;
 	private BlockProperty[] properties = null;
-//	private boolean receiveEnabled = false;
 	private String badgeChar = null;
 	private TruthValue state = TruthValue.UNSET;
 	private String statusText;
 	private BlockStyle style = BlockStyle.SQUARE;
-//	private boolean transmitEnabled= false;
 	private UUID uuid = null;
 	private int x = 0;
 	private int y = 0;
 	public SerializableBlock() {
 		this.anchors = new SerializableAnchor[0];
+		this.uuid = UUID.randomUUID();
 	}
 	public SerializableAnchor[] getAnchors() { return anchors; }
 	public GeneralPurposeDataContainer getAuxiliaryData() {return auxiliaryData;}
@@ -71,8 +70,7 @@ public class SerializableBlock {
 	
 	public boolean isDirty() {return dirty;}
 	public boolean isLocked() {return locked;}
-//	public boolean isReceiveEnabled() {return receiveEnabled;}
-//	public boolean isTransmitEnabled() {return transmitEnabled;}
+
 	public String getBadgeChar() {return badgeChar;}
 	public void setAnchors(SerializableAnchor[] array) {
 		anchors = array;

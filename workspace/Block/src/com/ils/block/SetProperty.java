@@ -62,7 +62,6 @@ public class SetProperty extends AbstractProcessBlock implements ProcessBlock {
 	 * Define the synchronization property and ports.
 	 */
 	private void initialize() {	
-		setName("SetProperty");
 		
 		BlockProperty propertyProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_PROPERTY,propertyName,PropertyType.PROPERTY,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_PROPERTY, propertyProperty);

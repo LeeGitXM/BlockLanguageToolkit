@@ -79,8 +79,6 @@ public class HighValuePattern extends AbstractProcessBlock implements ProcessBlo
 	 * Define the synchronization property and ports.
 	 */
 	private void initialize() {	
-		setName("HighValuePattern");
-
 		BlockProperty clearProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET,Boolean.TRUE,PropertyType.BOOLEAN,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET, clearProperty);
 		BlockProperty sampleSizeProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SAMPLE_SIZE,sampleSize,PropertyType.INTEGER,true);

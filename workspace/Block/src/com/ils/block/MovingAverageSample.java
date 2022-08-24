@@ -72,8 +72,6 @@ public class MovingAverageSample extends AbstractProcessBlock implements Process
 	 * Populate them with default values.
 	 */
 	private void initialize() {	
-		setName("MovingAverageSample");
-
 		BlockProperty clearProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET,clearOnReset,PropertyType.BOOLEAN,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET, clearProperty);
 		BlockProperty sizeProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SAMPLE_SIZE,sampleSize,PropertyType.INTEGER,true);

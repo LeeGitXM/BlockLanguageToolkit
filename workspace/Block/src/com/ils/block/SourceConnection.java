@@ -62,7 +62,6 @@ public class SourceConnection extends Input implements ProcessBlock {
 	@Override
 	protected void initialize() {
 		super.initialize();
-		setName("SourceConnection");
 		tagPathProperty.setEditable(false);
 	}
 	

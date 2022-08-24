@@ -74,7 +74,6 @@ public class Compare extends AbstractProcessBlock implements ProcessBlock {
 	 * Offset is ...
 	 */
 	private void initialize() {		
-		setName("Compare");
 		// Define the time for "coalescing" inputs ~ msec
 		BlockProperty oprop = new BlockProperty(BlockConstants.BLOCK_PROPERTY_OFFSET,offset,PropertyType.DOUBLE,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_OFFSET, oprop);

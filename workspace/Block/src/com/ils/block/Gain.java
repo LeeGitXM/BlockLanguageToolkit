@@ -134,7 +134,6 @@ public class Gain extends AbstractProcessBlock implements ProcessBlock {
 	 * Populate them with default values.
 	 */
 	private void initialize() {
-		setName("Gain");
 		BlockProperty constant = new BlockProperty(BLOCK_PROPERTY_GAIN,gain,PropertyType.DOUBLE,true);
 		setProperty(BLOCK_PROPERTY_GAIN, constant);
 		

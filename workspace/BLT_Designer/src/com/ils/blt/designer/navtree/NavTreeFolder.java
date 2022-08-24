@@ -314,7 +314,7 @@ public class NavTreeFolder extends FolderNode implements ProjectResourceListener
 	 */
 	@Override
 	protected AbstractNavTreeNode createChildNode(ProjectResource res) {
-		log.infof("%s.createChildNode: %s (%s) type:%s, depth=%d", CLSS,res.getResourceName(),res.getResourcePath().getPath().toString(),
+		log.debugf("%s.createChildNode: %s (%s) type:%s, depth=%d", CLSS,res.getResourceName(),res.getResourcePath().getPath().toString(),
 				(res.isFolder()?"folder":"diagram"),getDepth());
 		// If the project is disabled, then don't do anything
 		if( !context.getProject().isEnabled()) return null;

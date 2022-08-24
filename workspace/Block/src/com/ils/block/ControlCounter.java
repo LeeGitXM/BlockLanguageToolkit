@@ -59,7 +59,6 @@ public class ControlCounter extends AbstractProcessBlock implements ProcessBlock
 	 * Define the synchronization property and ports.
 	 */
 	private void initialize() {	
-		setName("ControlCounter");
 		counter = 0;
 		
 		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,"0",PropertyType.STRING,false);

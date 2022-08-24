@@ -61,7 +61,6 @@ public class Parameter extends AbstractProcessBlock implements ProcessBlock {
 	 * Populate them with default values.
 	 */
 	private void initialize() {
-		setName("Parameter");
 		delayStart = true;
 		tagProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH,"",PropertyType.STRING,true);
 		tagProperty.setBinding("");

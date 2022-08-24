@@ -71,8 +71,7 @@ public class Or extends AbstractProcessBlock implements ProcessBlock {
 		qualifiedValueMap = new HashMap<>();
 	}
 	
-	private void initialize() {	
-		setName("Or");	
+	private void initialize() {		
 		state = TruthValue.UNSET;
 		// Define the time for "coalescing" inputs ~ msec
 		BlockProperty synch = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL,synchInterval,PropertyType.TIME_SECONDS,true);

@@ -61,36 +61,35 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener,Cl
 	private static final String CLSS = "ProcessBlockView";
 	private static final boolean DEBUG = false;
 	private final static Random random = new Random();
-	private Map<String,ProcessAnchorDescriptor> anchors;
+	protected Map<String,ProcessAnchorDescriptor> anchors;
 	private final EventListenerList listenerList;
 	private final NotificationHandler handler = NotificationHandler.getInstance();
 	private GeneralPurposeDataContainer auxiliaryData = new GeneralPurposeDataContainer();
 	private final ChangeEvent changeEvent;
 	private int background = Color.white.getRGB();
-	private String className;
-	private boolean dirty = false;   // A newly created block is clean because we initially sync with the gateway
+	protected String className;
+	protected boolean dirty = false;   // A newly created block is clean because we initially sync with the gateway
 	private String editorClass = null; // Class name of custom editor for this block
 	private int    embeddedFontSize = WorkspaceConstants.DEFAULT_EMBEDDED_FONT_SIZE; // Size of font for interior label
 	private String embeddedIcon="";               // 32x32 icon to place in block in designer
 	private String embeddedLabel="";              // Label place in block in designer
-	private final UIFactory factory = new UIFactory() ;
-	private String iconPath="";                   // Path to icon that is the entire block
-	private boolean ctypeEditable=false;          // Can we globally change our connection types
+	protected final UIFactory factory = new UIFactory() ;
+	protected String iconPath="";                   // Path to icon that is the entire block
+	protected boolean ctypeEditable=false;          // Can we globally change our connection types
 	private boolean locked = false; 
-	private Point location = new Point(0,0);
+	protected Point location = new Point(0,0);
 	protected final LoggerEx log; 
 	protected String name;
 	private int preferredHeight = 0;              // Size the view to "natural" size
 	private int preferredWidth  = 0;              // Size the view to "natural" size
-	private String backgroundColor  = "GREY";
+	protected String backgroundColor  = "GREY";
 	protected Map<String,BlockProperty> propertyMap = new HashMap<String,BlockProperty>();
-	private TruthValue state = TruthValue.UNSET;
-	private String badgeChar = null;
-	private String statusText;                    // Auxiliary text to display
-	private UUID subworkspaceId = null;           // Encapsulated diagram if encapsulation block
+	protected TruthValue state = TruthValue.UNSET;
+	protected String badgeChar = null;
+	protected String statusText;                    // Auxiliary text to display
 	private BlockStyle style = BlockStyle.SQUARE;
 	private AbstractBlockUIView ui = null;
-	private UUID uuid = null;
+	protected UUID uuid = null;
 	
 	/**
 	 * Constructor: Used when a new block is created from the palette. 
@@ -386,7 +385,6 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener,Cl
 	public String getStatusText() { return statusText; }
 	public BlockStyle getStyle() { return style; }
 	public String getBadgeChar() { return badgeChar; }
-	public UUID getSubworkspaceId() {return subworkspaceId;}
 	
 	/** 
 	 * Get the current block property values from the Gateway. 
@@ -489,7 +487,6 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener,Cl
 	public void setState(TruthValue state) {if(state!=null) this.state = state;}
 	public void setStatusText(String statusText) { this.statusText = statusText; }
 	public void setStyle(BlockStyle s) { if( style!=null )this.style = s; }
-	public void setSubworkspaceId(UUID subworkspaceId) {this.subworkspaceId = subworkspaceId;}
 	
 	/**
 	 * Remove notification subscriptions
@@ -688,6 +685,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener,Cl
 		@Override
 		public ProcessBlockView clone() {
 			ProcessBlockView clone = new ProcessBlockView();
+			clone.setName(getName());
 			clone.background 	= getBackground();
 			clone.className 	= className;
 			clone.ctypeEditable = isCtypeEditable();

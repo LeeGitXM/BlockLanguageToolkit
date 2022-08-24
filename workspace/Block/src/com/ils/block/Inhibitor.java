@@ -241,7 +241,6 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 	 * Populate them with default values.
 	 */
 	private void initialize() {
-		setName("Inhibitor");
 		delayStart = propagateOnStart();
 		this.setReceiver(true);
 		BlockProperty constant = new BlockProperty(BlockConstants.BLOCK_PROPERTY_INHIBIT_INTERVAL,interval,PropertyType.TIME_MINUTES,true);

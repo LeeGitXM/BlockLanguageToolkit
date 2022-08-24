@@ -79,7 +79,6 @@ public class Readout extends AbstractProcessBlock implements ProcessBlock {
 	 * Populate them with default values.
 	 */
 	private void initialize() {	
-		setName("Readout");
 		// Define the display format
 		BlockProperty fmt = new BlockProperty(BlockConstants.BLOCK_PROPERTY_FORMAT,format,PropertyType.STRING,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_FORMAT, fmt);

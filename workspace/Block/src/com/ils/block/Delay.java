@@ -281,8 +281,6 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 	 * Populate them with default values.
 	 */
 	private void initialize() {
-		setName("Delay");
-		
 		BlockProperty constant = new BlockProperty(BLOCK_PROPERTY_DELAY,delayInterval,PropertyType.TIME_MINUTES,true);
 		setProperty(BLOCK_PROPERTY_DELAY, constant);
 		

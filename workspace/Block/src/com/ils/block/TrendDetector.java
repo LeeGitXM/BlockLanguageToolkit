@@ -120,7 +120,6 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 	 * Populate them with default values.
 	 */
 	private void initialize() {	
-		setName("Trend");
 //		this.setReceiver(false);
 //		this.setTransmitter(false);
 		BlockProperty calculationOptionProperty = new BlockProperty(BLOCK_PROPERTY_CALCULATION_OPTION,calculationOption,PropertyType.SLOPEOPTION,true);

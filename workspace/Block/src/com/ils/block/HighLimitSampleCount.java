@@ -76,7 +76,6 @@ public class HighLimitSampleCount extends AbstractProcessBlock implements Proces
 	 * Populate them with default values.
 	 */
 	private void initialize() {
-		setName("HighLimitSample");
 		BlockProperty bp = new BlockProperty(BlockConstants.BLOCK_PROPERTY_LIMIT,limit,PropertyType.DOUBLE,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_LIMIT, bp);
 		BlockProperty fillProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_FILL_REQUIRED,fillRequired,PropertyType.BOOLEAN,true);

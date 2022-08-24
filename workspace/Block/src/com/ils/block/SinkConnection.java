@@ -50,7 +50,6 @@ public class SinkConnection extends Output implements ProcessBlock {
 	@Override
 	protected void initialize() {
 		super.initialize();
-		setName("SinkConnection");
 		tagPathProperty.setEditable(false);
 	}
 	

@@ -76,7 +76,6 @@ public class InRangeSampleCount extends AbstractProcessBlock implements ProcessB
 	 * Define the synchronization property and ports.
 	 */
 	private void initialize() {	
-		setName("InRangeSample");
 		state = TruthValue.UNSET;
 		BlockProperty minprop = new BlockProperty(BLOCK_PROPERTY_LOWER_LIMIT, lowerLimit,PropertyType.DOUBLE, true);
 		setProperty(BLOCK_PROPERTY_LOWER_LIMIT, minprop);

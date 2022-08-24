@@ -64,7 +64,6 @@ public class Explanation extends AbstractProcessBlock implements ProcessBlock {
 	 * Define the synchronization property and ports.
 	 */
 	private void initialize() {	
-		setName("Explanation");
 		state = TruthValue.UNSET;
 		
 		explanationFalseProperty = new BlockProperty(EXPLANATION_WHEN_FALSE,"",PropertyType.STRING,true);
