@@ -63,7 +63,7 @@ public class ForceValueSettingsDialog extends JDialog {
 	private final ResourceBundle rb;
 	private final ApplicationRequestHandler requestHandler;
 	protected LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
-	private static final boolean DEBUG = true;
+	private static final boolean DEBUG = false;
 	
 	public ForceValueSettingsDialog(Frame frame,ProcessDiagramView diag,ProcessBlockView view) {
 		super(frame);

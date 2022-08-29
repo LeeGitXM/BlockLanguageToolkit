@@ -187,7 +187,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	public void addBlock(Block blk) {
 		if( blk instanceof ProcessBlockView) {
 			ProcessBlockView block = (ProcessBlockView) blk;
-			block.initProperties(resourceId);
+			if(block.getProperties()==null || block.getProperties().isEmpty()) block.initProperties(resourceId);
 			log.tracef("%s.addBlock - %s",CLSS,block.getClassName());
 			blockMap.put(blk.getId(), block);
 			block.addBlockListener(this);
@@ -821,14 +821,14 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			for( ProcessBlockView pbv : blockMap.values()) {
 				ProcessBlockView view = pbv.clone();  // Sets new name, UUID
 				cloneMap.put(pbv.getId().toString(), view);
-				log.infof("%s.clone: map %s to %s", CLSS,pbv.getId().toString(),view.getId().toString());
+				//log.infof("%s.clone: map %s to %s", CLSS,pbv.getId().toString(),view.getId().toString());
 				clone.addBlock(view);
 			}
 			// Fix attribute display references to point to cloned blocks
 			for( ProcessBlockView pbv : blockMap.values()) {
 				if( pbv instanceof BlockAttributeView ) {
 					BlockAttributeView bav = (BlockAttributeView)pbv;
-					log.infof("%s.clone: get %s", CLSS,pbv.getId().toString());
+					//log.infof("%s.clone: get %s", CLSS,pbv.getId().toString());
 					ProcessBlockView pbvclone = cloneMap.get(pbv.getId().toString());
 					if( pbvclone instanceof BlockAttributeView ) {
 						BlockAttributeView bavclone = (BlockAttributeView)pbvclone;

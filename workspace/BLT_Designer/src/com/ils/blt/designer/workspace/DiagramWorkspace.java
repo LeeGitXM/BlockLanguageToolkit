@@ -1331,7 +1331,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	 * On open, use in this order:
 	 * 1) The diagram already displayed
 	 * 2) The "dirty" diagram saved in the status manager
-	 * 3) The diaram deserialized from the project resource
+	 * 3) The diagram de-serialized from the project resource
+	 * We use the NotificationHandler to synchronize property values from the Gateway
 	 * @param resourceId
 	 */
 	public void open (ProjectResourceId resourceId) {
@@ -1373,11 +1374,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 						}
 					}
 					diagram = new ProcessDiagramView(context,res.getResourceId(),sd);
-					// We are looking at the live version running in the gateway, obtain any updates
-					for( Block blk:diagram.getBlocks()) {
-						ProcessBlockView pbv = (ProcessBlockView)blk;
-						pbv.initProperties(res.getResourceId());
-					}
 				} 
 				catch (JsonParseException jpe) {
 					log.warnf("%s.open: JSON parse exception (%s)",CLSS,jpe.getLocalizedMessage());

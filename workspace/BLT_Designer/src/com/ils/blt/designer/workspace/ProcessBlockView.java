@@ -398,9 +398,9 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener,Cl
 		ApplicationRequestHandler requestHandler = new ApplicationRequestHandler();
 		List<BlockProperty> properties = requestHandler.getBlockProperties(getClassName(),parent,getId());
 			for(BlockProperty bp:properties) {
-				setProperty(bp);
+				if(getProperty(bp.getName())==null) setProperty(bp);
 			}
-			log.tracef("%s.initProperties - initialize property list for %s (%d properties)",CLSS,getId().toString(),properties.size());
+			if(DEBUG) log.infof("%s.initProperties - initialize property list for %s (%d properties)",CLSS,getId().toString(),properties.size());
 	}
 	
 	// This is called in the block-and-connector framework
