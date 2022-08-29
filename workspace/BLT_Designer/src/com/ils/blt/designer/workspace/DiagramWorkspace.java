@@ -674,7 +674,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 						if( block.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK) ||
 							block.getClassName().equals(BlockConstants.BLOCK_CLASS_INPUT) ||
 							block.getClassName().equals(BlockConstants.BLOCK_CLASS_OUTPUT) ||
-							block.getClassName().equals(BlockConstants.BLOCK_CLASS_SOURCE)) {
+							block.getClassName().equals(BlockConstants.BLOCK_CLASS_SOURCE) ||
+							block.getClassName().contains("FinalDiagnosis") ) {
 							addNameDisplay(block,dropPoint.x,dropPoint.y);
 						}
 						// Create the process editor for the new block
