@@ -29,8 +29,10 @@ import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableConnection;
 import com.ils.blt.common.serializable.SerializableDiagram;
+import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.NotificationHandler;
+import com.ils.blt.designer.navtree.DiagramTreeNode;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualityCode;
@@ -41,6 +43,7 @@ import com.inductiveautomation.ignition.common.sqltags.model.types.ExpressionTyp
 import com.inductiveautomation.ignition.common.util.AbstractChangeable;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
+import com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignableContainer;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorPoint;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorType;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
@@ -376,13 +379,19 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 				int result = JOptionPane.showOptionDialog(null, String.format("There is a source associated with sink %s",
 						bp.getName()),"Warning",JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,
 				        null, options, options[0]);
-				if(result==1) return;   // Cancel
+				if(result==1) {
+					revertChange();
+					return;   // Cancel
+				}
 			}
 			else if(sources.size()>1) {
 				int result = JOptionPane.showOptionDialog(null, String.format("There are %d sources associated with sink %s",
 						sources.size(),bp.getName()),"Warning",JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,
 				        null, options, options[0]);
-				if(result==1) return;   // Cancel
+				if(result==1) {
+					revertChange();
+					return;   // Cancel
+				}
 			}
 		}
 		
@@ -446,7 +455,18 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		}
 		fireStateChanged();
 	}
-	
+	/**
+	 * Repaint screen on a user denial of the operation
+	 */
+	private void revertChange() {
+		DiagramWorkspace workspace = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getWorkspace();
+		BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resourceId.getResourcePath());
+		if( tab!=null) workspace.close(resourceId);
+		statusManager.clearChangeMarkers(resourceId);
+		if(tab!=null) workspace.open(resourceId);
+		((DiagramTreeNode)statusManager.getNode(resourceId)).updateUI();
+	}
+
 	@Override
 	public void deleteConnection(AnchorPoint begin, AnchorPoint end) {
 		boolean success = false;
