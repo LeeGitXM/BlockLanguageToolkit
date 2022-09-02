@@ -294,8 +294,8 @@ public class LowLimitTimeWindow extends AbstractProcessBlock implements ProcessB
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setBlockClass(getClass().getCanonicalName());
 		desc.setEmbeddedIcon("Block/icons/embedded/xbart_lt.png");
-		desc.setPreferredHeight(70);
-		desc.setPreferredWidth(70);
+		desc.setPreferredHeight(BlockConstants.BLOCK_HEIGHT);
+		desc.setPreferredWidth(BlockConstants.BLOCK_WIDTH);
 		desc.setStyle(BlockStyle.SQUARE);
 		desc.setBackground(BlockConstants.BLOCK_BACKGROUND_LIGHT_GRAY);
 	}

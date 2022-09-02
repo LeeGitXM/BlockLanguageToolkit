@@ -224,6 +224,7 @@
 		<copy file="${basedir}/../../external/lib/prefuse-1.0.1.jar" todir="${basedir}/BLT_Build/temp_modl/" />
 
 		<!-- Copy license file, help and javadoc into the bundle -->
+		<!-- TODO Delete this section once the User's Guide works
 		<mkdir dir="${basedir}/BLT_Build/doc/SymbolicAiUsersGuide_filtered_files" />
 		<mkdir dir="${basedir}/BLT_Build/res" />
 		<copy file="${basedir}/BLT_Build/license.html" todir="${basedir}/BLT_Build/temp_modl/" />
@@ -234,6 +235,16 @@
 		<copy todir="${basedir}/BLT_Build/temp_modl/doc/SymbolicAiUsersGuide_filtered_files">
 			<fileset dir="${svn.repo}/EMChemicals/Diagnostic Toolkit/Documentation/User's Guide/SymbolicAiUsersGuide_filtered_files"/>
 		</copy>
+		-->
+		
+		<!-- This is the new approach to store the User's Guide as PDF documents -->
+		<echo message="Copying PDF User's Guide files..." />
+
+		<copy todir="${basedir}/BLT_Build/temp_modl/doc/">
+			<fileset dir="${svn.repo}/EMChemicals/Diagnostic Toolkit/Documentation/User's Guide/">
+				<include name="*.pdf"/>
+			</fileset>
+		</copy>		
 		
 		<!-- Echo the version into .version in the bundle and to be saved -->
 		<echo message="${BLTModule.name}-${BLTModule.version}" file="${basedir}/BLT_Build/temp_modl/.version" append="false"/>

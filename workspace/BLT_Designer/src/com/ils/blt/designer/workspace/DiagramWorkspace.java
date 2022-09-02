@@ -52,6 +52,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import com.adbs.utils.Helpers;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -87,8 +88,10 @@ import com.ils.blt.designer.editor.BlockEditConstants;
 import com.ils.blt.designer.editor.BlockPropertyEditor;
 import com.ils.blt.designer.editor.PropertyEditorFrame;
 import com.ils.blt.designer.navtree.DiagramTreeNode;
+import com.inductiveautomation.factorypmi.application.script.builtin.ClientSystemUtilities;
 import com.inductiveautomation.ignition.client.designable.DesignableContainer;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
+import com.inductiveautomation.ignition.client.script.ClientNetUtilities;
 import com.inductiveautomation.ignition.client.tags.model.ClientTagManager;
 import com.inductiveautomation.ignition.client.util.LocalObjectTransferable;
 import com.inductiveautomation.ignition.client.util.action.BaseAction;
@@ -1815,47 +1818,39 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			}); 
 		}
 	}
+	
 	/**
+	 * This is called when the user selects "Help" from the right-click menu on a block.
 	 * Display context-sensitive help in a browser window. 
-	 * NOTE: On windows systems the #xxxx portion of the URL was stripped when sending to the 
-	 *       default browser, so instead we use the file explorer.
 	 */
 	private class HelpAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
 		private final ProcessBlockView block;
+		private ClientNetUtilities netUtils = new ClientNetUtilities(context);
+
 		public HelpAction(ProcessBlockView blk)  {
 			super(PREFIX+".Help");
 			this.block = blk;
 		}
 		
-		// Display a browser pointing to the help text for the block.
-		// Somehow IA got their python to work on Windows. Our attempts kept getting the #xxx stripped off.
-		// Thus we use the script instead of desktop.browse.
+		// Open a browser pointing to the PDF help file for the block.
 		public void actionPerformed(final ActionEvent e) {
-			log.infof("%s.HelpAction.actionPerformed()", CLSS);
-			Desktop desktop=Desktop.getDesktop();
-			String hostname = requestHandler.getGatewayHostname();
-			String address = String.format("http:/%s:8088/main/%s#%s",hostname,BLTProperties.ROOT_HELP_PATH,block.getClassName());
-			try {
-				if( OS.indexOf("win")>=0) {
-					//String browserPath = requestHandler.getWindowsBrowserPath();
-					//if( browserPath==null ) browserPath = "PATH_NOT_FOUND_IN_ORM";
-					String browserPath = "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe";
-					log.infof("%s.HelpAction: Windows command: %s %s",CLSS,browserPath,address);
-					new ProcessBuilder().command(browserPath, address).start();
-				}
-				else {
-					URI url = new URI(address);
-					log.infof("%s.HelpAction: URI is: %s",CLSS,url.toASCIIString());
-					desktop.browse(url);
-				}
-			}
-			catch(URISyntaxException use) {
-				log.infof("%s.HelpAction: illegal syntax in %s (%s)",CLSS,address,use.getLocalizedMessage()); 
-			}
-			catch(IOException ioe) {
-				log.infof("%s.HelpAction: Exception posting browser (%s)",CLSS,ioe.getLocalizedMessage()); 
-			}
+			String gatewayHostname = ClientSystemUtilities.getGatewayAddress();
+			log.tracef(String.format("Gateway Host: %s", gatewayHostname));
+
+			/*
+			 * The class name is of the form: com.ils.block.HighLimitObservation
+			 * So I need to strip off "com.ils.block." and what is left should be the document name
+			 */
+			String className = block.getClassName();
+			String docName = String.format("%s.pdf", className.substring(className.lastIndexOf(".")+1, className.length()));
+			log.tracef("Document Name: %s", docName);
+			
+			String address = String.format("%s%s%s", gatewayHostname, "/main/system/moduledocs/block/", docName);
+			log.infof(String.format("%s.HelpAction(): Document address is: %s", CLSS, address));
+
+			// This Helpers class is pretty handy, not exactly sure how this is working...
+			Helpers.openURL(address);
 		}
 	}
 

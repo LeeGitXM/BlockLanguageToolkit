@@ -216,8 +216,8 @@ public class HighValuePattern extends AbstractProcessBlock implements ProcessBlo
 		desc.setBlockClass(getClass().getCanonicalName());
 		desc.setEmbeddedIcon("Block/icons/embedded/n_greater_equal.png");
 		desc.setStyle(BlockStyle.SQUARE);
-		desc.setPreferredHeight(60);
-		desc.setPreferredWidth(60);
+		desc.setPreferredHeight(BlockConstants.BLOCK_HEIGHT);
+		desc.setPreferredWidth(BlockConstants.BLOCK_WIDTH);
 		desc.setBackground(BlockConstants.BLOCK_BACKGROUND_LIGHT_GRAY);
 		desc.setCtypeEditable(true);
 	}

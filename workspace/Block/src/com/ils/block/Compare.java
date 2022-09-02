@@ -267,8 +267,8 @@ public class Compare extends AbstractProcessBlock implements ProcessBlock {
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setEmbeddedIcon("Block/icons/embedded/greater_equal.png");
-		desc.setPreferredHeight(60);
-		desc.setPreferredWidth(60);
+		desc.setPreferredHeight(BlockConstants.BLOCK_HEIGHT);
+		desc.setPreferredWidth(BlockConstants.BLOCK_WIDTH);
 		desc.setBlockClass(getClass().getCanonicalName());
 		desc.setStyle(BlockStyle.SQUARE);
 		desc.setBackground(BlockConstants.BLOCK_BACKGROUND_LIGHT_GRAY);

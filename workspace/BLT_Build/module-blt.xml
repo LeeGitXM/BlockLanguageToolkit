@@ -9,7 +9,9 @@
 		<requiredignitionversion>8.1.0</requiredignitionversion>
 		<requiredframeworkversion>9</requiredframeworkversion>
 		<freemodule>true</freemodule>
-		<documentation>index.html</documentation>
+		
+		<!--  This is the new approach to save it as a PDF... -->
+		<documentation>SymbolicAiUsersGuide.pdf</documentation>
 
 		<!-- Add the module dependencies for each scope -->
 		<depends scope="D">com.inductiveautomation.vision</depends>

@@ -108,7 +108,6 @@ public interface BlockConstants   {
 	public static final String CONNECTION_PROPERTY_UPSTREAM_PORT       = "upstream"; 
 	public static final String CONNECTION_PROPERTY_VALUE               = "value"; 
 
-	
 	// These are standard palette tab names - do not use names with embedded spaces
 	public static final String PALETTE_TAB_ARITHMETIC         = "Arithmetic";
 	public static final String PALETTE_TAB_ANALYSIS           = "Analysis";
@@ -128,12 +127,17 @@ public interface BlockConstants   {
 	public static final int ATTRIBUTE_DISPLAY_OFFSET_Y     = 2;
 	public static final int ATTRIBUTE_DISPLAY_HEIGHT     = 20;
 	public static final int ATTRIBUTE_DISPLAY_WIDTH      = 100;
+	
 	// Block filler colors
 	public static final int BLOCK_BACKGROUND_BLUE_GRAY      = (new Color(143,172,183)).getRGB();
 	public static final int BLOCK_BACKGROUND_GRAYISH        = (new Color(208,215,220)).getRGB();
 	public static final int BLOCK_BACKGROUND_LIGHT_ROSE     = (new Color(220,208,200)).getRGB();
 	public static final int BLOCK_BACKGROUND_LIGHT_GRAY     = (new Color(240,240,240)).getRGB();
 	public static final int BLOCK_BACKGROUND_MUSTARD     	= (new Color(248,229,34)).getRGB();
+	
+	// Block size (not all blocks are the same size, but this is the preferred size for square blocks
+	public static final int BLOCK_WIDTH      = 60;
+	public static final int BLOCK_HEIGHT     = 60;
 	
 	// These are well-known commands
 	public static final String COMMAND_CLEAR_LOW               	= "CLEAR_LOWER_SQC";

@@ -217,8 +217,8 @@ public class HighLimitObservation extends AbstractProcessBlock implements Proces
 		desc.setEmbeddedIcon("Block/icons/embedded/upper_limit.png");
 		desc.setBlockClass(getClass().getCanonicalName());
 		desc.setStyle(BlockStyle.SQUARE);
-		desc.setPreferredHeight(70);
-		desc.setPreferredWidth(70);
+		desc.setPreferredHeight(BlockConstants.BLOCK_HEIGHT);
+		desc.setPreferredWidth(BlockConstants.BLOCK_WIDTH);
 		desc.setBackground(BlockConstants.BLOCK_BACKGROUND_LIGHT_GRAY);
 	}
 }

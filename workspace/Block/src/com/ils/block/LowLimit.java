@@ -239,8 +239,8 @@ public class LowLimit extends AbstractProcessBlock implements ProcessBlock {
 		desc.setBlockClass(getClass().getCanonicalName());
 		desc.setEmbeddedIcon("Block/icons/embedded/min.png");
 		desc.setStyle(BlockStyle.DIAMOND);
-		desc.setPreferredHeight(70);
-		desc.setPreferredWidth(70);
+		desc.setPreferredHeight(BlockConstants.BLOCK_HEIGHT);
+		desc.setPreferredWidth(BlockConstants.BLOCK_WIDTH);
 		desc.setBackground(BlockConstants.BLOCK_BACKGROUND_BLUE_GRAY);
 	}
 	/**
