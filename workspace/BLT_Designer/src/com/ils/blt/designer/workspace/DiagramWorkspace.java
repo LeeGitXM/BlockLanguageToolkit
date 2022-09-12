@@ -20,6 +20,7 @@ import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Path2D;
@@ -37,6 +38,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
@@ -80,6 +82,7 @@ import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.NotificationHandler;
+import com.ils.blt.designer.ValidationDialog;
 import com.ils.blt.designer.config.AttributeDisplaySelector;
 import com.ils.blt.designer.config.BlockExplanationViewer;
 import com.ils.blt.designer.config.BlockInternalsViewer;
@@ -95,6 +98,7 @@ import com.inductiveautomation.ignition.client.script.ClientNetUtilities;
 import com.inductiveautomation.ignition.client.tags.model.ClientTagManager;
 import com.inductiveautomation.ignition.client.util.LocalObjectTransferable;
 import com.inductiveautomation.ignition.client.util.action.BaseAction;
+import com.inductiveautomation.ignition.client.util.action.StateChangeAction;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.config.ObservablePropertySet;
@@ -157,7 +161,11 @@ import com.jidesoft.swing.JideButton;
 public class DiagramWorkspace extends AbstractBlockWorkspace 
 							  implements ResourceWorkspace, DesignableWorkspaceListener,
 							  			ChangeListener                                  {
+	private static final String SYMBOLIC_AI_MENU_TEXT = "Symbolic Ai";
 	private static final String ALIGN_MENU_TEXT = "Align Blocks";
+	private static final String USERS_GUIDE_TITLE = "User's Guide";
+	private static final String VALIDATION_MENU_TITLE = "Validate Diagrams";
+	private boolean diagramsAttached = true;
 	private static final String CLSS = "DiagramWorkspace";
 	private static final boolean DEBUG = false;
 	private static final long serialVersionUID = 4627016159409031941L;
@@ -440,58 +448,98 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 
     	MenuBarMerge merge = null;     	
     	if (this.isVisible()) {
-    		if (!menuExists(context.getFrame(),ALIGN_MENU_TEXT)) {
+			JMenuItem la = new JMenuItem(new AbstractAction("Left Align") {
+				private static final long serialVersionUID = 1L;
+	    		public void actionPerformed(ActionEvent e) {
+	    			alignLeft();
+	    		}
+        	});
+			JMenuItem ra = new JMenuItem(new AbstractAction("Right Align") {
+				private static final long serialVersionUID = 1L;
+	    		public void actionPerformed(ActionEvent e) {
+	    			alignRight();
+	    		}
+        	});
+			JMenuItem ha = new JMenuItem(new AbstractAction("Horizontal Center Align") {
+				private static final long serialVersionUID = 1L;
+	    		public void actionPerformed(ActionEvent e) {
+	    			alignWidthCenter();
+	    		}
+        	});
+			JMenuItem ta = new JMenuItem(new AbstractAction("Top Align") {
+				private static final long serialVersionUID = 1L;
+	    		public void actionPerformed(ActionEvent e) {
+	    			alignTop();
+	    		}
+        	});
+			JMenuItem ba = new JMenuItem(new AbstractAction("Bottom Align") {
+				private static final long serialVersionUID = 1L;
+	    		public void actionPerformed(ActionEvent e) {
+	    			alignBottom();
+	    		}
+        	});
+			JMenuItem va = new JMenuItem(new AbstractAction("Vertical Center Align") {
+				private static final long serialVersionUID = 1L;
+	    		public void actionPerformed(ActionEvent e) {
+	    			alignHeightCenter();
+	    		}
+        	});
+			
+			merge = new MenuBarMerge(BLTProperties.MODULE_ID);  // as suggested in javadocs
+			
+	    	JMenuMerge alignmentMenu = new JMenuMerge("Align Blocks",BLTProperties.BUNDLE_PREFIX+".Menu.AlignBlocks");
+	    	// ".Menu.AlignBlocks" needs to be in the resource bundle or else it gets ? added to it.
+	    	alignmentMenu.add(ra);
+	    	alignmentMenu.add(la);
+	    	alignmentMenu.add(ha);
+	    	alignmentMenu.add(ta);
+	    	alignmentMenu.add(ba);
+	    	alignmentMenu.add(va);
+	    	merge.add(alignmentMenu);
+	    	
+	    	// ------- CREATE THE Symbolic Ai MENU -------------
+	    	
+	    	StateChangeAction attachAction = new StateChangeAction(BLTProperties.BUNDLE_PREFIX+".Menu.Tools.Attach") {
+	    		private static final long serialVersionUID = 5374556367733312464L; 
+	    		public void itemStateChanged(ItemEvent event) {
+	    			diagramsAttached = (event.getStateChange()==ItemEvent.SELECTED);
+	    		}
+	    	};
+	    	attachAction.setSelected(true);
+	    	
 
-    			JMenuItem la = new JMenuItem(new AbstractAction("Left Align") {
-    				private static final long serialVersionUID = 1L;
-		    		public void actionPerformed(ActionEvent e) {
-		    			alignLeft();
-		    		}
-	        	});
-    			JMenuItem ra = new JMenuItem(new AbstractAction("Right Align") {
-    				private static final long serialVersionUID = 1L;
-		    		public void actionPerformed(ActionEvent e) {
-		    			alignRight();
-		    		}
-	        	});
-    			JMenuItem ha = new JMenuItem(new AbstractAction("Horizontal Center Align") {
-    				private static final long serialVersionUID = 1L;
-		    		public void actionPerformed(ActionEvent e) {
-		    			alignWidthCenter();
-		    		}
-	        	});
-    			JMenuItem ta = new JMenuItem(new AbstractAction("Top Align") {
-    				private static final long serialVersionUID = 1L;
-		    		public void actionPerformed(ActionEvent e) {
-		    			alignTop();
-		    		}
-	        	});
-    			JMenuItem ba = new JMenuItem(new AbstractAction("Bottom Align") {
-    				private static final long serialVersionUID = 1L;
-		    		public void actionPerformed(ActionEvent e) {
-		    			alignBottom();
-		    		}
-	        	});
-    			JMenuItem va = new JMenuItem(new AbstractAction("Vertical Center Align") {
-    				private static final long serialVersionUID = 1L;
-		    		public void actionPerformed(ActionEvent e) {
-		    			alignHeightCenter();
-		    		}
-	        	});
-    			
-    			merge = new MenuBarMerge(BLTProperties.MODULE_ID);  // as suggested in javadocs
-		    	JMenuMerge alignmentMenu = new JMenuMerge("Align Blocks",BLTProperties.BUNDLE_PREFIX+".Menu.AlignBlocks");
-		    	// "alignblocks" needs to be in the resource bundle or else it gets ? added to it.
-		    	alignmentMenu.add(ra);
-		    	alignmentMenu.add(la);
-		    	alignmentMenu.add(ha);
-		    	alignmentMenu.add(ta);
-		    	alignmentMenu.add(ba);
-		    	alignmentMenu.add(va);
-		    	merge.add(alignmentMenu);
-    		}
+	    	Action validateAction = new AbstractAction(VALIDATION_MENU_TITLE) {
+	    		private static final long serialVersionUID = 5374667367733312464L;
+	    		public void actionPerformed(ActionEvent ae) {
+	    			SwingUtilities.invokeLater(new ValidationDialogRunner());
+	    		}
+	    	};
+
+	    	
+			// ----------------------- Open User's Guide Actions -----------------------------------
+			Action openUsersGuideAction = new AbstractAction(USERS_GUIDE_TITLE) {
+				private static final long serialVersionUID = 5384887367733312465L;
+				public void actionPerformed(ActionEvent ae) {
+					String gatewayHostname = ClientSystemUtilities.getGatewayAddress();
+					log.tracef(String.format("Gateway Host: %s", gatewayHostname));
+					
+					String address = String.format("%s%s", gatewayHostname, "/main/system/moduledocs/block/SymbolicAiUsersGuide.pdf");
+					log.infof(String.format("%s.HelpAction(): Document address is: %s", CLSS, address));
+					
+					// This Helpers class is pretty handy, not exactly sure how this is working...
+					Helpers.openURL(address);
+				}
+			};
+	    	
+	    	JMenuMerge symbolicAiMenu = new JMenuMerge("Symbolic Ai",BLTProperties.BUNDLE_PREFIX+".Menu.SymbolicAi");
+	    	symbolicAiMenu.addCheckBox(attachAction);
+	    	symbolicAiMenu.add(validateAction);
+	    	symbolicAiMenu.add(openUsersGuideAction);
+	    	
+	    	merge.add(symbolicAiMenu);
     	} else {
-    		removeTopLevelMenu(context.getFrame(),ALIGN_MENU_TEXT);
+    		removeTopLevelMenu(context.getFrame(), SYMBOLIC_AI_MENU_TEXT);
+    		removeTopLevelMenu(context.getFrame(), ALIGN_MENU_TEXT);
     	}
     	
     	return merge;
@@ -738,7 +786,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 										desc.setStyle(BlockStyle.ARROW);
 										desc.setPreferredHeight(40);
 										desc.setPreferredWidth(50);
-										desc.setBackground(new Color(127,127,127).getRGB()); // Dark gray
+										desc.setBackground(Color.blue.getRGB());
 										desc.setCtypeEditable(true);
 										block = new ProcessBlockView(desc);
 										block.setName(nameFromTagPath(tnode.getFullPath()));
@@ -774,7 +822,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 										desc.setBlockClass(BlockConstants.BLOCK_CLASS_SINK);
 										desc.setPreferredHeight(40);
 										desc.setPreferredWidth(50);    // Leave 6-pixel inset on top and bottom
-										desc.setBackground(new Color(127,127,127).getRGB()); // Dark gray
+										desc.setBackground(Color.blue.getRGB());
 										desc.setStyle(BlockStyle.ARROW);
 										desc.setCtypeEditable(true);
 										block = new ProcessBlockView(desc);
@@ -2140,6 +2188,20 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			block.setLocked(false);
 		}
 	}
+	
+    /**
+     * Display a popup dialog for configuration of dialog execution parameters.
+     * Run in a separate thread, as a modal dialog in-line here will freeze the UI.
+     */
+    private class ValidationDialogRunner implements Runnable {
+
+        public void run() {
+            log.debugf("%s.Launching setup dialog...",CLSS);
+            ValidationDialog validator = new ValidationDialog(context);
+            validator.pack();
+            validator.setVisible(true);
+        }
+    }
 
 	/**
 	 * Post an internals viewer for the block. The default shows

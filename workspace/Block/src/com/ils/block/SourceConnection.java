@@ -35,7 +35,7 @@ public class SourceConnection extends Input implements ProcessBlock {
 		initialize();
 		initializePrototype();
 		log = LogUtil.getLogger(getClass().getPackage().getName()+".source");
-		log.debugf("Creating a SourceConnection for the palette");
+		log.tracef("Creating a SourceConnection for the palette");
 	}
 
 	/**
@@ -47,6 +47,7 @@ public class SourceConnection extends Input implements ProcessBlock {
 	 */
 	public SourceConnection(ExecutionController ec,ProjectResourceId parent,UUID block) {
 		super(ec,parent,block);
+		log.tracef("Constructing a SourceConnection...");
 	}
 	
 	/**
@@ -63,6 +64,7 @@ public class SourceConnection extends Input implements ProcessBlock {
 	protected void initialize() {
 		super.initialize();
 		tagPathProperty.setEditable(false);
+		log.tracef("Initializing a SourceConnection...");
 	}
 	
 	/**
@@ -128,6 +130,7 @@ public class SourceConnection extends Input implements ProcessBlock {
 	 * Augment the palette prototype for this block class.
 	 */
 	protected void initializePrototype() {
+		log.tracef("In initializePrototype for a SourceConnection...");
 		prototype.setPaletteIconPath("Block/icons/palette/source.png");
 		prototype.setPaletteLabel("Source");
 		prototype.setTooltipText("Receive data from a sink of the same name");
@@ -138,7 +141,7 @@ public class SourceConnection extends Input implements ProcessBlock {
 		desc.setStyle(BlockStyle.ARROW);
 		desc.setPreferredHeight(40);
 		desc.setPreferredWidth(50);
-		desc.setBackground(new Color(127,127,127).getRGB()); // Dark gray
+		desc.setBackground(Color.blue.getRGB());
 		desc.setCtypeEditable(true);
 	}
 	

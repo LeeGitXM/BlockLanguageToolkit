@@ -93,46 +93,6 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	public static DesignerContext getContext() { return context; }
 
 
-	// Insert a menu to allow control of database and tag provider.
-    @Override
-    public MenuBarMerge getModuleMenu() {
-    	//log.infof("DesignerHook in Menu merge %s",(diagramsAttached?"TRUE":"FALSE"));
-    	MenuBarMerge merge = new MenuBarMerge(BLTProperties.MODULE_ID);  // as suggested in javadocs
-    	merge.addSeparator();
-    	merge.addSeparator();
-
-    	JMenuMerge toolsMenu = new JMenuMerge(WellKnownMenuConstants.TOOLS_MENU_NAME);
-    	Action setupAction = new AbstractAction(INTERFACE_MENU_TITLE) {
-    		private static final long serialVersionUID = 5374667367733312464L;
-    		public void actionPerformed(ActionEvent ae) {
-    			SwingUtilities.invokeLater(new SetupDialogRunner());
-    		}
-    	};
-
-    	StateChangeAction attachAction = new StateChangeAction(BLTProperties.BUNDLE_PREFIX+".Menu.Tools.Attach") {
-    		private static final long serialVersionUID = 5374556367733312464L; 
-    		public void itemStateChanged(ItemEvent event) {
-    			diagramsAttached = (event.getStateChange()==ItemEvent.SELECTED);
-    		}
-    	};
-    	attachAction.setSelected(true);
-    	toolsMenu.addCheckBox(attachAction);
-
-    	Action validateAction = new AbstractAction(VALIDATION_MENU_TITLE) {
-    		private static final long serialVersionUID = 5374667367733312464L;
-    		public void actionPerformed(ActionEvent ae) {
-    			SwingUtilities.invokeLater(new ValidationDialogRunner());
-    		}
-    	};
-
-    	toolsMenu.add(validateAction);
-
-    	merge.add(WellKnownMenuConstants.TOOLS_MENU_LOCATION, toolsMenu);
-    	merge.addSeparator();
-    	merge.addSeparator();
-    	return merge;
-    }
-
 	@Override
 	public void startup(DesignerContext ctx, LicenseState activationState) throws Exception {
 		context = ctx;
@@ -274,19 +234,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
             setup.setVisible(true);
         }
     }
-    /**
-     * Display a popup dialog for configuration of dialog execution parameters.
-     * Run in a separate thread, as a modal dialog in-line here will freeze the UI.
-     */
-    private class ValidationDialogRunner implements Runnable {
 
-        public void run() {
-            log.debugf("%s.Launching setup dialog...",CLSS);
-            ValidationDialog validator = new ValidationDialog(context);
-            validator.pack();
-            validator.setVisible(true);
-        }
-    }
 
 	public String parseChildForDiagnosisName(AbstractResourceNavTreeNode theNode, String name) {
 		String ret = "";

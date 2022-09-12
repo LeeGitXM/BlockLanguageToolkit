@@ -3,6 +3,7 @@
  */
 package com.ils.block;
 
+import java.awt.Color;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -292,7 +293,7 @@ public class LabData extends Input implements ProcessBlock {
 		desc.setStyle(BlockStyle.ARROW);
 		desc.setPreferredHeight(50);
 		desc.setPreferredWidth(70);
-		desc.setBackground(BlockConstants.BLOCK_BACKGROUND_LIGHT_ROSE);
+		desc.setBackground(Color.magenta.getRGB());
 		desc.setCtypeEditable(true);
 	}
 }

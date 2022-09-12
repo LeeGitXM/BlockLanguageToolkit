@@ -78,7 +78,7 @@ public class SinkConnection extends Output implements ProcessBlock {
 		desc.setPreferredHeight(40);
 		desc.setPreferredWidth(50);    // Leave 6-pixel inset on top and bottom
 		desc.setBlockClass(getClass().getCanonicalName());
-		desc.setBackground(new Color(127,127,127).getRGB()); // Dark gray
+		desc.setBackground(Color.blue.getRGB());
 		desc.setStyle(BlockStyle.ARROW);
 		desc.setCtypeEditable(true);
 	}
