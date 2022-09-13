@@ -8,6 +8,9 @@ import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -19,7 +22,9 @@ import java.util.Optional;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.tree.TreePath;
 
@@ -170,11 +175,14 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements Noti
 		menu.addSeparator();
 		menu.add(copyDiagramAction);
 		menu.add(renameAction);
-        menu.add(deleteAction);
+        JMenuItem deleteMenu = menu.add(deleteAction);
+        KeyStroke del = KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0);
+        deleteMenu.setAccelerator(del);
         menu.add(revertAction);
         menu.addSeparator();
         menu.add(debugAction);
         menu.add(resetAction);
+        
 	}
 	
 	/**
@@ -696,8 +704,5 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements Noti
 		//  update the name now so it doesn't cause duplicate name problems on save
 		return success;
 	}
-	
-
-
 
 }
