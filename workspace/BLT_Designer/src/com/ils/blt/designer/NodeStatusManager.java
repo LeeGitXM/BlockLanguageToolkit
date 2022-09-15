@@ -152,6 +152,16 @@ public class NodeStatusManager   {
 	}
 	
 	/**
+	 * @return the currently selected node, if any. Otherwise null.
+	 */
+	public AbstractResourceNavTreeNode getSelectedNode() {
+		for(  StatusEntry se:statusByPath.values()) {
+			AbstractResourceNavTreeNode node = se.getNode();
+			if( node.isSelected()) return node;
+		}
+		return null;
+	}
+	/**
 	 * Get the node. Null if not found. This is called in onClose() for a diagram workspace.
 	 * @param resourceId
 	 * @return the AbstractResourceNavTreeNode associated with the specified resourceId.

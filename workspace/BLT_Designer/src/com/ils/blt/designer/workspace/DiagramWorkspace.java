@@ -146,6 +146,7 @@ import com.inductiveautomation.ignition.designer.model.menu.MenuBarMerge;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractNavTreeNode;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceNavTreeNode;
 import com.inductiveautomation.ignition.designer.navtree.model.ProjectBrowserRoot;
+import com.inductiveautomation.ignition.designer.navtree.model.ResourceDeleteAction;
 import com.inductiveautomation.ignition.designer.tags.tree.dnd.NodeListTransferable;
 import com.jidesoft.action.CommandBar;
 import com.jidesoft.action.DockableBarManager;
@@ -1631,19 +1632,31 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
     	private static final long serialVersionUID = 1L;
     	public static final String ACTION_KEY = "DELETE_DIAGRAM_ACTION";
     	
-	    public DeleteDiagramAction()  {
-
-	    }
 	    public void actionPerformed(ActionEvent e) {
 	    	log.infof("%s.DeleteDiagramAction",CLSS);
-	    	/*
-	    	List<AbstractResourceNavTreeNode> nodes = new ArrayList<>();
-	    	nodes.add(node);
-	    	node.closeAndCommit();
-	    	ResourceDeleteAction deleter = new ResourceDeleteAction(context,nodes,noun);
-	    	deleter.execute();
-	    	statusManager.addResourceToDelete(resid);
-	    	*/
+	    	ProjectResourceId selectedResId = null;
+	    	AbstractResourceNavTreeNode selectedNode = statusManager.getSelectedNode();
+	    	if( selectedNode!=null && selectedNode instanceof DiagramTreeNode) selectedResId = selectedNode.getResourceId();
+
+	    	if( selectedResId!=null ) {
+	    		String name = selectedResId.getResourcePath().getName();
+	    		String[] options = {"OK","Cancel"};
+	    		int result = JOptionPane.showOptionDialog(null, String.format("OK to delete diagram %s",name),
+	    				"Delete a Diagram",JOptionPane.DEFAULT_OPTION, JOptionPane.OK_CANCEL_OPTION,
+	    				null, options, options[0]);
+	    		if(result==0) {  // OK
+	    			List<AbstractResourceNavTreeNode> nodes = new ArrayList<>();
+	    			nodes.add(selectedNode);
+	    			((DiagramTreeNode)selectedNode).closeAndCommit();
+	    			ResourceDeleteAction deleter = new ResourceDeleteAction(context,nodes,"Diagram");
+	    			deleter.execute();
+	    			statusManager.addResourceToDelete(selectedResId);
+	    		}
+	    	}
+	    	else {
+	    		String msg = "Select a diagram to delete, then press DEL";
+	    		JOptionPane.showMessageDialog(null, msg, "Note", JOptionPane.INFORMATION_MESSAGE);
+	    	}
 	    }
 		@Override
 		public Object getValue(String key) {
@@ -1873,14 +1886,29 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	    }
 	    public void actionPerformed(ActionEvent e) {
 	    	log.infof("%s.RenameDiagramAction",CLSS);
-	    	/*
-	    	List<AbstractResourceNavTreeNode> nodes = new ArrayList<>();
-	    	nodes.add(node);
-	    	node.closeAndCommit();
-	    	ResourceDeleteAction deleter = new ResourceDeleteAction(context,nodes,noun);
-	    	deleter.execute();
-	    	statusManager.addResourceToDelete(resid);
-	    	*/
+	    	ProjectResourceId selectedResId = null;
+	    	AbstractResourceNavTreeNode selectedNode = statusManager.getSelectedNode();
+	    	if( selectedNode!=null && selectedNode instanceof DiagramTreeNode) selectedResId = selectedNode.getResourceId();
+
+	    	if( selectedResId!=null ) {
+	    		String name = selectedResId.getResourcePath().getName();
+	    		String[] options = {"OK","Cancel"};
+	    		int result = JOptionPane.showOptionDialog(null, String.format("OK to rename diagram %s",name),
+	    				"Rename a diagram or folder",JOptionPane.DEFAULT_OPTION, JOptionPane.OK_CANCEL_OPTION,
+	    				null, options, options[0]);
+	    		if(result==0) {  // OK
+	    			List<AbstractResourceNavTreeNode> nodes = new ArrayList<>();
+	    			nodes.add(selectedNode);
+	    			//((DiagramTreeNode)selectedNode).closeAndCommit();
+	    			//ResourceDeleteAction deleter = new ResourceDeleteAction(context,nodes,"Diagram");
+	    			//deleter.execute();
+	    			//statusManager.addResourceToDelete(selectedResId);
+	    		}
+	    	}
+	    	else {
+	    		String msg = "Select a resource to rename, then press F2";
+	    		JOptionPane.showMessageDialog(null, msg, "Note", JOptionPane.INFORMATION_MESSAGE);
+	    	}
 	    }
 		@Override
 		public Object getValue(String key) {
