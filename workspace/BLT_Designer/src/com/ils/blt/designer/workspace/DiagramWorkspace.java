@@ -6,7 +6,6 @@ package com.ils.blt.designer.workspace;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Desktop;
 import java.awt.Frame;
 import java.awt.Graphics2D;
 import java.awt.Image;
@@ -21,13 +20,13 @@ import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Path2D;
 import java.awt.geom.Rectangle2D;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -39,8 +38,10 @@ import java.util.concurrent.CompletableFuture;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.ActionMap;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.InputMap;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -50,6 +51,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JRootPane;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -160,7 +162,7 @@ import com.jidesoft.swing.JideButton;
  */
 public class DiagramWorkspace extends AbstractBlockWorkspace 
 							  implements ResourceWorkspace, DesignableWorkspaceListener,
-							  			ChangeListener                                  {
+							  			ChangeListener                                {
 	private static final String SYMBOLIC_AI_MENU_TEXT = "Symbolic Ai";
 	private static final String ALIGN_MENU_TEXT = "Align Blocks";
 	private static final String USERS_GUIDE_TITLE = "User's Guide";
@@ -223,6 +225,9 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		propertyEditorFrame.setInitSide(DockContext.DOCK_SIDE_WEST);
 		propertyEditorFrame.setInitIndex(10);
 		propertyEditorFrame.putClientProperty("menu.text", "Symbolic AI Property Editor");
+		addBindings(propertyEditorFrame);
+ 
+		log.infof("%s.initialize: Added workspace as a key listener",CLSS);
 		frames.add(propertyEditorFrame);
 		
 		StatusBar bar = context.getStatusBar();
@@ -230,7 +235,26 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		bar.addDisplay(zoomCombo);
 		zoomCombo.setVisible(false);
 	}
-
+    //Add custom binding for key strokes when BLT window has focus.
+	// DEL - delete current diagram
+	// F2  - rename current diagram
+    private void addBindings(PropertyEditorFrame frame) {
+        InputMap inputMap = frame.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        ActionMap actionMap = frame.getActionMap();
+ 
+        // DEL - deletes the current diagram after posting a "really?" dialog
+        KeyStroke key = KeyStroke.getKeyStroke(KeyEvent.VK_DELETE,0);
+        inputMap.put(key, DeleteDiagramAction.ACTION_KEY);
+        key = KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE,0);
+        inputMap.put(key, DeleteDiagramAction.ACTION_KEY);
+        actionMap.put(DeleteDiagramAction.ACTION_KEY, new DeleteDiagramAction());
+        
+        //F2 - posts dialog to rename the current diagram
+        key = KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0);
+        inputMap.put(key, RenameDiagramAction.ACTION_KEY);
+        actionMap.put(RenameDiagramAction.ACTION_KEY, new RenameDiagramAction());
+    }
+    
 	@Override
 	public EditActionHandler getEditActionHandler() {
 		return editActionHandler;
@@ -356,7 +380,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 						menu.add(hsa);
 					}
 					else {
-						ShowSignalAction ssa = new ShowSignalAction(this,getActiveDiagram(),pbv);
+						ShowSignalAction ssa = new ShowSignalAction(pbv);
 						menu.add(ssa);
 					}
 					// Display an explanation if the block is currently TRUE or FALSE
@@ -909,7 +933,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 								}
 							}
 							else {
-								String msg = String.format("Drop rejected - UDT or inappropriate type (%s)",tnode.getDataType());
+								String msg = String.format("Drop rejected - tag is UDT, folder or other inappropriate type");
 								log.infof("%s.handleTagDrop: ",CLSS,msg);
 								JOptionPane.showMessageDialog(null, msg, "Warning", JOptionPane.INFORMATION_MESSAGE);
 							}
@@ -1115,7 +1139,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		return valid;
 	}
 	/*
-	 * @return true if the supplied tag path points to a UDT
+	 * @return true if the supplied tag path points to a UDT or a folder
 	 */
 	private boolean isUDT(TagPath tp) {
 		boolean udt = false;
@@ -1126,8 +1150,17 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		try {
 			TagConfigurationModel model = futures.get().get(0);
 			PropertySet config = model.getTagProperties();
-			TagObjectType type = (TagObjectType)config.getOrDefault(WellKnownTagProps.TagType);
-			udt = (type==TagObjectType.UdtInstance);
+			if( config.getCount()>0 ) {
+				TagObjectType type = (TagObjectType)config.getOrDefault(WellKnownTagProps.TagType);
+				if( type.equals(TagObjectType.UdtInstance) || type.equals(TagObjectType.Folder) ) {
+					udt = true;
+				}
+			}
+			// Embedded UDT's do not seem to return any properties
+			// This has been the only way I can see to differentiate
+			else {  
+				udt = true;
+			}
 		}
 		catch(Exception ex) {
 			log.infof("%s.isUDT: failed to get tag type for %s (%s)",CLSS,tp.toStringFull(),ex.getMessage());
@@ -1589,9 +1622,51 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		return inBounds;
 	}
 
-
-	
 	/**
+	 * 
+	 * Determine the currently selected diagram and delete it
+	 *
+	 */
+    private class DeleteDiagramAction implements Action {
+    	private static final long serialVersionUID = 1L;
+    	public static final String ACTION_KEY = "DELETE_DIAGRAM_ACTION";
+    	
+	    public DeleteDiagramAction()  {
+
+	    }
+	    public void actionPerformed(ActionEvent e) {
+	    	log.infof("%s.DeleteDiagramAction",CLSS);
+	    	/*
+	    	List<AbstractResourceNavTreeNode> nodes = new ArrayList<>();
+	    	nodes.add(node);
+	    	node.closeAndCommit();
+	    	ResourceDeleteAction deleter = new ResourceDeleteAction(context,nodes,noun);
+	    	deleter.execute();
+	    	statusManager.addResourceToDelete(resid);
+	    	*/
+	    }
+		@Override
+		public Object getValue(String key) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+		@Override
+		public void putValue(String key, Object value) {
+			// TODO Auto-generated method stub
+			
+		}
+		@Override
+		public void setEnabled(boolean b) {}
+		@Override
+		public boolean isEnabled() {
+			return true;
+		}
+		@Override
+		public void addPropertyChangeListener(PropertyChangeListener listener) {}
+		@Override
+		public void removePropertyChangeListener(PropertyChangeListener listener) {}
+	}
+    /**
 	 * Paint connections. The cross-section is dependent on the connection type.
 	 */
 	private class DiagramConnectionPainter extends ArrowConnectionPainter {
@@ -1783,6 +1858,50 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			ProcessDiagramView pdv = getActiveDiagram();
 			requestHandler.propagateBlockState(pdv.getResourceId(),block.getId().toString());
 		}
+	}
+	/**
+	 * 
+	 * Determine the currently selected diagram and delete it
+	 *
+	 */
+    private class RenameDiagramAction implements Action {
+    	private static final long serialVersionUID = 1L;
+    	public static final String ACTION_KEY = "RENAME_DIAGRAM_ACTION";
+    	
+	    public RenameDiagramAction()  {
+
+	    }
+	    public void actionPerformed(ActionEvent e) {
+	    	log.infof("%s.RenameDiagramAction",CLSS);
+	    	/*
+	    	List<AbstractResourceNavTreeNode> nodes = new ArrayList<>();
+	    	nodes.add(node);
+	    	node.closeAndCommit();
+	    	ResourceDeleteAction deleter = new ResourceDeleteAction(context,nodes,noun);
+	    	deleter.execute();
+	    	statusManager.addResourceToDelete(resid);
+	    	*/
+	    }
+		@Override
+		public Object getValue(String key) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+		@Override
+		public void putValue(String key, Object value) {
+			// TODO Auto-generated method stub
+			
+		}
+		@Override
+		public void setEnabled(boolean b) {}
+		@Override
+		public boolean isEnabled() {
+			return true;
+		}
+		@Override
+		public void addPropertyChangeListener(PropertyChangeListener listener) {}
+		@Override
+		public void removePropertyChangeListener(PropertyChangeListener listener) {}
 	}
 	/**
 	 * Trigger the propagation method of blocks connected to the input of the currently
@@ -2151,12 +2270,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	private class ShowSignalAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
 		private final ProcessBlockView block;
-		private final ProcessDiagramView diagram;
-		private final DiagramWorkspace workspace;
-		public ShowSignalAction(DiagramWorkspace wksp,ProcessDiagramView diag,ProcessBlockView blk)  {
-			super(PREFIX+".ShowSignal",IconUtil.getIcon("trafficlight_green"));  // preferences
-			this.workspace = wksp;
-			this.diagram = diag;
+		public ShowSignalAction(ProcessBlockView blk)  {
+			super(PREFIX+".ShowSignal",IconUtil.getIcon("trafficlight_green"));  // preferences;
 			this.block = blk;
 		}
 
@@ -2347,5 +2462,4 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		}
 		updateBackgroundForDiagramState();
 	}
-   
 }

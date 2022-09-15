@@ -137,7 +137,6 @@ public class NodeStatusManager   {
 		log.debugf("%s.removeResource(%s)",CLSS,resourceId.getResourcePath().getPath().toString());
 		List<String> pathsToDelete = nodeDescendants(resourceId);
 		for(String rp:pathsToDelete) {
-			StatusEntry se = statusByPath.get(rp);
 			statusByPath.remove(rp);
 		}
 	}

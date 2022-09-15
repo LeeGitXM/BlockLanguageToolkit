@@ -9,8 +9,6 @@ import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -703,6 +701,6 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements Noti
 		}
 		//  update the name now so it doesn't cause duplicate name problems on save
 		return success;
+		
 	}
-
 }
