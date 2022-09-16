@@ -683,6 +683,9 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements Noti
 	public void watermarkChange(String newWatermark) {}
 
 
+	public void rename() {
+		renameAction.actionPerformed(new ActionEvent(this,0,"Rename"));
+	}
 	
 	/**
 	 * Do it.  (Note this will change diagnosis names to avoid collisions).

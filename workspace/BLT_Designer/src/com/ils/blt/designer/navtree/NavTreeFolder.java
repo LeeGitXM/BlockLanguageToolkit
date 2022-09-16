@@ -41,7 +41,6 @@ import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.SerializableFolder;
-import com.ils.blt.common.serializable.SerializableNodeRenameHandler;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.NodeStatusManager;
@@ -95,7 +94,6 @@ public class NavTreeFolder extends FolderNode implements ProjectResourceListener
 	private final StartAction startAction = new StartAction();
 	private final StopAction stopAction = new StopAction();
 	private final DiagramWorkspace workspace;
-	private final SerializableNodeRenameHandler renameHandler;
 	private final NodeStatusManager statusManager;
 	private final CreateFolderAction folderCreateAction;
 	private final ApplicationRequestHandler requestHandler;
@@ -120,7 +118,6 @@ public class NavTreeFolder extends FolderNode implements ProjectResourceListener
 		this.context = ctx;
 		this.cpHandler = new CopyPasteHandler(ctx,this);
 		this.requestHandler = new ApplicationRequestHandler();
-		this.renameHandler = new SerializableNodeRenameHandler();
 		this.children = null;
 		this.childrenLoaded = false;
 		this.parent = null;
@@ -431,6 +428,10 @@ public class NavTreeFolder extends FolderNode implements ProjectResourceListener
 		return sdiag;
 	}
 
+	public void rename() {
+		renameAction.actionPerformed(new ActionEvent(this,0,"Rename"));
+	}
+	
 	/**
 	 * Do it.  (Note this will diagnosis names to avoid collisions).
 	 * @return true if the conversion was a success

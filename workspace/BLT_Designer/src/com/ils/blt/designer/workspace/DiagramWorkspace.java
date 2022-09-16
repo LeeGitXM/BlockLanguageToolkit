@@ -93,6 +93,7 @@ import com.ils.blt.designer.editor.BlockEditConstants;
 import com.ils.blt.designer.editor.BlockPropertyEditor;
 import com.ils.blt.designer.editor.PropertyEditorFrame;
 import com.ils.blt.designer.navtree.DiagramTreeNode;
+import com.ils.blt.designer.navtree.NavTreeFolder;
 import com.inductiveautomation.factorypmi.application.script.builtin.ClientSystemUtilities;
 import com.inductiveautomation.ignition.client.designable.DesignableContainer;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
@@ -252,8 +253,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
         
         //F2 - posts dialog to rename the current diagram
         key = KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0);
-        inputMap.put(key, RenameDiagramAction.ACTION_KEY);
-        actionMap.put(RenameDiagramAction.ACTION_KEY, new RenameDiagramAction());
+        inputMap.put(key, RenameResourceAction.ACTION_KEY);
+        actionMap.put(RenameResourceAction.ACTION_KEY, new RenameResourceAction());
     }
     
 	@Override
@@ -801,7 +802,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 						if( getSelectedContainer()!=null ) {
 							ProcessBlockView block = null;
 							TagPath tp = tnode.getFullPath();
-							if( !isUDT(tp) && isValidDropType(tnode.getDataType()) ) {
+							if( !isUDT(tp) && !isFolder(tp) && isValidDropType(tnode.getDataType()) ) {
 								boolean isStandardFolder = BusinessRules.isStandardConnectionsFolder(tp);
 								BlockDescriptor desc = new BlockDescriptor();
 								// Sinks to right,sources to the left
@@ -972,8 +973,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 						NodeBrowseInfo tnode = (NodeBrowseInfo) tagNodeArr.get(0);
 						TagPath tp = tnode.getFullPath();
 						log.infof("%s.c: tag %s",CLSS,tnode.getFullPath());
-						if( isUDT(tp) || !isValidDropType(tnode.getDataType()) ) {
-							String msg = String.format("Drop rejected - UDT or inappropriate type (%s)",tnode.getDataType());
+						if( isUDT(tp) || isFolder(tp) || !isValidDropType(tnode.getDataType()) ) {
+							String msg = String.format("Drop rejected - UDT, folder or inappropriate type (%s)",tnode.getDataType());
 							log.infof("%s.handleTagOnBlockDrop: ",CLSS,msg);
 							JOptionPane.showMessageDialog(null, msg, "Warning", JOptionPane.INFORMATION_MESSAGE);
 							return;
@@ -1139,8 +1140,29 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		}
 		return valid;
 	}
+	private boolean isFolder(TagPath tp) {
+		boolean folder = false;
+		List<TagPath> tags = new ArrayList<>();
+		tags.add(tp);
+		ClientTagManager tmgr = context.getTagManager();
+		CompletableFuture<List<TagConfigurationModel>> futures = tmgr.getTagConfigsAsync(tags,false,true);
+		try {
+			TagConfigurationModel model = futures.get().get(0);
+			PropertySet config = model.getTagProperties();
+			if( config.getCount()>0 ) {
+				TagObjectType type = (TagObjectType)config.getOrDefault(WellKnownTagProps.TagType);
+				if( type.equals(TagObjectType.Folder) ) {
+					folder = true;
+				}
+			}
+		}
+		catch(Exception ex) {
+			log.infof("%s.isFolder: failed to get tag type for %s (%s)",CLSS,tp.toStringFull(),ex.getMessage());
+		}
+		return folder;
+	}
 	/*
-	 * @return true if the supplied tag path points to a UDT or a folder
+	 * @return true if the supplied tag path points to a UDT
 	 */
 	private boolean isUDT(TagPath tp) {
 		boolean udt = false;
@@ -1153,7 +1175,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			PropertySet config = model.getTagProperties();
 			if( config.getCount()>0 ) {
 				TagObjectType type = (TagObjectType)config.getOrDefault(WellKnownTagProps.TagType);
-				if( type.equals(TagObjectType.UdtInstance) || type.equals(TagObjectType.Folder) ) {
+				if( type.equals(TagObjectType.UdtInstance) ) {
 					udt = true;
 				}
 			}
@@ -1877,33 +1899,19 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	 * Determine the currently selected diagram and delete it
 	 *
 	 */
-    private class RenameDiagramAction implements Action {
+    private class RenameResourceAction implements Action {
     	private static final long serialVersionUID = 1L;
-    	public static final String ACTION_KEY = "RENAME_DIAGRAM_ACTION";
-    	
-	    public RenameDiagramAction()  {
+    	public static final String ACTION_KEY = "RENAME_RESOURCE_ACTION";
 
-	    }
 	    public void actionPerformed(ActionEvent e) {
 	    	log.infof("%s.RenameDiagramAction",CLSS);
-	    	ProjectResourceId selectedResId = null;
-	    	AbstractResourceNavTreeNode selectedNode = statusManager.getSelectedNode();
-	    	if( selectedNode!=null && selectedNode instanceof DiagramTreeNode) selectedResId = selectedNode.getResourceId();
 
-	    	if( selectedResId!=null ) {
-	    		String name = selectedResId.getResourcePath().getName();
-	    		String[] options = {"OK","Cancel"};
-	    		int result = JOptionPane.showOptionDialog(null, String.format("OK to rename diagram %s",name),
-	    				"Rename a diagram or folder",JOptionPane.DEFAULT_OPTION, JOptionPane.OK_CANCEL_OPTION,
-	    				null, options, options[0]);
-	    		if(result==0) {  // OK
-	    			List<AbstractResourceNavTreeNode> nodes = new ArrayList<>();
-	    			nodes.add(selectedNode);
-	    			//((DiagramTreeNode)selectedNode).closeAndCommit();
-	    			//ResourceDeleteAction deleter = new ResourceDeleteAction(context,nodes,"Diagram");
-	    			//deleter.execute();
-	    			//statusManager.addResourceToDelete(selectedResId);
-	    		}
+	    	AbstractResourceNavTreeNode selectedNode = statusManager.getSelectedNode();
+	    	if( selectedNode!=null && selectedNode instanceof DiagramTreeNode) {
+	    		((DiagramTreeNode)selectedNode).rename();
+	    	}
+	    	else if( selectedNode!=null && selectedNode instanceof NavTreeFolder) {
+	    		((NavTreeFolder)selectedNode).rename();
 	    	}
 	    	else {
 	    		String msg = "Select a resource to rename, then press F2";

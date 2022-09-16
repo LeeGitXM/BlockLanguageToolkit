@@ -3,7 +3,6 @@
  */
 package com.ils.blt.designer;
 
-import java.awt.Color;
 import java.io.IOException;
 import java.util.Map;
 
@@ -35,7 +34,6 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignableContainer;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.model.SaveContext;
-import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceNavTreeNode;
 import com.inductiveautomation.ignition.designer.project.DesignableProject;
 
 
@@ -155,12 +153,14 @@ public class ResourceSaveManager {
 					if( pendingName!=null && !pendingName.equalsIgnoreCase(name)) {
 						stringPath = StringPath.extend(stringPath.getParentPath(),pendingName);
 						respath = new ResourcePath(BLTProperties.DIAGRAM_RESOURCE_TYPE,stringPath);
+						view.setDiagramName(pendingName);
 					}
 					builder.setResourcePath(respath);
 					SerializableDiagram sd = view.createSerializableRepresentation();
 					sd.setPath(respath.getFolderPath());
 					builder.putData(sd.serialize());
 					res = builder.build();
+					statusManager.clearChangeMarkers(res.getResourceId());  // Clear new name, if applicable
 					project.createOrModify(res);
 					Script script = notifier.createScript(ScriptConstants.SAVE_NOTIFICATION);
 					notifier.runScript(context.getScriptManager(), script, resid.getFolderPath(),new String(sd.serialize()));

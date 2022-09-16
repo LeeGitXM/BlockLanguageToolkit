@@ -7,8 +7,6 @@ package com.ils.blt.common.serializable;
 import java.util.HashMap;
 import java.util.UUID;
 
-import com.inductiveautomation.ignition.common.StringPath;
-
 /**
  *  This class updates resource paths of SerializableNode that have been copied or moved, and,
  *  in the special case of a diagram, handles  re-generating the UUIDs of the blocks within
