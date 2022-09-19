@@ -1,8 +1,6 @@
 package com.ils.blt.gateway.wicket;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
@@ -19,7 +17,6 @@ import org.apache.wicket.extensions.markup.html.repeater.tree.table.TreeColumn;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.form.Form;
-import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.markup.html.panel.Panel;
@@ -63,9 +60,7 @@ public class ToolkitStatusPanel extends Panel {
         	@Override
         	public void onSubmit() {
         		ProcessNodeSynchronizer sync = new ProcessNodeSynchronizer();
-        		//sync.removeExcessNodes();
-        		sync.createMissingResources();
-        		sync.removeOrphans();
+        		sync.removeExcessNodes();
         	}
         });
         
@@ -114,7 +109,7 @@ public class ToolkitStatusPanel extends Panel {
     }
     
     
-    // Create the columns for our tabluar view
+    // Create the columns for our tabular view
     // Node folder, name, state, transitions
     // Hierarchy is project-application-(folder)-family-(folder)-diagram-block
     private List<IColumn<ProcessNode, String>> createColumns() {

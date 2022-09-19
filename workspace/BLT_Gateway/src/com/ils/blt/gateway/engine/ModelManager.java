@@ -492,6 +492,8 @@ public class ModelManager implements ProjectListener  {
 			deleteResource(node.getResourceId());
 		}
 		root.removeProject(projectName);
+		ProcessNodeSynchronizer pns = new ProcessNodeSynchronizer();
+		pns.removeExcessNodes();   // Remove diagrams that do not correspond to a resource
 	}
 	/**
 	 * Handle project resource updates of type model. NOTE: The Ignition gateway interface does not
@@ -509,6 +511,7 @@ public class ModelManager implements ProjectListener  {
 		if(DEBUG) log.infof("%s.projectUpdated: %s",CLSS,proj.getName());
 		
 		List<ProjectResource> resources = proj.getResources();
+		ProcessNodeSynchronizer pns = new ProcessNodeSynchronizer();
 		if( proj.isEnabled() ) {
 			new Thread(new Runnable() {
 				@Override
@@ -521,6 +524,7 @@ public class ModelManager implements ProjectListener  {
 							analyzeResource(res,false);  // Not startup
 						}
 					}
+					pns.removeExcessNodes();   // Remove diagrams that do not correspond to a resource (e.g. due to a rename)
 				}
 			}).start(); 
 		}
@@ -533,6 +537,7 @@ public class ModelManager implements ProjectListener  {
 					deleteResource(res.getResourceId());
 				}
 			}
+			pns.removeExcessNodes();   // Remove diagrams that do not correspond to a resource
 		}
 	}
 	

@@ -19,6 +19,8 @@ import javax.swing.border.MatteBorder;
 import org.apache.commons.lang3.StringUtils;
 
 import com.google.common.base.Preconditions;
+import com.ils.blt.common.DiagramState;
+import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.designer.NodeStatusManager;
 import com.inductiveautomation.ignition.client.IgnitionLookAndFeel;
 import com.inductiveautomation.ignition.client.util.action.BaseAction;
@@ -153,10 +155,21 @@ public class NewResourceDialog extends JDialog {
 
 				builder.setProjectName(project.getName())
 				.setResourcePath(newPath);
+				
 
 				ProjectResource newResource = builder.build();
+				// If diagram, then reset name and path in embedded object
+				if( !newResource.isFolder() ) {
+					SerializableDiagram sd = new SerializableDiagram();
+					sd.setName(newPath.getName());
+					sd.setState(DiagramState.DISABLED);
+					sd.setPath(newPath.getFolderPath());
+					builder.putData(sd.serialize());
+					newResource = builder.build();
+				}
+				final ProjectResource newres = newResource;
 				project.createResource(newResource);
-				EventQueue.invokeLater(() -> NewResourceDialog.this.onAfterCreated.accept(newResource.getResourceId()));
+				EventQueue.invokeLater(() -> NewResourceDialog.this.onAfterCreated.accept(newres.getResourceId()));
 				NewResourceDialog.this.close();
 			} 
 			catch (ResourceNamingException|RuntimeException ex) {
@@ -165,9 +178,6 @@ public class NewResourceDialog extends JDialog {
 			} 
 		}
 	}
-
-
-
 
 	public static NewResourceDialogBuilder newBuilder() { return new NewResourceDialogBuilder(); }
 

@@ -149,7 +149,6 @@ public class ResourceSaveManager {
 					// If the diagram is open, update its appearance.
 					statusManager.clearChangeMarkers(resid);
 
-
 					if( pendingName!=null && !pendingName.equalsIgnoreCase(name)) {
 						stringPath = StringPath.extend(stringPath.getParentPath(),pendingName);
 						respath = new ResourcePath(BLTProperties.DIAGRAM_RESOURCE_TYPE,stringPath);

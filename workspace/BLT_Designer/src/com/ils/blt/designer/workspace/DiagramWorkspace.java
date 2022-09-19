@@ -227,7 +227,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		propertyEditorFrame.setInitSide(DockContext.DOCK_SIDE_WEST);
 		propertyEditorFrame.setInitIndex(10);
 		propertyEditorFrame.putClientProperty("menu.text", "Symbolic AI Property Editor");
-		addBindings(propertyEditorFrame);
+		//addBindings(propertyEditorFrame);  // Give up on key bindings, too difficult to determine context 
  
 		log.infof("%s.initialize: Added workspace as a key listener",CLSS);
 		frames.add(propertyEditorFrame);
