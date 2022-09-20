@@ -22,6 +22,7 @@ import com.google.common.base.Preconditions;
 import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.designer.NodeStatusManager;
+import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.inductiveautomation.ignition.client.IgnitionLookAndFeel;
 import com.inductiveautomation.ignition.client.util.action.BaseAction;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
@@ -49,10 +50,10 @@ public class NewResourceDialog extends JDialog {
 	private final CreateAction createAction;
 	private final ResourcePath folder;
 	private final Consumer<ProjectResourceBuilder> builderConsumer;
-	private final Consumer<ProjectResourceId> onAfterCreated;
+	private final Consumer<ProjectResource> onAfterCreated;
 
 	public NewResourceDialog(final DesignerContext ctx,final ResourcePath folder, Consumer<ProjectResourceBuilder> builderConsumer, String title, String defaultName, String actionText, 
-			final Predicate<String> namePredicate, Consumer<ProjectResourceId> onAfterCreated, JComponent extraComponent) {
+			final Predicate<String> namePredicate, Consumer<ProjectResource> onAfterCreated, JComponent extraComponent) {
 		super(ctx.getFrame(), title);
 		setDefaultCloseOperation(2);
 
@@ -160,16 +161,15 @@ public class NewResourceDialog extends JDialog {
 				ProjectResource newResource = builder.build();
 				// If diagram, then reset name and path in embedded object
 				if( !newResource.isFolder() ) {
-					SerializableDiagram sd = new SerializableDiagram();
+					SerializableDiagram sd = SerializableDiagram.deserializeDiagram(newResource);
 					sd.setName(newPath.getName());
-					sd.setState(DiagramState.DISABLED);
 					sd.setPath(newPath.getFolderPath());
 					builder.putData(sd.serialize());
 					newResource = builder.build();
 				}
 				final ProjectResource newres = newResource;
 				project.createResource(newResource);
-				EventQueue.invokeLater(() -> NewResourceDialog.this.onAfterCreated.accept(newres.getResourceId()));
+				EventQueue.invokeLater(() -> NewResourceDialog.this.onAfterCreated.accept(newres));
 				NewResourceDialog.this.close();
 			} 
 			catch (ResourceNamingException|RuntimeException ex) {
@@ -191,9 +191,16 @@ public class NewResourceDialog extends JDialog {
 		private String defaultName = "New Resource";
 		private Predicate<String> namePredicate = ResourceUtil::isLegalName;
 		// When done update the node for "changed"
-		private Consumer<ProjectResourceId> onAfterCreated = id -> {
+		private Consumer<ProjectResource> onAfterCreated = res -> {
 			NodeStatusManager statusManager = NodeStatusManager.getInstance();
+			ProjectResourceId id = res.getResourceId();
 			statusManager.setPendingName(id, id.getResourcePath().getName());
+			if( !res.isFolder() ) {
+				SerializableDiagram sd = SerializableDiagram.deserializeDiagram(res);
+				ProcessDiagramView view = new ProcessDiagramView(context,id,sd);
+				statusManager.setPendingView(id, view);
+				statusManager.setPendingState(id, sd.getState());
+			}
 			statusManager.getNode(id).select();
 		};
 		JComponent extraComponent = null;
@@ -213,7 +220,7 @@ public class NewResourceDialog extends JDialog {
 			return this;
 		}
 
-		public NewResourceDialogBuilder setOnAfterCreated(Consumer<ProjectResourceId> onAfterCreated) {
+		public NewResourceDialogBuilder setOnAfterCreated(Consumer<ProjectResource> onAfterCreated) {
 			this.onAfterCreated = onAfterCreated;
 			return this;
 		}
