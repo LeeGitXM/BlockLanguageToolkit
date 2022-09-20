@@ -802,7 +802,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 						if( getSelectedContainer()!=null ) {
 							ProcessBlockView block = null;
 							TagPath tp = tnode.getFullPath();
-							if( !isUDT(tp) && !isFolder(tp) && isValidDropType(tnode.getDataType()) ) {
+							log.infof("%s.handleTagDrop() with %s", CLSS, tnode.getFullPath().toStringFull());
+							if( isAtomic(tp) && isValidDropType(tnode.getDataType()) ) {
 								boolean isStandardFolder = BusinessRules.isStandardConnectionsFolder(tp);
 								BlockDescriptor desc = new BlockDescriptor();
 								// Sinks to right,sources to the left
@@ -972,7 +973,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 						ProcessDiagramView diagram = (ProcessDiagramView)container.getModel();
 						NodeBrowseInfo tnode = (NodeBrowseInfo) tagNodeArr.get(0);
 						TagPath tp = tnode.getFullPath();
-						log.infof("%s.c: tag %s",CLSS,tnode.getFullPath());
+						log.infof("%s.handleTagOnBlockDrop(): tag %s", CLSS, tnode.getFullPath());
 						if( isUDT(tp) || isFolder(tp) || !isValidDropType(tnode.getDataType()) ) {
 							String msg = String.format("Drop rejected - UDT, folder or inappropriate type (%s)",tnode.getDataType());
 							log.infof("%s.handleTagOnBlockDrop: ",CLSS,msg);
@@ -1109,6 +1110,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	}
 	
 	public String nameFromTagPath(TagPath tp) {
+		log.infof("nameFromTagPath(): %s", tp.toStringFull());
 		String path = tp.toStringFull();
 		int index = path.indexOf("]");
 		String source = path.substring(0,index+1);
@@ -1162,6 +1164,32 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		return folder;
 	}
 	/*
+	 * @return true if the supplied tag path points to an atomic tag
+	 */
+	private boolean isAtomic(TagPath tp) {
+		boolean atomic = false;
+		List<TagPath> tags = new ArrayList<>();
+		tags.add(tp);
+		ClientTagManager tmgr = context.getTagManager();
+		CompletableFuture<List<TagConfigurationModel>> futures = tmgr.getTagConfigsAsync(tags,false,true);
+		try {
+			TagConfigurationModel model = futures.get().get(0);
+			if (model.getType() == TagObjectType.AtomicTag) {
+				//log.infof("It IS an atomic tag!");
+				atomic = true;
+			}
+			else {
+				atomic = false;
+				//log.infof("It is **NOT** an atomic tag!");
+			}
+		}		
+		catch(Exception ex) {
+			log.infof("%s.isAtomic: failed to get tag type for %s (%s)", CLSS, tp.toStringFull(), ex.getMessage());
+		}
+		return atomic;
+	}
+	
+	/*
 	 * @return true if the supplied tag path points to a UDT
 	 */
 	private boolean isUDT(TagPath tp) {
@@ -1172,18 +1200,17 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		CompletableFuture<List<TagConfigurationModel>> futures = tmgr.getTagConfigsAsync(tags,false,true);
 		try {
 			TagConfigurationModel model = futures.get().get(0);
-			PropertySet config = model.getTagProperties();
-			if( config.getCount()>0 ) {
-				TagObjectType type = (TagObjectType)config.getOrDefault(WellKnownTagProps.TagType);
-				if( type.equals(TagObjectType.UdtInstance) ) {
-					udt = true;
-				}
-			}
-			// Embedded UDT's do not seem to return any properties
-			// This has been the only way I can see to differentiate
-			else {  
+			//TagObjectType tagType = model.getType();
+			//log.infof("Tag Type: %s", tagType.toString());
+			if (model.getType() == TagObjectType.UdtInstance) {
 				udt = true;
+				//log.infof("It is a UDT");
 			}
+			else {
+				udt = false;
+				//log.infof("It is **NOT** a UDT");
+			}
+
 		}
 		catch(Exception ex) {
 			log.infof("%s.isUDT: failed to get tag type for %s (%s)",CLSS,tp.toStringFull(),ex.getMessage());
