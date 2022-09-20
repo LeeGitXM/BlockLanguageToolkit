@@ -89,7 +89,6 @@ public class NavTreeFolder extends FolderNode implements ProjectResourceListener
 	private static final String PREFIX = BLTProperties.BUNDLE_PREFIX;  // Required for some defaults
 	private final static LoggerEx log = LogUtil.getLogger(NavTreeFolder.class.getPackageName());
 	protected final DesignerContext context;
-	private DiagramState state = DiagramState.ACTIVE;  // Used for Applications and Families
 	private final PasteAction pasteAction;
 	private final StartAction startAction = new StartAction();
 	private final StopAction stopAction = new StopAction();

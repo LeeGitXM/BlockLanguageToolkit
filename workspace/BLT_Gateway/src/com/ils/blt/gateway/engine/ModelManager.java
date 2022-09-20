@@ -492,6 +492,8 @@ public class ModelManager implements ProjectListener  {
 			deleteResource(node.getResourceId());
 		}
 		root.removeProject(projectName);
+		ProcessNodeSynchronizer pns = new ProcessNodeSynchronizer();
+		pns.removeExcessNodes();   // Remove diagrams that do not correspond to a resource
 	}
 	/**
 	 * Handle project resource updates of type model. NOTE: The Ignition gateway interface does not
@@ -509,6 +511,7 @@ public class ModelManager implements ProjectListener  {
 		if(DEBUG) log.infof("%s.projectUpdated: %s",CLSS,proj.getName());
 		
 		List<ProjectResource> resources = proj.getResources();
+		ProcessNodeSynchronizer pns = new ProcessNodeSynchronizer();
 		if( proj.isEnabled() ) {
 			new Thread(new Runnable() {
 				@Override
@@ -521,6 +524,7 @@ public class ModelManager implements ProjectListener  {
 							analyzeResource(res,false);  // Not startup
 						}
 					}
+					pns.removeExcessNodes();   // Remove diagrams that do not correspond to a resource (e.g. due to a rename)
 				}
 			}).start(); 
 		}
@@ -533,6 +537,7 @@ public class ModelManager implements ProjectListener  {
 					deleteResource(res.getResourceId());
 				}
 			}
+			pns.removeExcessNodes();   // Remove diagrams that do not correspond to a resource
 		}
 	}
 	
@@ -682,39 +687,41 @@ public class ModelManager implements ProjectListener  {
 	 * @param resourceId root of the resource tree to delete.
 	 */
 	public void deleteResource(ProjectResourceId resourceId) {
-		if(DEBUG) log.infof("%s.deleteResource: %s:%s",CLSS,resourceId.getProjectName(),resourceId.getResourcePath().getPath());
+		if( resourceId.getResourcePath()!=null) {
+			if(DEBUG) log.infof("%s.deleteResource: %s:%s",CLSS,resourceId.getProjectName(),resourceId.getResourcePath().getPath());
 
-		ProcessNode head = nodesByResourcePath.get(resourceId.getResourcePath());
-		if( head!=null ) {
-			List<ProcessNode> nodesToDelete = new ArrayList<>();
-			head.collectDescendants(nodesToDelete);  // "head" is in the list
-			for(ProcessNode node:nodesToDelete ) {
-				if( node instanceof ProcessDiagram ) {
-					ProcessDiagram diagram = (ProcessDiagram)node;
+			ProcessNode head = nodesByResourcePath.get(resourceId.getResourcePath());
+			if( head!=null ) {
+				List<ProcessNode> nodesToDelete = new ArrayList<>();
+				head.collectDescendants(nodesToDelete);  // "head" is in the list
+				for(ProcessNode node:nodesToDelete ) {
+					if( node instanceof ProcessDiagram ) {
+						ProcessDiagram diagram = (ProcessDiagram)node;
 
-					for(ProcessBlock block:diagram.getProcessBlocks()) {
-						block.stop();
-						for(BlockProperty prop:block.getProperties()) {
-							controller.removeSubscription(block, prop);
-						}
-						block.onDelete();
-						// If this is a source connection, delete its associated tag
-						if(block.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK)) {
-							BlockProperty prop = block.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
-							if(DEBUG) log.infof("%s.deleteResource:Deleting a sink (%s)",CLSS,resourceId.getResourcePath().getPath());
+						for(ProcessBlock block:diagram.getProcessBlocks()) {
+							block.stop();
+							for(BlockProperty prop:block.getProperties()) {
+								controller.removeSubscription(block, prop);
+							}
+							block.onDelete();
+							// If this is a source connection, delete its associated tag
+							if(block.getClassName().equals(BlockConstants.BLOCK_CLASS_SINK)) {
+								BlockProperty prop = block.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
+								if(DEBUG) log.infof("%s.deleteResource:Deleting a sink (%s)",CLSS,resourceId.getResourcePath().getPath());
+							}
 						}
 					}
-				}
-				nodesByResourcePath.remove(resourceId.getResourcePath());
-				
-				if( node.getResourceId()!=null && node.getResourceId().getResourcePath()!=null ) {
-					ProcessNode parent = nodesByResourcePath.get(node.getResourceId().getResourcePath());
-					if( parent!=null ) {
-						parent.removeChild(node);
+					nodesByResourcePath.remove(resourceId.getResourcePath());
+
+					if( node.getResourceId()!=null && node.getResourceId().getResourcePath()!=null ) {
+						ProcessNode parent = nodesByResourcePath.get(node.getResourceId().getResourcePath());
+						if( parent!=null ) {
+							parent.removeChild(node);
+						}
 					}
+					// Finally remove from the node maps
+					nodesByResourcePath.remove(node.getResourceId().getResourcePath());
 				}
-				// Finally remove from the node maps
-				nodesByResourcePath.remove(node.getResourceId().getResourcePath());
 			}
 		}
 	}
