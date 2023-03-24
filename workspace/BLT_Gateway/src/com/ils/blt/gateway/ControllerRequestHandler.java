@@ -422,7 +422,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	} 
 	@Override
 	public synchronized String getBlockState(ProjectResourceId diagramId, String blockName) {
-		String state = "UNKNOWN";
+		String state = "NOTFOUND";
 		try {
 			ProcessDiagram diagram = controller.getDiagram(diagramId);
 			for(ProcessBlock block:diagram.getProcessBlocks()) {

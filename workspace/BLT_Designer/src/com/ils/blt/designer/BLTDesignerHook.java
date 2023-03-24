@@ -324,12 +324,12 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		for(ProjectResource pr:resources) {
 			ResourceType rt = pr.getResourceType();
 			if( pr.getResourcePath().getPath()==null ) {
-				log.infof("    %s: null path type(%s,%s)",pr.getResourceName(),(rt==null?"":rt.getModuleId()),(rt==null?"":rt.getTypeId()));
+				log.tracef("    %s: null path type(%s,%s)",pr.getResourceName(),(rt==null?"":rt.getModuleId()),(rt==null?"":rt.getTypeId()));
 			}
 			else {
 				String parent = "null";
 				if(pr.getResourcePath().getParentPath()!=null ) parent = pr.getResourcePath().getParentPath();
-				log.infof("    %s:%s%s\t, parent=%s, type(%s,%s)",
+				log.tracef("    %s:%s%s\t, parent=%s, type(%s,%s)",
 						pr.getResourceName(),
 						pr.getResourcePath().getPath().toString(),
 						(pr.isFolder()?" (folder)":""),
@@ -337,10 +337,10 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 						(rt==null?"":rt.getModuleId()),(rt==null?"":rt.getTypeId()) );
 				Map<String,JsonElement> attributes = pr.getAttributes();
 				for(String key:attributes.keySet()) {
-					log.infof("        %s (%s)",key,attributes.get(key).toString());
+					log.tracef("        %s (%s)",key,attributes.get(key).toString());
 				}
 			}
 		}
-		log.infof("%s.listProjectResources: ===== Complete ======",CLSS);
+		log.tracef("%s.listProjectResources: ===== Complete ======",CLSS);
 	}
 }

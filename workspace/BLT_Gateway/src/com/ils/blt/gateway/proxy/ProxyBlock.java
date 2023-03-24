@@ -139,15 +139,22 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	@Override
 	public synchronized void setProperty(String name, Object obj) {
 		BlockProperty prop = getProperty(name);
-		log.infof("Setting property named: %s", name);
+		log.tracef("Setting property named: %s", name);
 		if( prop!=null ) {
 			prop.setValue(obj);
 			
 			ScriptManager mgr = context.getProjectManager().getProjectScriptManager(getProjectName());
 			if (mgr == null){
-				log.infof("********* BLT detected a null script manager ***********");
-				log.infof("%s", this.getClassName());
-				log.infof("%s", getProjectName());
+				/**
+				 * I'm not sure what this is all about.  Not sure what type of blocks this is called for
+				 * On startup, it IS called for arithmetic blocks; but we get into here because for some reason
+				 * the PROJECT returned by getProjectName() is global which is absolutely incorrect.  All BLT 
+				 * resources are part of a project.  I guess that getting a script manager by the context is working,
+				 * I'm not sure we don't just do that from the start!
+				 */
+				log.tracef("BLT detected a null script manager...");
+				log.tracef("Class: %s", this.getClassName());
+				log.tracef("Project: %s", getProjectName());
 				mgr = context.getScriptManager();
 			}
 			delegate.setBlockProperty(mgr,this,prop);

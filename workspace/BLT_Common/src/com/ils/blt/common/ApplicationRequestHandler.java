@@ -228,11 +228,11 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 */
 	@Override
 	public String getBlockState(ProjectResourceId diagramId, String blockName) {
-		String state = "UNKNOWN";
+		String state = "ERROR";
 		try {
 			state = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 					BLTProperties.MODULE_ID, "getBlockState",diagramId,blockName);
-			log.debugf("%s.getBlockState %s = %s",CLSS,blockName,state);
+			log.infof("%s.getBlockState %s = %s",CLSS,blockName,state);
 		}
 		catch(Exception ge) {
 			log.infof("%s.getBlockState: GatewayException (%s)",CLSS,ge.getMessage());
