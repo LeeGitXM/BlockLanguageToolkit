@@ -24,6 +24,7 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  */
 public class BlockTagSynchronizer {
 	private static final String CLSS = "BlockTagSynchronizer";
+	private final static boolean DEBUG = true;
 	private static final LoggerEx log = LogUtil.getLogger(BlockTagSynchronizer.class.getPackage().getName());
 	private final String projectName;
 	private final ControllerRequestHandler handler;
@@ -46,7 +47,9 @@ public class BlockTagSynchronizer {
 	 */
 	public void synchBlocks(ProcessDiagram diagram) {
 		BlockExecutionController controller = BlockExecutionController.getInstance();
+		if(DEBUG) log.infof("%s.synchBlocks() Synching blocks on diagram: %s", CLSS, diagram.getName());
 		for(ProcessBlock block:diagram.getProcessBlocks()) {
+			if(DEBUG) log.infof("Synching block: %s", block.getName());
 
 			// If the block is a sink, remap its tag path to correspond to its name.
 			// If the tag path is currently empty, do nothing. This is an unconfigured block.
@@ -66,23 +69,31 @@ public class BlockTagSynchronizer {
 						controller.removeSubscription(block,prop);
 					}
 					String path = String.format("[%s]%s/%s",productionProvider,BlockConstants.SOURCE_SINK_TAG_FOLDER,block.getName());
-					log.infof("%s.synchBlocks: Creating tag %s", CLSS, path);
+					if(DEBUG) log.infof("%s.synchBlocks: Creating tag %s", CLSS, path);
 					handler.createTag(projectName,DataType.String, path);
 					if(!diagram.getState().equals(DiagramState.ISOLATED)) prop.setBinding(path);
-					path = String.format("[%s]%s/%s",isolationProvider,BlockConstants.SOURCE_SINK_TAG_FOLDER,block.getName());
-					log.infof("%s.synchBlocks: Creating tag %s", CLSS, path);
-					handler.createTag(projectName,DataType.String, path);
-					if(diagram.getState().equals(DiagramState.ISOLATED)) prop.setBinding(path);
+					
+					// Commented out 8/21/2023 because createTag() creates the tag in both tag providers!
+					
+					//path = String.format("[%s]%s/%s",isolationProvider,BlockConstants.SOURCE_SINK_TAG_FOLDER,block.getName());
+					//if(DEBUG) log.infof("%s.synchBlocks: Creating tag %s", CLSS, path);
+					//handler.createTag(projectName,DataType.String, path);
+					//if(diagram.getState().equals(DiagramState.ISOLATED)) prop.setBinding(path);
+					
 					controller.sendPropertyBindingNotification(block.getBlockId().toString(), prop.getName(), prop.getBinding());
 					controller.startSubscription(diagram.getState(),block,prop);
+					if(DEBUG) log.infof("Checking sources...");
 
 					// Now edit sources - the source will have the same tag property as the sink
 					for(ProcessBlock source:sources) {
+						if(DEBUG) log.infof("...updating source named: %s", source.getName());
 						BlockProperty sourceProp = source.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
+						
 						if(sourceProp!=null) {
 							if(sourceProp.getBinding()!=null && !sourceProp.getBinding().isEmpty() ) {
 								controller.removeSubscription(source,sourceProp);
 							}
+							if(DEBUG) log.infof("...updating a source...");
 							sourceProp.setBinding(prop.getBinding());
 							sourceProp.setValue(prop.getValue());
 							controller.sendPropertyBindingNotification(source.getBlockId().toString(), prop.getName(), prop.getBinding());
