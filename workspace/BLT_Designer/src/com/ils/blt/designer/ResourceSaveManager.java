@@ -85,6 +85,7 @@ public class ResourceSaveManager {
 	 *  4) Either a folder or diagram that is new (i.e. never edited)
 	 */
 	private void saveModifiedResources(SaveContext saveContext) {
+		if( DEBUG ) log.infof("%s.saveModifiedResources()", CLSS);
 		int count = statusManager.getModificationCount();
 		if( count==0 ) count = 1;
 		int index = 0;
@@ -92,87 +93,93 @@ public class ResourceSaveManager {
 		ScriptNotificationManager notifier = ScriptNotificationManager.getInstance();
 		Map<ProjectResourceId,ProjectResource> map = context.getProject().getAllResources();
 		for(ProjectResourceId resid:map.keySet()) {
-			if( resid.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) && statusManager.isModified(resid)) {
-				saveContext.setProgress(index++/count);
-				ProjectResource res = map.get(resid);  // This is the "clean" copy
+			if( resid.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
 				ResourcePath respath = resid.getResourcePath();
 				StringPath stringPath = respath.getPath();
 				String name = stringPath.getLastPathComponent();
+				if( DEBUG ) log.infof("%s.saveModifiedResources() - Checking if %s should be saved...", CLSS, name);
 				
-				ProjectResourceBuilder builder = res.toBuilder();
-				builder.clearData();
-				builder.setApplicationScope(ApplicationScope.GATEWAY);
-				// If there has been a re-name, update the project resource now
-				String pendingName = statusManager.getPendingName(resid);
-				if(pendingName!=null && !res.getResourceName().equals(pendingName)) {
-					try {
-						project.renameResource(resid, pendingName);
-						Script script = notifier.createScript(ScriptConstants.RENAME_NOTIFICATION);
-						notifier.runScript(context.getScriptManager(), script, resid.getFolderPath(),pendingName);
-					}
-					catch(ResourceNamingException rne) {
-						log.warnf("%s.saveModifiedResources: Naming exception for %s->%s (%s)", CLSS,res.getResourceName(),pendingName,rne.getLocalizedMessage());
-					}
-				}
-				if( res.isFolder()) {      // Folder
-					builder.setFolder(true);
-					statusManager.clearChangeMarkers(resid);
-				}
-				else {                     // Diagram
-					builder.setFolder(false);
-					ProcessDiagramView view = statusManager.getPendingView(resid);
-					if( view==null) {
-						// Serialize from the resource
-						byte[] bytes = res.getData();
+				if( statusManager.isModified(resid)) {
+					log.infof("%s.saveModifiedResources() - saving %s...", CLSS, name);
+					saveContext.setProgress(index++/count);
+					ProjectResource res = map.get(resid);  // This is the "clean" copy
+					
+					ProjectResourceBuilder builder = res.toBuilder();
+					builder.clearData();
+					builder.setApplicationScope(ApplicationScope.GATEWAY);
+					// If there has been a re-name, update the project resource now
+					String pendingName = statusManager.getPendingName(resid);
+					if(pendingName!=null && !res.getResourceName().equals(pendingName)) {
 						try {
-							SerializableDiagram sd = mapper.readValue(new String(bytes), SerializableDiagram.class);
-							if( sd!=null ) {
-								view = new ProcessDiagramView(context,resid,sd);
+							project.renameResource(resid, pendingName);
+							Script script = notifier.createScript(ScriptConstants.RENAME_NOTIFICATION);
+							notifier.runScript(context.getScriptManager(), script, resid.getFolderPath(),pendingName);
+						}
+						catch(ResourceNamingException rne) {
+							log.warnf("%s.saveModifiedResources: Naming exception for %s->%s (%s)", CLSS,res.getResourceName(),pendingName,rne.getLocalizedMessage());
+						}
+					}
+					if( res.isFolder()) {      // Folder
+						builder.setFolder(true);
+						statusManager.clearChangeMarkers(resid);
+					}
+					else {                     // Diagram
+						builder.setFolder(false);
+						ProcessDiagramView view = statusManager.getPendingView(resid);
+						if( view==null) {
+							// Serialize from the resource
+							byte[] bytes = res.getData();
+							try {
+								SerializableDiagram sd = mapper.readValue(new String(bytes), SerializableDiagram.class);
+								if( sd!=null ) {
+									view = new ProcessDiagramView(context,resid,sd);
+								}
+							}
+							catch(JsonParseException jpe) {
+								saveContext.abort(jpe);
+								log.warnf("%s.saveModifiedResource: Parse exception saving %s...(%s)", CLSS, res.getResourceName(),jpe.getLocalizedMessage());
+							}
+							catch(JsonMappingException jme) {
+								saveContext.abort(jme);
+								log.warnf("%s.saveModifiedResource: Mapping exception saving %s...(%s)", CLSS, res.getResourceName(),jme.getLocalizedMessage());
+							}
+							catch(IOException ioe) {
+								saveContext.abort(ioe);
+								log.warnf("%s.saveModifiedResource: IO exception saving %s...(%s)", CLSS, res.getResourceName(),ioe.getLocalizedMessage());
 							}
 						}
-						catch(JsonParseException jpe) {
-							saveContext.abort(jpe);
-							log.warnf("%s.saveModifiedResource: Parse exception saving %s...(%s)", CLSS, res.getResourceName(),jpe.getLocalizedMessage());
+						DiagramState state = statusManager.getPendingState(resid);
+						if( state!=null) view.setState(state);
+						else view.setState(requestHandler.getDiagramState(resid));
+						// If the diagram is open, update its appearance.
+						statusManager.clearChangeMarkers(resid);
+	
+						if( pendingName!=null && !pendingName.equalsIgnoreCase(name)) {
+							stringPath = StringPath.extend(stringPath.getParentPath(),pendingName);
+							respath = new ResourcePath(BLTProperties.DIAGRAM_RESOURCE_TYPE,stringPath);
+							view.setDiagramName(pendingName);
 						}
-						catch(JsonMappingException jme) {
-							saveContext.abort(jme);
-							log.warnf("%s.saveModifiedResource: Mapping exception saving %s...(%s)", CLSS, res.getResourceName(),jme.getLocalizedMessage());
-						}
-						catch(IOException ioe) {
-							saveContext.abort(ioe);
-							log.warnf("%s.saveModifiedResource: IO exception saving %s...(%s)", CLSS, res.getResourceName(),ioe.getLocalizedMessage());
+						builder.setResourcePath(respath);
+						SerializableDiagram sd = view.createSerializableRepresentation();
+						sd.setPath(respath.getFolderPath());
+						builder.putData(sd.serialize());
+						res = builder.build();
+						statusManager.clearChangeMarkers(res.getResourceId());  // Clear new name, if applicable
+						project.createOrModify(res);
+						Script script = notifier.createScript(ScriptConstants.SAVE_NOTIFICATION);
+						notifier.runScript(context.getScriptManager(), script, resid.getFolderPath(),new String(sd.serialize()));
+						BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resid.getResourcePath());
+						if(tab!=null) {
+							view.updateNotificationHandlerForSave();
+							view.registerChangeListeners();
+							tab.setBackground(view.getBackgroundColorForState());
+							SwingUtilities.invokeLater(new WorkspaceRepainter());
 						}
 					}
-					DiagramState state = statusManager.getPendingState(resid);
-					if( state!=null) view.setState(state);
-					else view.setState(requestHandler.getDiagramState(resid));
-					// If the diagram is open, update its appearance.
-					statusManager.clearChangeMarkers(resid);
-
-					if( pendingName!=null && !pendingName.equalsIgnoreCase(name)) {
-						stringPath = StringPath.extend(stringPath.getParentPath(),pendingName);
-						respath = new ResourcePath(BLTProperties.DIAGRAM_RESOURCE_TYPE,stringPath);
-						view.setDiagramName(pendingName);
-					}
-					builder.setResourcePath(respath);
-					SerializableDiagram sd = view.createSerializableRepresentation();
-					sd.setPath(respath.getFolderPath());
-					builder.putData(sd.serialize());
-					res = builder.build();
-					statusManager.clearChangeMarkers(res.getResourceId());  // Clear new name, if applicable
-					project.createOrModify(res);
-					Script script = notifier.createScript(ScriptConstants.SAVE_NOTIFICATION);
-					notifier.runScript(context.getScriptManager(), script, resid.getFolderPath(),new String(sd.serialize()));
-					BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resid.getResourcePath());
-					if(tab!=null) {
-						view.updateNotificationHandlerForSave();
-						view.registerChangeListeners();
-						tab.setBackground(view.getBackgroundColorForState());
-						SwingUtilities.invokeLater(new WorkspaceRepainter());
-					}
-				}
-				requestHandler.triggerStatusNotifications(context.getProjectName());
 				
+				// I have no idea what this does, but removing it doesn't seem to affect what happens in the gateway...
+				requestHandler.triggerStatusNotifications(context.getProjectName());
+				}
 			}
 		}
 		// Send notifications of any deleted diagrams

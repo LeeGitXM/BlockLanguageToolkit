@@ -24,7 +24,7 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  */
 public class BlockTagSynchronizer {
 	private static final String CLSS = "BlockTagSynchronizer";
-	private final static boolean DEBUG = true;
+	private final static boolean DEBUG = false;
 	private static final LoggerEx log = LogUtil.getLogger(BlockTagSynchronizer.class.getPackage().getName());
 	private final String projectName;
 	private final ControllerRequestHandler handler;

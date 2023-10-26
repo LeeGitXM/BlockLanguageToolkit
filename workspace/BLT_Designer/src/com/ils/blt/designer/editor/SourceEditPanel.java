@@ -24,6 +24,8 @@ import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.designer.workspace.ProcessBlockView;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 
 import net.miginfocom.swing.MigLayout;
 
@@ -41,9 +43,12 @@ public class SourceEditPanel extends BasicEditPanel {
 	//private final JLabel headingLabel;
 	private List<SerializableBlockStateDescriptor> sinks;
 	private JTable table;
+	private final LoggerEx log;
 
 	public SourceEditPanel(final BlockPropertyEditor editor) {
 		super(editor);
+		log = LogUtil.getLogger(getClass().getPackage().getName());
+		log.infof("In %s() instantiating a new panel editor...", TAG);
 		sinks = editor.getRequestHandler().listBlocksOfClass(editor.getContext().getProjectName(),BlockConstants.BLOCK_CLASS_SINK);
 		if( sinks==null) sinks = new ArrayList<>();
 		Collections.sort(sinks);
@@ -109,12 +114,14 @@ public class SourceEditPanel extends BasicEditPanel {
 	 */
 	private JPanel createTablePanel()  {
 		JPanel outerPanel = new JPanel();
+		log.infof("In %s.createTablePanel()...", TAG);
 		table = new JTable();	
 		outerPanel.setLayout(new MigLayout("ins 2,fillx,filly","para[:240:]","[:160:]5[:30:]"));
 		String[] columnNames = { "Sinks" };
 		DefaultTableModel dataModel = new DefaultTableModel(columnNames,0);  // No null rows
 		for( SerializableBlockStateDescriptor block:sinks ) {
 			String [] row = new String[1];
+			log.infof("In %s.adding <%s>...", TAG, block.getName());
 			row[0] = block.getName();
 			dataModel.addRow(row);
 		}

@@ -874,13 +874,20 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * @return a list of state descriptors for blocks that are of the specified class.
 	 */
 	public List<SerializableBlockStateDescriptor> listBlocksOfClass(String projectName,String className) {
+		log.infof("In %s.listBlocksOfClass looking for <%s> blocks in project <%s>",CLSS, className, projectName);
+		
 		List<SerializableBlockStateDescriptor> descriptors = new ArrayList<>();
 		List<SerializableResourceDescriptor> diagrams = controller.getDiagramDescriptors();
+		
 		for(SerializableResourceDescriptor diag:diagrams) {
 			if(diag.getProjectName().equals(projectName)) {
+				log.infof("...checking diagram <%s> - <%s>", diag.getPath(), diag.getName());
 				List<SerializableBlockStateDescriptor> blocks = listBlocksInDiagram(diag.getResourceId());
 				for(SerializableBlockStateDescriptor desc:blocks) {
-					if( desc.getClassName().equals(className)) descriptors.add(desc);
+					if( desc.getClassName().equals(className)) {
+						descriptors.add(desc);
+						log.infof("Adding %s", desc.getName());
+					}
 				}
 			}
 		}

@@ -16,6 +16,7 @@ import com.ils.common.JavaToPython;
 import com.ils.common.PythonToJava;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResourceId;
 import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 
 /**
@@ -29,6 +30,8 @@ public class RootNode extends ProcessNode {
 	private static String CLSS = "RootNode";
 	private static RootNode instance = null;
 	private Map<String,ProjectNode> projects;
+	private final static boolean DEBUG = false;
+	private final LoggerEx log;
 	
 	/**
 	 * The handler, make this private per Singleton pattern. 
@@ -36,6 +39,7 @@ public class RootNode extends ProcessNode {
 	private RootNode() {
 		super(null, BLTProperties.ROOT_FOLDER_NAME);
 		projects = new HashMap<>();
+		this.log = LogUtil.getLogger(getClass().getPackage().getName());
 	}
 
 	/**
@@ -74,6 +78,7 @@ public class RootNode extends ProcessNode {
 	 * @return the list of folder and diagram nodes in the project
 	 */
 	public List<ProcessNode> allNodesForProject(String project) {
+		if( DEBUG ) log.infof("In %s.allNodesForProject() for project %s", CLSS, project);
 		List<ProcessNode> nodes = new ArrayList<ProcessNode>();
 		ProjectNode projNode = (ProjectNode)projects.get(project);
 		if( projNode!=null) {

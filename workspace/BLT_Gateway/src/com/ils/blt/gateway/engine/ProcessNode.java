@@ -25,7 +25,7 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
 public class ProcessNode implements Serializable {
 	private static final long serialVersionUID = 6280701183405134254L;
 	private final String CLSS = "ProcessNode";
-	private final static boolean DEBUG = true;
+	private final static boolean DEBUG = false;
 	protected String name;
 	protected final ProjectResourceId resourceId;   // Resource set when serialized.
 	protected final Map<ResourcePath,ProcessNode> children;   // Key by resource path
@@ -45,6 +45,7 @@ public class ProcessNode implements Serializable {
 		this.resourceId = requestHandler.createResourceId(projectName, path);
 		this.children = new HashMap<>();
 		this.log = LogUtil.getLogger(getClass().getPackageName());
+		if(DEBUG) log.infof("%s.constructor(): %s - %s", CLSS, nam, parentPath);
 	}
 	
 	/**
@@ -57,11 +58,12 @@ public class ProcessNode implements Serializable {
 		this.name = nam;
 		this.children = new HashMap<>();
 		this.log = LogUtil.getLogger(getClass().getPackageName());
+		if(DEBUG) log.infof("%s.constructor(): %s", CLSS, nam);
 	}
 
 	public void addChild(ProcessNode child)    { 
 		children.put(child.getResourceId().getResourcePath(),child);
-		if(DEBUG) log.infof("%s.addChild: %s[%s]",CLSS,getName(),child.getName());
+		if(DEBUG) log.infof("%s.addChild: (%s), %s[%s]", CLSS, child.getResourceId().getResourcePath(), getName(), child.getName());
 	}
 
 	// So that class is comparable
@@ -111,7 +113,12 @@ public class ProcessNode implements Serializable {
 	/**
 	 * Create a string path from resourceId
 	 */
-	public String getPath() {return resourceId.getFolderPath();}
+	public String getPath_ORIGINAL() {return resourceId.getFolderPath();}
+	public String getPath() {
+		String path = "";
+		if( resourceId!=null)path = resourceId.getFolderPath();
+		return path;
+		}
 
 	@Override
 	public int hashCode() {

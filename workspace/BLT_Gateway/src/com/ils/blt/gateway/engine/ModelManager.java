@@ -70,6 +70,7 @@ public class ModelManager implements ProjectListener  {
 		
 		orphansByResourcePath = new HashMap<>();
 		nodesByResourcePath = new HashMap<>();
+		if(DEBUG) log.infof("--- %s.constructor() ---", CLSS);
 	}
 	
 	/**
@@ -102,6 +103,7 @@ public class ModelManager implements ProjectListener  {
 				addModifyFolderResource(res);
 			}
 			else {
+				if(DEBUG) log.infof("%s.analyzeResource: adding a diagram = %s %s", CLSS, res.getResourceName(), (startup?"(STARTUP)":""));
 				addModifyDiagramResource(res,startup);
 			}
 		}
@@ -110,6 +112,7 @@ public class ModelManager implements ProjectListener  {
 	 * @return a list of all known diagrams 
 	 */
 	public List<ProcessDiagram> getDiagrams() {
+		if(DEBUG) log.infof("*** %s.getDiagrams() ***", CLSS);
 		List<ProcessDiagram> diagrams = new ArrayList<>();
 		for(ProcessNode node:nodesByResourcePath.values()) {
 			if( node instanceof ProcessDiagram ) diagrams.add((ProcessDiagram)node);
@@ -508,7 +511,7 @@ public class ModelManager implements ProjectListener  {
 	public void projectUpdated(String projectName) {
 		Optional<RuntimeProject> optional = context.getProjectManager().getProject(projectName);
 		Project proj = optional.get();
-		if(DEBUG) log.infof("%s.projectUpdated: %s",CLSS,proj.getName());
+		log.infof("%s.projectUpdated: %s",CLSS,proj.getName());
 		
 		List<ProjectResource> resources = proj.getResources();
 		ProcessNodeSynchronizer pns = new ProcessNodeSynchronizer();
@@ -518,7 +521,7 @@ public class ModelManager implements ProjectListener  {
 				public void run() {
 					for( ProjectResource res:resources ) {
 						if( res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
-							if(DEBUG) log.infof("%s.projectUpdated: update resource %s.%s %s (%s) %s", CLSS,projectName,res.getResourceName(),
+							log.infof("%s.projectUpdated: update resource %s.%s %s (%s) %s", CLSS,projectName,res.getResourceName(),
 									res.getResourcePath().getPath().toString(),
 									res.getResourceType().toString(),(res.isLocked()?"locked":"unlocked"));
 							analyzeResource(res,false);  // Not startup
@@ -539,6 +542,7 @@ public class ModelManager implements ProjectListener  {
 			}
 			pns.removeExcessNodes();   // Remove diagrams that do not correspond to a resource
 		}
+		log.infof("%s.projectUpdated: %s complete!", CLSS, proj.getName());
 	}
 	
 	// ===================================== Private Methods ==========================================
@@ -647,7 +651,6 @@ public class ModelManager implements ProjectListener  {
 	 * @param node the node to be added
 	 */
 	private void addToHierarchy(ProcessNode node) {
-		if(DEBUG) log.infof("%s.addToHierarchy: %s (%s)",CLSS,node.getName(),node.getResourceId().getResourcePath().getPath());
 		ProjectResourceId resourceId     = node.getResourceId();;
 		nodesByResourcePath.put(resourceId.getResourcePath(), node);
 		
@@ -655,13 +658,20 @@ public class ModelManager implements ProjectListener  {
 		// Add the node to the root.
 		ResourcePath parentPath = resourceId.getResourcePath().getParent();
 		ResourcePath grandparentPath = resourceId.getResourcePath().getParent().getParent();
-		if( parentPath==null || parentPath.getParent().getFolderPath().equals("")   )  {
+		
+		if(DEBUG) log.infof("%s.addToHierarchy: %s (%s), Parent: %s - %s - %s", CLSS, node.getName(), node.getResourceId().getResourcePath().getPath(), parentPath.getName(), parentPath.getParentPath(), parentPath.getFolderPath());
+		
+		//
+		//	9/20/23 - PAH - Something isn't correct here
+		//  if( parentPath==null || parentPath.getParent().getFolderPath().equals("")   )  {
+		//
+		if( parentPath==null || parentPath.getFolderPath().equals("")   )  {
 			root.addChild(node);
 			if(DEBUG) log.infof("%s.addToHierarchy: %s is a ROOT (null parent)",CLSS,node.getName());
 		}
 		else if( parentPath.isModuleFolder() )  {
 			root.addChild(node);
-			if(DEBUG) log.infof("%s.addToHierarchy: %s is a ROOT (parent is root folder)",CLSS,node.getName());
+			if(DEBUG) log.infof("%s.addToHierarchy: %s is a FOLDER",CLSS,node.getName());
 		}
 		else {
 			// If the parent is already in the tree, simply add the node as a child

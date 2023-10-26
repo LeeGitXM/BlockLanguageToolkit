@@ -248,7 +248,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements Noti
 	@Override
 	public boolean isChanged() {
 		boolean changed =  statusManager.isModified(resourceId);
-		log.infof("%s.isChanged: %s modified = %s",CLSS,resourceId.getResourcePath().getPath().toString(),(changed?"true":"false"));
+		log.tracef("%s.isChanged: %s modified = %s",CLSS,resourceId.getResourcePath().getPath().toString(),(changed?"true":"false"));
 		return changed;
 	}
 	@Override
@@ -280,7 +280,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements Noti
 		ProjectResource res = option.get();
 		String oldName = res.getResourceName();
 		try {
-			log.infof("%s.onEdit: alterName from %s to %s",CLSS,oldName,newTextValue);
+			log.tracef("%s.onEdit: alterName from %s to %s",CLSS,oldName,newTextValue);
 
 			if(workspace.isOpen(resourceId.getResourcePath()) ) {
 				BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resourceId.getResourcePath());

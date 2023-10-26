@@ -126,7 +126,7 @@ public class NodeStatusManager   {
 			se = new StatusEntry(node);
 			statusByPath.put(resourceId.getFolderPath(),se);
 		}
-		log.debugf("%s.createResourceStatus: %s (%s)",CLSS,node.getName(),resourceId.getFolderPath());
+		if(DEBUG) log.infof("%s.createResourceStatus: %s (%s)",CLSS,node.getName(),resourceId.getFolderPath());
 		return se;
 	}
 	/**
@@ -134,7 +134,7 @@ public class NodeStatusManager   {
 	 * @param resourceId
 	 */
 	public void removeResource(ProjectResourceId resourceId ) {
-		log.debugf("%s.removeResource(%s)",CLSS,resourceId.getResourcePath().getPath().toString());
+		if(DEBUG) log.infof("%s.removeResource(%s)",CLSS,resourceId.getResourcePath().getPath().toString());
 		List<String> pathsToDelete = nodeDescendants(resourceId);
 		for(String rp:pathsToDelete) {
 			statusByPath.remove(rp);
@@ -167,7 +167,7 @@ public class NodeStatusManager   {
 	 * @return the AbstractResourceNavTreeNode associated with the specified resourceId.
 	 */
 	public AbstractResourceNavTreeNode getNode(ProjectResourceId resourceId) {
-		log.debugf("%s.getNode(%s)",CLSS,resourceId.getResourcePath().getPath().toString());
+		if(DEBUG) log.infof("%s.getNode(%s)",CLSS,resourceId.getResourcePath().getPath().toString());
 		AbstractResourceNavTreeNode node = null;
 		StatusEntry se = statusByPath.get(resourceId.getFolderPath());
 		if( se!=null ) node=se.getNode();
@@ -302,12 +302,11 @@ public class NodeStatusManager   {
 	 *     new and, therefore, modified..
 	 */
 	public boolean isModified(ProjectResourceId resourceId) {
-		boolean modified = true;
+		boolean modified = false;
 		StatusEntry se = statusByPath.get(resourceId.getFolderPath());
 		if( se!=null ) {
-			if( se.getPendingName()==null && se.getPendingState()==null && se.getPendingView()==null) {
-				modified = false;
-			}
+			if(DEBUG) log.infof("%s.isModified() name: %s - %s (modified: %s)" , CLSS, se.toString(), se.getPendingName(), se.isModified());
+			modified = se.isModified();
 		}
 		//log.infof("%s.isModified: %s (%s)",CLSS,resourceId.getFolderPath(),(modified?"modified":"clean"));
 		return modified;
@@ -327,7 +326,6 @@ public class NodeStatusManager   {
 		/**
 		 * Constructor:
 		 * @param antn
-		 * @param s
 		 */
 		public StatusEntry(AbstractResourceNavTreeNode antn)  {
 			this.node = antn;
@@ -336,13 +334,23 @@ public class NodeStatusManager   {
 			this.pendingName = null;
 			this.pendingState = null;
 			this.pendingView = null;
+			if(DEBUG) log.infof("%s.StatusEntry constructor - %s", CLSS, antn.getName());
 		}
 		public String getPendingName() { return this.pendingName; }
-		public void setPendingName(String name) { this.pendingName = name; }
+		public void setPendingName(String name) { 
+			if(DEBUG) log.infof("%s.setPendingName() for %s", CLSS, node.getName());
+			this.pendingName = name; 
+			}
 		public DiagramState getPendingState() { return this.pendingState; }
-		public void setPendingState(DiagramState state) { this.pendingState = state; }
+		public void setPendingState(DiagramState state) {
+			if(DEBUG) log.infof("%s.setPendingState() for %s", CLSS, node.getName());
+			this.pendingState = state; 
+			}
 		public ProcessDiagramView getPendingView() { return this.pendingView; }
-		public void setPendingView(ProcessDiagramView view) { this.pendingView = view; }
+		public void setPendingView(ProcessDiagramView view) {
+			if(DEBUG) log.infof("%s.setPendingView() for %s", CLSS, node.getName());
+			this.pendingView = view; 
+			}
 		public boolean isAlerting() { return alerting; }
 		public void setAlerting(boolean flag) { alerting = flag; }
 		public AbstractResourceNavTreeNode getNode() { return node; }
