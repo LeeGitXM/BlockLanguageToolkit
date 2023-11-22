@@ -33,6 +33,11 @@ public class BasicExecutionController implements ExecutionController  {
 	protected static final LoggerEx log = LogUtil.getLogger(BasicExecutionController.class.getPackage().getName());
 
 	@Override
+	public void saveResource(ProjectResourceId resid, String projectName) {
+		log.warnf("%s.saveResource: WARNING: Executed from stub class",CLSS);
+	}
+
+	@Override
 	public void acceptBroadcastNotification(BroadcastNotification note){
 		log.warnf("%s.acceptBroadcastNotification: WARNING: Executed from stub class",CLSS);
 	}

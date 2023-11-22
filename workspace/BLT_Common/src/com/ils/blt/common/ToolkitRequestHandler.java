@@ -29,6 +29,12 @@ import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 public interface ToolkitRequestHandler  {
 	
 	/**
+	 * This gets called for every resource being saved when the Designer saves a project.
+	 * This gives the gateway a chance to update the resource in the Designer
+	 */
+	public void saveResource(ProjectResourceId id, String projectName);
+	
+	/**
 	 * @param nodeId identifier of the parent node.
 	 * @return a list of resources that are children of the specified resource
 	 */

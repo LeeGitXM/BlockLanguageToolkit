@@ -116,6 +116,18 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		}
 		return instance;
 	}
+	
+	/**
+	 * This gets called for every resource being saved when the Designer saves a project.
+	 * This gives the gateway a chance to update the resource in the Designer
+	 */
+	@Override
+	public void saveResource(ProjectResourceId id, String projectName) {
+		log.infof("%s.saveResource()",CLSS); 
+		controller.saveResource(id, projectName);
+	}
+	
+	
 	@Override
 	public List<SerializableResourceDescriptor> childNodes(ProjectResourceId id) {
 		String projectName = id.getProjectName();
@@ -877,9 +889,10 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		log.infof("In %s.listBlocksOfClass looking for <%s> blocks in project <%s>",CLSS, className, projectName);
 		
 		List<SerializableBlockStateDescriptor> descriptors = new ArrayList<>();
-		List<SerializableResourceDescriptor> diagrams = controller.getDiagramDescriptors();
+		List<SerializableResourceDescriptor> diagrams = controller.getDiagramDescriptors(projectName);
 		
 		for(SerializableResourceDescriptor diag:diagrams) {
+			// I added project name above so I shouldn't need to check it here TODO remove this once working PH 11/8/2023
 			if(diag.getProjectName().equals(projectName)) {
 				log.infof("...checking diagram <%s> - <%s>", diag.getPath(), diag.getName());
 				List<SerializableBlockStateDescriptor> blocks = listBlocksInDiagram(diag.getResourceId());

@@ -25,7 +25,7 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
 public class ProcessNode implements Serializable {
 	private static final long serialVersionUID = 6280701183405134254L;
 	private final String CLSS = "ProcessNode";
-	private final static boolean DEBUG = false;
+	private final static boolean DEBUG = true;
 	protected String name;
 	protected final ProjectResourceId resourceId;   // Resource set when serialized.
 	protected final Map<ResourcePath,ProcessNode> children;   // Key by resource path
@@ -63,7 +63,7 @@ public class ProcessNode implements Serializable {
 
 	public void addChild(ProcessNode child)    { 
 		children.put(child.getResourceId().getResourcePath(),child);
-		if(DEBUG) log.infof("%s.addChild: (%s), %s[%s]", CLSS, child.getResourceId().getResourcePath(), getName(), child.getName());
+		if(DEBUG) log.infof("%s.addChild() Path: <%s>, Parent: <%s>, child: %s", CLSS, child.getResourceId().getResourcePath(), name, child.getName());
 	}
 
 	// So that class is comparable
@@ -90,7 +90,17 @@ public class ProcessNode implements Serializable {
 		}
 		return child;
 	}
-	public Collection<ProcessNode> getChildren() { return children.values(); }
+	public Collection<ProcessNode> getChildren() { 
+		
+		// List the nodes
+		if( DEBUG ) log.infof("%s getting the children of %s", CLSS, name);
+		for(ProcessNode node:children.values()) {
+			if( DEBUG ) log.infof("%s: found %s - %s", CLSS, node.getName(), node.getPath());
+		}
+		
+		return children.values(); 
+		}
+	
 	public String getName() {return name;}
 	public ProjectResourceId getResourceId() { return this.resourceId; }
 	public String getProjectName() {

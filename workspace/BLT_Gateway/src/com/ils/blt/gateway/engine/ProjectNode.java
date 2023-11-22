@@ -17,7 +17,7 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
 public class ProjectNode extends ProcessNode {
 	private static final long serialVersionUID = 6280701183405134254L;
 	private final LoggerEx log;
-	private final static boolean DEBUG = false;
+	private final static boolean DEBUG = true;
 	private static String CLSS = "ProjectNode";
 
 	/**
@@ -61,9 +61,11 @@ public class ProjectNode extends ProcessNode {
 	private void addChildrenToList(List<ProcessNode> nodes, ProcessNode parent) {
 		if( DEBUG ) log.infof("In %s.addChildrenToList(), adding: %s - %s", CLSS, parent.getName(), parent.getPath());
 		nodes.add(parent);
-		for(ProcessNode node:parent.children.values()) {
+		//for(ProcessNode node:parent.children.values()) {
+		for(ProcessNode node:parent.getChildren()) {
 			if( DEBUG ) log.infof("...checking for children of %s - %s", node.getName(), node.getPath());
 			addChildrenToList(nodes,node);
 		}
 	}
+	
 }

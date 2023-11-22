@@ -30,7 +30,7 @@ public class RootNode extends ProcessNode {
 	private static String CLSS = "RootNode";
 	private static RootNode instance = null;
 	private Map<String,ProjectNode> projects;
-	private final static boolean DEBUG = false;
+	private final static boolean DEBUG = true;
 	private final LoggerEx log;
 	
 	/**
@@ -82,8 +82,10 @@ public class RootNode extends ProcessNode {
 		List<ProcessNode> nodes = new ArrayList<ProcessNode>();
 		ProjectNode projNode = (ProjectNode)projects.get(project);
 		if( projNode!=null) {
+			if( DEBUG ) log.infof("In %s ...calling allNodes()...", CLSS);
 			nodes = projNode.allNodes();
 		}
+		if( DEBUG ) log.infof("%s - Found %d nodes!", CLSS, nodes.size());
 		return nodes;
 	}
 	/**

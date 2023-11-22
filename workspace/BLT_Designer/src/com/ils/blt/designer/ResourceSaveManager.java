@@ -4,6 +4,7 @@
 package com.ils.blt.designer;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 import javax.swing.SwingUtilities;
@@ -15,6 +16,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagramState;
+import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.script.Script;
 import com.ils.blt.common.script.ScriptConstants;
 import com.ils.blt.common.script.ScriptNotificationManager;
@@ -89,6 +91,10 @@ public class ResourceSaveManager {
 		int count = statusManager.getModificationCount();
 		if( count==0 ) count = 1;
 		int index = 0;
+		
+		// Added by Pete 10/30/2023
+		ApplicationRequestHandler requestHandler = new ApplicationRequestHandler();
+		
 		DesignableProject project = context.getProject();
 		ScriptNotificationManager notifier = ScriptNotificationManager.getInstance();
 		Map<ProjectResourceId,ProjectResource> map = context.getProject().getAllResources();
@@ -101,6 +107,13 @@ public class ResourceSaveManager {
 				
 				if( statusManager.isModified(resid)) {
 					log.infof("%s.saveModifiedResources() - saving %s...", CLSS, name);
+					
+					// Added by Pete 10/30/2023
+					// PH TODO This needs to be enhanced to sending a notice to the gateway of a changed resource.  We can't tell the gateway to 
+					// publish the updated resource because it doesn't have the updated resource yet.
+					//log.infof("--- Sending request to gateway to save this resource ---");
+					//requestHandler.saveResource(resid, context.getProjectName());					
+					
 					saveContext.setProgress(index++/count);
 					ProjectResource res = map.get(resid);  // This is the "clean" copy
 					

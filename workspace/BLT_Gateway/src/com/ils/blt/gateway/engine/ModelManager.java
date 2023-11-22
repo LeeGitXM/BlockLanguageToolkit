@@ -48,7 +48,7 @@ import com.inductiveautomation.ignition.gateway.model.GatewayContext;
  */
 public class ModelManager implements ProjectListener  {
 	private static final String CLSS = "ModelManager";
-	private static final boolean DEBUG = false;
+	private static final boolean DEBUG = true;
 	private final GatewayContext context;
 	private final LoggerEx log;
 	private final RootNode root;
@@ -96,6 +96,8 @@ public class ModelManager implements ProjectListener  {
 	 */
 	public void analyzeResource(ProjectResource res,boolean startup) {
 		ProjectResourceId resourceId = res.getResourceId();
+		
+		// This may be redundant, but this is called from several places so best to leave it here to be safe 
 		if( resourceId.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
 			
 			if( res.isFolder() ) {
@@ -196,6 +198,7 @@ public class ModelManager implements ProjectListener  {
 	 * @return a list of diagram tree paths. If none found, return null. 
 	 */
 	public synchronized List<SerializableResourceDescriptor> getDiagramDescriptors(String projectName) {
+		if(DEBUG) log.infof("In %s.getDiagramDescriptors() for project %s...", CLSS, projectName);
 		List<SerializableResourceDescriptor> result = new ArrayList<>();
 		// First obtain a list of diagrams by recursively descending the tree
 		Optional<RuntimeProject> optional = context.getProjectManager().getProject(projectName);
@@ -226,6 +229,7 @@ public class ModelManager implements ProjectListener  {
 	 * @return a list of diagram resource paths. If none found, return empty list. 
 	 */
 	public synchronized List<SerializableResourceDescriptor> getDiagramDescriptors() {
+		if(DEBUG) log.infof("In %s.getDiagramDescriptors()...", CLSS);
 		List<SerializableResourceDescriptor> result = new ArrayList<>();
 		int priorSize = 0;
 		List<String> projectNames = context.getProjectManager().getProjectNames();
@@ -242,7 +246,7 @@ public class ModelManager implements ProjectListener  {
 					result.add(descriptor);
 				}
 			}
-			if(DEBUG) log.infof("%s.getDiagramDescriptors: found %d (%s)", CLSS,result.size(),projectName);
+			if(DEBUG) log.infof("%s.getDiagramDescriptors: found %d (%s)", CLSS, result.size(), projectName);
 		}
 		return result;	
 	}
@@ -474,8 +478,11 @@ public class ModelManager implements ProjectListener  {
 		Project project = optional.get();
 		if( project!=null ) {
 			for( ProjectResource res:project.getResources() ) {
-				if(DEBUG) log.infof("%s.projectAdded: resource %s.%s (%s)", CLSS, projectName,res.getResourceName(), res.getResourceType().getTypeId());
-				analyzeResource(res,false);
+				ProjectResourceId resourceId = res.getResourceId();
+				if( resourceId.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
+					if(DEBUG) log.infof("%s.projectAdded: resource %s.%s (%s)", CLSS, projectName, res.getResourceName(), res.getResourceType().getTypeId());
+					analyzeResource(res,false);
+				}
 			}
 		}
 	}
@@ -498,6 +505,7 @@ public class ModelManager implements ProjectListener  {
 		ProcessNodeSynchronizer pns = new ProcessNodeSynchronizer();
 		pns.removeExcessNodes();   // Remove diagrams that do not correspond to a resource
 	}
+	
 	/**
 	 * Handle project resource updates of type model. NOTE: The Ignition gateway interface does not
 	 * allow the designer to be open if enabling/disabling project from Gateway page.
@@ -512,7 +520,7 @@ public class ModelManager implements ProjectListener  {
 		Optional<RuntimeProject> optional = context.getProjectManager().getProject(projectName);
 		Project proj = optional.get();
 		log.infof("%s.projectUpdated: %s",CLSS,proj.getName());
-		
+
 		List<ProjectResource> resources = proj.getResources();
 		ProcessNodeSynchronizer pns = new ProcessNodeSynchronizer();
 		if( proj.isEnabled() ) {
@@ -542,11 +550,45 @@ public class ModelManager implements ProjectListener  {
 			}
 			pns.removeExcessNodes();   // Remove diagrams that do not correspond to a resource
 		}
+
 		log.infof("%s.projectUpdated: %s complete!", CLSS, proj.getName());
 	}
 	
 	// ===================================== Private Methods ==========================================
 
+	/**
+	 * Handle project resource updates of type model. NOTE: The Ignition gateway interface does not
+	 * allow the designer to be open if enabling/disabling project from Gateway page.
+	 * @param diff represents differences to the updated project. That is any updated, dirty or deleted resources.
+	 * @param vers a value of "Staging" means is a result of a "Save". A value of "Published" occurs when a 
+	 *        project is published. For our purposes both actions are equivalent(??).
+	 *
+	 * @see com.inductiveautomation.ignition.gateway.project.ProjectListener#projectUpdated(com.inductiveautomation.ignition.common.project.Project, com.inductiveautomation.ignition.common.project.ProjectVersion)
+	 */
+
+	public void saveResource(ProjectResourceId resId, String projectName) {
+		log.infof("=============================================");
+		log.infof("%s.saveResource from project: %s", CLSS, projectName);
+		
+		Optional<RuntimeProject> optional = context.getProjectManager().getProject(projectName);
+		Project proj = optional.get();
+		
+		List<ProjectResource> resources = proj.getResources();
+
+		// Seems like there should be an easier way to get the resource if we have the id, but I struggled to find one
+		log.tracef("Searching for the resource...");
+		for( ProjectResource res:resources ) {
+			if (res.getResourceId().equals(resId)) {
+				log.infof("**** Found it! ******");
+				//analyzeResource(res, false);  // Not startup
+			}
+		}
+
+		log.infof("%s.saveResource() complete!", CLSS);
+		log.infof("====================================================");
+	}	
+	
+	
 	/**
 	 * Add or update a diagram in the model from a ProjectResource. The state of the 
 	 * diagram is as it was serialized. There is a one-one correspondence 

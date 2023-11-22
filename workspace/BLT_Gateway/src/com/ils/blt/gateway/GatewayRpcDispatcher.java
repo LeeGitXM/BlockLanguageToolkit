@@ -66,6 +66,13 @@ public class GatewayRpcDispatcher   {
 		requestHandler.clearWatermark(diagramId);
 	}
 	
+	/**
+	 * Save a single resource. 
+	 */
+	public void saveResource(ProjectResourceId id, String projectName) {
+		requestHandler.saveResource(id, projectName);
+	}
+	
 	
 	public void clearController() {
 		requestHandler.clearController();

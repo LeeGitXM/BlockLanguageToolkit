@@ -55,4 +55,5 @@ public interface ExecutionController  {
 	public void sendWatermarkNotification(ProjectResourceId diagramid, String val);
 	public void updateTag(ProjectResourceId diagramId,String path,QualifiedValue val);
 	public String validateTag(ProjectResourceId diagramId,String tagPath);
+	public void saveResource(ProjectResourceId resid, String projectName);
 }

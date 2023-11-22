@@ -58,6 +58,7 @@ import com.inductiveautomation.ignition.gateway.model.GatewayContext;
  *  This class is a singleton for easy access throughout the application.
  */
 public class BlockExecutionController implements ExecutionController, Runnable {
+	private static final boolean DEBUG = true;
 	private final static String CLSS = "BlockExecutionController";
 	private static BlockExecutionController instance = null;
 	public final static String CONTROLLER_RUNNING_STATE = "running";
@@ -326,6 +327,24 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		}
 		return result;
 	}
+	
+	/**
+	 * Save a resource. 
+	 */
+	@Override
+	public void saveResource(ProjectResourceId resId, String projectName) {
+		log.infof("In ils.blt.gateway.engine.BlockExecutionController.saveResource()");
+		modelManager.saveResource(resId, projectName);
+		//String key = NotificationKey.watermarkKeyForDiagram(id);
+		//try {
+		//	sessionManager.sendNotification(ApplicationScope.DESIGNER, BLTProperties.MODULE_ID, key, val );
+		//}
+		//catch(Exception ex) {
+			// Probably no receiver registered. This is to be expected if the designer is not running.
+			//log.debugf("%s.saveResource: Error transmitting %s (%s)",CLSS,key,ex.getMessage());
+		//}
+	}
+	
 	// Not part of the interface
 	/**
 	 * @param path
@@ -345,9 +364,11 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		return map.get(rp.getParent());
 	}
 	public List<SerializableResourceDescriptor> getDiagramDescriptors() {
+		if(DEBUG) log.infof("In %s.getDiagramDescriptors() -without project-", CLSS);
 		return modelManager.getDiagramDescriptors();
 	}
 	public List<SerializableResourceDescriptor> getDiagramDescriptors(String projectName) {
+		if(DEBUG) log.infof("In %s.getDiagramDescriptors() for project: %s", CLSS, projectName);
 		return modelManager.getDiagramDescriptors(projectName);
 	}
 	@Override
@@ -744,6 +765,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 			log.debugf("%s.sendStateNotification: No notification receiver for %s (%s)",CLSS,key,ex.getMessage());
 		}
 	}
+	
 	/**
 	 * Notify any listeners in the Client or Designer scopes that a diagram needs a different watermark. 
 	 * A diagram is always saved from the designer, so it is not necessary to save this locally.

@@ -48,6 +48,29 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	public ApplicationRequestHandler()  {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 	}
+	
+	
+	/**
+	 * This gets called for every resource being saved when the Designer saves a project.
+	 * This gives the gateway a chance to update the resource in the Designer
+	 */
+	@Override
+	public void saveResource(ProjectResourceId resId, String projectName) {
+		log.infof("%s.saveResource()",CLSS);
+		try {
+			
+			// PH TODO - this was part of the effort to surgically save changed resources in the gateway
+			/*
+			 * 
+			*	GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+			*						BLTProperties.MODULE_ID, "saveResource", resId, projectName);
+			 */
+		}
+		catch(Exception ge) {
+			log.infof("%s.saveResource: GatewayException (%s)", CLSS, ge.getMessage());
+		}
+	}
+	
 
 	@Override
 	public List<SerializableResourceDescriptor> childNodes(ProjectResourceId nodeId) {
@@ -77,7 +100,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	public void clearWatermark(ProjectResourceId diagramId) {
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-									BLTProperties.MODULE_ID, "clearWatermark",diagramId);
+									BLTProperties.MODULE_ID, "clearWatermark", diagramId);
 		}
 		catch(Exception ge) {
 			log.infof("%s.clearWatermark: GatewayException (%s)",CLSS,ge.getMessage());
@@ -90,7 +113,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	@Override
 	public ProjectResourceId createResourceId(String projectName, String path) {
 		ResourceType rtype = BLTProperties.DIAGRAM_RESOURCE_TYPE;
-		ProjectResourceId resourceId = new ProjectResourceId(projectName,rtype,path);
+		ProjectResourceId resourceId = new ProjectResourceId(projectName, rtype, path);
 		return resourceId;
 	}
 	
@@ -104,7 +127,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	public void createTag(String projectName,DataType type,String path) {
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-									BLTProperties.MODULE_ID, "createTag",projectName,type,path);
+									BLTProperties.MODULE_ID, "createTag", projectName, type, path);
 		}
 		catch(Exception ge) {
 			log.infof("%s.createTag: GatewayException (%s)",CLSS,ge.getMessage());
