@@ -693,39 +693,37 @@ public class ModelManager implements ProjectListener  {
 	 * @param node the node to be added
 	 */
 	private void addToHierarchy(ProcessNode node) {
-		ProjectResourceId resourceId     = node.getResourceId();;
+		if(DEBUG) log.infof("%s.addToHierarchy: %s (%s)",CLSS,node.getName(),node.getResourceId().getResourcePath().getPath());
+		ProjectResourceId resourceId     = node.getResourceId();
 		nodesByResourcePath.put(resourceId.getResourcePath(), node);
-		
 		// If the parent is null, then we're the top of the chain for our project
 		// Add the node to the root.
 		ResourcePath parentPath = resourceId.getResourcePath().getParent();
 		ResourcePath grandparentPath = resourceId.getResourcePath().getParent().getParent();
 		
-		if(DEBUG) log.infof("%s.addToHierarchy: %s (%s), Parent: %s - %s - %s", CLSS, node.getName(), node.getResourceId().getResourcePath().getPath(), parentPath.getName(), parentPath.getParentPath(), parentPath.getFolderPath());
-		
-		//
-		//	9/20/23 - PAH - Something isn't correct here
-		//  if( parentPath==null || parentPath.getParent().getFolderPath().equals("")   )  {
-		//
 		if( parentPath==null || parentPath.getFolderPath().equals("")   )  {
 			root.addChild(node);
 			if(DEBUG) log.infof("%s.addToHierarchy: %s is a ROOT (null parent)",CLSS,node.getName());
 		}
 		else if( parentPath.isModuleFolder() )  {
 			root.addChild(node);
-			if(DEBUG) log.infof("%s.addToHierarchy: %s is a FOLDER",CLSS,node.getName());
+			
+			if(DEBUG) log.infof("%s.addToHierarchy: %s is a ROOT (parent is root folder)",CLSS,node.getName());
 		}
 		else {
 			// If the parent is already in the tree, simply add the node as a child
 			// Otherwise add to our list of orphans
-			ProcessNode parent = nodesByResourcePath.get(node.getResourceId().getResourcePath());
-			if(parent==null ) {
+			ProcessNode parent = nodesByResourcePath.get(node.getResourceId().getResourcePath().getParent());
+			
+			if(parent==null ) {			
 				if(DEBUG) log.infof("%s.addToHierarchy: %s is an ORPHAN (parent is %s)",CLSS,node.getName(),node.getResourceId().getFolderPath());
 				orphansByResourcePath.put(resourceId.getResourcePath(), node);
 			}
 			else {
-				if(DEBUG) log.infof("%s.addToHierarchy: %s is a CHILD of %s",CLSS,node.getName(),parent.getName());
+				
+				if(DEBUG) log.infof("%s.addToHierarchy: %s is a CHILD of %s",CLSS,node.getName(),parent.getName());		
 				parent.addChild(node);
+				
 			}
 		}	
 		resolveOrphans();  // See if any orphans are children of new node.
@@ -830,19 +828,19 @@ public class ModelManager implements ProjectListener  {
 	private void resolveOrphans() {
 		List<ProcessNode> reconciledOrphans = new ArrayList<ProcessNode>();
 		for( ProcessNode orphan:orphansByResourcePath.values()) {
-			ProcessNode parent = nodesByResourcePath.get(orphan.getResourceId().getResourcePath());
+			ProcessNode parent = nodesByResourcePath.get(orphan.getResourceId().getResourcePath().getParent());
+			
 			// If is now resolved, remove node from orphan list and
 			// add as child of parent. Recurse it's children.
+
 			if(parent!=null ) {
+				if(DEBUG) log.infof("%s.resolveOrphans: %s RECONCILED with parent (%s)",CLSS,orphan.getName(),parent.getName());
+				reconciledOrphans.add(orphan);
 				
-				if( parent!=null ) {
-					if(DEBUG) log.infof("%s.resolveOrphans: %s RECONCILED with parent (%s)",CLSS,orphan.getName(),parent.getName());
-					reconciledOrphans.add(orphan);
-				}
 			}
 		}
 		for( ProcessNode orphan:reconciledOrphans) {
-			ProcessNode parent = nodesByResourcePath.get(orphan.getResourceId().getResourcePath());
+			ProcessNode parent = nodesByResourcePath.get(orphan.getResourceId().getResourcePath().getParent());
 			parent.addChild(orphan);
 			orphansByResourcePath.remove(orphan.getResourceId().getResourcePath());
 		}
